@@ -1,6 +1,6 @@
 {
   "name": "execa",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A better child_process.{execFile,exec}",
   "license": "MIT",
   "repository": "sindresorhus/execa",

@@ -1,7 +1,6 @@
 'use strict';
 var childProcess = require('child_process');
-var parse = require('cross-spawn-async/lib/parse');
-var enoent = require('cross-spawn-async/lib/enoent');
+var crossSpawnAsync = require('cross-spawn-async');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
@@ -12,7 +11,7 @@ module.exports = function (cmd, args, opts) {
 			maxBuffer: TEN_MEBIBYTE
 		}, opts);
 
-		var parsed = parse(cmd, args, opts);
+		var parsed = crossSpawnAsync._parse(cmd, args, opts);
 
 		var handle = function (val) {
 			if (parsed.options.stripEof !== false) {
@@ -34,7 +33,7 @@ module.exports = function (cmd, args, opts) {
 			});
 		});
 
-		enoent.hookChildProcess(spawned, parsed);
+		crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
 	});
 };
 

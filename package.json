@@ -30,7 +30,7 @@
     "binary"
   ],
   "dependencies": {
-    "cross-spawn-async": "2.0.1",
+    "cross-spawn-async": "^2.1.1",
     "object-assign": "^4.0.1",
     "strip-eof": "^1.0.0"
   },

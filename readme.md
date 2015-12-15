@@ -33,6 +33,20 @@ execa.shell('echo unicorns').then(result => {
 	console.log(result.stdout);
 	//=> 'unicorns'
 });
+
+// example of catching an error
+execa.shell('exit 3').catch(error => {
+	console.log(error);
+	/*
+	{
+		message: 'Command failed: /bin/sh -c exit 3'
+		killed: false,
+		code: 3,
+		signal: null,
+		cmd: '/bin/sh -c exit 3'
+	}
+	*/
+});
 ```
 
 

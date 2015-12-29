@@ -43,7 +43,9 @@ execa.shell('exit 3').catch(error => {
 		killed: false,
 		code: 3,
 		signal: null,
-		cmd: '/bin/sh -c exit 3'
+		cmd: '/bin/sh -c exit 3',
+		stdout: '',
+		stderr: ''
 	}
 	*/
 });

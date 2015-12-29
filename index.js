@@ -23,6 +23,8 @@ module.exports = function (cmd, args, opts) {
 
 		var spawned = childProcess.execFile(parsed.command, parsed.args, parsed.options, function (err, stdout, stderr) {
 			if (err) {
+				err.stdout = stdout;
+				err.stderr = stderr;
 				reject(err);
 				return;
 			}

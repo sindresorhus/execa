@@ -12,6 +12,15 @@ test('buffer', async t => {
 	t.is(stdout.toString(), 'foo');
 });
 
+test('stdout/stderr available on errors', async t => {
+	try {
+		await fn('exit', ['2']);
+	} catch (err) {
+		t.is(typeof err.stdout, 'string');
+		t.is(typeof err.stdout, 'string');
+	}
+});
+
 test('stripEof option', async t => {
 	const {stdout} = await fn('echo', ['foo'], {stripEof: false});
 	t.is(stdout, 'foo\n');

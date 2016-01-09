@@ -21,12 +21,22 @@ test('stdout/stderr available on errors', async t => {
 	}
 });
 
+test('execa.shell()', async t => {
+	const {stdout} = await fn.shell('echo foo');
+	t.is(stdout, 'foo');
+});
+
 test('stripEof option', async t => {
 	const {stdout} = await fn('echo', ['foo'], {stripEof: false});
 	t.is(stdout, 'foo\n');
 });
 
-test('execa.shell()', async t => {
-	const {stdout} = await fn.shell('echo foo');
-	t.is(stdout, 'foo');
+test.serial('preferLocal option', async t => {
+	t.true((await fn('cat-names')).stdout.length > 2);
+
+	// account for npm adding local binaries to the PATH
+	const _path = process.env.PATH;
+	process.env.PATH = '';
+	await t.throws(fn('cat-names', {preferLocal: false}), /spawn cat-names ENOENT/);
+	process.env.PATH = _path;
 });

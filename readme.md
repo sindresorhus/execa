@@ -10,6 +10,7 @@
 - Supports [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries cross-platform.
 - [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn-async#why)
 - Higher max buffer. 10 MB instead of 200 KB.
+- [Executes locally installed binaries by name.](#preferlocal)
 
 
 ## Install
@@ -76,10 +77,18 @@ Additional exposed options:
 
 #### stripEof
 
-Type: `boolean`  
+Type: `boolean`<br>
 Default: `true`
 
 [Strip EOF](https://github.com/sindresorhus/strip-eof) (last newline) from the output.
+
+#### preferLocal
+
+Type: `boolean`<br>
+Default: `true`
+
+Prefer locally installed binaries when looking for a binary to execute.<br>
+If you `$ npm install foo`, you can then `execa('foo')`.
 
 
 ## License

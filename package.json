@@ -31,11 +31,14 @@
   ],
   "dependencies": {
     "cross-spawn-async": "^2.1.1",
+    "npm-run-path": "^1.0.0",
     "object-assign": "^4.0.1",
+    "path-key": "^1.0.0",
     "strip-eof": "^1.0.0"
   },
   "devDependencies": {
     "ava": "*",
+    "cat-names": "^1.0.2",
     "xo": "*"
   }
 }

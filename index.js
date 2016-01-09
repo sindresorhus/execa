@@ -3,25 +3,37 @@ var childProcess = require('child_process');
 var crossSpawnAsync = require('cross-spawn-async');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
+var npmRunPath = require('npm-run-path');
+var pathKey = require('path-key')();
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 module.exports = function (cmd, args, opts) {
 	return new Promise(function (resolve, reject) {
-		opts = objectAssign({
-			maxBuffer: TEN_MEBIBYTE
-		}, opts);
-
 		var parsed = crossSpawnAsync._parse(cmd, args, opts);
 
+		opts = objectAssign({
+			maxBuffer: TEN_MEBIBYTE,
+			stripEof: true,
+			preferLocal: true
+		}, parsed.options);
+
 		var handle = function (val) {
-			if (parsed.options.stripEof !== false) {
+			if (opts.stripEof) {
 				val = stripEof(val);
 			}
 
 			return val;
 		};
 
-		var spawned = childProcess.execFile(parsed.command, parsed.args, parsed.options, function (err, stdout, stderr) {
+		if (opts.preferLocal) {
+			opts.env = opts.env || {};
+			opts.env[pathKey] = npmRunPath({
+				cwd: parsed.cwd,
+				path: opts.env[pathKey]
+			});
+		}
+
+		var spawned = childProcess.execFile(parsed.command, parsed.args, opts, function (err, stdout, stderr) {
 			if (err) {
 				err.stdout = stdout;
 				err.stderr = stderr;

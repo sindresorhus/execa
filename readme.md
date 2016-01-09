@@ -1,6 +1,6 @@
 # execa [![Build Status](https://travis-ci.org/sindresorhus/execa.svg?branch=master)](https://travis-ci.org/sindresorhus/execa)
 
-> A better [`child_process.{execFile,exec}`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback)
+> A better [`child_process`](https://nodejs.org/api/child_process.html)
 
 
 ## Why

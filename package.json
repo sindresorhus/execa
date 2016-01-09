@@ -1,7 +1,7 @@
 {
   "name": "execa",
   "version": "0.1.1",
-  "description": "A better child_process.{execFile,exec}",
+  "description": "A better `child_process`",
   "license": "MIT",
   "repository": "sindresorhus/execa",
   "author": {
@@ -25,9 +25,15 @@
     "child",
     "process",
     "execfile",
+    "spawn",
     "file",
+    "shell",
     "bin",
-    "binary"
+    "binary",
+    "binaries",
+    "npm",
+    "path",
+    "local"
   ],
   "dependencies": {
     "cross-spawn-async": "^2.1.1",

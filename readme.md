@@ -71,6 +71,12 @@ Same options as [`child_process.exec`](https://nodejs.org/api/child_process.html
 
 Returns a promise for a result object with `stdout` and `stderr` properties.
 
+### execa.spawn(file, [arguments], [options])
+
+Spawn a file.
+
+Same API as [`child_process.spawn`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
+
 ### options
 
 Additional exposed options:

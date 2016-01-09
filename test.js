@@ -26,6 +26,10 @@ test('execa.shell()', async t => {
 	t.is(stdout, 'foo');
 });
 
+test('execa.spawn()', t => {
+	t.is(typeof fn.spawn('echo').pid, 'number');
+});
+
 test('stripEof option', async t => {
 	const {stdout} = await fn('echo', ['foo'], {stripEof: false});
 	t.is(stdout, 'foo\n');

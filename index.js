@@ -72,3 +72,5 @@ module.exports.shell = function (cmd, opts) {
 
 	return module.exports(file, args, opts);
 };
+
+module.exports.spawn = crossSpawnAsync;

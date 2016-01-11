@@ -26,7 +26,7 @@ module.exports = function (cmd, args, opts) {
 		};
 
 		if (opts.preferLocal) {
-			opts.env = opts.env || {};
+			opts.env = objectAssign({}, opts.env || process.env);
 			opts.env[pathKey] = npmRunPath({
 				cwd: opts.cwd,
 				path: opts.env[pathKey]

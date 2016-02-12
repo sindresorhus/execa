@@ -18,8 +18,12 @@ module.exports = function (cmd, args, opts) {
 		}, parsed.options);
 
 		var handle = function (val) {
-			if (opts.stripEof) {
+			if (parsed.options.stripEof !== false) {
 				val = stripEof(val);
+			}
+
+			if (parsed.options.encoding !== undefined) {
+				val = new Buffer(val, parsed.options.encoding);
 			}
 
 			return val;
@@ -33,17 +37,34 @@ module.exports = function (cmd, args, opts) {
 			});
 		}
 
-		var spawned = childProcess.execFile(parsed.command, parsed.args, opts, function (err, stdout, stderr) {
-			if (err) {
-				err.stdout = stdout;
-				err.stderr = stderr;
-				reject(err);
-				return;
-			}
+		var all = '';
+		var out = '';
+		var err = '';
+		var spawned = childProcess.spawn(parsed.command, parsed.args, parsed.options);
 
+		spawned.stdout.on('data', function (data) {
+			out += data.toString();
+			all += data.toString();
+		});
+
+		spawned.stderr.on('data', function (data) {
+			err += data.toString();
+			all += data.toString();
+		});
+
+		spawned.on('error', function (error) {
+			error.stdout = handle(out);
+			error.stderr = handle(err);
+			error.all = handle(all);
+
+			reject(error);
+		});
+
+		spawned.on('close', function () {
 			resolve({
-				stdout: handle(stdout),
-				stderr: handle(stderr)
+				stdout: handle(out),
+				stderr: handle(err),
+				all: handle(all)
 			});
 		});
 

@@ -12,12 +12,13 @@ test('buffer', async t => {
 	t.is(stdout.toString(), 'foo');
 });
 
-test('stdout/stderr available on errors', async t => {
+test('stdout/stderr/all available on errors', async t => {
 	try {
 		await m('exit', ['2']);
 	} catch (err) {
 		t.is(typeof err.stdout, 'string');
 		t.is(typeof err.stdout, 'string');
+		t.is(typeof err.all, 'string');
 	}
 });
 
@@ -43,4 +44,9 @@ test.serial('preferLocal option', async t => {
 	process.env.PATH = '';
 	await t.throws(m('cat-names', {preferLocal: false}), /spawn cat-names ENOENT/);
 	process.env.PATH = _path;
+});
+
+test('all', async t => {
+	const {all} = await m('./fixture.js');
+	t.is(all, '123');
 });

@@ -4,7 +4,6 @@ var crossSpawnAsync = require('cross-spawn-async');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
-var pathKey = require('path-key')();
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 module.exports = function (cmd, args, opts) {
@@ -27,9 +26,9 @@ module.exports = function (cmd, args, opts) {
 
 		if (opts.preferLocal) {
 			opts.env = objectAssign({}, opts.env || process.env);
-			opts.env[pathKey] = npmRunPath({
+			opts.env.PATH = npmRunPath({
 				cwd: opts.cwd,
-				path: opts.env[pathKey]
+				path: opts.env.PATH
 			});
 		}
 

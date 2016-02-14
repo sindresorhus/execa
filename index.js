@@ -36,6 +36,7 @@ module.exports = function (cmd, args, opts) {
 			if (err) {
 				err.stdout = stdout;
 				err.stderr = stderr;
+				err.message += stdout;
 				reject(err);
 				return;
 			}

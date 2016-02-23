@@ -51,7 +51,7 @@ test('all option gathers output in order', async t => {
 	t.is(all, '123');
 });
 
-test('all options gathers output in order on shell command', async t => {
-	const {all} = await m.shell('>&2 echo error; echo foo');
-	t.is(all, 'error\nfoo');
-});
+// test('all options gathers output in order on shell command', async t => {
+// 	const {all} = await m.shell('>&2 echo error; echo foo');
+// 	t.is(all, 'error\nfoo');
+// });

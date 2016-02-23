@@ -1,10 +1,10 @@
 'use strict';
-var childProcess = require('child_process');
 var crossSpawnAsync = require('cross-spawn-async');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
 var pathKey = require('path-key')();
+var spawn = require('cross-spawn-async');
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 module.exports = function (cmd, args, opts) {
@@ -40,7 +40,7 @@ module.exports = function (cmd, args, opts) {
 		var all = '';
 		var out = '';
 		var err = '';
-		var spawned = childProcess.spawn(parsed.command, parsed.args, parsed.options);
+		var spawned = spawn(parsed.command, parsed.args, parsed.options);
 
 		spawned.stdout.setEncoding('utf8');
 		spawned.stderr.setEncoding('utf8');

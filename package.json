@@ -36,7 +36,7 @@
     "local"
   ],
   "dependencies": {
-    "cross-spawn-async": "^2.1.1",
+    "cross-spawn-async": "^2.1.9",
     "npm-run-path": "^1.0.0",
     "object-assign": "^4.0.1",
     "path-key": "^1.0.0",

@@ -42,14 +42,17 @@ module.exports = function (cmd, args, opts) {
 		var err = '';
 		var spawned = childProcess.spawn(parsed.command, parsed.args, parsed.options);
 
+		spawned.stdout.setEncoding('utf8');
+		spawned.stderr.setEncoding('utf8');
+
 		spawned.stdout.on('data', function (data) {
-			out += data.toString();
-			all += data.toString();
+			out += data;
+			all += data;
 		});
 
 		spawned.stderr.on('data', function (data) {
-			err += data.toString();
-			all += data.toString();
+			err += data;
+			all += data;
 		});
 
 		spawned.on('error', function (error) {

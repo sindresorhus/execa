@@ -10,7 +10,8 @@ module.exports = function (cmd, args, opts) {
 	return new Promise(function (resolve, reject) {
 		var parsed;
 
-		if (opts && process.platform === 'win32') {
+		if (opts && opts.__winShell === true) {
+			delete opts.__winShell;
 			parsed = {
 				command: cmd,
 				args: args,
@@ -70,6 +71,7 @@ module.exports.shell = function (cmd, opts) {
 	opts = objectAssign({}, opts);
 
 	if (process.platform === 'win32') {
+		opts.__winShell = true;
 		file = process.env.comspec || 'cmd.exe';
 		args = ['/s', '/c', '"' + cmd + '"'];
 		opts.windowsVerbatimArguments = true;

@@ -8,7 +8,20 @@ var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 module.exports = function (cmd, args, opts) {
 	return new Promise(function (resolve, reject) {
-		var parsed = crossSpawnAsync._parse(cmd, args, opts);
+		var parsed;
+
+		if (opts && opts.__winShell === true) {
+			delete opts.__winShell;
+			parsed = {
+				command: cmd,
+				args: args,
+				options: opts,
+				file: cmd,
+				original: cmd
+			};
+		} else {
+			parsed = crossSpawnAsync._parse(cmd, args, opts);
+		}
 
 		opts = objectAssign({
 			maxBuffer: TEN_MEBIBYTE,
@@ -58,6 +71,7 @@ module.exports.shell = function (cmd, opts) {
 	opts = objectAssign({}, opts);
 
 	if (process.platform === 'win32') {
+		opts.__winShell = true;
 		file = process.env.comspec || 'cmd.exe';
 		args = ['/s', '/c', '"' + cmd + '"'];
 		opts.windowsVerbatimArguments = true;

@@ -7,7 +7,8 @@ var npmRunPath = require('npm-run-path');
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 module.exports = function (cmd, args, opts) {
-	return new Promise(function (resolve, reject) {
+	var spawned;
+	var promise = new Promise(function (resolve, reject) {
 		var parsed;
 
 		if (opts && opts.__winShell === true) {
@@ -45,7 +46,7 @@ module.exports = function (cmd, args, opts) {
 			});
 		}
 
-		var spawned = childProcess.execFile(parsed.command, parsed.args, opts, function (err, stdout, stderr) {
+		spawned = childProcess.execFile(parsed.command, parsed.args, opts, function (err, stdout, stderr) {
 			if (err) {
 				err.stdout = stdout;
 				err.stderr = stderr;
@@ -62,6 +63,11 @@ module.exports = function (cmd, args, opts) {
 
 		crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
 	});
+
+	promise.kill = spawned.kill.bind(spawned);
+	promise.pid = spawned.pid;
+
+	return promise;
 };
 
 module.exports.shell = function (cmd, opts) {

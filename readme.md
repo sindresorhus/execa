@@ -61,7 +61,7 @@ Execute a file directly.
 
 Same options as [`child_process.execFile`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback).
 
-Returns a promise for a result object with `stdout` and `stderr` properties.
+Returns a promise for a result object with `stdout` and `stderr` properties. Additionally, the promise instance has a `pid` property (the ID of the child process) and a `kill` method (for sending signals to the child process).
 
 ### execa.shell(command, [options])
 
@@ -69,7 +69,7 @@ Execute a command through the system shell. Prefer `execa()` whenever possible, 
 
 Same options as [`child_process.exec`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback).
 
-Returns a promise for a result object with `stdout` and `stderr` properties.
+Returns a promise for a result object with `stdout` and `stderr` properties. Additionally, the promise instance has a `pid` property (the ID of the child process) and a `kill` method (for sending signals to the child process).
 
 ### execa.spawn(file, [arguments], [options])
 

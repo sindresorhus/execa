@@ -52,3 +52,9 @@ test.serial('preferLocal option', async t => {
 	await t.throws(m('cat-names', {preferLocal: false}), /spawn cat-names ENOENT/);
 	process.env.PATH = _path;
 });
+
+test.only('execa() returns a promise with kill() and pid', t => {
+	const promise = m('echo', ['foo']);
+	t.is(typeof promise.kill, 'function');
+	t.is(typeof promise.pid, 'number');
+});

@@ -14,20 +14,14 @@ test('buffer', async t => {
 });
 
 test('stdout/stderr available on errors', async t => {
-	try {
-		await m('exit', ['2']);
-	} catch (err) {
-		t.is(typeof err.stdout, 'string');
-		t.is(typeof err.stdout, 'string');
-	}
+	const err = await t.throws(m('exit', ['2']));
+	t.is(typeof err.stdout, 'string');
+	t.is(typeof err.stderr, 'string');
 });
 
 test('include stdout in errors for improved debugging', async t => {
-	try {
-		await m('./fixtures/error-message.js');
-	} catch (err) {
-		t.true(err.message.indexOf('stdout') !== -1);
-	}
+	const err = await t.throws(m('./fixtures/error-message.js'));
+	t.true(err.message.indexOf('stdout') !== -1);
 });
 
 test('execa.shell()', async t => {

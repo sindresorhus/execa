@@ -20,10 +20,10 @@
   ],
   "keywords": [
     "exec",
-    "execute",
-    "fork",
     "child",
     "process",
+    "execute",
+    "fork",
     "execfile",
     "spawn",
     "file",

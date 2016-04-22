@@ -123,6 +123,20 @@ module.exports = function (cmd, args, opts) {
 	return spawned;
 };
 
+module.exports.stdout = function () {
+	// TODO: set `stderr: 'ignore'` when that option is implemented
+	return module.exports.apply(null, arguments).then(function (x) {
+		return x.stdout;
+	});
+};
+
+module.exports.stderr = function () {
+	// TODO: set `stdout: 'ignore'` when that option is implemented
+	return module.exports.apply(null, arguments).then(function (x) {
+		return x.stderr;
+	});
+};
+
 module.exports.shell = function (cmd, opts) {
 	return handleShell(module.exports, cmd, opts);
 };

@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+'use strict';
+
+process.stdin.setEncoding('utf8');
+
+process.stdin.on('data', function (data) {
+	console.log(data);
+});

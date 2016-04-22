@@ -108,6 +108,12 @@ Default: `true`
 Prefer locally installed binaries when looking for a binary to execute.<br>
 If you `$ npm install foo`, you can then `execa('foo')`.
 
+#### input
+
+Type: `string` or `buffer`
+
+Write input to `stdin` of your binary.
+
 
 ## License
 

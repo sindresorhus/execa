@@ -74,6 +74,10 @@ module.exports = function (cmd, args, opts) {
 			});
 		});
 
+		if (parsed.opts.input) {
+			spawned.stdin.end(parsed.opts.input);
+		}
+
 		crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
 	});
 

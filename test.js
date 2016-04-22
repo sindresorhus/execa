@@ -67,3 +67,8 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof promise.kill, 'function');
 	t.is(typeof promise.pid, 'number');
 });
+
+test('input option', async t => {
+	const {stdout} = await m('stdin', [], {input: 'foobar'});
+	t.is(stdout, 'foobar');
+});

@@ -21,7 +21,7 @@ test('stdout/stderr available on errors', async t => {
 	}
 });
 
-test.only('include stdout in errors for improved debugging', async t => {
+test('include stdout in errors for improved debugging', async t => {
 	try {
 		await m('./fixtures/error-message.js');
 	} catch (err) {
@@ -51,4 +51,10 @@ test.serial('preferLocal option', async t => {
 	process.env.PATH = '';
 	await t.throws(m('cat-names', {preferLocal: false}), /spawn cat-names ENOENT/);
 	process.env.PATH = _path;
+});
+
+test('execa() returns a promise with kill() and pid', t => {
+	const promise = m('echo', ['foo']);
+	t.is(typeof promise.kill, 'function');
+	t.is(typeof promise.pid, 'number');
 });

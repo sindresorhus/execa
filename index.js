@@ -6,47 +6,58 @@ var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
+function handleArgs(cmd, args, opts) {
+	var parsed;
+
+	if (opts && opts.__winShell === true) {
+		delete opts.__winShell;
+		parsed = {
+			command: cmd,
+			args: args,
+			options: opts,
+			file: cmd,
+			original: cmd
+		};
+	} else {
+		parsed = crossSpawnAsync._parse(cmd, args, opts);
+	}
+
+	opts = objectAssign({
+		maxBuffer: TEN_MEBIBYTE,
+		stripEof: true,
+		preferLocal: true
+	}, parsed.options);
+
+	if (opts.preferLocal) {
+		opts.env = objectAssign({}, opts.env || process.env);
+		opts.env.PATH = npmRunPath({
+			cwd: opts.cwd,
+			path: opts.env.PATH
+		});
+	}
+
+	return {
+		cmd: parsed.command,
+		args: parsed.args,
+		opts: opts
+	};
+}
+
 module.exports = function (cmd, args, opts) {
 	var spawned;
+
 	var promise = new Promise(function (resolve, reject) {
-		var parsed;
-
-		if (opts && opts.__winShell === true) {
-			delete opts.__winShell;
-			parsed = {
-				command: cmd,
-				args: args,
-				options: opts,
-				file: cmd,
-				original: cmd
-			};
-		} else {
-			parsed = crossSpawnAsync._parse(cmd, args, opts);
-		}
-
-		opts = objectAssign({
-			maxBuffer: TEN_MEBIBYTE,
-			stripEof: true,
-			preferLocal: true
-		}, parsed.options);
+		var parsed = handleArgs(cmd, args, opts);
 
 		var handle = function (val) {
-			if (opts.stripEof) {
+			if (parsed.opts.stripEof) {
 				val = stripEof(val);
 			}
 
 			return val;
 		};
 
-		if (opts.preferLocal) {
-			opts.env = objectAssign({}, opts.env || process.env);
-			opts.env.PATH = npmRunPath({
-				cwd: opts.cwd,
-				path: opts.env.PATH
-			});
-		}
-
-		spawned = childProcess.execFile(parsed.command, parsed.args, opts, function (err, stdout, stderr) {
+		spawned = childProcess.execFile(parsed.cmd, parsed.args, parsed.opts, function (err, stdout, stderr) {
 			if (err) {
 				err.stdout = stdout;
 				err.stderr = stderr;

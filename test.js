@@ -95,10 +95,15 @@ if (process.platform !== 'win32') {
 	test('helpful error trying to provide an input stream in sync mode', t => {
 		t.throws(
 			() => m.sync('grep', ['h'], {input: new stream.PassThrough()}),
-			/opts\.input can not be a stream in sync mode/
+			/The `input` option cannot be a stream in sync mode/
 		);
 	});
 }
+
+test('input option', async t => {
+	const {stdout} = await m('stdin', [], {input: 'foobar'});
+	t.is(stdout, 'foobar');
+});
 
 test('execa() returns a promise with kill() and pid', t => {
 	const promise = m('noop', ['foo']);

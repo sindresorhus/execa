@@ -56,8 +56,7 @@ function handleInput(spawned, opts) {
 	if (isStream(input)) {
 		input.pipe(spawned.stdin);
 	} else {
-		spawned.stdin.write(input);
-		spawned.stdin.end();
+		spawned.stdin.end(input);
 	}
 }
 
@@ -135,7 +134,7 @@ module.exports.spawn = function (cmd, args, opts) {
 
 module.exports.sync = function (cmd, args, opts) {
 	if (opts && isStream(opts.input)) {
-		throw new TypeError('opts.input can not be a stream in sync mode');
+		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 	var parsed = handleArgs(cmd, args, opts);
 	var out = childProcess.execFileSync(parsed.cmd, parsed.args, parsed.opts);

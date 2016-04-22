@@ -40,6 +40,11 @@ test('execa.spawn()', async t => {
 	t.is((await getStream(m.spawn('echo', ['foo']).stdout)).trim(), 'foo');
 });
 
+test('execa.sync()', t => {
+	const stdout = m.sync('echo', ['foo']);
+	t.is(stdout, 'foo');
+});
+
 test('stripEof option', async t => {
 	const {stdout} = await m('echo', ['foo'], {stripEof: false});
 	t.is(stdout, 'foo\n');

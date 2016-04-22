@@ -57,7 +57,7 @@ execa.shell('exit 3').catch(error => {
 
 ### execa(file, [arguments], [options])
 
-Execute a file directly.
+Execute a file.
 
 Same options as [`child_process.execFile`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback).
 
@@ -76,6 +76,14 @@ Returns a promise for a result object with `stdout` and `stderr` properties. Add
 Spawn a file.
 
 Same API as [`child_process.spawn`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
+
+### execa.sync(file, [arguments], [options])
+
+Execute a file synchronously.
+
+Same options as [`child_process.execFileSync`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback), except that the default encoding is `utf8` instead of `buffer`.
+
+Returns `stdout`.
 
 ### options
 

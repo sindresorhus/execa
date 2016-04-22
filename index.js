@@ -25,7 +25,8 @@ function handleArgs(cmd, args, opts) {
 	opts = objectAssign({
 		maxBuffer: TEN_MEBIBYTE,
 		stripEof: true,
-		preferLocal: true
+		preferLocal: true,
+		encoding: 'utf8'
 	}, parsed.options);
 
 	if (opts.preferLocal) {
@@ -43,19 +44,19 @@ function handleArgs(cmd, args, opts) {
 	};
 }
 
+function handleOutput(opts, val) {
+	if (opts.stripEof) {
+		val = stripEof(val);
+	}
+
+	return val;
+}
+
 module.exports = function (cmd, args, opts) {
 	var spawned;
 
 	var promise = new Promise(function (resolve, reject) {
 		var parsed = handleArgs(cmd, args, opts);
-
-		var handle = function (val) {
-			if (parsed.opts.stripEof) {
-				val = stripEof(val);
-			}
-
-			return val;
-		};
 
 		spawned = childProcess.execFile(parsed.cmd, parsed.args, parsed.opts, function (err, stdout, stderr) {
 			if (err) {
@@ -67,8 +68,8 @@ module.exports = function (cmd, args, opts) {
 			}
 
 			resolve({
-				stdout: handle(stdout),
-				stderr: handle(stderr)
+				stdout: handleOutput(parsed.opts, stdout),
+				stderr: handleOutput(parsed.opts, stderr)
 			});
 		});
 
@@ -111,4 +112,11 @@ module.exports.spawn = function (cmd, args, opts) {
 	crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
 
 	return spawned;
+};
+
+module.exports.sync = function (cmd, args, opts) {
+	var parsed = handleArgs(cmd, args, opts);
+	var out = childProcess.execFileSync(parsed.cmd, parsed.args, parsed.opts);
+
+	return handleOutput(parsed.opts, out);
 };

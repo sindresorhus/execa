@@ -110,9 +110,9 @@ If you `$ npm install foo`, you can then `execa('foo')`.
 
 #### input
 
-Type: `string` or `buffer` or a `ReadableStream`
+Type: `string` `buffer` `ReadableStream`
 
-Write input to `stdin` of your binary. Streams are not allowed when using `execa.sync(...)`.
+Write input to the `stdin` of your binary. Streams are not allowed when using the synchronous methods.
 
 ## License
 

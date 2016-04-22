@@ -63,46 +63,39 @@ test.serial('preferLocal option', async t => {
 	process.env.PATH = _path;
 });
 
-if (process.platform !== 'win32') {
-	test('input can be a String', async t => {
-		const {stdout} = await m('grep', ['h'], {input: 'hello\ngood day\nhowdy'});
-		t.is(stdout, 'hello\nhowdy');
-	});
-
-	test('input can be a Buffer', async t => {
-		const {stdout} = await m('grep', ['h'], {input: new Buffer('hello\ngood day\nhowdy', 'utf8')});
-		t.is(stdout, 'hello\nhowdy');
-	});
-
-	test('input can be a Stream', async t => {
-		var s = new stream.PassThrough();
-		s.write('hello\ngood day\nhowdy');
-		s.end();
-		const {stdout} = await m('grep', ['h'], {input: s});
-		t.is(stdout, 'hello\nhowdy');
-	});
-
-	test('input can be a String - sync', t => {
-		const stdout = m.sync('grep', ['h'], {input: 'hello\ngood day\nhowdy'});
-		t.is(stdout, 'hello\nhowdy');
-	});
-
-	test('input can be a Buffer - sync', t => {
-		const stdout = m.sync('grep', ['h'], {input: new Buffer('hello\ngood day\nhowdy', 'utf8')});
-		t.is(stdout, 'hello\nhowdy');
-	});
-
-	test('helpful error trying to provide an input stream in sync mode', t => {
-		t.throws(
-			() => m.sync('grep', ['h'], {input: new stream.PassThrough()}),
-			/The `input` option cannot be a stream in sync mode/
-		);
-	});
-}
-
-test('input option', async t => {
+test('input option can be a String', async t => {
 	const {stdout} = await m('stdin', [], {input: 'foobar'});
 	t.is(stdout, 'foobar');
+});
+
+test('input option can be a Buffer', async t => {
+	const {stdout} = await m('stdin', [], {input: 'testing12'});
+	t.is(stdout, 'testing12');
+});
+
+test('input can be a Stream', async t => {
+	var s = new stream.PassThrough();
+	s.write('howdy');
+	s.end();
+	const {stdout} = await m('stdin', [], {input: s});
+	t.is(stdout, 'howdy');
+});
+
+test('input option can be a String - sync', async t => {
+	const stdout = m.sync('stdin', [], {input: 'foobar'});
+	t.is(stdout, 'foobar');
+});
+
+test('input option can be a Buffer - sync', async t => {
+	const stdout = m.sync('stdin', [], {input: new Buffer('testing12', 'utf8')});
+	t.is(stdout, 'testing12');
+});
+
+test('helpful error trying to provide an input stream in sync mode', t => {
+	t.throws(
+		() => m.sync('stdin', [], {input: new stream.PassThrough()}),
+		/The `input` option cannot be a stream in sync mode/
+	);
 });
 
 test('execa() returns a promise with kill() and pid', t => {

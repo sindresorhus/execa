@@ -1,4 +1,5 @@
 import path from 'path';
+import stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
 import m from './';
@@ -61,6 +62,43 @@ test.serial('preferLocal option', async t => {
 	await t.throws(m('cat-names', {preferLocal: false}), /spawn .* ENOENT/);
 	process.env.PATH = _path;
 });
+
+if (process.platform !== 'win32') {
+	test('input can be a String', async t => {
+		const {stdout} = await m('grep', ['h'], {input: 'hello\ngood day\nhowdy'});
+		t.is(stdout, 'hello\nhowdy');
+	});
+
+	test('input can be a Buffer', async t => {
+		const {stdout} = await m('grep', ['h'], {input: new Buffer('hello\ngood day\nhowdy', 'utf8')});
+		t.is(stdout, 'hello\nhowdy');
+	});
+
+	test('input can be a Stream', async t => {
+		var s = new stream.PassThrough();
+		s.write('hello\ngood day\nhowdy');
+		s.end();
+		const {stdout} = await m('grep', ['h'], {input: s});
+		t.is(stdout, 'hello\nhowdy');
+	});
+
+	test('input can be a String - sync', t => {
+		const stdout = m.sync('grep', ['h'], {input: 'hello\ngood day\nhowdy'});
+		t.is(stdout, 'hello\nhowdy');
+	});
+
+	test('input can be a Buffer - sync', t => {
+		const stdout = m.sync('grep', ['h'], {input: new Buffer('hello\ngood day\nhowdy', 'utf8')});
+		t.is(stdout, 'hello\nhowdy');
+	});
+
+	test('helpful error trying to provide an input stream in sync mode', t => {
+		t.throws(
+			() => m.sync('grep', ['h'], {input: new stream.PassThrough()}),
+			/opts\.input can not be a stream in sync mode/
+		);
+	});
+}
 
 test('execa() returns a promise with kill() and pid', t => {
 	const promise = m('noop', ['foo']);

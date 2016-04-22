@@ -1,4 +1,5 @@
 import test from 'ava';
+import getStream from 'get-stream';
 import m from './';
 
 test('execa()', async t => {
@@ -34,8 +35,9 @@ test('execa.shell()', async t => {
 	t.is(stdout, 'foo');
 });
 
-test('execa.spawn()', t => {
+test('execa.spawn()', async t => {
 	t.is(typeof m.spawn('echo').pid, 'number');
+	t.is((await getStream(m.spawn('echo', ['foo']).stdout)).trim(), 'foo');
 });
 
 test('stripEof option', async t => {

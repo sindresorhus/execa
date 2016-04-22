@@ -44,6 +44,7 @@
   "devDependencies": {
     "ava": "*",
     "cat-names": "^1.0.2",
+    "get-stream": "^2.0.0",
     "xo": "*"
   }
 }

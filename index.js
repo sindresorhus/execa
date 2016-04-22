@@ -104,4 +104,11 @@ module.exports.shell = function (cmd, opts) {
 	return module.exports(file, args, opts);
 };
 
-module.exports.spawn = crossSpawnAsync;
+module.exports.spawn = function (cmd, args, opts) {
+	var parsed = handleArgs(cmd, args, opts);
+	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
+
+	crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
+
+	return spawned;
+};

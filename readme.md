@@ -85,7 +85,15 @@ Same API as [`child_process.spawn`](https://nodejs.org/api/child_process.html#ch
 
 Execute a file synchronously.
 
-Same options as [`child_process.execFileSync`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback), except that the default encoding is `utf8` instead of `buffer`.
+Same options as [`child_process.execFileSync`](https://nodejs.org/api/child_process.html#child_process_child_process_execfilesync_file_args_options), except the default encoding is `utf8` instead of `buffer`.
+
+Returns `stdout`.
+
+### execa.shellSync(file, [options])
+
+Execute a command synchronously through the system shell.
+
+Same options as [`child_process.execSync`](https://nodejs.org/api/child_process.html#child_process_child_process_execsync_command_options), except the default encoding is `utf8` instead of `buffer`.
 
 Returns `stdout`.
 

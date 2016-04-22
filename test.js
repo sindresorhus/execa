@@ -42,6 +42,11 @@ test('execa.sync()', t => {
 	t.is(stdout, 'foo');
 });
 
+test('execa.shellSync()', t => {
+	const stdout = m.shellSync('node fixtures/noop foo');
+	t.is(stdout, 'foo');
+});
+
 test('stripEof option', async t => {
 	const {stdout} = await m('noop', ['foo'], {stripEof: false});
 	t.is(stdout, 'foo\n');

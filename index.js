@@ -53,6 +53,29 @@ function handleOutput(opts, val) {
 	return val;
 }
 
+function handleShell(fn, cmd, opts) {
+	var file;
+	var args;
+
+	opts = objectAssign({}, opts);
+
+	if (process.platform === 'win32') {
+		opts.__winShell = true;
+		file = process.env.comspec || 'cmd.exe';
+		args = ['/s', '/c', '"' + cmd + '"'];
+		opts.windowsVerbatimArguments = true;
+	} else {
+		file = '/bin/sh';
+		args = ['-c', cmd];
+	}
+
+	if (opts.shell) {
+		file = opts.shell;
+	}
+
+	return fn(file, args, opts);
+}
+
 module.exports = function (cmd, args, opts) {
 	var spawned;
 
@@ -84,26 +107,7 @@ module.exports = function (cmd, args, opts) {
 };
 
 module.exports.shell = function (cmd, opts) {
-	var file;
-	var args;
-
-	opts = objectAssign({}, opts);
-
-	if (process.platform === 'win32') {
-		opts.__winShell = true;
-		file = process.env.comspec || 'cmd.exe';
-		args = ['/s', '/c', '"' + cmd + '"'];
-		opts.windowsVerbatimArguments = true;
-	} else {
-		file = '/bin/sh';
-		args = ['-c', cmd];
-	}
-
-	if (opts.shell) {
-		file = opts.shell;
-	}
-
-	return module.exports(file, args, opts);
+	return handleShell(module.exports, cmd, opts);
 };
 
 module.exports.spawn = function (cmd, args, opts) {
@@ -120,4 +124,8 @@ module.exports.sync = function (cmd, args, opts) {
 	var out = childProcess.execFileSync(parsed.cmd, parsed.args, parsed.opts);
 
 	return handleOutput(parsed.opts, out);
+};
+
+module.exports.shellSync = function (cmd, opts) {
+	return handleShell(module.exports.sync, cmd, opts);
 };

@@ -103,6 +103,16 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 	);
 });
 
+test('stdout is attached as a promise for the property', async t => {
+	const stdout = await m('stdin', [], {input: 'hello'}).stdout;
+	t.is(stdout, 'hello');
+});
+
+test('still works the other way', async t => {
+	const {stdout} = await m('stdin', [], {input: 'hello'});
+	t.is(stdout, 'hello');
+});
+
 test('execa() returns a promise with kill() and pid', t => {
 	const promise = m('noop', ['foo']);
 	t.is(typeof promise.kill, 'function');

@@ -91,6 +91,19 @@ function handleShell(fn, cmd, opts) {
 	return fn(file, args, opts);
 }
 
+function extendPromise(promise, property) {
+	Object.defineProperty(promise, property, {
+		configurable: true,
+		get: function () {
+			var value = promise.then(function (result) {
+				return result[property];
+			});
+			Object.defineProperty(promise, property, {value: value});
+			return value;
+		}
+	});
+}
+
 module.exports = function (cmd, args, opts) {
 	var spawned;
 
@@ -119,6 +132,9 @@ module.exports = function (cmd, args, opts) {
 
 	promise.kill = spawned.kill.bind(spawned);
 	promise.pid = spawned.pid;
+
+	extendPromise(promise, 'stdout');
+	extendPromise(promise, 'stderr');
 
 	return promise;
 };

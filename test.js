@@ -86,6 +86,12 @@ test('input can be a Stream', async t => {
 	t.is(stdout, 'howdy');
 });
 
+test('you can write to child.stdin', async t => {
+	const child = m('stdin');
+	child.stdin.end('unicorns');
+	t.is((await child).stdout, 'unicorns');
+});
+
 test('input option can be a String - sync', async t => {
 	const stdout = m.sync('stdin', {input: 'foobar'});
 	t.is(stdout, 'foobar');

@@ -143,9 +143,14 @@ module.exports.sync = function (cmd, args, opts) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	var out = childProcess.execFileSync(parsed.cmd, parsed.args, parsed.opts);
+	var result = childProcess.spawnSync(parsed.cmd, parsed.args, parsed.opts);
 
-	return handleOutput(parsed.opts, out);
+	if (parsed.opts.stripEof) {
+		result.stdout = stripEof(result.stdout);
+		result.stderr = stripEof(result.stderr);
+	}
+
+	return result;
 };
 
 module.exports.shellSync = function (cmd, opts) {

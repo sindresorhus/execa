@@ -39,12 +39,12 @@ test('execa.spawn()', async t => {
 });
 
 test('execa.sync()', t => {
-	const stdout = m.sync('noop', ['foo']);
+	const {stdout} = m.sync('noop', ['foo']);
 	t.is(stdout, 'foo');
 });
 
 test('execa.shellSync()', t => {
-	const stdout = m.shellSync('node fixtures/noop foo');
+	const {stdout} = m.shellSync('node fixtures/noop foo');
 	t.is(stdout, 'foo');
 });
 
@@ -87,12 +87,12 @@ test('input can be a Stream', async t => {
 });
 
 test('input option can be a String - sync', async t => {
-	const stdout = m.sync('stdin', {input: 'foobar'});
+	const {stdout} = m.sync('stdin', {input: 'foobar'});
 	t.is(stdout, 'foobar');
 });
 
 test('input option can be a Buffer - sync', async t => {
-	const stdout = m.sync('stdin', {input: new Buffer('testing12', 'utf8')});
+	const {stdout} = m.sync('stdin', {input: new Buffer('testing12', 'utf8')});
 	t.is(stdout, 'testing12');
 });
 

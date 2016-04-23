@@ -117,10 +117,10 @@ module.exports = function (cmd, args, opts) {
 		handleInput(spawned, parsed.opts);
 	});
 
-	promise.kill = spawned.kill.bind(spawned);
-	promise.pid = spawned.pid;
+	spawned.then = promise.then.bind(promise);
+	spawned.catch = promise.catch.bind(promise);
 
-	return promise;
+	return spawned;
 };
 
 module.exports.shell = function (cmd, opts) {

@@ -137,11 +137,12 @@ module.exports.spawn = function (cmd, args, opts) {
 };
 
 module.exports.sync = function (cmd, args, opts) {
-	if (opts && isStream(opts.input)) {
+	var parsed = handleArgs(cmd, args, opts);
+
+	if (isStream(parsed.opts.input)) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	var parsed = handleArgs(cmd, args, opts);
 	var out = childProcess.execFileSync(parsed.cmd, parsed.args, parsed.opts);
 
 	return handleOutput(parsed.opts, out);

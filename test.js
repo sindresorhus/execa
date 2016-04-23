@@ -69,12 +69,12 @@ test.serial('preferLocal option', async t => {
 });
 
 test('input option can be a String', async t => {
-	const {stdout} = await m('stdin', [], {input: 'foobar'});
+	const {stdout} = await m('stdin', {input: 'foobar'});
 	t.is(stdout, 'foobar');
 });
 
 test('input option can be a Buffer', async t => {
-	const {stdout} = await m('stdin', [], {input: 'testing12'});
+	const {stdout} = await m('stdin', {input: 'testing12'});
 	t.is(stdout, 'testing12');
 });
 
@@ -82,23 +82,23 @@ test('input can be a Stream', async t => {
 	var s = new stream.PassThrough();
 	s.write('howdy');
 	s.end();
-	const {stdout} = await m('stdin', [], {input: s});
+	const {stdout} = await m('stdin', {input: s});
 	t.is(stdout, 'howdy');
 });
 
 test('input option can be a String - sync', async t => {
-	const stdout = m.sync('stdin', [], {input: 'foobar'});
+	const stdout = m.sync('stdin', {input: 'foobar'});
 	t.is(stdout, 'foobar');
 });
 
 test('input option can be a Buffer - sync', async t => {
-	const stdout = m.sync('stdin', [], {input: new Buffer('testing12', 'utf8')});
+	const stdout = m.sync('stdin', {input: new Buffer('testing12', 'utf8')});
 	t.is(stdout, 'testing12');
 });
 
 test('helpful error trying to provide an input stream in sync mode', t => {
 	t.throws(
-		() => m.sync('stdin', [], {input: new stream.PassThrough()}),
+		() => m.sync('stdin', {input: new stream.PassThrough()}),
 		/The `input` option cannot be a stream in sync mode/
 	);
 });

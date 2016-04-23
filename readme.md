@@ -116,6 +116,11 @@ Default: `true`
 Prefer locally installed binaries when looking for a binary to execute.<br>
 If you `$ npm install foo`, you can then `execa('foo')`.
 
+#### input
+
+Type: `string` `buffer` `ReadableStream`
+
+Write input to the `stdin` of your binary. Streams are not allowed when using the synchronous methods.
 
 ## License
 

@@ -4,6 +4,7 @@ var crossSpawnAsync = require('cross-spawn-async');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
+var isStream = require('is-stream');
 var pathKey = require('path-key')();
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
@@ -43,6 +44,20 @@ function handleArgs(cmd, args, opts) {
 		args: parsed.args,
 		opts: opts
 	};
+}
+
+function handleInput(spawned, opts) {
+	var input = opts.input;
+
+	if (input === null || input === undefined) {
+		return;
+	}
+
+	if (isStream(input)) {
+		input.pipe(spawned.stdin);
+	} else {
+		spawned.stdin.end(input);
+	}
 }
 
 function handleOutput(opts, val) {
@@ -98,6 +113,8 @@ module.exports = function (cmd, args, opts) {
 		});
 
 		crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
+
+		handleInput(spawned, parsed.opts);
 	});
 
 	promise.kill = spawned.kill.bind(spawned);
@@ -120,6 +137,10 @@ module.exports.spawn = function (cmd, args, opts) {
 };
 
 module.exports.sync = function (cmd, args, opts) {
+	if (opts && isStream(opts.input)) {
+		throw new TypeError('The `input` option cannot be a stream in sync mode');
+	}
+
 	var parsed = handleArgs(cmd, args, opts);
 	var out = childProcess.execFileSync(parsed.cmd, parsed.args, parsed.opts);
 

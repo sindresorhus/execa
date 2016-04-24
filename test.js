@@ -3,6 +3,8 @@ import stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
 import split from 'split';
+import proxyquire from 'proxyquire';
+import 'rxjs/Rx';
 import m from './';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -112,6 +114,20 @@ test('execa() returns a promise with kill() and pid', t => {
 
 test('observable on stdin', t => {
 	t.plan(2);
+
+	return m('stdin', [], {stdout: 'observable', input: 'hello\ngoodbye\nhello'})
+		.stdout
+		.filter(line => /h/.test(line))
+		.map(line => line.toUpperCase())
+		.forEach(line => t.is(line, 'HELLO'));
+});
+
+test('observable falls back to rxjs/Observable', t => {
+	t.plan(2);
+
+	var m = proxyquire('./', {
+		'zen-observable': null
+	});
 
 	return m('stdin', [], {stdout: 'observable', input: 'hello\ngoodbye\nhello'})
 		.stdout

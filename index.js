@@ -15,8 +15,18 @@ function tryRequireObservable() {
 
 	try {
 		return require('zen-observable');
-	} catch (e) {
-		return null;
+	} catch (err) {
+		try {
+			// You need to import rxjs specific methods as well:
+			//   require('rxjs/add/operator/map');
+			//
+			// See: https://github.com/ReactiveX/RxJS#commonjs-via-npm
+			//
+			// Should we just import all of them? `execa` really can't be used outside node anyways.
+			return require('rxjs/Observable').Observable;
+		} catch (err) {
+			return null;
+		}
 	}
 }
 

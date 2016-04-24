@@ -116,7 +116,8 @@ test('observable on stdin', t => {
 	return m('stdin', [], {stdout: 'observable', input: 'hello\ngoodbye\nhello'})
 		.stdout
 		.filter(line => /h/.test(line))
-		.forEach(line => t.is(line, 'hello'));
+		.map(line => line.toUpperCase())
+		.forEach(line => t.is(line, 'HELLO'));
 });
 
 test('observable ND-JSON on stdin', t => {

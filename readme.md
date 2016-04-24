@@ -61,9 +61,9 @@ Execute a file.
 
 Same options as [`child_process.execFile`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback).
 
-Returns a promise for a result object with `stdout` and `stderr` properties.
+Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 
-The promise instance has a `pid` property (ID of the child process) and a `kill` method (for sending signals to the child process).
+The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
 
 ### execa.shell(command, [options])
 
@@ -71,9 +71,9 @@ Execute a command through the system shell. Prefer `execa()` whenever possible, 
 
 Same options as [`child_process.exec`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback).
 
-Returns a promise for a result object with `stdout` and `stderr` properties.
+Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 
-The promise instance has a `pid` property (ID of the child process) and a `kill` method (for sending signals to the child process).
+The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
 
 ### execa.spawn(file, [arguments], [options])
 

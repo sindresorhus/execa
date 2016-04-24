@@ -131,7 +131,7 @@ module.exports = function (cmd, args, opts) {
 		handleInput(spawned, parsed.opts);
 	});
 
-	if (opts && opts.stdout === 'observable') {
+	if (opts && (opts.stdout === 'observable' || (opts.stdout && opts.stdout.observable))) {
 		var Observable = tryRequireObservable();
 
 		if (!Observable) {
@@ -140,6 +140,7 @@ module.exports = function (cmd, args, opts) {
 			throw new Error('Observable Not Found');
 		}
 
+		var observableTransform = opts.stdout.transform || split();
 		var stdout = spawned.stdout;
 
 		promise.stdout = new Observable(function (observer) {
@@ -154,7 +155,7 @@ module.exports = function (cmd, args, opts) {
 				});
 
 			stdout
-				.pipe(split())
+				.pipe(observableTransform)
 				.on('data', function (line) {
 					observer.next(line);
 				});

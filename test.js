@@ -2,6 +2,7 @@ import path from 'path';
 import stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
+import split from 'split';
 import m from './';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -116,4 +117,17 @@ test('observable on stdin', t => {
 		.stdout
 		.filter(line => /h/.test(line))
 		.forEach(line => t.is(line, 'hello'));
+});
+
+test('observable ND-JSON on stdin', t => {
+	t.plan(2);
+
+	return m('stdin', [], {
+		stdout: {
+			observable: true,
+			transform: split(JSON.parse)
+		},
+		input: '{"foo": "bar"}\n{"foo": "bar"}'
+	}).stdout
+		.forEach(obj => t.deepEqual(obj, {foo: 'bar'}));
 });

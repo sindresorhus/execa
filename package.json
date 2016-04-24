@@ -42,6 +42,7 @@
     "npm-run-path": "^1.0.0",
     "object-assign": "^4.0.1",
     "path-key": "^1.0.0",
+    "split": "^1.0.0",
     "strip-eof": "^1.0.0"
   },
   "devDependencies": {
@@ -50,6 +51,7 @@
     "coveralls": "^2.11.9",
     "get-stream": "^2.0.0",
     "nyc": "^6.4.0",
-    "xo": "*"
+    "xo": "*",
+    "zen-observable": "^0.2.1"
   }
 }

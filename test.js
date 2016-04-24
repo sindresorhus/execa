@@ -108,3 +108,12 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof promise.kill, 'function');
 	t.is(typeof promise.pid, 'number');
 });
+
+test('observable on stdin', t => {
+	t.plan(2);
+
+	return m('stdin', [], {stdout: 'observable', input: 'hello\ngoodbye\nhello'})
+		.stdout
+		.filter(line => /h/.test(line))
+		.forEach(line => t.is(line, 'hello'));
+});

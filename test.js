@@ -2,6 +2,9 @@ import path from 'path';
 import stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
+import split from 'split';
+import proxyquire from 'proxyquire';
+import 'rxjs/Rx';
 import m from './';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -107,4 +110,41 @@ test('execa() returns a promise with kill() and pid', t => {
 	const promise = m('noop', ['foo']);
 	t.is(typeof promise.kill, 'function');
 	t.is(typeof promise.pid, 'number');
+});
+
+test('observable on stdin', t => {
+	t.plan(2);
+
+	return m('stdin', [], {stdout: 'observable', input: 'hello\ngoodbye\nhello'})
+		.stdout
+		.filter(line => /h/.test(line))
+		.map(line => line.toUpperCase())
+		.forEach(line => t.is(line, 'HELLO'));
+});
+
+test('observable falls back to rxjs/Observable', t => {
+	t.plan(2);
+
+	var m = proxyquire('./', {
+		'zen-observable': null
+	});
+
+	return m('stdin', [], {stdout: 'observable', input: 'hello\ngoodbye\nhello'})
+		.stdout
+		.filter(line => /h/.test(line))
+		.map(line => line.toUpperCase())
+		.forEach(line => t.is(line, 'HELLO'));
+});
+
+test('observable ND-JSON on stdin', t => {
+	t.plan(2);
+
+	return m('stdin', [], {
+		stdout: {
+			observable: true,
+			transform: split(JSON.parse)
+		},
+		input: '{"foo": "bar"}\n{"foo": "bar"}'
+	}).stdout
+		.forEach(obj => t.deepEqual(obj, {foo: 'bar'}));
 });

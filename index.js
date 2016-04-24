@@ -5,7 +5,31 @@ var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
 var isStream = require('is-stream');
+var split = require('split');
 var pathKey = require('path-key')();
+
+function tryRequireObservable() {
+	if (typeof global.Observable === 'function') {
+		return global.Observable;
+	}
+
+	try {
+		return require('zen-observable');
+	} catch (err) {
+		try {
+			// You need to import rxjs specific methods as well:
+			//   require('rxjs/add/operator/map');
+			//
+			// See: https://github.com/ReactiveX/RxJS#commonjs-via-npm
+			//
+			// Should we just import all of them? `execa` really can't be used outside node anyways.
+			return require('rxjs/Observable').Observable;
+		} catch (err) {
+			return null;
+		}
+	}
+}
+
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 function handleArgs(cmd, args, opts) {
@@ -116,6 +140,38 @@ module.exports = function (cmd, args, opts) {
 
 		handleInput(spawned, parsed.opts);
 	});
+
+	if (opts && (opts.stdout === 'observable' || (opts.stdout && opts.stdout.observable))) {
+		var Observable = tryRequireObservable();
+
+		if (!Observable) {
+			// reject the promise?
+			// write to stdout / stderr and process.exit()?
+			throw new Error('Observable Not Found');
+		}
+
+		var observableTransform = opts.stdout.transform || split();
+		var stdout = spawned.stdout;
+
+		promise.stdout = new Observable(function (observer) {
+			promise = promise
+				.catch(function (err) {
+					observer.error(err);
+					throw err;
+				})
+				.then(function (result) {
+					observer.complete();
+					return result;
+				});
+
+			stdout
+				.pipe(observableTransform)
+				.on('data', function (line) {
+					observer.next(line);
+				});
+			// Error handling on the stream?
+		});
+	}
 
 	promise.kill = spawned.kill.bind(spawned);
 	promise.pid = spawned.pid;

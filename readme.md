@@ -65,6 +65,14 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
 
 The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
 
+### execa.stdout(file, [arguments], [options])
+
+Same as `execa()`, but returns only `stdout`.
+
+### execa.stderr(file, [arguments], [options])
+
+Same as `execa()`, but returns only `stderr`.
+
 ### execa.shell(command, [options])
 
 Execute a command through the system shell. Prefer `execa()` whenever possible, as it's both faster and safer.

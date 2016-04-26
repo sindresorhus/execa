@@ -45,6 +45,7 @@
   ],
   "dependencies": {
     "cross-spawn-async": "^2.1.1",
+    "get-stream": "^2.0.0",
     "is-stream": "^1.1.0",
     "npm-run-path": "^1.0.0",
     "object-assign": "^4.0.1",
@@ -55,7 +56,6 @@
     "ava": "*",
     "cat-names": "^1.0.2",
     "coveralls": "^2.11.9",
-    "get-stream": "^2.0.0",
     "nyc": "^6.4.0",
     "xo": "*"
   }

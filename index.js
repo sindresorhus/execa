@@ -5,6 +5,7 @@ var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
 var isStream = require('is-stream');
+var getStream = require('get-stream');
 var pathKey = require('path-key')();
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
@@ -61,7 +62,7 @@ function handleInput(spawned, opts) {
 }
 
 function handleOutput(opts, val) {
-	if (opts.stripEof) {
+	if (val && opts.stripEof) {
 		val = stripEof(val);
 	}
 
@@ -92,30 +93,67 @@ function handleShell(fn, cmd, opts) {
 }
 
 module.exports = function (cmd, args, opts) {
-	var spawned;
+	var parsed = handleArgs(cmd, args, opts);
+	var encoding = parsed.opts.encoding;
+	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
+	var gs = encoding ? getStream : getStream.buffer;
 
-	var promise = new Promise(function (resolve, reject) {
-		var parsed = handleArgs(cmd, args, opts);
+	var promise = Promise.all([
+		new Promise(function (resolve) {
+			spawned.on('exit', function (code, signal) {
+				resolve({code: code, signal: signal});
+			});
 
-		spawned = childProcess.execFile(parsed.cmd, parsed.args, parsed.opts, function (err, stdout, stderr) {
-			if (err) {
-				err.stdout = stdout;
-				err.stderr = stderr;
-				err.message += stdout;
-				reject(err);
-				return;
+			spawned.on('error', function (err) {
+				resolve({err: err});
+			});
+		}),
+		spawned.stdout && gs(spawned.stdout, encoding && {encoding: encoding}),
+		spawned.stderr && gs(spawned.stderr, encoding && {encoding: encoding})
+	]).then(function (arr) {
+		var result = arr[0];
+		var stdout = arr[1];
+		var stderr = arr[2];
+
+		var err = result.err;
+		var code = result.code;
+		var signal = result.signal;
+
+		if (err || code !== 0 || signal !== null) {
+			var joinedCmd = cmd;
+
+			if (Array.isArray(args) && args.length) {
+				joinedCmd += ' ' + args.join(' ');
 			}
 
-			resolve({
-				stdout: handleOutput(parsed.opts, stdout),
-				stderr: handleOutput(parsed.opts, stderr)
-			});
-		});
+			if (!err) {
+				err = new Error('Command failed: ' + joinedCmd + '\n' + stderr + stdout);
 
-		crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
+				// TODO: missing some timeout logic for killed
+				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
+				// err.killed = spawned.killed || killed;
+				err.killed = spawned.killed;
 
-		handleInput(spawned, parsed.opts);
+				// TODO: child_process applies the following logic for resolving the code:
+				// var uv = process.bind('uv');
+				// ex.code = code < 0 ? uv.errname(code) : code;
+				err.code = code;
+			}
+
+			err.stdout = stdout;
+			err.stderr = stderr;
+			throw err;
+		}
+
+		return {
+			stdout: handleOutput(parsed.opts, stdout),
+			stderr: handleOutput(parsed.opts, stderr)
+		};
 	});
+
+	crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
+
+	handleInput(spawned, parsed.opts);
 
 	spawned.then = promise.then.bind(promise);
 	spawned.catch = promise.catch.bind(promise);

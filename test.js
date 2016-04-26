@@ -112,6 +112,11 @@ test('input option can be a Buffer - sync', async t => {
 	t.is(stdout, 'testing12');
 });
 
+test('opts.stdout:ignore - stdout will not collect data', async t => {
+	const {stdout} = await m('stdin', {input: 'hello', stdio: [null, 'ignore', null]});
+	t.is(stdout, null);
+});
+
 test('helpful error trying to provide an input stream in sync mode', t => {
 	t.throws(
 		() => m.sync('stdin', {input: new stream.PassThrough()}),

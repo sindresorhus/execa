@@ -35,7 +35,7 @@ test('stdout/stderr available on errors', async t => {
 
 test('include stdout in errors for improved debugging', async t => {
 	const err = await t.throws(m('./fixtures/error-message.js'));
-	t.true(err.message.indexOf('stdout') !== -1);
+	t.regex(err.message, /stdout/);
 });
 
 test('execa.shell()', async t => {

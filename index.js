@@ -205,10 +205,8 @@ module.exports.sync = function (cmd, args, opts) {
 
 	var result = childProcess.spawnSync(parsed.cmd, parsed.args, parsed.opts);
 
-	if (parsed.opts.stripEof) {
-		result.stdout = stripEof(result.stdout);
-		result.stderr = stripEof(result.stderr);
-	}
+	result.stdout = handleOutput(parsed.opts, result.stdout);
+	result.stderr = handleOutput(parsed.opts, result.stderr);
 
 	return result;
 };

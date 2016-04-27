@@ -1,5 +1,6 @@
 'use strict';
 var childProcess = require('child_process');
+var util = require('util');
 var crossSpawnAsync = require('cross-spawn-async');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
@@ -179,14 +180,7 @@ module.exports.shell = function (cmd, opts) {
 	return handleShell(module.exports, cmd, opts);
 };
 
-module.exports.spawn = function (cmd, args, opts) {
-	var parsed = handleArgs(cmd, args, opts);
-	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
-
-	crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
-
-	return spawned;
-};
+module.exports.spawn = util.deprecate(module.exports, 'execa.spawn: just use execa instead.');
 
 module.exports.sync = function (cmd, args, opts) {
 	var parsed = handleArgs(cmd, args, opts);

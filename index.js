@@ -6,7 +6,7 @@ var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
 var isStream = require('is-stream');
-var getStream = require('get-stream');
+var _getStream = require('get-stream');
 var pathKey = require('path-key')();
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
@@ -93,24 +93,38 @@ function handleShell(fn, cmd, opts) {
 	return fn(file, args, opts);
 }
 
+function getStream(stream, encoding) {
+	if (!stream) {
+		return null;
+	}
+
+	if (encoding) {
+		return _getStream(stream, {encoding: encoding});
+	}
+	return _getStream.buffer(stream);
+}
+
+function processDone(spawned) {
+	return new Promise(function (resolve) {
+		spawned.on('exit', function (code, signal) {
+			resolve({code: code, signal: signal});
+		});
+
+		spawned.on('error', function (err) {
+			resolve({err: err});
+		});
+	});
+}
+
 module.exports = function (cmd, args, opts) {
 	var parsed = handleArgs(cmd, args, opts);
 	var encoding = parsed.opts.encoding;
 	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
-	var gs = encoding ? getStream : getStream.buffer;
 
 	var promise = Promise.all([
-		new Promise(function (resolve) {
-			spawned.on('exit', function (code, signal) {
-				resolve({code: code, signal: signal});
-			});
-
-			spawned.on('error', function (err) {
-				resolve({err: err});
-			});
-		}),
-		spawned.stdout && gs(spawned.stdout, encoding && {encoding: encoding}),
-		spawned.stderr && gs(spawned.stderr, encoding && {encoding: encoding})
+		processDone(spawned),
+		getStream(spawned.stdout, encoding),
+		getStream(spawned.stderr, encoding)
 	]).then(function (arr) {
 		var result = arr[0];
 		var stdout = arr[1];

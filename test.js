@@ -34,8 +34,8 @@ test('stdout/stderr available on errors', async t => {
 });
 
 test('include stdout in errors for improved debugging', async t => {
-	const err = await t.throws(m('./fixtures/error-message.js'));
-	t.true(err.message.indexOf('stdout') !== -1);
+	const err = await t.throws(m('fixtures/error-message.js'));
+	t.regex(err.message, /stdout/);
 });
 
 test('execa.shell()', async t => {
@@ -110,6 +110,11 @@ test('input option can be a String - sync', async t => {
 test('input option can be a Buffer - sync', async t => {
 	const {stdout} = m.sync('stdin', {input: new Buffer('testing12', 'utf8')});
 	t.is(stdout, 'testing12');
+});
+
+test('opts.stdout:ignore - stdout will not collect data', async t => {
+	const {stdout} = await m('stdin', {input: 'hello', stdio: [null, 'ignore', null]});
+	t.is(stdout, null);
 });
 
 test('helpful error trying to provide an input stream in sync mode', t => {

@@ -1,10 +1,12 @@
 'use strict';
 var childProcess = require('child_process');
+var util = require('util');
 var crossSpawnAsync = require('cross-spawn-async');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
 var isStream = require('is-stream');
+var _getStream = require('get-stream');
 var pathKey = require('path-key')();
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
@@ -61,7 +63,7 @@ function handleInput(spawned, opts) {
 }
 
 function handleOutput(opts, val) {
-	if (opts.stripEof) {
+	if (val && opts.stripEof) {
 		val = stripEof(val);
 	}
 
@@ -91,31 +93,82 @@ function handleShell(fn, cmd, opts) {
 	return fn(file, args, opts);
 }
 
-module.exports = function (cmd, args, opts) {
-	var spawned;
+function getStream(stream, encoding) {
+	if (!stream) {
+		return null;
+	}
 
-	var promise = new Promise(function (resolve, reject) {
-		var parsed = handleArgs(cmd, args, opts);
+	if (encoding) {
+		return _getStream(stream, {encoding: encoding});
+	}
+	return _getStream.buffer(stream);
+}
 
-		spawned = childProcess.execFile(parsed.cmd, parsed.args, parsed.opts, function (err, stdout, stderr) {
-			if (err) {
-				err.stdout = stdout;
-				err.stderr = stderr;
-				err.message += stdout;
-				reject(err);
-				return;
-			}
-
-			resolve({
-				stdout: handleOutput(parsed.opts, stdout),
-				stderr: handleOutput(parsed.opts, stderr)
-			});
+function processDone(spawned) {
+	return new Promise(function (resolve) {
+		spawned.on('exit', function (code, signal) {
+			resolve({code: code, signal: signal});
 		});
 
-		crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
-
-		handleInput(spawned, parsed.opts);
+		spawned.on('error', function (err) {
+			resolve({err: err});
+		});
 	});
+}
+
+module.exports = function (cmd, args, opts) {
+	var parsed = handleArgs(cmd, args, opts);
+	var encoding = parsed.opts.encoding;
+	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
+
+	var promise = Promise.all([
+		processDone(spawned),
+		getStream(spawned.stdout, encoding),
+		getStream(spawned.stderr, encoding)
+	]).then(function (arr) {
+		var result = arr[0];
+		var stdout = arr[1];
+		var stderr = arr[2];
+
+		var err = result.err;
+		var code = result.code;
+		var signal = result.signal;
+
+		if (err || code !== 0 || signal !== null) {
+			var joinedCmd = cmd;
+
+			if (Array.isArray(args) && args.length) {
+				joinedCmd += ' ' + args.join(' ');
+			}
+
+			if (!err) {
+				err = new Error('Command failed: ' + joinedCmd + '\n' + stderr + stdout);
+
+				// TODO: missing some timeout logic for killed
+				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
+				// err.killed = spawned.killed || killed;
+				err.killed = spawned.killed;
+
+				// TODO: child_process applies the following logic for resolving the code:
+				// var uv = process.bind('uv');
+				// ex.code = code < 0 ? uv.errname(code) : code;
+				err.code = code;
+			}
+
+			err.stdout = stdout;
+			err.stderr = stderr;
+			throw err;
+		}
+
+		return {
+			stdout: handleOutput(parsed.opts, stdout),
+			stderr: handleOutput(parsed.opts, stderr)
+		};
+	});
+
+	crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
+
+	handleInput(spawned, parsed.opts);
 
 	spawned.then = promise.then.bind(promise);
 	spawned.catch = promise.catch.bind(promise);
@@ -141,14 +194,7 @@ module.exports.shell = function (cmd, opts) {
 	return handleShell(module.exports, cmd, opts);
 };
 
-module.exports.spawn = function (cmd, args, opts) {
-	var parsed = handleArgs(cmd, args, opts);
-	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
-
-	crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
-
-	return spawned;
-};
+module.exports.spawn = util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.');
 
 module.exports.sync = function (cmd, args, opts) {
 	var parsed = handleArgs(cmd, args, opts);
@@ -159,10 +205,8 @@ module.exports.sync = function (cmd, args, opts) {
 
 	var result = childProcess.spawnSync(parsed.cmd, parsed.args, parsed.opts);
 
-	if (parsed.opts.stripEof) {
-		result.stdout = stripEof(result.stdout);
-		result.stderr = stripEof(result.stderr);
-	}
+	result.stdout = handleOutput(parsed.opts, result.stdout);
+	result.stderr = handleOutput(parsed.opts, result.stderr);
 
 	return result;
 };

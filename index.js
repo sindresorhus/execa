@@ -9,6 +9,7 @@ const _getStream = require('get-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
+const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
@@ -36,6 +37,8 @@ function handleArgs(cmd, args, opts) {
 		reject: true,
 		cleanup: true
 	}, parsed.options);
+
+	opts.stdio = stdio(opts);
 
 	if (opts.preferLocal) {
 		opts.env = npmRunPath.env(opts);
@@ -206,7 +209,20 @@ module.exports = (cmd, args, opts) => {
 
 		if (err || code !== 0 || signal !== null) {
 			if (!err) {
-				const output = parsed.opts.stdio === 'inherit' ? '' : `\n${stderr}${stdout}`;
+				let output = '';
+
+				if (Array.isArray(parsed.opts.stdio)) {
+					if (parsed.opts.stdio[2] !== 'inherit') {
+						output += output.length > 0 ? stderr : `\n${stderr}`;
+					}
+
+					if (parsed.opts.stdio[1] !== 'inherit') {
+						output += `\n${stdout}`;
+					}
+				} else if (parsed.opts.stdio !== 'inherit') {
+					output = `\n${stderr}${stdout}`;
+				}
+
 				err = new Error(`Command failed: ${joinedCmd}${output}`);
 				err.code = code < 0 ? errname(code) : code;
 			}

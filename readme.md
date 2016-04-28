@@ -146,6 +146,27 @@ Default: `true`
 
 Keep track of the spawned process and `kill` it when the parent process exits.
 
+#### stdin
+
+Type: `string`<br>
+Default: `pipe`
+
+Configure the `stderr` pipe.
+
+#### stdout
+
+Type: `string`<br>
+Default: `pipe`
+
+Configure the `stdout` pipe.
+
+#### stderr
+
+Type: `string`<br>
+Default: `pipe`
+
+Configure the `stderr` pipe.
+
 
 ## Tips
 

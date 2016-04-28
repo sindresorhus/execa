@@ -194,7 +194,7 @@ module.exports.shell = function (cmd, opts) {
 	return handleShell(module.exports, cmd, opts);
 };
 
-module.exports.spawn = util.deprecate(module.exports, 'execa.spawn: just use execa instead.');
+module.exports.spawn = util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.');
 
 module.exports.sync = function (cmd, args, opts) {
 	var parsed = handleArgs(cmd, args, opts);

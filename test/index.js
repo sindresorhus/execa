@@ -2,9 +2,9 @@ import path from 'path';
 import stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
-import m from './';
+import m from '../';
 
-process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
+process.env.PATH = path.join(__dirname, '..', 'fixtures') + path.delimiter + process.env.PATH;
 
 test('execa()', async t => {
 	const {stdout} = await m('noop', ['foo']);
@@ -34,12 +34,12 @@ test('stdout/stderr available on errors', async t => {
 });
 
 test('include stdout in errors for improved debugging', async t => {
-	const err = await t.throws(m('fixtures/error-message.js'));
+	const err = await t.throws(m('../fixtures/error-message.js'));
 	t.regex(err.message, /stdout/);
 });
 
 test('execa.shell()', async t => {
-	const {stdout} = await m.shell('node fixtures/noop foo');
+	const {stdout} = await m.shell('node ../fixtures/noop foo');
 	t.is(stdout, 'foo');
 });
 
@@ -54,7 +54,7 @@ test('execa.sync()', t => {
 });
 
 test('execa.shellSync()', t => {
-	const {stdout} = m.shellSync('node fixtures/noop foo');
+	const {stdout} = m.shellSync('node ../fixtures/noop foo');
 	t.is(stdout, 'foo');
 });
 

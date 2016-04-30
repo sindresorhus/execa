@@ -8,6 +8,7 @@ var npmRunPath = require('npm-run-path');
 var isStream = require('is-stream');
 var _getStream = require('get-stream');
 var pathKey = require('path-key')();
+var errname = require('./lib/errname');
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 function handleArgs(cmd, args, opts) {
@@ -159,10 +160,7 @@ module.exports = function (cmd, args, opts) {
 				// err.killed = spawned.killed || killed;
 				err.killed = spawned.killed;
 
-				// TODO: child_process applies the following logic for resolving the code:
-				// var uv = process.bind('uv');
-				// ex.code = code < 0 ? uv.errname(code) : code;
-				err.code = code;
+				err.code = code < 0 ? errname(code) : code;
 			}
 
 			err.stdout = stdout;

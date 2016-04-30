@@ -98,18 +98,18 @@ function getStream(process, stream, encoding, maxBuffer) {
 		return null;
 	}
 
-	var p;
+	var ret;
 
 	if (encoding) {
-		p = _getStream(process[stream], {encoding: encoding, maxBuffer: maxBuffer});
+		ret = _getStream(process[stream], {encoding: encoding, maxBuffer: maxBuffer});
 	} else {
-		p = _getStream.buffer(process[stream], {maxBuffer: maxBuffer});
+		ret = _getStream.buffer(process[stream], {maxBuffer: maxBuffer});
 	}
 
-	return p.catch(function (e) {
-		e.stream = stream;
-		e.message = stream + ' ' + e.message;
-		throw e;
+	return ret.catch(function (err) {
+		err.stream = stream;
+		err.message = stream + ' ' + err.message;
+		throw err;
 	});
 }
 

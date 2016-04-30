@@ -129,3 +129,13 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof promise.kill, 'function');
 	t.is(typeof promise.pid, 'number');
 });
+
+test('maxBuffer affects stdout', t => {
+	t.throws(m('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
+	t.notThrows(m('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
+});
+
+test('maxBuffer affects stderr', t => {
+	t.throws(m('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
+	t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
+});

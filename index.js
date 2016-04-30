@@ -93,15 +93,24 @@ function handleShell(fn, cmd, opts) {
 	return fn(file, args, opts);
 }
 
-function getStream(stream, encoding) {
-	if (!stream) {
+function getStream(process, stream, encoding, maxBuffer) {
+	if (!process[stream]) {
 		return null;
 	}
 
+	var ret;
+
 	if (encoding) {
-		return _getStream(stream, {encoding: encoding});
+		ret = _getStream(process[stream], {encoding: encoding, maxBuffer: maxBuffer});
+	} else {
+		ret = _getStream.buffer(process[stream], {maxBuffer: maxBuffer});
 	}
-	return _getStream.buffer(stream);
+
+	return ret.catch(function (err) {
+		err.stream = stream;
+		err.message = stream + ' ' + err.message;
+		throw err;
+	});
 }
 
 function processDone(spawned) {
@@ -119,12 +128,13 @@ function processDone(spawned) {
 module.exports = function (cmd, args, opts) {
 	var parsed = handleArgs(cmd, args, opts);
 	var encoding = parsed.opts.encoding;
+	var maxBuffer = parsed.opts.maxBuffer;
 	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
 
 	var promise = Promise.all([
 		processDone(spawned),
-		getStream(spawned.stdout, encoding),
-		getStream(spawned.stderr, encoding)
+		getStream(spawned, 'stdout', encoding, maxBuffer),
+		getStream(spawned, 'stderr', encoding, maxBuffer)
 	]).then(function (arr) {
 		var result = arr[0];
 		var stdout = arr[1];

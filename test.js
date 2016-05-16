@@ -145,3 +145,12 @@ test('skip throwing when using reject option', async t => {
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
 });
+
+test('execa() returns code and failed properties', async t => {
+	const {code, failed} = await m('noop', ['foo']);
+	const err = await t.throws(m('exit', ['2']));
+	t.is(code, 0);
+	t.false(failed);
+	t.is(err.code, 2);
+	t.true(err.failed);
+});

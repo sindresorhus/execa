@@ -166,6 +166,7 @@ module.exports = function (cmd, args, opts) {
 
 			err.stdout = stdout;
 			err.stderr = stderr;
+			err.failed = true;
 
 			if (!parsed.opts.reject) {
 				return err;
@@ -176,7 +177,9 @@ module.exports = function (cmd, args, opts) {
 
 		return {
 			stdout: handleOutput(parsed.opts, stdout),
-			stderr: handleOutput(parsed.opts, stderr)
+			stderr: handleOutput(parsed.opts, stderr),
+			code: 0,
+			failed: false
 		};
 	});
 

@@ -139,3 +139,9 @@ test('maxBuffer affects stderr', t => {
 	t.throws(m('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
 	t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
 });
+
+test('skip throwing when using reject option', async t => {
+	const err = await t.notThrows(m('exit', ['2'], {reject: false}));
+	t.is(typeof err.stdout, 'string');
+	t.is(typeof err.stderr, 'string');
+});

@@ -31,7 +31,8 @@ function handleArgs(cmd, args, opts) {
 		maxBuffer: TEN_MEBIBYTE,
 		stripEof: true,
 		preferLocal: true,
-		encoding: 'utf8'
+		encoding: 'utf8',
+		reject: true
 	}, parsed.options);
 
 	if (opts.preferLocal) {
@@ -165,6 +166,11 @@ module.exports = function (cmd, args, opts) {
 
 			err.stdout = stdout;
 			err.stderr = stderr;
+
+			if (!parsed.opts.reject) {
+				return err;
+			}
+
 			throw err;
 		}
 

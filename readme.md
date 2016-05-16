@@ -131,6 +131,13 @@ Type: `string` `Buffer` `ReadableStream`
 Write some input to the `stdin` of your binary.<br>
 Streams are not allowed when using the synchronous methods.
 
+#### reject
+
+Type: `boolean`<br>
+Default: `true`
+
+Skip throwing when an error occurs in favor of just resolving the error.
+
 
 ## License
 

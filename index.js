@@ -1,7 +1,7 @@
 'use strict';
 var childProcess = require('child_process');
 var util = require('util');
-var crossSpawnAsync = require('cross-spawn-async');
+var crossSpawn = require('cross-spawn');
 var stripEof = require('strip-eof');
 var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
@@ -24,7 +24,7 @@ function handleArgs(cmd, args, opts) {
 			original: cmd
 		};
 	} else {
-		parsed = crossSpawnAsync._parse(cmd, args, opts);
+		parsed = crossSpawn._parse(cmd, args, opts);
 	}
 
 	opts = objectAssign({
@@ -183,7 +183,7 @@ module.exports = function (cmd, args, opts) {
 		};
 	});
 
-	crossSpawnAsync._enoent.hookChildProcess(spawned, parsed);
+	crossSpawn._enoent.hookChildProcess(spawned, parsed);
 
 	handleInput(spawned, parsed.opts);
 

@@ -156,6 +156,7 @@ test('execa() returns code and failed properties', async t => {
 });
 
 test(`use relative path with '..' chars`, async t => {
-	const {stdout} = await m('../execa/fixtures/noop.js', ['foo']);
-	t.is(stdout, JSON.stringify(['foo']));
+	const pathViaParentDir = path.join('..', path.basename(__dirname), 'fixtures', 'noop');
+	const {stdout} = await m(pathViaParentDir, ['foo']);
+	t.is(stdout, 'foo');
 });

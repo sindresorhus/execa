@@ -8,7 +8,7 @@
 - Promise interface.
 - [Strips EOF](https://github.com/sindresorhus/strip-eof) from the output so you don't have to `stdout.trim()`.
 - Supports [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries cross-platform.
-- [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn-async#why)
+- [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn#why)
 - Higher max buffer. 10 MB instead of 200 KB.
 - [Executes locally installed binaries by name.](#preferlocal)
 

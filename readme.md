@@ -136,7 +136,7 @@ Streams are not allowed when using the synchronous methods.
 Type: `boolean`<br>
 Default: `true`
 
-Skip throwing when an error occurs in favor of just resolving the error.
+Setting this to `false` resolves the promise with the error instead of rejecting it.
 
 
 ## License

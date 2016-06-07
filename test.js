@@ -154,3 +154,9 @@ test('execa() returns code and failed properties', async t => {
 	t.is(err.code, 2);
 	t.true(err.failed);
 });
+
+test(`use relative path with '..' chars`, async t => {
+	const pathViaParentDir = path.join('..', path.basename(__dirname), 'fixtures', 'noop');
+	const {stdout} = await m(pathViaParentDir, ['foo']);
+	t.is(stdout, 'foo');
+});

@@ -9,6 +9,7 @@ var isStream = require('is-stream');
 var _getStream = require('get-stream');
 var pathKey = require('path-key')();
 var errname = require('./lib/errname');
+
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 function handleArgs(cmd, args, opts) {
@@ -103,7 +104,10 @@ function getStream(process, stream, encoding, maxBuffer) {
 	var ret;
 
 	if (encoding) {
-		ret = _getStream(process[stream], {encoding: encoding, maxBuffer: maxBuffer});
+		ret = _getStream(process[stream], {
+			encoding: encoding,
+			maxBuffer: maxBuffer
+		});
 	} else {
 		ret = _getStream.buffer(process[stream], {maxBuffer: maxBuffer});
 	}
@@ -118,7 +122,10 @@ function getStream(process, stream, encoding, maxBuffer) {
 function processDone(spawned) {
 	return new Promise(function (resolve) {
 		spawned.on('exit', function (code, signal) {
-			resolve({code: code, signal: signal});
+			resolve({
+				code: code,
+				signal: signal
+			});
 		});
 
 		spawned.on('error', function (err) {

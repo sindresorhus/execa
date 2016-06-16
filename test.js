@@ -113,7 +113,10 @@ test('input option can be a Buffer - sync', async t => {
 });
 
 test('opts.stdout:ignore - stdout will not collect data', async t => {
-	const {stdout} = await m('stdin', {input: 'hello', stdio: [null, 'ignore', null]});
+	const {stdout} = await m('stdin', {
+		input: 'hello',
+		stdio: [null, 'ignore', null]
+	});
 	t.is(stdout, null);
 });
 

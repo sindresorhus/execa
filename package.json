@@ -45,7 +45,7 @@
     "local"
   ],
   "dependencies": {
-    "cross-spawn": "^3.0.0",
+    "cross-spawn": "^4.0.0",
     "get-stream": "^2.2.0",
     "is-stream": "^1.1.0",
     "npm-run-path": "^1.0.0",

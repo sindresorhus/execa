@@ -135,6 +135,12 @@ function processDone(spawned) {
 }
 
 module.exports = function (cmd, args, opts) {
+	var joinedCmd = cmd;
+
+	if (Array.isArray(args) && args.length) {
+		joinedCmd += ' ' + args.join(' ');
+	}
+
 	var parsed = handleArgs(cmd, args, opts);
 	var encoding = parsed.opts.encoding;
 	var maxBuffer = parsed.opts.maxBuffer;
@@ -154,12 +160,6 @@ module.exports = function (cmd, args, opts) {
 		var signal = result.signal;
 
 		if (err || code !== 0 || signal !== null) {
-			var joinedCmd = cmd;
-
-			if (Array.isArray(args) && args.length) {
-				joinedCmd += ' ' + args.join(' ');
-			}
-
 			if (!err) {
 				err = new Error('Command failed: ' + joinedCmd + '\n' + stderr + stdout);
 
@@ -174,6 +174,8 @@ module.exports = function (cmd, args, opts) {
 			err.stdout = stdout;
 			err.stderr = stderr;
 			err.failed = true;
+			err.signal = signal || null;
+			err.cmd = joinedCmd;
 
 			if (!parsed.opts.reject) {
 				return err;
@@ -186,7 +188,10 @@ module.exports = function (cmd, args, opts) {
 			stdout: handleOutput(parsed.opts, stdout),
 			stderr: handleOutput(parsed.opts, stderr),
 			code: 0,
-			failed: false
+			failed: false,
+			killed: false,
+			signal: null,
+			cmd: joinedCmd
 		};
 	});
 

@@ -163,13 +163,13 @@ module.exports = function (cmd, args, opts) {
 			if (!err) {
 				err = new Error('Command failed: ' + joinedCmd + '\n' + stderr + stdout);
 
-				// TODO: missing some timeout logic for killed
-				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-				// err.killed = spawned.killed || killed;
-				err.killed = spawned.killed;
-
 				err.code = code < 0 ? errname(code) : code;
 			}
+
+			// TODO: missing some timeout logic for killed
+			// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
+			// err.killed = spawned.killed || killed;
+			err.killed = err.killed || spawned.killed;
 
 			err.stdout = stdout;
 			err.stderr = stderr;

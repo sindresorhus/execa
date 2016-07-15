@@ -5,6 +5,8 @@ import test from 'ava';
 import getStream from 'get-stream';
 import m from './';
 
+const isWindows = process.platform === 'win32';
+
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 
 test('execa()', async t => {
@@ -191,41 +193,43 @@ test('err.killed is false if process was killed indirectly', async t => {
 	t.false(err.killed);
 });
 
-test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
-	const cp = childProcess.exec(path.join(__dirname, 'fixtures', 'forever'), err => {
-		t.truthy(err);
-		t.false(err.killed);
-		t.end();
+if (!isWindows) {
+	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
+		const cp = childProcess.exec(process.execPath, [path.join(__dirname, 'fixtures', 'forever')], err => {
+			t.truthy(err);
+			t.false(err.killed);
+			t.end();
+		});
+
+		setTimeout(function () {
+			process.kill(cp.pid, 'SIGINT');
+		}, 100);
 	});
 
-	setTimeout(function () {
-		process.kill(cp.pid, 'SIGINT');
-	}, 100);
-});
+	test('err.signal is SIGINT', async t => {
+		const cp = m('forever');
 
-test('err.signal is SIGINT', async t => {
-	const cp = m('forever');
+		setTimeout(function () {
+			process.kill(cp.pid, 'SIGINT');
+		}, 100);
 
-	setTimeout(function () {
-		process.kill(cp.pid, 'SIGINT');
-	}, 100);
+		const err = await t.throws(cp);
 
-	const err = await t.throws(cp);
+		t.is(err.signal, 'SIGINT');
+	});
 
-	t.is(err.signal, 'SIGINT');
-});
+	test('err.signal is SIGTERM', async t => {
+		const cp = m('forever');
 
-test('err.signal is SIGTERM', async t => {
-	const cp = m('forever');
+		setTimeout(function () {
+			process.kill(cp.pid, 'SIGTERM');
+		}, 100);
 
-	setTimeout(function () {
-		process.kill(cp.pid, 'SIGTERM');
-	}, 100);
+		const err = await t.throws(cp);
 
-	const err = await t.throws(cp);
-
-	t.is(err.signal, 'SIGTERM');
-});
+		t.is(err.signal, 'SIGTERM');
+	});
+}
 
 test('result.signal is null for successful execution', async t => {
 	t.is((await m('noop')).signal, null);
@@ -242,9 +246,9 @@ async function code(t, num) {
 	t.is(err.code, num);
 }
 
-test('err.code is 1', code, 1);
 test('err.code is 2', code, 2);
 test('err.code is 3', code, 3);
+test('err.code is 4', code, 4);
 
 async function errorMessage(t, expected, ...args) {
 	const err = await t.throws(m('exit', args));
@@ -254,8 +258,8 @@ async function errorMessage(t, expected, ...args) {
 
 errorMessage.title = (message, expected) => `err.message matches: ${expected}`;
 
-test(errorMessage, /Command failed: exit 1 foo bar/, 1, 'foo', 'bar');
-test(errorMessage, /Command failed: exit 2 baz quz/, 2, 'baz', 'quz');
+test(errorMessage, /Command failed: exit 2 foo bar/, 2, 'foo', 'bar');
+test(errorMessage, /Command failed: exit 3 baz quz/, 3, 'baz', 'quz');
 
 async function cmd(t, expected, ...args) {
 	const err = await t.throws(m('fail', args));

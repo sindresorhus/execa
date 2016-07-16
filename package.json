@@ -20,7 +20,7 @@
     "node": ">=0.12"
   },
   "scripts": {
-    "test": "xo && nyc ava"
+    "test": "xo && nyc ava --serial"
   },
   "files": [
     "index.js",

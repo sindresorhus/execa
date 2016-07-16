@@ -195,7 +195,7 @@ test('err.killed is false if process was killed indirectly', async t => {
 
 if (!isWindows) {
 	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
-		const cp = childProcess.exec(process.execPath, [path.join(__dirname, 'fixtures', 'forever')], err => {
+		const cp = childProcess.exec('forever', err => {
 			t.truthy(err);
 			t.false(err.killed);
 			t.end();

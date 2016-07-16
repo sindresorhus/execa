@@ -5,8 +5,6 @@ import test from 'ava';
 import getStream from 'get-stream';
 import m from './';
 
-const isWindows = process.platform === 'win32';
-
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 
 test('execa()', async t => {
@@ -193,7 +191,7 @@ test('err.killed is false if process was killed indirectly', async t => {
 	t.false(err.killed);
 });
 
-if (!isWindows) {
+if (process.platform === 'darwin') {
 	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
 		const cp = childProcess.exec('forever', err => {
 			t.truthy(err);
@@ -205,7 +203,9 @@ if (!isWindows) {
 			process.kill(cp.pid, 'SIGINT');
 		}, 100);
 	});
+}
 
+if (process.platform !== 'win32') {
 	test('err.signal is SIGINT', async t => {
 		const cp = m('forever');
 

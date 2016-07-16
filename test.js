@@ -163,3 +163,7 @@ test(`use relative path with '..' chars`, async t => {
 	const {stdout} = await m(pathViaParentDir, ['foo']);
 	t.is(stdout, 'foo');
 });
+
+test('execa() throws if running non executable', async t => {
+	t.throws(() => m('non-executable'));
+});

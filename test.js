@@ -1,5 +1,6 @@
 import path from 'path';
 import stream from 'stream';
+import childProcess from 'child_process';
 import test from 'ava';
 import getStream from 'get-stream';
 import m from './';
@@ -33,9 +34,10 @@ test('stdout/stderr available on errors', async t => {
 	t.is(typeof err.stderr, 'string');
 });
 
-test('include stdout in errors for improved debugging', async t => {
+test('include stdout and stderr in errors for improved debugging', async t => {
 	const err = await t.throws(m('fixtures/error-message.js'));
 	t.regex(err.message, /stdout/);
+	t.regex(err.message, /stderr/);
 });
 
 test('execa.shell()', async t => {
@@ -167,3 +169,114 @@ test(`use relative path with '..' chars`, async t => {
 test('execa() throws if running non executable', async t => {
 	t.throws(() => m('non-executable'));
 });
+
+test('err.killed is true if process was killed directly', async t => {
+	const cp = m('forever');
+
+	setTimeout(function () {
+		cp.kill();
+	}, 100);
+
+	const err = await t.throws(cp);
+
+	t.true(err.killed);
+});
+
+// TODO: Should this really be the case, or should we improve on child_process?
+test('err.killed is false if process was killed indirectly', async t => {
+	const cp = m('forever');
+
+	setTimeout(function () {
+		process.kill(cp.pid, 'SIGINT');
+	}, 100);
+
+	const err = await t.throws(cp);
+
+	t.false(err.killed);
+});
+
+if (process.platform === 'darwin') {
+	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
+		const cp = childProcess.exec('forever', err => {
+			t.truthy(err);
+			t.false(err.killed);
+			t.end();
+		});
+
+		setTimeout(function () {
+			process.kill(cp.pid, 'SIGINT');
+		}, 100);
+	});
+}
+
+if (process.platform !== 'win32') {
+	test('err.signal is SIGINT', async t => {
+		const cp = m('forever');
+
+		setTimeout(function () {
+			process.kill(cp.pid, 'SIGINT');
+		}, 100);
+
+		const err = await t.throws(cp);
+
+		t.is(err.signal, 'SIGINT');
+	});
+
+	test('err.signal is SIGTERM', async t => {
+		const cp = m('forever');
+
+		setTimeout(function () {
+			process.kill(cp.pid, 'SIGTERM');
+		}, 100);
+
+		const err = await t.throws(cp);
+
+		t.is(err.signal, 'SIGTERM');
+	});
+}
+
+test('result.signal is null for successful execution', async t => {
+	t.is((await m('noop')).signal, null);
+});
+
+test('result.signal is null if process failed, but was not killed', async t => {
+	const err = await t.throws(m('exit', [2]));
+	t.is(err.signal, null);
+});
+
+async function code(t, num) {
+	const err = await t.throws(m('exit', [`${num}`]));
+
+	t.is(err.code, num);
+}
+
+test('err.code is 2', code, 2);
+test('err.code is 3', code, 3);
+test('err.code is 4', code, 4);
+
+async function errorMessage(t, expected, ...args) {
+	const err = await t.throws(m('exit', args));
+
+	t.regex(err.message, expected);
+}
+
+errorMessage.title = (message, expected) => `err.message matches: ${expected}`;
+
+test(errorMessage, /Command failed: exit 2 foo bar/, 2, 'foo', 'bar');
+test(errorMessage, /Command failed: exit 3 baz quz/, 3, 'baz', 'quz');
+
+async function cmd(t, expected, ...args) {
+	const err = await t.throws(m('fail', args));
+
+	t.is(err.cmd, `fail${expected}`);
+
+	const result = await m('noop', args);
+
+	t.is(result.cmd, `noop${expected}`);
+}
+
+cmd.title = (message, expected) => `cmd is: ${JSON.stringify(expected)}`;
+
+test(cmd, ' foo bar', 'foo', 'bar');
+test(cmd, ' baz quz', 'baz', 'quz');
+test(cmd, '');

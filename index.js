@@ -8,6 +8,7 @@ var npmRunPath = require('npm-run-path');
 var isStream = require('is-stream');
 var _getStream = require('get-stream');
 var pathKey = require('path-key')();
+var onExit = require('signal-exit');
 var errname = require('./lib/errname');
 
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
@@ -33,7 +34,8 @@ function handleArgs(cmd, args, opts) {
 		stripEof: true,
 		preferLocal: true,
 		encoding: 'utf8',
-		reject: true
+		reject: true,
+		cleanup: true
 	}, parsed.options);
 
 	if (opts.preferLocal) {
@@ -146,6 +148,13 @@ module.exports = function (cmd, args, opts) {
 	var maxBuffer = parsed.opts.maxBuffer;
 	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
 
+	var removeExitHandler;
+	if (parsed.opts.cleanup) {
+		removeExitHandler = onExit(function () {
+			spawned.kill();
+		});
+	}
+
 	var promise = Promise.all([
 		processDone(spawned),
 		getStream(spawned, 'stdout', encoding, maxBuffer),
@@ -158,6 +167,10 @@ module.exports = function (cmd, args, opts) {
 		var err = result.err;
 		var code = result.code;
 		var signal = result.signal;
+
+		if (removeExitHandler) {
+			removeExitHandler();
+		}
 
 		if (err || code !== 0 || signal !== null) {
 			if (!err) {

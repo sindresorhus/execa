@@ -11,6 +11,7 @@
 - [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn#why)
 - Higher max buffer. 10 MB instead of 200 KB.
 - [Executes locally installed binaries by name.](#preferlocal)
+- [Cleans up spawned processes when the parent process dies.](#cleanup)
 
 
 ## Install
@@ -138,6 +139,12 @@ Default: `true`
 
 Setting this to `false` resolves the promise with the error instead of rejecting it.
 
+#### cleanup
+
+Type: `boolean`<br>
+Default: `true`
+
+Keep track of the spawned process and `kill` it when the parent process exits.
 
 ## License
 

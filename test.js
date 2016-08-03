@@ -1,3 +1,4 @@
+import os from 'os';
 import path from 'path';
 import stream from 'stream';
 import childProcess from 'child_process';
@@ -167,7 +168,10 @@ test(`use relative path with '..' chars`, async t => {
 });
 
 test('execa() throws if running non executable', async t => {
-	t.throws(() => m('non-executable'));
+	// windows systems do not know executable-flags
+	if (os.platform() !== 'win32') {
+		t.throws(() => m('non-executable'));
+	}
 });
 
 test('err.killed is true if process was killed directly', async t => {

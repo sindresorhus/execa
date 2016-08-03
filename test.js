@@ -167,7 +167,7 @@ test(`use relative path with '..' chars`, async t => {
 	t.is(stdout, 'foo');
 });
 
-if (os.platform() !== 'win32') {
+if (process.platform !== 'win32') {
 	test('execa() throws if running non executable', async t => {
 		t.throws(() => m('non-executable'));
 	});

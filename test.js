@@ -1,4 +1,3 @@
-import os from 'os';
 import path from 'path';
 import stream from 'stream';
 import childProcess from 'child_process';

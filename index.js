@@ -144,7 +144,13 @@ module.exports = function (cmd, args, opts) {
 	var parsed = handleArgs(cmd, args, opts);
 	var encoding = parsed.opts.encoding;
 	var maxBuffer = parsed.opts.maxBuffer;
-	var spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
+
+	var spawned;
+	try {
+		spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
+	} catch (err) {
+		return Promise.reject(err);
+	}
 
 	var promise = Promise.all([
 		processDone(spawned),

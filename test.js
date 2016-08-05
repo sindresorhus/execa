@@ -167,8 +167,9 @@ test(`use relative path with '..' chars`, async t => {
 });
 
 if (process.platform !== 'win32') {
-	test('execa() throws if running non executable', async t => {
-		t.throws(() => m('non-executable'));
+	test('execa() rejects if running non-executable', t => {
+		const cp = m('non-executable');
+		t.throws(cp);
 	});
 }
 

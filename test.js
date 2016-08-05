@@ -166,6 +166,12 @@ test(`use relative path with '..' chars`, async t => {
 	t.is(stdout, 'foo');
 });
 
+if (process.platform !== 'win32') {
+	test('execa() throws if running non executable', async t => {
+		t.throws(() => m('non-executable'));
+	});
+}
+
 test('err.killed is true if process was killed directly', async t => {
 	const cp = m('forever');
 

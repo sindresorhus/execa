@@ -3,6 +3,8 @@ import stream from 'stream';
 import childProcess from 'child_process';
 import test from 'ava';
 import getStream from 'get-stream';
+import isRunning from 'is-running';
+import delay from 'delay';
 import m from './';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -283,3 +285,36 @@ cmd.title = (message, expected) => `cmd is: ${JSON.stringify(expected)}`;
 test(cmd, ' foo bar', 'foo', 'bar');
 test(cmd, ' baz quz', 'baz', 'quz');
 test(cmd, '');
+
+async function spawnAndKill(t, signal, cleanup) {
+	const name = cleanup ? 'sub-process' : 'sub-process-false';
+	const cp = m(name);
+	let pid;
+
+	cp.stdout.setEncoding('utf8');
+	cp.stdout.on('data', chunk => {
+		pid = parseInt(chunk, 10);
+		t.is(typeof pid, 'number');
+
+		setTimeout(() => {
+			process.kill(cp.pid, signal);
+		}, 100);
+	});
+
+	await t.throws(cp);
+
+	// Give everybody some time to breath and kill things
+	await delay(200);
+
+	t.false(isRunning(cp.pid));
+	t.is(isRunning(pid), !cleanup);
+}
+
+test('cleanup - SIGINT', spawnAndKill, 'SIGINT', true);
+test('cleanup - SIGKILL', spawnAndKill, 'SIGTERM', true);
+
+if (process.platform !== 'win32') {
+	// On Windows the subprocesses are actually always killed
+	test('cleanup false - SIGINT', spawnAndKill, 'SIGTERM', false);
+	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
+}

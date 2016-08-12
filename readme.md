@@ -31,6 +31,9 @@ execa('echo', ['unicorns']).then(result => {
 	//=> 'unicorns'
 });
 
+// pipe the child process stdout to the current stdout
+execa('echo', ['unicorns']).stdout.pipe(process.stdout);
+
 execa.shell('echo unicorns').then(result => {
 	console.log(result.stdout);
 	//=> 'unicorns'
@@ -62,9 +65,9 @@ Execute a file.
 
 Same options as [`child_process.execFile`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback).
 
-Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
+Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
-The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
+Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 
 ### execa.stdout(file, [arguments], [options])
 
@@ -83,12 +86,6 @@ Same options as [`child_process.exec`](https://nodejs.org/api/child_process.html
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 
 The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
-
-### execa.spawn(file, [arguments], [options])
-
-Spawn a file.
-
-Same API as [`child_process.spawn`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
 ### execa.sync(file, [arguments], [options])
 
@@ -145,6 +142,7 @@ Type: `boolean`<br>
 Default: `true`
 
 Keep track of the spawned process and `kill` it when the parent process exits.
+
 
 ## License
 

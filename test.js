@@ -318,3 +318,10 @@ if (process.platform !== 'win32') {
 	test('cleanup false - SIGINT', spawnAndKill, 'SIGTERM', false);
 	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
 }
+
+test('execa.shell() supports the `shell` option', async t => {
+	const {stdout} = await m.shell('noop foo', {
+		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
+	});
+	t.is(stdout, 'foo');
+});

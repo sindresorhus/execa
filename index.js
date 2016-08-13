@@ -93,6 +93,7 @@ function handleShell(fn, cmd, opts) {
 
 	if (opts.shell) {
 		file = opts.shell;
+		delete opts.shell;
 	}
 
 	return fn(file, args, opts);

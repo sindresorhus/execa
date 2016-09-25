@@ -7,7 +7,6 @@ var objectAssign = require('object-assign');
 var npmRunPath = require('npm-run-path');
 var isStream = require('is-stream');
 var _getStream = require('get-stream');
-var pathKey = require('path-key')();
 var onExit = require('signal-exit');
 var errname = require('./lib/errname');
 
@@ -39,11 +38,7 @@ function handleArgs(cmd, args, opts) {
 	}, parsed.options);
 
 	if (opts.preferLocal) {
-		opts.env = objectAssign({}, opts.env || process.env);
-		opts.env[pathKey] = npmRunPath({
-			cwd: opts.cwd,
-			path: opts.env[pathKey]
-		});
+		opts.env = npmRunPath.env(opts);
 	}
 
 	return {

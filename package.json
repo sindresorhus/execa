@@ -47,9 +47,8 @@
     "cross-spawn": "^4.0.0",
     "get-stream": "^2.2.0",
     "is-stream": "^1.1.0",
-    "npm-run-path": "^1.0.0",
+    "npm-run-path": "^2.0.0",
     "object-assign": "^4.0.1",
-    "path-key": "^1.0.0",
     "signal-exit": "^3.0.0",
     "strip-eof": "^1.0.0"
   },

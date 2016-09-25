@@ -9,7 +9,7 @@ const _getStream = require('get-stream');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
 
-const TEN_MEBIBYTE = 1024 * 1024 * 10;
+const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(cmd, args, opts) {
 	let parsed;
@@ -28,7 +28,7 @@ function handleArgs(cmd, args, opts) {
 	}
 
 	opts = Object.assign({
-		maxBuffer: TEN_MEBIBYTE,
+		maxBuffer: TEN_MEGABYTES,
 		stripEof: true,
 		preferLocal: true,
 		encoding: 'utf8',

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-var output = process.argv[2];
-var amount = Number(process.argv[3]);
+const output = process.argv[2];
+const bytes = Number(process.argv[3]);
 
-process[output].write(new Array(amount).join('.') + '\n');
+process[output].write('.'.repeat(bytes - 1) + '\n');

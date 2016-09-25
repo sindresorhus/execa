@@ -93,7 +93,7 @@ test('input option can be a Buffer', async t => {
 });
 
 test('input can be a Stream', async t => {
-	var s = new stream.PassThrough();
+	const s = new stream.PassThrough();
 	s.write('howdy');
 	s.end();
 	const {stdout} = await m('stdin', {input: s});
@@ -178,7 +178,7 @@ if (process.platform !== 'win32') {
 test('err.killed is true if process was killed directly', async t => {
 	const cp = m('forever');
 
-	setTimeout(function () {
+	setTimeout(() => {
 		cp.kill();
 	}, 100);
 
@@ -191,7 +191,7 @@ test('err.killed is true if process was killed directly', async t => {
 test('err.killed is false if process was killed indirectly', async t => {
 	const cp = m('forever');
 
-	setTimeout(function () {
+	setTimeout(() => {
 		process.kill(cp.pid, 'SIGINT');
 	}, 100);
 
@@ -208,7 +208,7 @@ if (process.platform === 'darwin') {
 			t.end();
 		});
 
-		setTimeout(function () {
+		setTimeout(() => {
 			process.kill(cp.pid, 'SIGINT');
 		}, 100);
 	});
@@ -218,7 +218,7 @@ if (process.platform !== 'win32') {
 	test('err.signal is SIGINT', async t => {
 		const cp = m('forever');
 
-		setTimeout(function () {
+		setTimeout(() => {
 			process.kill(cp.pid, 'SIGINT');
 		}, 100);
 
@@ -230,7 +230,7 @@ if (process.platform !== 'win32') {
 	test('err.signal is SIGTERM', async t => {
 		const cp = m('forever');
 
-		setTimeout(function () {
+		setTimeout(() => {
 			process.kill(cp.pid, 'SIGTERM');
 		}, 100);
 

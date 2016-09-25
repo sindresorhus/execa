@@ -1,25 +1,24 @@
 'use strict';
-var childProcess = require('child_process');
-var util = require('util');
-var crossSpawn = require('cross-spawn');
-var stripEof = require('strip-eof');
-var objectAssign = require('object-assign');
-var npmRunPath = require('npm-run-path');
-var isStream = require('is-stream');
-var _getStream = require('get-stream');
-var onExit = require('signal-exit');
-var errname = require('./lib/errname');
+const childProcess = require('child_process');
+const util = require('util');
+const crossSpawn = require('cross-spawn');
+const stripEof = require('strip-eof');
+const npmRunPath = require('npm-run-path');
+const isStream = require('is-stream');
+const _getStream = require('get-stream');
+const onExit = require('signal-exit');
+const errname = require('./lib/errname');
 
-var TEN_MEBIBYTE = 1024 * 1024 * 10;
+const TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 function handleArgs(cmd, args, opts) {
-	var parsed;
+	let parsed;
 
 	if (opts && opts.__winShell === true) {
 		delete opts.__winShell;
 		parsed = {
 			command: cmd,
-			args: args,
+			args,
 			options: opts,
 			file: cmd,
 			original: cmd
@@ -28,7 +27,7 @@ function handleArgs(cmd, args, opts) {
 		parsed = crossSpawn._parse(cmd, args, opts);
 	}
 
-	opts = objectAssign({
+	opts = Object.assign({
 		maxBuffer: TEN_MEBIBYTE,
 		stripEof: true,
 		preferLocal: true,
@@ -44,12 +43,12 @@ function handleArgs(cmd, args, opts) {
 	return {
 		cmd: parsed.command,
 		args: parsed.args,
-		opts: opts
+		opts
 	};
 }
 
 function handleInput(spawned, opts) {
-	var input = opts.input;
+	const input = opts.input;
 
 	if (input === null || input === undefined) {
 		return;
@@ -71,19 +70,16 @@ function handleOutput(opts, val) {
 }
 
 function handleShell(fn, cmd, opts) {
-	var file;
-	var args;
+	let file = '/bin/sh';
+	let args = ['-c', cmd];
 
-	opts = objectAssign({}, opts);
+	opts = Object.assign({}, opts);
 
 	if (process.platform === 'win32') {
 		opts.__winShell = true;
 		file = process.env.comspec || 'cmd.exe';
-		args = ['/s', '/c', '"' + cmd + '"'];
+		args = ['/s', '/c', `"${cmd}"`];
 		opts.windowsVerbatimArguments = true;
-	} else {
-		file = '/bin/sh';
-		args = ['-c', cmd];
 	}
 
 	if (opts.shell) {
@@ -99,76 +95,71 @@ function getStream(process, stream, encoding, maxBuffer) {
 		return null;
 	}
 
-	var ret;
+	let ret;
 
 	if (encoding) {
 		ret = _getStream(process[stream], {
-			encoding: encoding,
-			maxBuffer: maxBuffer
+			encoding,
+			maxBuffer
 		});
 	} else {
-		ret = _getStream.buffer(process[stream], {maxBuffer: maxBuffer});
+		ret = _getStream.buffer(process[stream], {maxBuffer});
 	}
 
-	return ret.catch(function (err) {
+	return ret.catch(err => {
 		err.stream = stream;
-		err.message = stream + ' ' + err.message;
+		err.message = `${stream} ${err.message}`;
 		throw err;
 	});
 }
 
-function processDone(spawned) {
-	return new Promise(function (resolve) {
-		spawned.on('exit', function (code, signal) {
-			resolve({
-				code: code,
-				signal: signal
-			});
-		});
-
-		spawned.on('error', function (err) {
-			resolve({err: err});
-		});
+const processDone = spawned => new Promise(resolve => {
+	spawned.on('exit', (code, signal) => {
+		resolve({code, signal});
 	});
-}
 
-module.exports = function (cmd, args, opts) {
-	var joinedCmd = cmd;
+	spawned.on('error', err => {
+		resolve({err});
+	});
+});
 
-	if (Array.isArray(args) && args.length) {
+module.exports = (cmd, args, opts) => {
+	let joinedCmd = cmd;
+
+	if (Array.isArray(args) && args.length > 0) {
 		joinedCmd += ' ' + args.join(' ');
 	}
 
-	var parsed = handleArgs(cmd, args, opts);
-	var encoding = parsed.opts.encoding;
-	var maxBuffer = parsed.opts.maxBuffer;
+	const parsed = handleArgs(cmd, args, opts);
+	const encoding = parsed.opts.encoding;
+	const maxBuffer = parsed.opts.maxBuffer;
 
-	var spawned;
+	let spawned;
 	try {
 		spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
 	} catch (err) {
 		return Promise.reject(err);
 	}
 
-	var removeExitHandler;
+	let removeExitHandler;
 	if (parsed.opts.cleanup) {
-		removeExitHandler = onExit(function () {
+		removeExitHandler = onExit(() => {
 			spawned.kill();
 		});
 	}
 
-	var promise = Promise.all([
+	const promise = Promise.all([
 		processDone(spawned),
 		getStream(spawned, 'stdout', encoding, maxBuffer),
 		getStream(spawned, 'stderr', encoding, maxBuffer)
-	]).then(function (arr) {
-		var result = arr[0];
-		var stdout = arr[1];
-		var stderr = arr[2];
+	]).then(arr => {
+		const result = arr[0];
+		const stdout = arr[1];
+		const stderr = arr[2];
 
-		var err = result.err;
-		var code = result.code;
-		var signal = result.signal;
+		let err = result.err;
+		const code = result.code;
+		const signal = result.signal;
 
 		if (removeExitHandler) {
 			removeExitHandler();
@@ -176,8 +167,7 @@ module.exports = function (cmd, args, opts) {
 
 		if (err || code !== 0 || signal !== null) {
 			if (!err) {
-				err = new Error('Command failed: ' + joinedCmd + '\n' + stderr + stdout);
-
+				err = new Error(`Command failed: ${joinedCmd}\n${stderr}${stdout}`);
 				err.code = code < 0 ? errname(code) : code;
 			}
 
@@ -222,32 +212,24 @@ module.exports = function (cmd, args, opts) {
 
 module.exports.stdout = function () {
 	// TODO: set `stderr: 'ignore'` when that option is implemented
-	return module.exports.apply(null, arguments).then(function (x) {
-		return x.stdout;
-	});
+	return module.exports.apply(null, arguments).then(x => x.stdout);
 };
 
 module.exports.stderr = function () {
 	// TODO: set `stdout: 'ignore'` when that option is implemented
-	return module.exports.apply(null, arguments).then(function (x) {
-		return x.stderr;
-	});
+	return module.exports.apply(null, arguments).then(x => x.stderr);
 };
 
-module.exports.shell = function (cmd, opts) {
-	return handleShell(module.exports, cmd, opts);
-};
+module.exports.shell = (cmd, opts) => handleShell(module.exports, cmd, opts);
 
-module.exports.spawn = util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.');
-
-module.exports.sync = function (cmd, args, opts) {
-	var parsed = handleArgs(cmd, args, opts);
+module.exports.sync = (cmd, args, opts) => {
+	const parsed = handleArgs(cmd, args, opts);
 
 	if (isStream(parsed.opts.input)) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	var result = childProcess.spawnSync(parsed.cmd, parsed.args, parsed.opts);
+	const result = childProcess.spawnSync(parsed.cmd, parsed.args, parsed.opts);
 
 	result.stdout = handleOutput(parsed.opts, result.stdout);
 	result.stderr = handleOutput(parsed.opts, result.stderr);
@@ -255,6 +237,6 @@ module.exports.sync = function (cmd, args, opts) {
 	return result;
 };
 
-module.exports.shellSync = function (cmd, opts) {
-	return handleShell(module.exports.sync, cmd, opts);
-};
+module.exports.shellSync = (cmd, opts) => handleShell(module.exports.sync, cmd, opts);
+
+module.exports.spawn = util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.');

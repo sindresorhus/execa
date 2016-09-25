@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 'use strict';
-var m = require('../');
+const m = require('../');
 
 console.log(m('forever').pid);

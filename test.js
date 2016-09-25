@@ -320,7 +320,8 @@ if (process.platform !== 'win32') {
 }
 
 // see: https://github.com/sindresorhus/execa/issues/56
-test.failing('execa.shell() supports the `shell` option', async t => {
+const onlyWinFailing = test[process.platform === 'win32' ? 'failing' : 'serial'];
+onlyWinFailing('execa.shell() supports the `shell` option', async t => {
 	const {stdout} = await m.shell('noop foo', {
 		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
 	});

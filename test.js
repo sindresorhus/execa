@@ -319,7 +319,8 @@ if (process.platform !== 'win32') {
 	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
 }
 
-test('execa.shell() supports the `shell` option', async t => {
+// see: https://github.com/sindresorhus/execa/issues/56
+test.failing('execa.shell() supports the `shell` option', async t => {
 	const {stdout} = await m.shell('noop foo', {
 		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
 	});

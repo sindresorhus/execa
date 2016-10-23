@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+'use strict';
+process.argv.splice(2).forEach(val => console.log(val));

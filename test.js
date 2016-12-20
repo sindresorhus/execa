@@ -57,6 +57,10 @@ test('execa.sync()', t => {
 	t.is(stdout, 'foo');
 });
 
+test('execa.sync() throws error if written to stderr', t => {
+	t.throws(() => m.sync('foo'), process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : 'spawnSync foo ENOENT');
+});
+
 test('execa.shellSync()', t => {
 	const {stdout} = m.shellSync('node fixtures/noop foo');
 	t.is(stdout, 'foo');

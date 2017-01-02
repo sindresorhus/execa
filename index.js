@@ -114,16 +114,6 @@ function getStream(process, stream, encoding, maxBuffer) {
 	});
 }
 
-const processDone = spawned => new Promise(resolve => {
-	spawned.on('exit', (code, signal) => {
-		resolve({code, signal});
-	});
-
-	spawned.on('error', err => {
-		resolve({err});
-	});
-});
-
 module.exports = (cmd, args, opts) => {
 	let joinedCmd = cmd;
 
@@ -149,6 +139,36 @@ module.exports = (cmd, args, opts) => {
 		});
 	}
 
+	let timeoutId = null;
+	let timedOut = false;
+
+	const cleanupTimeout = () => {
+		if (timeoutId) {
+			clearTimeout(timeoutId);
+			timeoutId = null;
+		}
+	};
+
+	if (parsed.opts.timeout > 0) {
+		timeoutId = setTimeout(() => {
+			timeoutId = null;
+			timedOut = true;
+			spawned.kill(parsed.killSignal);
+		}, parsed.opts.timeout);
+	}
+
+	const processDone = new Promise(resolve => {
+		spawned.on('exit', (code, signal) => {
+			cleanupTimeout();
+			resolve({code, signal});
+		});
+
+		spawned.on('error', err => {
+			cleanupTimeout();
+			resolve({err});
+		});
+	});
+
 	function destroy() {
 		if (spawned.stdout) {
 			spawned.stdout.destroy();
@@ -160,7 +180,7 @@ module.exports = (cmd, args, opts) => {
 	}
 
 	const promise = pFinally(Promise.all([
-		processDone(spawned),
+		processDone,
 		getStream(spawned, 'stdout', encoding, maxBuffer),
 		getStream(spawned, 'stderr', encoding, maxBuffer)
 	]).then(arr => {
@@ -192,6 +212,7 @@ module.exports = (cmd, args, opts) => {
 			err.failed = true;
 			err.signal = signal || null;
 			err.cmd = joinedCmd;
+			err.timedOut = timedOut;
 
 			if (!parsed.opts.reject) {
 				return err;
@@ -207,7 +228,8 @@ module.exports = (cmd, args, opts) => {
 			failed: false,
 			killed: false,
 			signal: null,
-			cmd: joinedCmd
+			cmd: joinedCmd,
+			timedOut: false
 		};
 	}), destroy);
 

@@ -6,6 +6,7 @@ const stripEof = require('strip-eof');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
+const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
 
@@ -148,7 +149,17 @@ module.exports = (cmd, args, opts) => {
 		});
 	}
 
-	const promise = Promise.all([
+	function destroy() {
+		if (spawned.stdout) {
+			spawned.stdout.destroy();
+		}
+
+		if (spawned.stderr) {
+			spawned.stderr.destroy();
+		}
+	}
+
+	const promise = pFinally(Promise.all([
 		processDone(spawned),
 		getStream(spawned, 'stdout', encoding, maxBuffer),
 		getStream(spawned, 'stderr', encoding, maxBuffer)
@@ -198,7 +209,7 @@ module.exports = (cmd, args, opts) => {
 			signal: null,
 			cmd: joinedCmd
 		};
-	});
+	}), destroy);
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed);
 

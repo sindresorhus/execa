@@ -267,7 +267,7 @@ test('timeout will kill the process early', async t => {
 });
 
 test('timeout will not kill the process early', async t => {
-	const err = await t.throws(m('delay', ['3000', '22'], {timeout: 5000}));
+	const err = await t.throws(m('delay', ['3000', '22'], {timeout: 9000}));
 
 	t.false(err.timedOut);
 	t.is(err.code, 22);

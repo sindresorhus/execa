@@ -259,6 +259,32 @@ test('err.code is 2', code, 2);
 test('err.code is 3', code, 3);
 test('err.code is 4', code, 4);
 
+test('timeout will kill the process early', async t => {
+	const err = await t.throws(m('delay', ['3000', '0'], {timeout: 1500}));
+
+	t.true(err.timedOut);
+	t.not(err.code, 22);
+});
+
+test('timeout will not kill the process early', async t => {
+	const err = await t.throws(m('delay', ['3000', '22'], {timeout: 9000}));
+
+	t.false(err.timedOut);
+	t.is(err.code, 22);
+});
+
+test('timedOut will be false if no timeout was set and zero exit code', async t => {
+	const result = await m('delay', ['1000', '0']);
+
+	t.false(result.timedOut);
+});
+
+test('timedOut will be false if no timeout was set and non-zero exit code', async t => {
+	const err = await t.throws(m('delay', ['1000', '3']));
+
+	t.false(err.timedOut);
+});
+
 async function errorMessage(t, expected, ...args) {
 	const err = await t.throws(m('exit', args));
 

@@ -50,7 +50,8 @@ execa.shell('exit 3').catch(error => {
 		signal: null,
 		cmd: '/bin/sh -c exit 3',
 		stdout: '',
-		stderr: ''
+		stderr: '',
+		timedOut: false
 	}
 	*/
 });

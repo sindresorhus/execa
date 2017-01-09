@@ -264,6 +264,10 @@ module.exports.sync = (cmd, args, opts) => {
 
 	const result = childProcess.spawnSync(parsed.cmd, parsed.args, parsed.opts);
 
+	if (result.error || result.status !== 0) {
+		throw (result.error || new Error(result.stderr === '' ? result.stdout : result.stderr));
+	}
+
 	result.stdout = handleOutput(parsed.opts, result.stdout);
 	result.stderr = handleOutput(parsed.opts, result.stderr);
 

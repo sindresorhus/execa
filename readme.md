@@ -96,6 +96,8 @@ Same options as [`child_process.execFileSync`](https://nodejs.org/api/child_proc
 
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 
+This method throws an `Error` if the command fails.
+
 ### execa.shellSync(file, [options])
 
 Execute a command synchronously through the system shell.

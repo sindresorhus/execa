@@ -147,6 +147,26 @@ Default: `true`
 Keep track of the spawned process and `kill` it when the parent process exits.
 
 
+## Tips
+
+### Save and pipe output from a child process
+
+Let's say you want to show the output of a child process in real-time while also saving it to a variable.
+
+```js
+const execa = require('execa');
+const getStream = require('get-stream');
+
+const stream = execa('echo', ['foo']).stdout;
+
+stream.pipe(process.stdout);
+
+getStream(stream).then(value => {
+	console.log('child output:', value);
+});
+```
+
+
 ## License
 
 MIT © [Sindre Sorhus](https://sindresorhus.com)

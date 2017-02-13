@@ -64,7 +64,7 @@ execa.shell('exit 3').catch(error => {
 
 Execute a file.
 
-Same options as [`child_process.execFile`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback).
+Same options as [`child_process.spawn`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
@@ -82,7 +82,7 @@ Same as `execa()`, but returns only `stderr`.
 
 Execute a command through the system shell. Prefer `execa()` whenever possible, as it's both faster and safer.
 
-Same options as [`child_process.exec`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback).
+Same options as [`child_process.spawn`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 
@@ -92,7 +92,7 @@ The `child_process` instance is enhanced to also be promise for a result object 
 
 Execute a file synchronously.
 
-Same options as [`child_process.execFileSync`](https://nodejs.org/api/child_process.html#child_process_child_process_execfilesync_file_args_options), except the default encoding is `utf8` instead of `buffer`.
+Same options as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options), except the default encoding is `utf8` instead of `buffer`.
 
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 
@@ -102,7 +102,7 @@ This method throws an `Error` if the command fails.
 
 Execute a command synchronously through the system shell.
 
-Same options as [`child_process.execSync`](https://nodejs.org/api/child_process.html#child_process_child_process_execsync_command_options), except the default encoding is `utf8` instead of `buffer`.
+Same options as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options), except the default encoding is `utf8` instead of `buffer`.
 
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 

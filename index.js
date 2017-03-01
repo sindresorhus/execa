@@ -32,13 +32,14 @@ function handleArgs(cmd, args, opts) {
 		maxBuffer: TEN_MEGABYTES,
 		stripEof: true,
 		preferLocal: true,
+		localDir: parsed.options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true
 	}, parsed.options);
 
 	if (opts.preferLocal) {
-		opts.env = npmRunPath.env(opts);
+		opts.env = npmRunPath.env(Object.assign({}, opts, {cwd: opts.localDir}));
 	}
 
 	return {

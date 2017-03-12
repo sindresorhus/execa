@@ -55,6 +55,13 @@ function handleInput(spawned, opts) {
 		return;
 	}
 
+	spawned.stdin.on('error', err => {
+		// EPIPE happens when we writting to exited process
+		if (err.code !== 'EPIPE') {
+			throw err;
+		}
+	});
+
 	if (isStream(input)) {
 		input.pipe(spawned.stdin);
 	} else {

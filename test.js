@@ -359,7 +359,13 @@ onlyWinFailing('execa.shell() supports the `shell` option', async t => {
 });
 
 if (process.platform !== 'win32') {
-	test('write to fast-exit process', async () => {
-		await m(`fast-exit-${process.platform}`, [], {input: 'data'});
+	test('write to fast-exit process', async t => {
+		// try-catch here is necessary, because this test is not 100% accurate
+		// sometimes process can manage to accept input before exiting
+		try {
+			await m(`fast-exit-${process.platform}`, [], {input: 'data'});
+		} catch (err) {
+			t.is(err.code, 'EPIPE');
+		}
 	});
 }

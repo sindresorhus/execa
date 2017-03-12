@@ -357,3 +357,9 @@ onlyWinFailing('execa.shell() supports the `shell` option', async t => {
 	});
 	t.is(stdout, 'foo');
 });
+
+if (process.platform !== 'win32') {
+	test('write to fast-exit process', async () => {
+		await m(`fast-exit-${process.platform}`, [], {input: 'data'});
+	});
+}

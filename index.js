@@ -167,6 +167,13 @@ module.exports = (cmd, args, opts) => {
 			cleanupTimeout();
 			resolve({err});
 		});
+
+		if (spawned.stdin) {
+			spawned.stdin.on('error', err => {
+				cleanupTimeout();
+				resolve({err});
+			});
+		}
 	});
 
 	function destroy() {

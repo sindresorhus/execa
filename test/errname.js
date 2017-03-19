@@ -3,12 +3,12 @@ import errname from '../lib/errname';
 
 const isWin = process.platform === 'win32';
 
-// simulates failure to capture `process.binding('uv');`
+// Simulates failure to capture `process.binding('uv');`
 const fallback = code => errname.__test__(null, code);
 
 function makeTests(name, m, expected) {
 	test(`${name}: >=0 exit codes`, t => {
-		// throws >= 0
+		// Throws >= 0
 		t.throws(() => m(0), /err >= 0/);
 		t.throws(() => m(1), /err >= 0/);
 		t.throws(() => m('2'), /err >= 0/);

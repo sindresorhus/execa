@@ -79,7 +79,7 @@ test.serial('preferLocal option', async t => {
 		return;
 	}
 
-	// account for npm adding local binaries to the PATH
+	// Account for npm adding local binaries to the PATH
 	const _path = process.env.PATH;
 	process.env.PATH = '';
 	await t.throws(m('cat-names', {preferLocal: false}), /spawn .* ENOENT/);
@@ -110,13 +110,13 @@ test('you can write to child.stdin', async t => {
 	t.is((await child).stdout, 'unicorns');
 });
 
-test('input option can be a String - sync', async t => {
+test('input option can be a String - sync', t => {
 	const {stdout} = m.sync('stdin', {input: 'foobar'});
 	t.is(stdout, 'foobar');
 });
 
-test('input option can be a Buffer - sync', async t => {
-	const {stdout} = m.sync('stdin', {input: new Buffer('testing12', 'utf8')});
+test('input option can be a Buffer - sync', t => {
+	const {stdout} = m.sync('stdin', {input: Buffer.from('testing12', 'utf8')});
 	t.is(stdout, 'testing12');
 });
 
@@ -349,7 +349,7 @@ if (process.platform !== 'win32') {
 	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
 }
 
-// see: https://github.com/sindresorhus/execa/issues/56
+// See: https://github.com/sindresorhus/execa/issues/56
 const onlyWinFailing = test[process.platform === 'win32' ? 'failing' : 'serial'];
 onlyWinFailing('execa.shell() supports the `shell` option', async t => {
 	const {stdout} = await m.shell('noop foo', {
@@ -360,8 +360,8 @@ onlyWinFailing('execa.shell() supports the `shell` option', async t => {
 
 if (process.platform !== 'win32') {
 	test('write to fast-exit process', async t => {
-		// try-catch here is necessary, because this test is not 100% accurate
-		// sometimes process can manage to accept input before exiting
+		// Try-catch here is necessary, because this test is not 100% accurate
+		// Sometimes process can manage to accept input before exiting
 		try {
 			await m(`fast-exit-${process.platform}`, [], {input: 'data'});
 		} catch (err) {

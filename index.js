@@ -44,7 +44,8 @@ function handleArgs(cmd, args, opts) {
 	return {
 		cmd: parsed.command,
 		args: parsed.args,
-		opts
+		opts,
+		parsed
 	};
 }
 
@@ -240,7 +241,7 @@ module.exports = (cmd, args, opts) => {
 		};
 	}), destroy);
 
-	crossSpawn._enoent.hookChildProcess(spawned, parsed);
+	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
 	handleInput(spawned, parsed.opts);
 

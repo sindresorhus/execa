@@ -206,7 +206,8 @@ module.exports = (cmd, args, opts) => {
 
 		if (err || code !== 0 || signal !== null) {
 			if (!err) {
-				err = new Error(`Command failed: ${joinedCmd}\n${stderr}${stdout}`);
+				const output = parsed.opts.stdio === 'inherit' ? '' : `\n${stderr}${stdout}`;
+				err = new Error(`Command failed: ${joinedCmd}${output}`);
 				err.code = code < 0 ? errname(code) : code;
 			}
 

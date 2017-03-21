@@ -42,6 +42,11 @@ test('include stdout and stderr in errors for improved debugging', async t => {
 	t.regex(err.message, /stderr/);
 });
 
+test('do not include in errors when `stdio` is set to `inherit`', async t => {
+	const err = await t.throws(m('fixtures/error-message.js', {stdio: 'inherit'}));
+	t.notRegex(err.message, /\\n/);
+});
+
 test('execa.shell()', async t => {
 	const {stdout} = await m.shell('node fixtures/noop foo');
 	t.is(stdout, 'foo');

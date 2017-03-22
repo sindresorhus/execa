@@ -2,4 +2,4 @@
 'use strict';
 console.log('stdout');
 console.error('stderr');
-process.exit(2);
+process.exit(1);

@@ -40,6 +40,7 @@ test('include stdout and stderr in errors for improved debugging', async t => {
 	const err = await t.throws(m('fixtures/error-message.js'));
 	t.regex(err.message, /stdout/);
 	t.regex(err.message, /stderr/);
+	t.is(err.code, 1);
 });
 
 test('do not include in errors when `stdio` is set to `inherit`', async t => {

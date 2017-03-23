@@ -27,6 +27,7 @@ test(macro, null, null);
 test(macro, {stdio: 'inherit'}, 'inherit');
 test(macro, {stdio: 'pipe'}, 'pipe');
 test(macro, {stdio: 'ignore'}, 'ignore');
+test(macro, {stdio: [0, 1, 2]}, [0, 1, 2]);
 
 test(macro, {}, [null, null, null]);
 test(macro, {stdio: []}, [null, null, null]);
@@ -37,6 +38,10 @@ test(macro, {stdin: 'pipe', stdout: 'ignore', stderr: 'inherit'}, ['pipe', 'igno
 test(macro, {stdin: 'pipe', stdout: 'ignore'}, ['pipe', 'ignore', null]);
 test(macro, {stdin: 'pipe', stderr: 'inherit'}, ['pipe', null, 'inherit']);
 test(macro, {stdout: 'ignore', stderr: 'inherit'}, [null, 'ignore', 'inherit']);
+test(macro, {stdin: 0, stdout: 1, stderr: 2}, [0, 1, 2]);
+test(macro, {stdin: 0, stdout: 1}, [0, 1, null]);
+test(macro, {stdin: 0, stderr: 2}, [0, null, 2]);
+test(macro, {stdout: 1, stderr: 2}, [null, 1, 2]);
 
 test(macro, {stdio: {foo: 'bar'}}, new TypeError('Expected `stdio` to be of type `string` or `Array`, got `object`'));
 

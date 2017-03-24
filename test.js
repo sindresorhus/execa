@@ -1,10 +1,12 @@
 import path from 'path';
+import fs from 'fs';
 import stream from 'stream';
 import childProcess from 'child_process';
 import test from 'ava';
 import getStream from 'get-stream';
 import isRunning from 'is-running';
 import delay from 'delay';
+import tempfile from 'tempfile';
 import m from './';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -45,7 +47,41 @@ test('include stdout and stderr in errors for improved debugging', async t => {
 
 test('do not include in errors when `stdio` is set to `inherit`', async t => {
 	const err = await t.throws(m('fixtures/error-message.js', {stdio: 'inherit'}));
-	t.notRegex(err.message, /\\n/);
+	t.notRegex(err.message, /\n/);
+});
+
+test('do not include `stderr` and `stdout` in errors when set to `inherit`', async t => {
+	const err = await t.throws(m('fixtures/error-message.js', {stdout: 'inherit', stderr: 'inherit'}));
+	t.notRegex(err.message, /\n/);
+});
+
+test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inherit`', async t => {
+	const err = await t.throws(m('fixtures/error-message.js', {stdio: [null, 'inherit', 'inherit']}));
+	t.notRegex(err.message, /\n/);
+});
+
+test('do not include `stdout` in errors when set to `inherit`', async t => {
+	const err = await t.throws(m('fixtures/error-message.js', {stdout: 'inherit'}));
+	t.notRegex(err.message, /stdout/);
+	t.regex(err.message, /stderr/);
+});
+
+test('do not include `stderr` in errors when set to `inherit`', async t => {
+	const err = await t.throws(m('fixtures/error-message.js', {stderr: 'inherit'}));
+	t.regex(err.message, /stdout/);
+	t.notRegex(err.message, /stderr/);
+});
+
+test('pass `stdout` to a file descriptor', async t => {
+	const file = tempfile('.txt');
+	await m('fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
+	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
+});
+
+test('pass `stderr` to a file descriptor', async t => {
+	const file = tempfile('.txt');
+	await m('fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
+	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
 test('execa.shell()', async t => {

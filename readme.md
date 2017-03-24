@@ -146,6 +146,27 @@ Default: `true`
 
 Keep track of the spawned process and `kill` it when the parent process exits.
 
+#### stdin
+
+Type: `string` `number` `Stream` `undefined` `null`<br>
+Default: `pipe`
+
+Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### stdout
+
+Type: `string` `number` `Stream` `undefined` `null`<br>
+Default: `pipe`
+
+Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### stderr
+
+Type: `string` `number` `Stream` `undefined` `null`<br>
+Default: `pipe`
+
+Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
 
 ## Tips
 

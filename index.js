@@ -163,6 +163,7 @@ module.exports = (cmd, args, opts) => {
 
 	const processDone = new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
+			spawned.killed = signal !== null;
 			cleanupTimeout();
 			resolve({code, signal});
 		});

@@ -426,7 +426,7 @@ test('extend environment variables by default', async t => {
 });
 
 test('do not extend environment with `envExtend` option', async t => {
-	const result = await m.stdout('environment', [], {env: {FOO: 'bar', PATH: process.env.PATH}, envExtend: false});
+	const result = await m.stdout('environment', [], {env: {FOO: 'bar', PATH: process.env.PATH}, extendEnv: false});
 
 	t.is(result, `undefined\nbar`);
 });

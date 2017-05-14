@@ -183,18 +183,18 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof promise.pid, 'number');
 });
 
-test('maxBuffer affects stdout', t => {
-	t.throws(m('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
-	t.notThrows(m('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
+test('maxBuffer affects stdout', async t => {
+	await t.throws(m('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
+	await t.notThrows(m('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
 });
 
-test('maxBuffer affects stderr', t => {
-	t.throws(m('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
-	t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
+test('maxBuffer affects stderr', async t => {
+	await t.throws(m('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
+	await t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
 });
 
 test('skip throwing when using reject option', async t => {
-	const err = await t.notThrows(m('exit', ['2'], {reject: false}));
+	const err = await m('exit', ['2'], {reject: false});
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
 });
@@ -215,9 +215,9 @@ test(`use relative path with '..' chars`, async t => {
 });
 
 if (process.platform !== 'win32') {
-	test('execa() rejects if running non-executable', t => {
+	test('execa() rejects if running non-executable', async t => {
 		const cp = m('non-executable');
-		t.throws(cp);
+		await t.throws(cp);
 	});
 }
 
@@ -406,6 +406,7 @@ if (process.platform !== 'win32') {
 		// Sometimes process can manage to accept input before exiting
 		try {
 			await m(`fast-exit-${process.platform}`, [], {input: 'data'});
+			t.pass();
 		} catch (err) {
 			t.is(err.code, 'EPIPE');
 		}

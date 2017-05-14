@@ -169,6 +169,13 @@ Default: `true`
 Prefer locally installed binaries when looking for a binary to execute.<br>
 If you `$ npm install foo`, you can then `execa('foo')`.
 
+#### extendEnv
+
+Type: `boolean`<br>
+Default: `true`
+
+Set to `false` if you don't want to extend the environment variables when providing the `env` property.
+
 #### input
 
 Type: `string` `Buffer` `stream.Readable`

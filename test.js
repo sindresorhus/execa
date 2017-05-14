@@ -418,3 +418,15 @@ if (process.platform !== 'win32') {
 		}
 	});
 }
+
+test('extend environment variables by default', async t => {
+	const result = await m.stdout('environment', [], {env: {FOO: 'bar'}});
+
+	t.is(result, `${__dirname}\nbar`);
+});
+
+test('do not extend environment with `envExtend` option', async t => {
+	const result = await m.stdout('environment', [], {env: {FOO: 'bar', PATH: process.env.PATH}, envExtend: false});
+
+	t.is(result, `undefined\nbar`);
+});

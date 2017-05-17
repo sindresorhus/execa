@@ -420,7 +420,10 @@ if (process.platform !== 'win32') {
 }
 
 test('extend environment variables by default', async t => {
-	const result = await m.stdout('environment', [], {env: {FOO: 'bar'}});
+	const result = await m.stdout('environment', [], { env: { FOO: 'bar' } });
+
+	console.log(result);
+	console.log(`${process.cwd()}\nbar`);
 
 	t.is(result, `${process.cwd()}\nbar`);
 });

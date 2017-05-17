@@ -169,6 +169,13 @@ Default: `true`
 Prefer locally installed binaries when looking for a binary to execute.<br>
 If you `$ npm install foo`, you can then `execa('foo')`.
 
+#### env
+
+Type: `object`<br>
+Default: `process.env`
+
+Environment key-value pairs. This object is being merged with `process.env`. Set `extendEnv` to `false` if you don't want this.
+
 #### extendEnv
 
 Type: `boolean`<br>

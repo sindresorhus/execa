@@ -10,6 +10,7 @@ import tempfile from 'tempfile';
 import m from './';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
+process.env.FOO = 'foo';
 
 test('execa()', async t => {
 	const {stdout} = await m('noop', ['foo']);
@@ -420,16 +421,13 @@ if (process.platform !== 'win32') {
 }
 
 test('extend environment variables by default', async t => {
-	const result = await m.stdout('environment', [], { env: { FOO: 'bar' } });
+	const result = await m.stdout('environment', [], {env: {BAR: 'bar'}});
 
-	console.log(result);
-	console.log(`${process.cwd()}\nbar`);
-
-	t.is(result, `${process.cwd()}\nbar`);
+	t.is(result, `foo\nbar`);
 });
 
 test('do not extend environment with `envExtend` option', async t => {
-	const result = await m.stdout('environment', [], {env: {FOO: 'bar', PATH: process.env.PATH}, extendEnv: false});
+	const result = await m.stdout('environment', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
 
 	t.is(result, `undefined\nbar`);
 });

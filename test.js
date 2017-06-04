@@ -162,6 +162,21 @@ test('input option can be a Buffer - sync', t => {
 	t.is(stdout, 'testing12');
 });
 
+test.failing(`undefined or null arguments passed as empty strings`, async t => {
+	const args = {
+		first: 'defined',
+		// second: '', // This one is intentionally left undefined
+		third: null,
+		fourth: 'defined'
+	};
+	const {stdout} = await m('echo-args', [args.first, args.second, args.third, args.fourth]);
+	const lines = stdout.split(/[\r\n]+/);
+	t.is(lines[0], 'defined');
+	t.is(lines[1], '');
+	t.is(lines[2], '');
+	t.is(lines[3], 'defined');
+});
+
 test('opts.stdout:ignore - stdout will not collect data', async t => {
 	const {stdout} = await m('stdin', {
 		input: 'hello',

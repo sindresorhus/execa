@@ -108,7 +108,59 @@ Returns the same result object as [`child_process.spawnSync`](https://nodejs.org
 
 ### options
 
-Additional options:
+Type: `object`
+
+#### cwd
+
+Type: `string`<br>
+Default: `process.cwd()`
+
+Current working directory of the child process.
+
+#### env
+
+Type: `object`<br>
+Default: `process.env`
+
+Environment key-value pairs.
+
+#### argv0
+
+Type: `string`
+
+Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
+
+#### stdio
+
+Type: `Array` `string`<br>
+Default: `pipe`
+
+Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.
+
+#### detached
+
+Type: `boolean`
+
+Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
+
+#### uid
+
+Type: `number`
+
+Sets the user identity of the process.
+
+#### gid
+
+Type: `number`
+
+Sets the group identity of the process.
+
+#### shell
+
+Type: `boolean` `string`<br>
+Default: `false`
+
+If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
 #### stripEof
 

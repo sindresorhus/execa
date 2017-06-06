@@ -108,7 +108,7 @@ Returns the same result object as [`child_process.spawnSync`](https://nodejs.org
 
 ### options
 
-Type: `object`
+Type: `Object`
 
 #### cwd
 
@@ -119,7 +119,7 @@ Current working directory of the child process.
 
 #### env
 
-Type: `object`<br>
+Type: `Object`<br>
 Default: `process.env`
 
 Environment key-value pairs.
@@ -179,7 +179,7 @@ If you `$ npm install foo`, you can then `execa('foo')`.
 
 #### input
 
-Type: `string` `Buffer` `ReadableStream`
+Type: `string` `Buffer` `stream.Readable`
 
 Write some input to the `stdin` of your binary.<br>
 Streams are not allowed when using the synchronous methods.

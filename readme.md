@@ -64,8 +64,6 @@ execa.shell('exit 3').catch(error => {
 
 Execute a file.
 
-Same options as [`child_process.spawn`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
-
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
@@ -82,8 +80,6 @@ Same as `execa()`, but returns only `stderr`.
 
 Execute a command through the system shell. Prefer `execa()` whenever possible, as it's both faster and safer.
 
-Same options as [`child_process.spawn`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
-
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 
 The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
@@ -92,8 +88,6 @@ The `child_process` instance is enhanced to also be promise for a result object 
 
 Execute a file synchronously.
 
-Same options as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options), except the default encoding is `utf8` instead of `buffer`.
-
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 
 This method throws an `Error` if the command fails.
@@ -101,8 +95,6 @@ This method throws an `Error` if the command fails.
 ### execa.shellSync(file, [options])
 
 Execute a command synchronously through the system shell.
-
-Same options as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options), except the default encoding is `utf8` instead of `buffer`.
 
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 
@@ -197,6 +189,27 @@ Type: `boolean`<br>
 Default: `true`
 
 Keep track of the spawned process and `kill` it when the parent process exits.
+
+#### encoding
+
+Type: `string`<br>
+Default: `utf8`
+
+Specify the character encoding used to decode the `stdout` and `stderr` output.
+
+#### timeout
+
+Type: `number`<br>
+Default: `0`
+
+If timeout is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than timeout milliseconds.
+
+#### maxBuffer
+
+Type: `number`<br>
+Default: `10000000` (10MB)
+
+Largest amount of data in bytes allowed on `stdout` or `stderr`.
 
 #### stdin
 

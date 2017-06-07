@@ -284,6 +284,12 @@ if (process.platform !== 'win32') {
 
 		t.is(err.signal, 'SIGTERM');
 	});
+
+	test('custom err.signal', async t => {
+		const err = await t.throws(m('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500}));
+
+		t.is(err.signal, 'SIGHUP');
+	});
 }
 
 test('result.signal is null for successful execution', async t => {

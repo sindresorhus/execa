@@ -157,7 +157,7 @@ module.exports = (cmd, args, opts) => {
 		timeoutId = setTimeout(() => {
 			timeoutId = null;
 			timedOut = true;
-			spawned.kill(parsed.killSignal);
+			spawned.kill(parsed.opts.killSignal);
 		}, parsed.opts.timeout);
 	}
 

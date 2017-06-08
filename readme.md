@@ -211,6 +211,13 @@ Default: `10000000` (10MB)
 
 Largest amount of data in bytes allowed on `stdout` or `stderr`.
 
+#### killSignal
+
+Type: `string` `number`<br>
+Default: `SIGTERM`
+
+Signal value to be used when the spawned process will be killed.
+
 #### stdin
 
 Type: `string` `number` `Stream` `undefined` `null`<br>

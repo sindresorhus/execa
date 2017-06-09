@@ -137,7 +137,7 @@ test('localDir option', async t => {
 
 	const {stdout} = await m(bin, {localDir: cwd});
 
-	t.is(path.relative(cwd, stdout), 'node_modules/self-path');
+	t.is(path.relative(cwd, stdout), path.normalize('node_modules/self-path'));
 });
 
 test('input option can be a String', async t => {

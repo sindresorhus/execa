@@ -16,6 +16,10 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 function handleArgs(cmd, args, opts) {
 	let parsed;
 
+	if (opts && opts.env && opts.extendEnv !== false) {
+		opts.env = Object.assign({}, process.env, opts.env);
+	}
+
 	if (opts && opts.__winShell === true) {
 		delete opts.__winShell;
 		parsed = {

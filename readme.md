@@ -114,7 +114,14 @@ Current working directory of the child process.
 Type: `Object`<br>
 Default: `process.env`
 
-Environment key-value pairs.
+Environment key-value pairs. Extends automatically from `process.env`. Set `extendEnv` to `false` if you don't want this.
+
+#### extendEnv
+
+Type: `boolean`<br>
+Default: `true`
+
+Set to `false` if you don't want to extend the environment variables when providing the `env` property.
 
 #### argv0
 

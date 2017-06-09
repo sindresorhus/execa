@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+'use strict';
+console.log(process.env.FOO);
+console.log(process.env.BAR);

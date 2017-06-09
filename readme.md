@@ -176,6 +176,13 @@ Default: `true`
 Prefer locally installed binaries when looking for a binary to execute.<br>
 If you `$ npm install foo`, you can then `execa('foo')`.
 
+#### localDir
+
+Type: `string`<br>
+Default: `process.cwd()`
+
+Preferred path to find locally installed binaries in (use with `preferLocal`).
+
 #### input
 
 Type: `string` `Buffer` `stream.Readable`

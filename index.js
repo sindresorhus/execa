@@ -17,7 +17,7 @@ function handleArgs(cmd, args, opts) {
 	let parsed;
 
 	if (opts && opts.env && opts.extendEnv !== false) {
-		opts.env = Object.assign(process.env, opts.env);
+		opts.env = Object.assign({}, process.env, opts.env);
 	}
 
 	if (opts && opts.__winShell === true) {

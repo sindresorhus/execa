@@ -423,11 +423,17 @@ if (process.platform !== 'win32') {
 test('extend environment variables by default', async t => {
 	const result = await m.stdout('environment', [], {env: {BAR: 'bar'}});
 
-	t.is(result, `foo\nbar`);
+	t.deepEqual(result.split('\n'), [
+		'foo',
+		'bar'
+	]);
 });
 
 test('do not extend environment with `envExtend` option', async t => {
 	const result = await m.stdout('environment', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
 
-	t.is(result, `undefined\nbar`);
+	t.deepEqual(result.split('\n'), [
+		'undefined',
+		'bar'
+	]);
 });

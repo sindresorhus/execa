@@ -115,6 +115,9 @@ function getStream(process, stream, encoding, maxBuffer) {
 	} else {
 		ret = _getStream.buffer(process[stream], {maxBuffer});
 	}
+	process[stream].on('infiniteBuffer', () => {
+		process[stream]._readableState.pipes.getBufferedLength = () => 0;
+	});
 
 	return ret.catch(err => {
 		err.stream = stream;
@@ -267,8 +270,17 @@ module.exports = (cmd, args, opts) => {
 
 	handleInput(spawned, parsed.opts);
 
-	spawned.then = promise.then.bind(promise);
 	spawned.catch = promise.catch.bind(promise);
+
+	Object.defineProperty(spawned, 'then', {
+		get: () => {
+			// If the maxBuffer is the default set it to infinity
+			if (maxBuffer === TEN_MEGABYTES && spawned.stdout) {
+				spawned.stdout.emit('infiniteBuffer');
+			}
+			return promise.then.bind(promise);
+		}
+	});
 
 	return spawned;
 };

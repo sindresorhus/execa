@@ -431,6 +431,15 @@ if (process.platform !== 'win32') {
 	});
 }
 
+test('use environment variables by default', async t => {
+	const result = await m.stdout('environment');
+
+	t.deepEqual(result.split('\n'), [
+		'foo',
+		'undefined'
+	]);
+});
+
 test('extend environment variables by default', async t => {
 	const result = await m.stdout('environment', [], {env: {BAR: 'bar'}});
 

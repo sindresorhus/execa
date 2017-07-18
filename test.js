@@ -448,3 +448,9 @@ test('do not extend environment with `envExtend` option', async t => {
 		'bar'
 	]);
 });
+
+test('do not buffer when streaming', async t => {
+	const result = await getStream(m('max-buffer', ['stdout', '21'], {maxBuffer: 10}).stdout);
+
+	t.is(result, '....................\n');
+});

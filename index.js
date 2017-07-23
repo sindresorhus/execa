@@ -200,7 +200,7 @@ module.exports = (cmd, args, opts) => {
 		}
 	}
 
-	const promise = pFinally(Promise.all([
+	const handlePromise = () => pFinally(Promise.all([
 		processDone,
 		getStream(spawned, 'stdout', encoding, maxBuffer),
 		getStream(spawned, 'stderr', encoding, maxBuffer)
@@ -272,8 +272,8 @@ module.exports = (cmd, args, opts) => {
 
 	handleInput(spawned, parsed.opts);
 
-	spawned.then = promise.then.bind(promise);
-	spawned.catch = promise.catch.bind(promise);
+	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
+	spawned.catch = onrejected => handlePromise().catch(onrejected);
 
 	return spawned;
 };

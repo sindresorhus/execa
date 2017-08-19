@@ -109,11 +109,30 @@ test('execa.shellSync()', t => {
 	t.is(stdout, 'foo');
 });
 
+test('execa.fork() throws error when no IPC channel is provided', t => {
+	t.throws(() => m.fork('fixtures/ipc-process.js', {stdio: ['pipe']}), 'Forked processes must have an IPC channel');
+});
+
+test('execa.fork() throws error when multiple IPC channels are provided', t => {
+	t.throws(() => m.fork('fixtures/ipc-process.js', {stdio: ['ipc', 'ipc']}), 'Child process can have only one IPC pipe');
+});
+
 test.cb('execa.fork()', t => {
-	const cp = m.fork('fixtures/ipc-process');
+	const cp = m.fork('fixtures/ipc-process.js');
 
 	cp.on('message', m => {
 		t.is(m, 'pong');
+		t.end();
+	});
+
+	cp.send('ping');
+});
+
+test.cb('execa.fork() with arguments', t => {
+	const cp = m.fork('fixtures/ipc-process.js', ['foo']);
+
+	cp.on('message', m => {
+		t.is(m, 'foo');
 		t.end();
 	});
 

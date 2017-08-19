@@ -104,9 +104,35 @@ test('execa.sync() throws error if written to stderr', t => {
 	t.throws(() => m.sync('foo'), process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : 'spawnSync foo ENOENT');
 });
 
+test('execa.sync() includes stdout and stderr in errors for improved debugging', t => {
+	const err = t.throws(() => m.sync('node', ['fixtures/error-message.js']));
+	t.regex(err.message, /stdout/);
+	t.regex(err.message, /stderr/);
+	t.is(err.code, 1);
+});
+
+test('skip throwing when using reject option in execa.sync()', t => {
+	const err = m.sync('node', ['fixtures/error-message.js'], {reject: false});
+	t.is(typeof err.stdout, 'string');
+	t.is(typeof err.stderr, 'string');
+});
+
 test('execa.shellSync()', t => {
 	const {stdout} = m.shellSync('node fixtures/noop foo');
 	t.is(stdout, 'foo');
+});
+
+test('execa.shellSync() includes stdout and stderr in errors for improved debugging', t => {
+	const err = t.throws(() => m.shellSync('node fixtures/error-message.js'));
+	t.regex(err.message, /stdout/);
+	t.regex(err.message, /stderr/);
+	t.is(err.code, 1);
+});
+
+test('skip throwing when using reject option in execa.shellSync()', t => {
+	const err = m.shellSync('node fixtures/error-message.js', {reject: false});
+	t.is(typeof err.stdout, 'string');
+	t.is(typeof err.stderr, 'string');
 });
 
 test('stripEof option', async t => {

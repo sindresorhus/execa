@@ -278,6 +278,20 @@ module.exports = (cmd, args, opts) => {
 	return spawned;
 };
 
+module.exports.fork = function (cmd, args, opts) {
+	opts = Object.assign({
+		stdio: 'ipc'
+	}, opts);
+
+	if (opts.stdio === 'ipc') {
+		opts.stdio = [0, 1, 2, 'ipc'];
+	}
+
+	// TODO throw `new TypeError('Forked processes must have an IPC channel')` if no IPC channel is provided
+	// TODO throw `new Error('Child process can have only one IPC pipe')` when multiple IPC channels are provided
+	return module.exports(cmd, args, opts);
+};
+
 module.exports.stdout = function () {
 	// TODO: set `stderr: 'ignore'` when that option is implemented
 	return module.exports.apply(null, arguments).then(x => x.stdout);

@@ -109,6 +109,17 @@ test('execa.shellSync()', t => {
 	t.is(stdout, 'foo');
 });
 
+test.cb('execa.fork()', t => {
+	const cp = m.fork('fixtures/ipc-process');
+
+	cp.on('message', m => {
+		t.is(m, 'pong');
+		t.end();
+	});
+
+	cp.send('ping');
+});
+
 test('stripEof option', async t => {
 	const {stdout} = await m('noop', ['foo'], {stripEof: false});
 	t.is(stdout, 'foo\n');

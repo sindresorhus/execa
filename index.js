@@ -341,7 +341,6 @@ module.exports.sync = (cmd, args, opts) => {
 		stderr: handleOutput(parsed.opts, result.stderr),
 		code: 0,
 		failed: false,
-		killed: false,
 		signal: null,
 		cmd: joinedCmd,
 		timedOut: false

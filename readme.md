@@ -55,6 +55,24 @@ execa.shell('exit 3').catch(error => {
 	}
 	*/
 });
+
+// example of catching an error with a sync method
+try {
+	execa.shellSync('exit 3');
+} catch (err) {
+	console.log(err);
+	/*
+	{
+		message: 'Command failed: /bin/sh -c exit 3'
+		code: 3,
+		signal: null,
+		cmd: '/bin/sh -c exit 3',
+		stdout: '',
+		stderr: '',
+		timedOut: false
+	}
+	*/
+}
 ```
 
 

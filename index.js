@@ -278,6 +278,34 @@ module.exports = (cmd, args, opts) => {
 	return spawned;
 };
 
+module.exports.fork = function (modulePath, args, opts) {
+	if (!Array.isArray(args)) {
+		opts = args;
+		args = [];
+	}
+
+	opts = Object.assign({
+		stdio: [0, 1, 2, 'ipc']
+	}, opts);
+
+	if (typeof opts.stdio === 'string') {
+		// Use the default `stdio` setting whenever a string is provided
+		opts.stdio = [0, 1, 2, 'ipc'];
+	}
+
+	if (opts.stdio.indexOf('ipc') === -1) {
+		throw new TypeError('Forked processes must have an IPC channel');
+	}
+
+	const ipcChannelCount = opts.stdio.filter(x => x === 'ipc').length;
+
+	if (ipcChannelCount > 1) {
+		throw new Error('Child process can have only one IPC pipe');
+	}
+
+	return module.exports('node', [modulePath].concat(args), opts);
+};
+
 module.exports.stdout = function () {
 	// TODO: set `stderr: 'ignore'` when that option is implemented
 	return module.exports.apply(null, arguments).then(x => x.stdout);

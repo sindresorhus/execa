@@ -271,8 +271,19 @@ test('err.killed is true if process was killed directly', async t => {
 	t.true(err.killed);
 });
 
-// TODO: Should this really be the case, or should we improve on child_process?
-test('err.killed is false if process was killed indirectly', async t => {
+test('err.killed is true if process was killed indirectly', async t => {
+	const cp = m('forever');
+
+	setTimeout(() => {
+		process.kill(cp.pid);
+	}, 100);
+
+	const err = await t.throws(cp);
+
+	t.true(err.killed);
+});
+
+test('err.killed is false if process was killed indirectly with SIGINT', async t => {
 	const cp = m('forever');
 
 	setTimeout(() => {
@@ -281,7 +292,7 @@ test('err.killed is false if process was killed indirectly', async t => {
 
 	const err = await t.throws(cp);
 
-	t.false(err.killed);
+	t.true(err.killed);
 });
 
 if (process.platform === 'darwin') {

@@ -179,13 +179,6 @@ Default: `false`
 
 If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
-#### windowsVerbatimArguments
-
-Type: `boolean`<br>
-Default: `false`
-
-If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when `shell` is specified.
-
 #### stripEof
 
 Type: `boolean`<br>
@@ -277,6 +270,13 @@ Type: `string` `number` `Stream` `undefined` `null`<br>
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### windowsVerbatimArguments
+
+Type: `boolean`<br>
+Default: `false`
+
+If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
 
 ## Tips

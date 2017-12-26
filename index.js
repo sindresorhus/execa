@@ -192,6 +192,9 @@ module.exports = (cmd, args, opts) => {
 
 	let spawned;
 	try {
+		console.log(parsed.cmd);
+		console.log(parsed.args);
+
 		spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
 	} catch (err) {
 		return Promise.reject(err);

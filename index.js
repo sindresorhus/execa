@@ -55,7 +55,7 @@ function handleArgs(cmd, args, opts) {
 	}
 
 	if (opts.detached) {
-		// https://github.com/sindresorhus/execa/issues/115
+		// #115
 		opts.cleanup = false;
 	}
 

@@ -55,7 +55,7 @@ function handleArgs(cmd, args, opts) {
 		opts.env = npmRunPath.env(Object.assign({}, opts, {cwd: opts.localDir}));
 	}
 
-	if (path.basename(parsed.cmd) === 'cmd.exe') {
+	if (process.platform === 'win32' && (parsed.command === process.env.comspec || path.basename(parsed.command) === 'cmd.exe')) {
 		// #116
 		parsed.args.unshift('/q');
 	}

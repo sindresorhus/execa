@@ -1,4 +1,5 @@
 'use strict';
+const path = require('path');
 const childProcess = require('child_process');
 const util = require('util');
 const crossSpawn = require('cross-spawn');
@@ -54,7 +55,7 @@ function handleArgs(cmd, args, opts) {
 		opts.env = npmRunPath.env(Object.assign({}, opts, {cwd: opts.localDir}));
 	}
 
-	if (process.platform === 'win32') {
+	if (path.basename(parsed.cmd) === 'cmd.exe') {
 		// #116
 		parsed.args.unshift('/q');
 	}
@@ -192,9 +193,6 @@ module.exports = (cmd, args, opts) => {
 
 	let spawned;
 	try {
-		console.log(parsed.cmd);
-		console.log(parsed.args);
-
 		spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
 	} catch (err) {
 		return Promise.reject(err);

@@ -17,6 +17,14 @@ test('execa()', async t => {
 	t.is(stdout, 'foo');
 });
 
+if (process.platform === 'win32') {
+	test('execa() - cmd file', async t => {
+		const {stdout} = await m('hello.cmd');
+
+		t.is(stdout, 'Hello World');
+	});
+}
+
 test('buffer', async t => {
 	const {stdout} = await m('noop', ['foo'], {encoding: null});
 	t.true(Buffer.isBuffer(stdout));

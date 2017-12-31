@@ -1,4 +1,5 @@
 'use strict';
+const path = require('path');
 const childProcess = require('child_process');
 const util = require('util');
 const crossSpawn = require('cross-spawn');
@@ -57,6 +58,11 @@ function handleArgs(cmd, args, opts) {
 	if (opts.detached) {
 		// #115
 		opts.cleanup = false;
+	}
+
+	if (process.platform === 'win32' && path.basename(parsed.command) === 'cmd.exe') {
+		// #116
+		parsed.args.unshift('/q');
 	}
 
 	return {

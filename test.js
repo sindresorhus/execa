@@ -489,3 +489,13 @@ test('do not buffer when streaming', async t => {
 
 	t.is(result, '....................\n');
 });
+
+test('detach child process', async t => {
+	const file = tempfile('.txt');
+
+	await m('detach', [file]);
+
+	await delay(2000);
+
+	t.is(fs.readFileSync(file, 'utf8'), 'foo\n');
+});

@@ -54,6 +54,11 @@ function handleArgs(cmd, args, opts) {
 		opts.env = npmRunPath.env(Object.assign({}, opts, {cwd: opts.localDir}));
 	}
 
+	if (opts.detached) {
+		// #115
+		opts.cleanup = false;
+	}
+
 	return {
 		cmd: parsed.command,
 		args: parsed.args,

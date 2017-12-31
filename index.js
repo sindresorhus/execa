@@ -59,7 +59,7 @@ function handleArgs(cmd, args, opts) {
 		// #115
 		opts.cleanup = false;
 	}
-  
+
 	if (process.platform === 'win32' && path.basename(parsed.command) === 'cmd.exe') {
 		// #116
 		parsed.args.unshift('/q');

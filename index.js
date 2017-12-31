@@ -60,10 +60,10 @@ function handleArgs(cmd, args, opts) {
 		opts.cleanup = false;
 	}
   
-  if (process.platform === 'win32' && (parsed.command === process.env.comspec || path.basename(parsed.command) === 'cmd.exe')) {
+	if (process.platform === 'win32' && path.basename(parsed.command) === 'cmd.exe') {
 		// #116
-    parsed.args.unshift('/q');
-  }
+		parsed.args.unshift('/q');
+	}
 
 	return {
 		cmd: parsed.command,

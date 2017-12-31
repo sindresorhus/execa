@@ -55,10 +55,15 @@ function handleArgs(cmd, args, opts) {
 		opts.env = npmRunPath.env(Object.assign({}, opts, {cwd: opts.localDir}));
 	}
 
-	if (process.platform === 'win32' && (parsed.command === process.env.comspec || path.basename(parsed.command) === 'cmd.exe')) {
-		// #116
-		parsed.args.unshift('/q');
+	if (opts.detached) {
+		// #115
+		opts.cleanup = false;
 	}
+  
+  if (process.platform === 'win32' && (parsed.command === process.env.comspec || path.basename(parsed.command) === 'cmd.exe')) {
+		// #116
+    parsed.args.unshift('/q');
+  }
 
 	return {
 		cmd: parsed.command,

@@ -503,7 +503,7 @@ test('detach child process', async t => {
 
 	await m('detach', [file]);
 
-	await delay(2000);
+	await delay(5000);
 
 	t.is(fs.readFileSync(file, 'utf8'), 'foo\n');
 });

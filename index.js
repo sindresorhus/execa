@@ -33,7 +33,10 @@ function handleArgs(cmd, args, opts) {
 			args,
 			options: opts,
 			file: cmd,
-			original: cmd
+			original: {
+				cmd,
+				args
+			}
 		};
 	} else {
 		parsed = crossSpawn._parse(cmd, args, opts);

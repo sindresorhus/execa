@@ -7,7 +7,7 @@ import getStream from 'get-stream';
 import isRunning from 'is-running';
 import delay from 'delay';
 import tempfile from 'tempfile';
-import m from './';
+import m from '.';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 process.env.FOO = 'foo';

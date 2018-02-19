@@ -521,6 +521,6 @@ test('removes exit handler on exit', async t => {
     child.on('exit', resolve);
 	});
 
-	const included = ee.listeners('exit').includes(listener);
+	const included = ee.listeners('exit').indexOf(listener) !== -1;
 	t.false(included);
 });

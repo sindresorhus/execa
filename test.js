@@ -517,8 +517,8 @@ test('removes exit handler on exit', async t => {
 	const listener = ee.listeners('exit').pop();
 
 	await new Promise((resolve, reject) => {
-    child.on('error', reject);
-    child.on('exit', resolve);
+		child.on('error', reject);
+		child.on('exit', resolve);
 	});
 
 	const included = ee.listeners('exit').indexOf(listener) !== -1;

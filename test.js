@@ -507,3 +507,20 @@ test('detach child process', async t => {
 
 	t.is(fs.readFileSync(file, 'utf8'), 'foo\n');
 });
+
+// See #128
+test('removes exit handler on exit', async t => {
+	// FIXME: This relies on `signal-exit` internals
+	const ee = process.__signal_exit_emitter__;
+
+	const child = m('noop');
+	const listener = ee.listeners('exit').pop();
+
+	await new Promise((resolve, reject) => {
+		child.on('error', reject);
+		child.on('exit', resolve);
+	});
+
+	const included = ee.listeners('exit').indexOf(listener) !== -1;
+	t.false(included);
+});

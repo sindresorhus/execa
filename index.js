@@ -216,10 +216,14 @@ module.exports = (cmd, args, opts) => {
 	let timeoutId = null;
 	let timedOut = false;
 
-	const cleanupTimeout = () => {
+	const cleanup = () => {
 		if (timeoutId) {
 			clearTimeout(timeoutId);
 			timeoutId = null;
+		}
+
+		if (removeExitHandler) {
+			removeExitHandler();
 		}
 	};
 
@@ -233,18 +237,18 @@ module.exports = (cmd, args, opts) => {
 
 	const processDone = new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
-			cleanupTimeout();
+			cleanup();
 			resolve({code, signal});
 		});
 
 		spawned.on('error', err => {
-			cleanupTimeout();
+			cleanup();
 			resolve({error: err});
 		});
 
 		if (spawned.stdin) {
 			spawned.stdin.on('error', err => {
-				cleanupTimeout();
+				cleanup();
 				resolve({error: err});
 			});
 		}
@@ -268,10 +272,6 @@ module.exports = (cmd, args, opts) => {
 		const result = arr[0];
 		result.stdout = arr[1];
 		result.stderr = arr[2];
-
-		if (removeExitHandler) {
-			removeExitHandler();
-		}
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
 			const err = makeError(result, {

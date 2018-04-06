@@ -242,10 +242,11 @@ If timeout is greater than `0`, the parent will send the signal identified by th
 
 #### maxBuffer
 
-Type: `number`<br>
+Type: `number` `null`<br>
 Default: `10000000` (10MB)
 
-Largest amount of data in bytes allowed on `stdout` or `stderr`.
+Largest amount of data in bytes allowed on `stdout` or `stderr`. Pass `null` to disable buffering completely.<br>
+When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise is not be resolved/rejected until they have completed.
 
 #### killSignal
 

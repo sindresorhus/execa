@@ -126,7 +126,13 @@ function getStream(process, stream, encoding, maxBuffer) {
 
 	let ret;
 
-	if (encoding) {
+	if (maxBuffer === null) {
+		ret = new Promise((resolve, reject) => {
+			process[stream]
+				.once('end', resolve)
+				.once('error', reject);
+		});
+	} else if (encoding) {
 		ret = _getStream(process[stream], {
 			encoding,
 			maxBuffer

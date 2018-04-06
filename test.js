@@ -239,6 +239,28 @@ test('maxBuffer affects stderr', async t => {
 	await t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
 });
 
+test('do not buffer stdout when `maxBuffer` set to `null`', async t => {
+	const promise = m('max-buffer', ['stdout', '10'], {maxBuffer: null});
+	const [result, stdout] = await Promise.all([
+		promise,
+		getStream(promise.stdout)
+	]);
+
+	t.is(result.stdout, undefined);
+	t.is(stdout, '.........\n');
+});
+
+test('do not buffer stderr when `maxBuffer` set to `null`', async t => {
+	const promise = m('max-buffer', ['stderr', '10'], {maxBuffer: null});
+	const [result, stderr] = await Promise.all([
+		promise,
+		getStream(promise.stderr)
+	]);
+
+	t.is(result.stderr, undefined);
+	t.is(stderr, '.........\n');
+});
+
 test('skip throwing when using reject option', async t => {
 	const err = await m('exit', ['2'], {reject: false});
 	t.is(typeof err.stdout, 'string');

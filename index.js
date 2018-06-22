@@ -141,15 +141,12 @@ function getStream(process, stream, encoding, maxBuffer) {
 }
 
 function makeError(result, options) {
-	const stdout = result.stdout;
-	const stderr = result.stderr;
+	const {stdout, stderr} = result;
 
 	let err = result.error;
-	const code = result.code;
-	const signal = result.signal;
+	const {code, signal} = result;
 
-	const parsed = options.parsed;
-	const joinedCmd = options.joinedCmd;
+	const {parsed, joinedCmd} = options;
 	const timedOut = options.timedOut || false;
 
 	if (!err) {
@@ -193,8 +190,7 @@ function joinCmd(cmd, args) {
 
 module.exports = (cmd, args, opts) => {
 	const parsed = handleArgs(cmd, args, opts);
-	const encoding = parsed.opts.encoding;
-	const maxBuffer = parsed.opts.maxBuffer;
+	const {encoding, maxBuffer} = parsed.opts;
 	const joinedCmd = joinCmd(cmd, args);
 
 	let spawned;

@@ -308,14 +308,14 @@ module.exports = (cmd, args, opts) => {
 	return spawned;
 };
 
-module.exports.stdout = function () {
+module.exports.stdout = function (...args) {
 	// TODO: set `stderr: 'ignore'` when that option is implemented
-	return module.exports.apply(null, arguments).then(x => x.stdout);
+	return module.exports(...args).then(x => x.stdout);
 };
 
-module.exports.stderr = function () {
+module.exports.stderr = function (...args) {
 	// TODO: set `stdout: 'ignore'` when that option is implemented
-	return module.exports.apply(null, arguments).then(x => x.stderr);
+	return module.exports(...args).then(x => x.stderr);
 };
 
 module.exports.shell = (cmd, opts) => handleShell(module.exports, cmd, opts);

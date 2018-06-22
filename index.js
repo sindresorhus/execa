@@ -76,9 +76,7 @@ function handleArgs(cmd, args, opts) {
 	};
 }
 
-function handleInput(spawned, opts) {
-	const input = opts.input;
-
+function handleInput(spawned, input) {
 	if (input === null || input === undefined) {
 		return;
 	}
@@ -306,7 +304,7 @@ module.exports = (cmd, args, opts) => {
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
-	handleInput(spawned, parsed.opts);
+	handleInput(spawned, parsed.opts.input);
 
 	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
 	spawned.catch = onrejected => handlePromise().catch(onrejected);

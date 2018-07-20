@@ -380,7 +380,7 @@ test('err.code is 3', code, 3);
 test('err.code is 4', code, 4);
 
 test('timeout will kill the process early', async t => {
-	const err = await t.throws(m('delay', ['3000', '0'], {timeout: 1500}));
+	const err = await t.throws(m('delay', ['60000', '0'], {timeout: 1500}));
 
 	t.true(err.timedOut);
 	t.not(err.code, 22);

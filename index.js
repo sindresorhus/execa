@@ -118,7 +118,7 @@ function handleShell(fn, cmd, opts) {
 	return fn(file, args, opts);
 }
 
-function getStream({process, stream, encoding, buffer, maxBuffer}) {
+function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
 		return null;
 	}
@@ -267,8 +267,8 @@ module.exports = (cmd, args, opts) => {
 
 	const handlePromise = () => pFinally(Promise.all([
 		processDone,
-		getStream({process: spawned, stream: 'stdout', encoding, buffer, maxBuffer}),
-		getStream({process: spawned, stream: 'stderr', encoding, buffer, maxBuffer})
+		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
+		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
 	]).then(arr => {
 		const result = arr[0];
 		result.stdout = arr[1];

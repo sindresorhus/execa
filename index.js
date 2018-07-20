@@ -76,9 +76,7 @@ function handleArgs(cmd, args, opts) {
 	};
 }
 
-function handleInput(spawned, opts) {
-	const input = opts.input;
-
+function handleInput(spawned, input) {
 	if (input === null || input === undefined) {
 		return;
 	}
@@ -149,15 +147,12 @@ function getStream(process, stream, encoding, maxBuffer) {
 }
 
 function makeError(result, options) {
-	const stdout = result.stdout;
-	const stderr = result.stderr;
+	const {stdout, stderr} = result;
 
 	let err = result.error;
-	const code = result.code;
-	const signal = result.signal;
+	const {code, signal} = result;
 
-	const parsed = options.parsed;
-	const joinedCmd = options.joinedCmd;
+	const {parsed, joinedCmd} = options;
 	const timedOut = options.timedOut || false;
 
 	if (!err) {
@@ -201,8 +196,7 @@ function joinCmd(cmd, args) {
 
 module.exports = (cmd, args, opts) => {
 	const parsed = handleArgs(cmd, args, opts);
-	const encoding = parsed.opts.encoding;
-	const maxBuffer = parsed.opts.maxBuffer;
+	const {encoding, maxBuffer} = parsed.opts;
 	const joinedCmd = joinCmd(cmd, args);
 
 	let spawned;
@@ -312,7 +306,7 @@ module.exports = (cmd, args, opts) => {
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
-	handleInput(spawned, parsed.opts);
+	handleInput(spawned, parsed.opts.input);
 
 	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
 	spawned.catch = onrejected => handlePromise().catch(onrejected);
@@ -320,15 +314,11 @@ module.exports = (cmd, args, opts) => {
 	return spawned;
 };
 
-module.exports.stdout = function () {
-	// TODO: set `stderr: 'ignore'` when that option is implemented
-	return module.exports.apply(null, arguments).then(x => x.stdout);
-};
+// TODO: set `stderr: 'ignore'` when that option is implemented
+module.exports.stdout = (...args) => module.exports(...args).then(x => x.stdout);
 
-module.exports.stderr = function () {
-	// TODO: set `stdout: 'ignore'` when that option is implemented
-	return module.exports.apply(null, arguments).then(x => x.stderr);
-};
+// TODO: set `stdout: 'ignore'` when that option is implemented
+module.exports.stderr = (...args) => module.exports(...args).then(x => x.stderr);
 
 module.exports.shell = (cmd, opts) => handleShell(module.exports, cmd, opts);
 

@@ -30,41 +30,53 @@ $ npm install execa
 ```js
 const execa = require('execa');
 
-execa('echo', ['unicorns']).then(result => {
-	console.log(result.stdout);
+(async () => {
+	const {stdout} = await execa('echo', ['unicorns']);
+	console.log(stdout);
 	//=> 'unicorns'
-});
+})();
+```
 
-// pipe the child process stdout to the current stdout
-execa('echo', ['unicorns']).stdout.pipe(process.stdout);
+Additional examples:
 
-execa.shell('echo unicorns').then(result => {
-	console.log(result.stdout);
+```js
+const execa = require('execa');
+
+(async () => {
+	// Pipe the child process stdout to the current stdout
+	execa('echo', ['unicorns']).stdout.pipe(process.stdout);
+
+
+	// Run a shell command
+	const {stdout} = await execa.shell('echo unicorns');
 	//=> 'unicorns'
-});
 
-// example of catching an error
-execa.shell('exit 3').catch(error => {
-	console.log(error);
-	/*
-	{
-		message: 'Command failed: /bin/sh -c exit 3'
-		killed: false,
-		code: 3,
-		signal: null,
-		cmd: '/bin/sh -c exit 3',
-		stdout: '',
-		stderr: '',
-		timedOut: false
+
+	// Catching an error
+	try {
+		await execa.shell('exit 3');
+	} catch (error) {
+		console.log(error);
+		/*
+		{
+			message: 'Command failed: /bin/sh -c exit 3'
+			killed: false,
+			code: 3,
+			signal: null,
+			cmd: '/bin/sh -c exit 3',
+			stdout: '',
+			stderr: '',
+			timedOut: false
+		}
+		*/
 	}
-	*/
-});
+})();
 
-// example of catching an error with a sync method
+// Catching an error with a sync method
 try {
 	execa.shellSync('exit 3');
-} catch (err) {
-	console.log(err);
+} catch (error) {
+	console.log(error);
 	/*
 	{
 		message: 'Command failed: /bin/sh -c exit 3'
@@ -153,7 +165,7 @@ Explicitly set the value of `argv[0]` sent to the child process. This will be se
 
 #### stdio
 
-Type: `Array` `string`<br>
+Type: `string[]` `string`<br>
 Default: `pipe`
 
 Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.

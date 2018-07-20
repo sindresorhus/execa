@@ -239,8 +239,8 @@ test('maxBuffer affects stderr', async t => {
 	await t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
 });
 
-test('do not buffer stdout when `maxBuffer` set to `null`', async t => {
-	const promise = m('max-buffer', ['stdout', '10'], {maxBuffer: null});
+test('do not buffer stdout when `buffer` set to `false`', async t => {
+	const promise = m('max-buffer', ['stdout', '10'], {buffer: false});
 	const [result, stdout] = await Promise.all([
 		promise,
 		getStream(promise.stdout)
@@ -250,8 +250,8 @@ test('do not buffer stdout when `maxBuffer` set to `null`', async t => {
 	t.is(stdout, '.........\n');
 });
 
-test('do not buffer stderr when `maxBuffer` set to `null`', async t => {
-	const promise = m('max-buffer', ['stderr', '10'], {maxBuffer: null});
+test('do not buffer stderr when `buffer` set to `false`', async t => {
+	const promise = m('max-buffer', ['stderr', '10'], {buffer: false});
 	const [result, stderr] = await Promise.all([
 		promise,
 		getStream(promise.stderr)

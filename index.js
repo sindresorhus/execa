@@ -126,6 +126,7 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	let ret;
 
 	if (!buffer) {
+		// TODO: Use `ret = util.promisify(stream.finished)(process[stream]);` when targeting Node.js 10
 		ret = new Promise((resolve, reject) => {
 			process[stream]
 				.once('end', resolve)

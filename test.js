@@ -239,6 +239,28 @@ test('maxBuffer affects stderr', async t => {
 	await t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
 });
 
+test('do not buffer stdout when `buffer` set to `false`', async t => {
+	const promise = m('max-buffer', ['stdout', '10'], {buffer: false});
+	const [result, stdout] = await Promise.all([
+		promise,
+		getStream(promise.stdout)
+	]);
+
+	t.is(result.stdout, undefined);
+	t.is(stdout, '.........\n');
+});
+
+test('do not buffer stderr when `buffer` set to `false`', async t => {
+	const promise = m('max-buffer', ['stderr', '10'], {buffer: false});
+	const [result, stderr] = await Promise.all([
+		promise,
+		getStream(promise.stderr)
+	]);
+
+	t.is(result.stderr, undefined);
+	t.is(stderr, '.........\n');
+});
+
 test('skip throwing when using reject option', async t => {
 	const err = await m('exit', ['2'], {reject: false});
 	t.is(typeof err.stdout, 'string');
@@ -358,7 +380,7 @@ test('err.code is 3', code, 3);
 test('err.code is 4', code, 4);
 
 test('timeout will kill the process early', async t => {
-	const err = await t.throws(m('delay', ['3000', '0'], {timeout: 1500}));
+	const err = await t.throws(m('delay', ['60000', '0'], {timeout: 1500}));
 
 	t.true(err.timedOut);
 	t.not(err.code, 22);

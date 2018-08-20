@@ -252,6 +252,13 @@ Default: `0`
 
 If timeout is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than timeout milliseconds.
 
+#### buffer
+
+Type: `boolean`<br>
+Default: `true`
+
+Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
+
 #### maxBuffer
 
 Type: `number`<br>

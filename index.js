@@ -44,6 +44,7 @@ function handleArgs(cmd, args, opts) {
 
 	opts = Object.assign({
 		maxBuffer: TEN_MEGABYTES,
+		buffer: true,
 		stripEof: true,
 		preferLocal: true,
 		localDir: parsed.options.cwd || process.cwd(),
@@ -117,14 +118,20 @@ function handleShell(fn, cmd, opts) {
 	return fn(file, args, opts);
 }
 
-function getStream(process, stream, encoding, maxBuffer) {
+function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
 		return null;
 	}
 
 	let ret;
 
-	if (encoding) {
+	if (!buffer) {
+		ret = new Promise((resolve, reject) => {
+			process[stream]
+				.once('end', resolve)
+				.once('error', reject);
+		});
+	} else if (encoding) {
 		ret = _getStream(process[stream], {
 			encoding,
 			maxBuffer
@@ -190,7 +197,7 @@ function joinCmd(cmd, args) {
 
 module.exports = (cmd, args, opts) => {
 	const parsed = handleArgs(cmd, args, opts);
-	const {encoding, maxBuffer} = parsed.opts;
+	const {encoding, buffer, maxBuffer} = parsed.opts;
 	const joinedCmd = joinCmd(cmd, args);
 
 	let spawned;
@@ -260,8 +267,8 @@ module.exports = (cmd, args, opts) => {
 
 	const handlePromise = () => pFinally(Promise.all([
 		processDone,
-		getStream(spawned, 'stdout', encoding, maxBuffer),
-		getStream(spawned, 'stderr', encoding, maxBuffer)
+		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
+		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
 	]).then(arr => {
 		const result = arr[0];
 		result.stdout = arr[1];

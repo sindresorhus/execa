@@ -1,7 +1,6 @@
 'use strict';
 const path = require('path');
 const childProcess = require('child_process');
-const util = require('util');
 const crossSpawn = require('cross-spawn');
 const stripEof = require('strip-eof');
 const npmRunPath = require('npm-run-path');
@@ -360,5 +359,3 @@ module.exports.sync = (cmd, args, opts) => {
 };
 
 module.exports.shellSync = (cmd, opts) => handleShell(module.exports.sync, cmd, opts);
-
-module.exports.spawn = util.deprecate(module.exports, 'execa.spawn() is deprecated. Use execa() instead.');

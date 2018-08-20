@@ -98,11 +98,6 @@ test('execa.shell()', async t => {
 	t.is(stdout, 'foo');
 });
 
-test('execa.spawn()', async t => {
-	t.is(typeof m.spawn('noop').pid, 'number');
-	t.is((await getStream(m.spawn('noop', ['foo']).stdout)).trim(), 'foo');
-});
-
 test('execa.sync()', t => {
 	const {stdout} = m.sync('noop', ['foo']);
 	t.is(stdout, 'foo');

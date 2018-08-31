@@ -56,10 +56,6 @@
 		"xo": "*"
 	},
 	"nyc": {
-		"reporter": [
-			"text",
-			"lcov"
-		],
 		"exclude": [
 			"**/fixtures/**",
 			"**/test.js",

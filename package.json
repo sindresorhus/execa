@@ -43,7 +43,7 @@
 		"npm-run-path": "^2.0.0",
 		"p-finally": "^1.0.0",
 		"signal-exit": "^3.0.0",
-		"strip-eof": "^1.0.0"
+		"strip-final-newline": "^2.0.0"
 	},
 	"devDependencies": {
 		"ava": "*",

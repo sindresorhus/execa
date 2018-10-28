@@ -2,7 +2,7 @@
 const path = require('path');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
-const stripEof = require('strip-eof');
+const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
@@ -44,13 +44,18 @@ function handleArgs(cmd, args, opts) {
 	opts = Object.assign({
 		maxBuffer: TEN_MEGABYTES,
 		buffer: true,
-		stripEof: true,
+		stripFinalNewline: true,
 		preferLocal: true,
 		localDir: parsed.options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true
 	}, parsed.options);
+
+	// TODO: Remove in the next major release
+	if (opts.stripEof === false) {
+		opts.stripFinalNewline = false;
+	}
 
 	opts.stdio = stdio(opts);
 
@@ -89,8 +94,8 @@ function handleInput(spawned, input) {
 }
 
 function handleOutput(opts, val) {
-	if (val && opts.stripEof) {
-		val = stripEof(val);
+	if (val && opts.stripFinalNewline) {
+		val = stripFinalNewline(val);
 	}
 
 	return val;

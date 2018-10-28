@@ -138,8 +138,13 @@ test('skip throwing when using reject option in execa.shellSync()', t => {
 	t.is(typeof err.stderr, 'string');
 });
 
-test('stripEof option', async t => {
+test('stripEof option (legacy)', async t => {
 	const {stdout} = await m('noop', ['foo'], {stripEof: false});
+	t.is(stdout, 'foo\n');
+});
+
+test('stripFinalNewline option', async t => {
+	const {stdout} = await m('noop', ['foo'], {stripFinalNewline: false});
 	t.is(stdout, 'foo\n');
 });
 

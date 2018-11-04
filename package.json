@@ -46,14 +46,14 @@
 		"strip-final-newline": "^2.0.0"
 	},
 	"devDependencies": {
-		"ava": "*",
+		"ava": "^0.25.0",
 		"cat-names": "^1.0.2",
 		"coveralls": "^3.0.1",
 		"delay": "^3.0.0",
 		"is-running": "^2.0.0",
 		"nyc": "^13.0.1",
 		"tempfile": "^2.0.0",
-		"xo": "*"
+		"xo": "^0.23.0"
 	},
 	"nyc": {
 		"exclude": [

@@ -262,21 +262,21 @@ test('do not buffer stderr when `buffer` set to `false`', async t => {
 });
 
 test('skip throwing when using reject option', async t => {
-	const err = await m('exit', ['2'], {reject: false});
-	t.is(typeof err.stdout, 'string');
-	t.is(typeof err.stderr, 'string');
+	const error = await m('exit', ['2'], {reject: false});
+	t.is(typeof error.stdout, 'string');
+	t.is(typeof error.stderr, 'string');
 });
 
 test('execa() returns code and failed properties', async t => {
 	const {code, failed} = await m('noop', ['foo']);
-	const err = await t.throws(m('exit', ['2']));
+	const error = await t.throws(m('exit', ['2']));
 	t.is(code, 0);
 	t.false(failed);
-	t.is(err.code, 2);
-	t.true(err.failed);
+	t.is(error.code, 2);
+	t.true(error.failed);
 });
 
-test(`use relative path with '..' chars`, async t => {
+test('use relative path with \'..\' chars', async t => {
 	const pathViaParentDir = path.join('..', path.basename(__dirname), 'fixtures', 'noop');
 	const {stdout} = await m(pathViaParentDir, ['foo']);
 	t.is(stdout, 'foo');
@@ -289,36 +289,34 @@ if (process.platform !== 'win32') {
 	});
 }
 
-test('err.killed is true if process was killed directly', async t => {
+test('error.killed is true if process was killed directly', async t => {
 	const cp = m('forever');
 
 	setTimeout(() => {
 		cp.kill();
 	}, 100);
 
-	const err = await t.throws(cp);
-
-	t.true(err.killed);
+	const error = await t.throws(cp);
+	t.true(error.killed);
 });
 
 // TODO: Should this really be the case, or should we improve on child_process?
-test('err.killed is false if process was killed indirectly', async t => {
+test('error.killed is false if process was killed indirectly', async t => {
 	const cp = m('forever');
 
 	setTimeout(() => {
 		process.kill(cp.pid, 'SIGINT');
 	}, 100);
 
-	const err = await t.throws(cp);
-
-	t.false(err.killed);
+	const error = await t.throws(cp);
+	t.false(error.killed);
 });
 
 if (process.platform === 'darwin') {
 	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
-		const cp = childProcess.exec('forever', err => {
-			t.truthy(err);
-			t.false(err.killed);
+		const cp = childProcess.exec('forever', error => {
+			t.truthy(error);
+			t.false(error.killed);
 			t.end();
 		});
 
@@ -329,34 +327,31 @@ if (process.platform === 'darwin') {
 }
 
 if (process.platform !== 'win32') {
-	test('err.signal is SIGINT', async t => {
+	test('error.signal is SIGINT', async t => {
 		const cp = m('forever');
 
 		setTimeout(() => {
 			process.kill(cp.pid, 'SIGINT');
 		}, 100);
 
-		const err = await t.throws(cp);
-
-		t.is(err.signal, 'SIGINT');
+		const error = await t.throws(cp);
+		t.is(error.signal, 'SIGINT');
 	});
 
-	test('err.signal is SIGTERM', async t => {
+	test('error.signal is SIGTERM', async t => {
 		const cp = m('forever');
 
 		setTimeout(() => {
 			process.kill(cp.pid, 'SIGTERM');
 		}, 100);
 
-		const err = await t.throws(cp);
-
-		t.is(err.signal, 'SIGTERM');
+		const error = await t.throws(cp);
+		t.is(error.signal, 'SIGTERM');
 	});
 
-	test('custom err.signal', async t => {
-		const err = await t.throws(m('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500}));
-
-		t.is(err.signal, 'SIGHUP');
+	test('custom error.signal', async t => {
+		const error = await t.throws(m('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500}));
+		t.is(error.signal, 'SIGHUP');
 	});
 }
 
@@ -365,64 +360,58 @@ test('result.signal is null for successful execution', async t => {
 });
 
 test('result.signal is null if process failed, but was not killed', async t => {
-	const err = await t.throws(m('exit', [2]));
-	t.is(err.signal, null);
+	const error = await t.throws(m('exit', [2]));
+	t.is(error.signal, null);
 });
 
 async function code(t, num) {
-	const err = await t.throws(m('exit', [`${num}`]));
-
-	t.is(err.code, num);
+	const error = await t.throws(m('exit', [`${num}`]));
+	t.is(error.code, num);
 }
 
-test('err.code is 2', code, 2);
-test('err.code is 3', code, 3);
-test('err.code is 4', code, 4);
+test('error.code is 2', code, 2);
+test('error.code is 3', code, 3);
+test('error.code is 4', code, 4);
 
 test('timeout will kill the process early', async t => {
-	const err = await t.throws(m('delay', ['60000', '0'], {timeout: 1500}));
+	const error = await t.throws(m('delay', ['60000', '0'], {timeout: 1500}));
 
-	t.true(err.timedOut);
-	t.not(err.code, 22);
+	t.true(error.timedOut);
+	t.not(error.code, 22);
 });
 
 test('timeout will not kill the process early', async t => {
-	const err = await t.throws(m('delay', ['3000', '22'], {timeout: 30000}));
+	const error = await t.throws(m('delay', ['3000', '22'], {timeout: 30000}));
 
-	t.false(err.timedOut);
-	t.is(err.code, 22);
+	t.false(error.timedOut);
+	t.is(error.code, 22);
 });
 
 test('timedOut will be false if no timeout was set and zero exit code', async t => {
 	const result = await m('delay', ['1000', '0']);
-
 	t.false(result.timedOut);
 });
 
 test('timedOut will be false if no timeout was set and non-zero exit code', async t => {
-	const err = await t.throws(m('delay', ['1000', '3']));
-
-	t.false(err.timedOut);
+	const error = await t.throws(m('delay', ['1000', '3']));
+	t.false(error.timedOut);
 });
 
 async function errorMessage(t, expected, ...args) {
-	const err = await t.throws(m('exit', args));
-
-	t.regex(err.message, expected);
+	const error = await t.throws(m('exit', args));
+	t.regex(error.message, expected);
 }
 
-errorMessage.title = (message, expected) => `err.message matches: ${expected}`;
+errorMessage.title = (message, expected) => `error.message matches: ${expected}`;
 
 test(errorMessage, /Command failed: exit 2 foo bar/, 2, 'foo', 'bar');
 test(errorMessage, /Command failed: exit 3 baz quz/, 3, 'baz', 'quz');
 
 async function cmd(t, expected, ...args) {
-	const err = await t.throws(m('fail', args));
-
-	t.is(err.cmd, `fail${expected}`);
+	const error = await t.throws(m('fail', args));
+	t.is(error.cmd, `fail${expected}`);
 
 	const result = await m('noop', args);
-
 	t.is(result.cmd, `noop${expected}`);
 }
 
@@ -481,8 +470,8 @@ if (process.platform !== 'win32') {
 		try {
 			await m(`fast-exit-${process.platform}`, [], {input: 'data'});
 			t.pass();
-		} catch (err) {
-			t.is(err.code, 'EPIPE');
+		} catch (error) {
+			t.is(error.code, 'EPIPE');
 		}
 	});
 }
@@ -543,6 +532,6 @@ test('removes exit handler on exit', async t => {
 		child.on('exit', resolve);
 	});
 
-	const included = ee.listeners('exit').indexOf(listener) !== -1;
+	const included = ee.listeners('exit').includes(listener);
 	t.false(included);
 });

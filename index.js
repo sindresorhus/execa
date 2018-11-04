@@ -145,23 +145,23 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 		ret = _getStream.buffer(process[stream], {maxBuffer});
 	}
 
-	return ret.catch(err => {
-		err.stream = stream;
-		err.message = `${stream} ${err.message}`;
-		throw err;
+	return ret.catch(error => {
+		error.stream = stream;
+		error.message = `${stream} ${error.message}`;
+		throw error;
 	});
 }
 
 function makeError(result, options) {
 	const {stdout, stderr} = result;
 
-	let err = result.error;
+	let {error} = result;
 	const {code, signal} = result;
 
 	const {parsed, joinedCmd} = options;
 	const timedOut = options.timedOut || false;
 
-	if (!err) {
+	if (!error) {
 		let output = '';
 
 		if (Array.isArray(parsed.opts.stdio)) {
@@ -176,18 +176,18 @@ function makeError(result, options) {
 			output = `\n${stderr}${stdout}`;
 		}
 
-		err = new Error(`Command failed: ${joinedCmd}${output}`);
-		err.code = code < 0 ? errname(code) : code;
+		error = new Error(`Command failed: ${joinedCmd}${output}`);
+		error.code = code < 0 ? errname(code) : code;
 	}
 
-	err.stdout = stdout;
-	err.stderr = stderr;
-	err.failed = true;
-	err.signal = signal || null;
-	err.cmd = joinedCmd;
-	err.timedOut = timedOut;
+	error.stdout = stdout;
+	error.stderr = stderr;
+	error.failed = true;
+	error.signal = signal || null;
+	error.cmd = joinedCmd;
+	error.timedOut = timedOut;
 
-	return err;
+	return error;
 }
 
 function joinCmd(cmd, args) {
@@ -208,8 +208,8 @@ module.exports = (cmd, args, opts) => {
 	let spawned;
 	try {
 		spawned = childProcess.spawn(parsed.cmd, parsed.args, parsed.opts);
-	} catch (err) {
-		return Promise.reject(err);
+	} catch (error) {
+		return Promise.reject(error);
 	}
 
 	let removeExitHandler;
@@ -247,15 +247,15 @@ module.exports = (cmd, args, opts) => {
 			resolve({code, signal});
 		});
 
-		spawned.on('error', err => {
+		spawned.on('error', error => {
 			cleanup();
-			resolve({error: err});
+			resolve({error});
 		});
 
 		if (spawned.stdin) {
-			spawned.stdin.on('error', err => {
+			spawned.stdin.on('error', error => {
 				cleanup();
-				resolve({error: err});
+				resolve({error});
 			});
 		}
 	});
@@ -280,7 +280,7 @@ module.exports = (cmd, args, opts) => {
 		result.stderr = arr[2];
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
-			const err = makeError(result, {
+			const error = makeError(result, {
 				joinedCmd,
 				parsed,
 				timedOut
@@ -288,14 +288,14 @@ module.exports = (cmd, args, opts) => {
 
 			// TODO: missing some timeout logic for killed
 			// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-			// err.killed = spawned.killed || killed;
-			err.killed = err.killed || spawned.killed;
+			// error.killed = spawned.killed || killed;
+			error.killed = error.killed || spawned.killed;
 
 			if (!parsed.opts.reject) {
-				return err;
+				return error;
 			}
 
-			throw err;
+			throw error;
 		}
 
 		return {
@@ -340,16 +340,16 @@ module.exports.sync = (cmd, args, opts) => {
 	result.code = result.status;
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
-		const err = makeError(result, {
+		const error = makeError(result, {
 			joinedCmd,
 			parsed
 		});
 
 		if (!parsed.opts.reject) {
-			return err;
+			return error;
 		}
 
-		throw err;
+		throw error;
 	}
 
 	return {

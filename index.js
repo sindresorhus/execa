@@ -50,7 +50,7 @@ function handleArgs(command, args, options) {
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true
-	}, parsed.options);
+	}, parsed.options, {windowsHide: true});
 
 	// TODO: Remove in the next major release
 	if (options.stripEof === false) {

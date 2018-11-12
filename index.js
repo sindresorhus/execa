@@ -238,6 +238,9 @@ module.exports = (command, args, options) => {
 			timeoutId = null;
 			timedOut = true;
 			spawned.kill(parsed.options.killSignal);
+			
+			// If you don't destroy it manually, it will be stucked in getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
+			destroy();
 		}, parsed.options.timeout);
 	}
 

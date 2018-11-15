@@ -240,10 +240,10 @@ Keep track of the spawned process and `kill` it when the parent process exits.
 
 #### encoding
 
-Type: `string`<br>
+Type: `string` `null`<br>
 Default: `utf8`
 
-Specify the character encoding used to decode the `stdout` and `stderr` output.
+Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
 
 #### timeout
 

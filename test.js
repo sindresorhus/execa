@@ -380,6 +380,12 @@ test('timeout will kill the process early', async t => {
 	t.not(error.code, 22);
 });
 
+test('timeout will kill the npm info process', async t => {
+  const error = await t.throws(m('npminfo', [], { timeout: 1500 }));
+  t.true(error.timedOut);
+});
+
+
 test('timeout will not kill the process early', async t => {
 	const error = await t.throws(m('delay', ['3000', '22'], {timeout: 30000}));
 

@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+const execa = require('..');
+
+process.env.http_proxy = 'http:/127.0.0.1:8080';
+process.env.https_proxy = 'http:/127.0.0.1:8080';
+
+console.log('npm info start');
+const output = execa.sync('npm', ['info', 'execa']);
+console.log('npm info end');

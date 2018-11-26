@@ -1,4 +1,7 @@
 language: node_js
+os:
+  - linux
+  - windows
 node_js:
   - '10'
   - '8'

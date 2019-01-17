@@ -11,6 +11,8 @@ const onExit = require('signal-exit');
 const errname = require('./lib/errname');
 const stdio = require('./lib/stdio');
 
+const isWin = process.platform === 'win32';
+
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(command, args, options) {
@@ -50,7 +52,9 @@ function handleArgs(command, args, options) {
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true
-	}, parsed.options, {windowsHide: true});
+	}, parsed.options, {
+		windowsHide: true
+	});
 
 	// TODO: Remove in the next major release
 	if (options.stripEof === false) {
@@ -68,7 +72,14 @@ function handleArgs(command, args, options) {
 		options.cleanup = false;
 	}
 
-	if (process.platform === 'win32' && path.basename(parsed.command) === 'cmd.exe') {
+	if (!isWin) {
+		// #96
+		// Windows automatically kills every descendents of the child process
+		// On Linux and macOS we need to detach the process and kill by pid range
+		options.detached = true;
+	}
+
+	if (isWin && path.basename(parsed.command) === 'cmd.exe') {
 		// #116
 		parsed.args.unshift('/q');
 	}
@@ -212,11 +223,24 @@ module.exports = (command, args, options) => {
 		return Promise.reject(error);
 	}
 
+	let killedByPid = false;
+
+	spawned._kill = spawned.kill;
+
+	const killSpawned = signal => {
+		if (process.platform === 'win32') {
+			spawned._kill(signal);
+		} else {
+			// Kills the spawned process and its descendents using the pid range hack
+			// Source: https://azimi.me/2014/12/31/kill-child_process-node-js.html
+			process.kill(-spawned.pid, signal);
+			killedByPid = true;
+		}
+	};
+
 	let removeExitHandler;
 	if (parsed.options.cleanup) {
-		removeExitHandler = onExit(() => {
-			spawned.kill();
-		});
+		removeExitHandler = onExit(killSpawned);
 	}
 
 	let timeoutId = null;
@@ -237,7 +261,7 @@ module.exports = (command, args, options) => {
 		timeoutId = setTimeout(() => {
 			timeoutId = null;
 			timedOut = true;
-			spawned.kill(parsed.options.killSignal);
+			killSpawned(parsed.options.killSignal);
 		}, parsed.options.timeout);
 	}
 
@@ -289,7 +313,7 @@ module.exports = (command, args, options) => {
 			// TODO: missing some timeout logic for killed
 			// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
 			// error.killed = spawned.killed || killed;
-			error.killed = error.killed || spawned.killed;
+			error.killed = error.killed || spawned.killed || killedByPid;
 
 			if (!parsed.options.reject) {
 				return error;
@@ -311,6 +335,9 @@ module.exports = (command, args, options) => {
 	}), destroy);
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
+
+	// Enhance the `ChildProcess#kill` to ensure killing the process and its descendents
+	spawned.kill = killSpawned;
 
 	handleInput(spawned, parsed.options.input);
 

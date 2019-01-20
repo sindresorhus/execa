@@ -40,6 +40,7 @@
 		"cross-spawn": "^6.0.0",
 		"get-stream": "^4.0.0",
 		"is-stream": "^1.1.0",
+		"merge-stream": "1.0.1",
 		"npm-run-path": "^2.0.0",
 		"p-finally": "^1.0.0",
 		"signal-exit": "^3.0.0",

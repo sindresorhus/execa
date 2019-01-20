@@ -6,6 +6,7 @@ const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
+const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
@@ -120,6 +121,24 @@ function handleShell(fn, command, options) {
 	}
 
 	return fn(file, args, options);
+}
+
+function makeAllStream(spawned) {
+	const mixed = mergeStream();
+
+	if (!spawned.stdout && !spawned.stderr) {
+		return null;
+	}
+
+	if (spawned.stdout) {
+		mixed.add(spawned.stdout);
+	}
+
+	if (spawned.stderr) {
+		mixed.add(spawned.stderr);
+	}
+
+	return mixed;
 }
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
@@ -268,16 +287,22 @@ module.exports = (command, args, options) => {
 		if (spawned.stderr) {
 			spawned.stderr.destroy();
 		}
+
+		if (spawned.all) {
+			spawned.all.destroy();
+		}
 	}
 
 	const handlePromise = () => pFinally(Promise.all([
 		processDone,
 		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
+		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
+		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
 	]).then(arr => {
 		const result = arr[0];
 		result.stdout = arr[1];
 		result.stderr = arr[2];
+		result.all = arr[3];
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
 			const error = makeError(result, {
@@ -301,6 +326,7 @@ module.exports = (command, args, options) => {
 		return {
 			stdout: handleOutput(parsed.options, result.stdout),
 			stderr: handleOutput(parsed.options, result.stderr),
+			all: handleOutput(parsed.options, result.all),
 			code: 0,
 			failed: false,
 			killed: false,
@@ -313,6 +339,8 @@ module.exports = (command, args, options) => {
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
 	handleInput(spawned, parsed.options.input);
+
+	spawned.all = makeAllStream(spawned);
 
 	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
 	spawned.catch = onrejected => handlePromise().catch(onrejected);
@@ -339,6 +367,10 @@ module.exports.sync = (command, args, options) => {
 	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
 	result.code = result.status;
 
+	// `spawnSync` doesn't expose the stdout/stderr before terminating, which means
+	// the streams can't be merged unless proxying on `options.stdio`
+	result.all = result.stdout + result.stderr;
+
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
 			joinedCommand,
@@ -355,6 +387,7 @@ module.exports.sync = (command, args, options) => {
 	return {
 		stdout: handleOutput(parsed.options, result.stdout),
 		stderr: handleOutput(parsed.options, result.stderr),
+		all: handleOutput(parsed.options, result.all),
 		code: 0,
 		failed: false,
 		signal: null,

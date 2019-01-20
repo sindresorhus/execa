@@ -41,6 +41,19 @@ test('execa.stderr()', async t => {
 	t.is(stderr, 'foo');
 });
 
+test('result.all shows both `stdout` and `stderr` intermixed', async t => {
+	const result = await m('noop-132');
+	// Due to the async nature of process.stdout/stderr on POSIX, this test
+	// is very unpredictable, although it should interleave the streams
+	// https://nodejs.org/api/process.html#process_a_note_on_process_i_os
+	t.is(result.all, '132');
+});
+
+test('result.all shows both `stdout` and `stderr` concatenated - sync', t => {
+	const result = m.sync('noop-132');
+	t.is(result.all, '132');
+});
+
 test('stdout/stderr available on errors', async t => {
 	const err = await t.throws(m('exit', ['2']));
 	t.is(typeof err.stdout, 'string');
@@ -243,7 +256,8 @@ test('do not buffer stdout when `buffer` set to `false`', async t => {
 	const promise = m('max-buffer', ['stdout', '10'], {buffer: false});
 	const [result, stdout] = await Promise.all([
 		promise,
-		getStream(promise.stdout)
+		getStream(promise.stdout),
+		getStream(promise.all)
 	]);
 
 	t.is(result.stdout, undefined);
@@ -254,7 +268,8 @@ test('do not buffer stderr when `buffer` set to `false`', async t => {
 	const promise = m('max-buffer', ['stderr', '10'], {buffer: false});
 	const [result, stderr] = await Promise.all([
 		promise,
-		getStream(promise.stderr)
+		getStream(promise.stderr),
+		getStream(promise.all)
 	]);
 
 	t.is(result.stderr, undefined);

@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+'use strict';
+// Interleaving the output of stdout and stderr is unpredictable and can't be
+// expressed as a test. What I've tried so far to make it predictable:
+// - process.stdout._handle.setBlocking(true)
+// - process.stdout.once('drain', () => process.stderr.write('2'));
+// - process.stdout.write('1', () => process.stderr.write('2'));
+// - await delay() between calls; it works but with varying ms, based on load
+// - console.log/error
+
+process.stdout.write('1');
+process.stdout.write('3');
+// Ideally, to demonstrate the interleaving, the next line should go before '3'
+process.stderr.write('2');

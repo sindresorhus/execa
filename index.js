@@ -278,6 +278,7 @@ module.exports = (command, args, options) => {
 		const result = arr[0];
 		result.stdout = arr[1];
 		result.stderr = arr[2];
+		result.all = `${result.stdout} ${result.stderr}`;
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
 			const error = makeError(result, {
@@ -301,6 +302,7 @@ module.exports = (command, args, options) => {
 		return {
 			stdout: handleOutput(parsed.options, result.stdout),
 			stderr: handleOutput(parsed.options, result.stderr),
+			all: handleOutput(parsed.options, result.all),
 			code: 0,
 			failed: false,
 			killed: false,

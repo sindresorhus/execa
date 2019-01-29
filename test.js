@@ -538,14 +538,18 @@ test('removes exit handler on exit', async t => {
 
 test('finally function is executed on success', async t => {
 	let called = false;
-	const {stdout} = await m('noop', ['foo']).finally(() => called = true);
+	const {stdout} = await m('noop', ['foo']).finally(() => {
+		called = true;
+	});
 	t.is(called, true);
 	t.is(stdout, 'foo');
 });
 
 test('finally function is executed on failure', async t => {
 	let called = false;
-	const err = await t.throws(m('exit', ['2']).finally(() => called = true));
+	const err = await t.throws(m('exit', ['2']).finally(() => {
+		called = true;
+	}));
 	t.is(called, true);
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');

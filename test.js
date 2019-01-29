@@ -535,3 +535,32 @@ test('removes exit handler on exit', async t => {
 	const included = ee.listeners('exit').includes(listener);
 	t.false(included);
 });
+
+test('finally function is executed on success', async t => {
+	let called = false;
+	const {stdout} = await m('noop', ['foo']).finally(() => called = true);
+	t.is(called, true);
+	t.is(stdout, 'foo');
+});
+
+test('finally function is executed on failure', async t => {
+	let called = false;
+	const err = await t.throws(m('exit', ['2']).finally(() => called = true));
+	t.is(called, true);
+	t.is(typeof err.stdout, 'string');
+	t.is(typeof err.stderr, 'string');
+});
+
+test('throw in finally function bubbles up on success', async t => {
+	const result = await t.throws(m('noop', ['foo']).finally(() => {
+		throw new Error('called');
+	}));
+	t.is(result.message, 'called');
+});
+
+test('throw in finally bubbles up on error', async t => {
+	const result = await t.throws(m('exit', ['2']).finally(() => {
+		throw new Error('called');
+	}));
+	t.is(result.message, 'called');
+});

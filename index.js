@@ -316,6 +316,7 @@ module.exports = (command, args, options) => {
 
 	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
 	spawned.catch = onrejected => handlePromise().catch(onrejected);
+	spawned.finally = onfinally => handlePromise().finally(onfinally);
 
 	return spawned;
 };

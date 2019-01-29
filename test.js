@@ -536,6 +536,7 @@ test('removes exit handler on exit', async t => {
 	t.false(included);
 });
 
+// eslint-disable-next-line no-use-extend-native/no-use-extend-native
 if (Promise.prototype.finally) {
 	test('finally function is executed on success', async t => {
 		let called = false;

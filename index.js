@@ -316,6 +316,7 @@ module.exports = (command, args, options) => {
 
 	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
 	spawned.catch = onrejected => handlePromise().catch(onrejected);
+	// eslint-disable-next-line no-use-extend-native/no-use-extend-native
 	if (Promise.prototype.finally) {
 		spawned.finally = onfinally => handlePromise().finally(onfinally);
 	}

@@ -261,6 +261,10 @@ test('skip throwing when using reject option', async t => {
 	t.is(typeof error.stderr, 'string');
 });
 
+test('allow unknown exit code', async t => {
+	await t.throwsAsync(m('exit', ['255']), {message: /exit code 255 \(Unknown system error -255\)/});
+});
+
 test('execa() returns code and failed properties', async t => {
 	const {code, failed} = await m('noop', ['foo']);
 	const error = await t.throwsAsync(m('exit', ['2']), {code: 2, message: getExitRegExp('2 \\(ENOENT\\)')});

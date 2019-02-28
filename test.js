@@ -282,7 +282,7 @@ test('use relative path with \'..\' chars', async t => {
 if (process.platform !== 'win32') {
 	test('execa() rejects if running non-executable', async t => {
 		const cp = m('non-executable');
-		await t.throwsAsync(cp, {message: getExitRegExp('13 \\(EACCES\\)')});
+		await t.throwsAsync(cp)
 	});
 }
 

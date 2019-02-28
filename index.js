@@ -139,7 +139,7 @@ function makeError(result, options) {
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
-	error.signal = signal;
+	error.signal = signal || null;
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
 

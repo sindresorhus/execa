@@ -307,7 +307,6 @@ test('error.killed is false if process was killed indirectly', async t => {
 
 	// `process.kill()` is emulated by Node.js on Windows
 	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
-
 	const error = await t.throwsAsync(cp, {message});
 	t.false(error.killed);
 });

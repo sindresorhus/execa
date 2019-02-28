@@ -50,7 +50,7 @@ test('execa.stderr()', async t => {
 });
 
 test('stdout/stderr available on errors', async t => {
-	const err = await t.throwsAsync(m('exit', ['2']), {message: getExitRegExp('2 \\(ENOENT\\)')});
+	const err = await t.throwsAsync(m('exit', ['2']), {message: getExitRegExp('2')});
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
 });
@@ -267,7 +267,7 @@ test('allow unknown exit code', async t => {
 
 test('execa() returns code and failed properties', async t => {
 	const {code, failed} = await m('noop', ['foo']);
-	const error = await t.throwsAsync(m('exit', ['2']), {code: 2, message: getExitRegExp('2 \\(ENOENT\\)')});
+	const error = await t.throwsAsync(m('exit', ['2']), {code: 2, message: getExitRegExp('2')});
 	t.is(code, 0);
 	t.false(failed);
 	t.true(error.failed);
@@ -357,7 +357,7 @@ test('result.signal is null for successful execution', async t => {
 });
 
 test('result.signal is null if process failed, but was not killed', async t => {
-	const error = await t.throwsAsync(m('exit', [2]), {message: getExitRegExp('2 \\(ENOENT\\)')});
+	const error = await t.throwsAsync(m('exit', [2]), {message: getExitRegExp('2')});
 	t.is(error.signal, null);
 });
 
@@ -377,7 +377,7 @@ test('timeout will kill the process early', async t => {
 });
 
 test('timeout will not kill the process early', async t => {
-	const error = await t.throwsAsync(m('delay', ['3000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22 \\(EINVAL\\)')});
+	const error = await t.throwsAsync(m('delay', ['3000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22')});
 	t.false(error.timedOut);
 });
 
@@ -387,7 +387,7 @@ test('timedOut will be false if no timeout was set and zero exit code', async t 
 });
 
 test('timedOut will be false if no timeout was set and non-zero exit code', async t => {
-	const error = await t.throwsAsync(m('delay', ['1000', '3']), {message: getExitRegExp('3 \\(ESRCH\\)')});
+	const error = await t.throwsAsync(m('delay', ['1000', '3']), {message: getExitRegExp('3')});
 	t.false(error.timedOut);
 });
 

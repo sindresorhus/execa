@@ -42,41 +42,41 @@ test('execa.stderr()', async t => {
 });
 
 test('stdout/stderr available on errors', async t => {
-	const err = await t.throws(m('exit', ['2']));
+	const err = await t.throwsAsync(m('exit', ['2']));
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
 });
 
 test('include stdout and stderr in errors for improved debugging', async t => {
-	const err = await t.throws(m('fixtures/error-message.js'));
+	const err = await t.throwsAsync(m('fixtures/error-message.js'));
 	t.regex(err.message, /stdout/);
 	t.regex(err.message, /stderr/);
 	t.is(err.code, 1);
 });
 
 test('do not include in errors when `stdio` is set to `inherit`', async t => {
-	const err = await t.throws(m('fixtures/error-message.js', {stdio: 'inherit'}));
+	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdio: 'inherit'}));
 	t.notRegex(err.message, /\n/);
 });
 
 test('do not include `stderr` and `stdout` in errors when set to `inherit`', async t => {
-	const err = await t.throws(m('fixtures/error-message.js', {stdout: 'inherit', stderr: 'inherit'}));
+	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdout: 'inherit', stderr: 'inherit'}));
 	t.notRegex(err.message, /\n/);
 });
 
 test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inherit`', async t => {
-	const err = await t.throws(m('fixtures/error-message.js', {stdio: [null, 'inherit', 'inherit']}));
+	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdio: [null, 'inherit', 'inherit']}));
 	t.notRegex(err.message, /\n/);
 });
 
 test('do not include `stdout` in errors when set to `inherit`', async t => {
-	const err = await t.throws(m('fixtures/error-message.js', {stdout: 'inherit'}));
+	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdout: 'inherit'}));
 	t.notRegex(err.message, /stdout/);
 	t.regex(err.message, /stderr/);
 });
 
 test('do not include `stderr` in errors when set to `inherit`', async t => {
-	const err = await t.throws(m('fixtures/error-message.js', {stderr: 'inherit'}));
+	const err = await t.throwsAsync(m('fixtures/error-message.js', {stderr: 'inherit'}));
 	t.regex(err.message, /stdout/);
 	t.notRegex(err.message, /stderr/);
 });
@@ -159,7 +159,7 @@ test.serial('preferLocal option', async t => {
 	// Account for npm adding local binaries to the PATH
 	const _path = process.env.PATH;
 	process.env.PATH = '';
-	await t.throws(m('cat-names', {preferLocal: false}), /spawn .* ENOENT/);
+	await t.throwsAsync(m('cat-names', {preferLocal: false}), /spawn .* ENOENT/);
 	process.env.PATH = _path;
 });
 
@@ -230,13 +230,13 @@ test('execa() returns a promise with kill() and pid', t => {
 });
 
 test('maxBuffer affects stdout', async t => {
-	await t.throws(m('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
-	await t.notThrows(m('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
+	await t.throwsAsync(m('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
+	await t.notThrowsAsync(m('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
 });
 
 test('maxBuffer affects stderr', async t => {
-	await t.throws(m('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
-	await t.notThrows(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
+	await t.throwsAsync(m('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
+	await t.notThrowsAsync(m('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
 });
 
 test('do not buffer stdout when `buffer` set to `false`', async t => {
@@ -269,7 +269,7 @@ test('skip throwing when using reject option', async t => {
 
 test('execa() returns code and failed properties', async t => {
 	const {code, failed} = await m('noop', ['foo']);
-	const error = await t.throws(m('exit', ['2']));
+	const error = await t.throwsAsync(m('exit', ['2']));
 	t.is(code, 0);
 	t.false(failed);
 	t.is(error.code, 2);
@@ -285,7 +285,7 @@ test('use relative path with \'..\' chars', async t => {
 if (process.platform !== 'win32') {
 	test('execa() rejects if running non-executable', async t => {
 		const cp = m('non-executable');
-		await t.throws(cp);
+		await t.throwsAsync(cp);
 	});
 }
 
@@ -296,7 +296,7 @@ test('error.killed is true if process was killed directly', async t => {
 		cp.kill();
 	}, 100);
 
-	const error = await t.throws(cp);
+	const error = await t.throwsAsync(cp);
 	t.true(error.killed);
 });
 
@@ -308,7 +308,7 @@ test('error.killed is false if process was killed indirectly', async t => {
 		process.kill(cp.pid, 'SIGINT');
 	}, 100);
 
-	const error = await t.throws(cp);
+	const error = await t.throwsAsync(cp);
 	t.false(error.killed);
 });
 
@@ -334,7 +334,7 @@ if (process.platform !== 'win32') {
 			process.kill(cp.pid, 'SIGINT');
 		}, 100);
 
-		const error = await t.throws(cp);
+		const error = await t.throwsAsync(cp);
 		t.is(error.signal, 'SIGINT');
 	});
 
@@ -345,12 +345,12 @@ if (process.platform !== 'win32') {
 			process.kill(cp.pid, 'SIGTERM');
 		}, 100);
 
-		const error = await t.throws(cp);
+		const error = await t.throwsAsync(cp);
 		t.is(error.signal, 'SIGTERM');
 	});
 
 	test('custom error.signal', async t => {
-		const error = await t.throws(m('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500}));
+		const error = await t.throwsAsync(m('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500}));
 		t.is(error.signal, 'SIGHUP');
 	});
 }
@@ -360,12 +360,12 @@ test('result.signal is null for successful execution', async t => {
 });
 
 test('result.signal is null if process failed, but was not killed', async t => {
-	const error = await t.throws(m('exit', [2]));
+	const error = await t.throwsAsync(m('exit', [2]));
 	t.is(error.signal, null);
 });
 
 async function code(t, num) {
-	const error = await t.throws(m('exit', [`${num}`]));
+	const error = await t.throwsAsync(m('exit', [`${num}`]));
 	t.is(error.code, num);
 }
 
@@ -374,14 +374,14 @@ test('error.code is 3', code, 3);
 test('error.code is 4', code, 4);
 
 test('timeout will kill the process early', async t => {
-	const error = await t.throws(m('delay', ['60000', '0'], {timeout: 1500}));
+	const error = await t.throwsAsync(m('delay', ['60000', '0'], {timeout: 1500}));
 
 	t.true(error.timedOut);
 	t.not(error.code, 22);
 });
 
 test('timeout will not kill the process early', async t => {
-	const error = await t.throws(m('delay', ['3000', '22'], {timeout: 30000}));
+	const error = await t.throwsAsync(m('delay', ['3000', '22'], {timeout: 30000}));
 
 	t.false(error.timedOut);
 	t.is(error.code, 22);
@@ -393,12 +393,12 @@ test('timedOut will be false if no timeout was set and zero exit code', async t 
 });
 
 test('timedOut will be false if no timeout was set and non-zero exit code', async t => {
-	const error = await t.throws(m('delay', ['1000', '3']));
+	const error = await t.throwsAsync(m('delay', ['1000', '3']));
 	t.false(error.timedOut);
 });
 
 async function errorMessage(t, expected, ...args) {
-	const error = await t.throws(m('exit', args));
+	const error = await t.throwsAsync(m('exit', args));
 	t.regex(error.message, expected);
 }
 
@@ -408,7 +408,7 @@ test(errorMessage, /Command failed: exit 2 foo bar/, 2, 'foo', 'bar');
 test(errorMessage, /Command failed: exit 3 baz quz/, 3, 'baz', 'quz');
 
 async function cmd(t, expected, ...args) {
-	const error = await t.throws(m('fail', args));
+	const error = await t.throwsAsync(m('fail', args));
 	t.is(error.cmd, `fail${expected}`);
 
 	const result = await m('noop', args);
@@ -436,7 +436,7 @@ async function spawnAndKill(t, signal, cleanup) {
 		}, 100);
 	});
 
-	await t.throws(cp);
+	await t.throwsAsync(cp);
 
 	// Give everybody some time to breath and kill things
 	await delay(200);

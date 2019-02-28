@@ -24,3 +24,7 @@ const unknown = 'Unknown system error -2';
 
 makeTests('native', errname, isWin ? unknown : 'ENOENT');
 makeTests('fallback', fallback, unknown);
+
+test('allow unknown exit code', async t => {
+	await t.throwsAsync(m('exit', ['255']), { message: /exit code 255 \(Unknown system error -255\)/ });
+});

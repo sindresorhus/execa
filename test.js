@@ -14,6 +14,11 @@ process.env.FOO = 'foo';
 
 const NO_NEWLINES_REGEXP = /^[^\n]*$/;
 const STDERR_STDOUT_REGEXP = /stderr[^]*stdout/;
+const TIMEOUT_REGEXP = /timed out after/
+
+function getExitRegExp(exitMessage) {
+	return new RegExp(`failed with exit code ${exitMessage}`)
+}
 
 test('execa()', async t => {
 	const {stdout} = await m('noop', ['foo']);
@@ -45,7 +50,7 @@ test('execa.stderr()', async t => {
 });
 
 test('stdout/stderr available on errors', async t => {
-	const err = await t.throwsAsync(m('exit', ['2']));
+	const err = await t.throwsAsync(m('exit', ['2']), { message: getExitRegExp('2 \\(ENOENT\\)') });
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
 });
@@ -258,7 +263,7 @@ test('skip throwing when using reject option', async t => {
 
 test('execa() returns code and failed properties', async t => {
 	const {code, failed} = await m('noop', ['foo']);
-	const error = await t.throwsAsync(m('exit', ['2']), {code: 2});
+	const error = await t.throwsAsync(m('exit', ['2']), {code: 2, message: getExitRegExp('2 \\(ENOENT\\)')});
 	t.is(code, 0);
 	t.false(failed);
 	t.true(error.failed);
@@ -273,7 +278,7 @@ test('use relative path with \'..\' chars', async t => {
 if (process.platform !== 'win32') {
 	test('execa() rejects if running non-executable', async t => {
 		const cp = m('non-executable');
-		await t.throwsAsync(cp);
+		await t.throwsAsync(cp, { message: getExitRegExp('13 \\(EACCES\\)') });
 	});
 }
 
@@ -284,7 +289,7 @@ test('error.killed is true if process was killed directly', async t => {
 		cp.kill();
 	}, 100);
 
-	const error = await t.throwsAsync(cp);
+	const error = await t.throwsAsync(cp, { message: /was killed with SIGTERM/ });
 	t.true(error.killed);
 });
 
@@ -296,7 +301,7 @@ test('error.killed is false if process was killed indirectly', async t => {
 		process.kill(cp.pid, 'SIGINT');
 	}, 100);
 
-	const error = await t.throwsAsync(cp);
+	const error = await t.throwsAsync(cp, { message: /was killed with SIGINT/ });
 	t.false(error.killed);
 });
 
@@ -322,7 +327,7 @@ if (process.platform !== 'win32') {
 			process.kill(cp.pid, 'SIGINT');
 		}, 100);
 
-		const error = await t.throwsAsync(cp);
+		const error = await t.throwsAsync(cp, { message: /was killed with SIGINT/ });
 		t.is(error.signal, 'SIGINT');
 	});
 
@@ -333,12 +338,12 @@ if (process.platform !== 'win32') {
 			process.kill(cp.pid, 'SIGTERM');
 		}, 100);
 
-		const error = await t.throwsAsync(cp);
+		const error = await t.throwsAsync(cp, { message: /was killed with SIGTERM/ });
 		t.is(error.signal, 'SIGTERM');
 	});
 
 	test('custom error.signal', async t => {
-		const error = await t.throwsAsync(m('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500}));
+		const error = await t.throwsAsync(m('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500, message: TIMEOUT_REGEXP }));
 		t.is(error.signal, 'SIGHUP');
 	});
 }
@@ -348,12 +353,12 @@ test('result.signal is null for successful execution', async t => {
 });
 
 test('result.signal is null if process failed, but was not killed', async t => {
-	const error = await t.throwsAsync(m('exit', [2]));
+	const error = await t.throwsAsync(m('exit', [2]), { message: getExitRegExp('2 \\(ENOENT\\)') });
 	t.is(error.signal, null);
 });
 
 async function code(t, num) {
-	await t.throwsAsync(m('exit', [`${num}`]), {code: num});
+	await t.throwsAsync(m('exit', [`${num}`]), {code: num, message: getExitRegExp(num)});
 }
 
 test('error.code is 2', code, 2);
@@ -361,14 +366,14 @@ test('error.code is 3', code, 3);
 test('error.code is 4', code, 4);
 
 test('timeout will kill the process early', async t => {
-	const error = await t.throwsAsync(m('delay', ['60000', '0'], {timeout: 1500}));
+	const error = await t.throwsAsync(m('delay', ['60000', '0'], {timeout: 1500, message: TIMEOUT_REGEXP }));
 
 	t.true(error.timedOut);
 	t.not(error.code, 22);
 });
 
 test('timeout will not kill the process early', async t => {
-	const error = await t.throwsAsync(m('delay', ['3000', '22'], {timeout: 30000}), {code: 22});
+	const error = await t.throwsAsync(m('delay', ['3000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22 \\(EINVAL\\)')});
 	t.false(error.timedOut);
 });
 
@@ -378,7 +383,7 @@ test('timedOut will be false if no timeout was set and zero exit code', async t 
 });
 
 test('timedOut will be false if no timeout was set and non-zero exit code', async t => {
-	const error = await t.throwsAsync(m('delay', ['1000', '3']));
+	const error = await t.throwsAsync(m('delay', ['1000', '3']), { message: getExitRegExp('3 \\(ESRCH\\)') });
 	t.false(error.timedOut);
 });
 

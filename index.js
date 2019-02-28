@@ -134,7 +134,6 @@ function makeError(result, options) {
 
 	const prefix = getErrorPrefix({timedOut, timeout, signal, codeString, codeNumber});
 	error.message = `Command ${prefix}: ${error.message}`;
-	console.log(error.message);
 
 	error.code = codeNumber || codeString;
 	error.stdout = stdout;

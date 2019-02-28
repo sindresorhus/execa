@@ -99,7 +99,7 @@ test('execa.sync()', t => {
 });
 
 test('execa.sync() throws error if written to stderr', t => {
-	t.throws(() => m.sync('foo'), process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : 'spawnSync foo ENOENT');
+	t.throws(() => m.sync('foo'), process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : /spawnSync foo ENOENT/);
 });
 
 test('execa.sync() includes stdout and stderr in errors for improved debugging', t => {
@@ -388,8 +388,8 @@ async function errorMessage(t, expected, ...args) {
 
 errorMessage.title = (message, expected) => `error.message matches: ${expected}`;
 
-test(errorMessage, /Command failed: exit 2 foo bar/, 2, 'foo', 'bar');
-test(errorMessage, /Command failed: exit 3 baz quz/, 3, 'baz', 'quz');
+test(errorMessage, /Command failed with exit code 2 \(ENOENT\): exit 2 foo bar/, 2, 'foo', 'bar');
+test(errorMessage, /Command failed with exit code 3 \(ESRCH\): exit 3 baz quz/, 3, 'baz', 'quz');
 
 async function cmd(t, expected, ...args) {
 	const error = await t.throwsAsync(m('fail', args));
@@ -455,7 +455,7 @@ if (process.platform !== 'win32') {
 			await m(`fast-exit-${process.platform}`, [], {input: 'data'});
 			t.pass();
 		} catch (error) {
-			t.is(error.code, 'EPIPE');
+			t.is(error.code, 32);
 		}
 	});
 }

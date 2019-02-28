@@ -1,5 +1,6 @@
 'use strict';
 const path = require('path');
+const os = require('os');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
@@ -120,41 +121,66 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 }
 
 function makeError(result, options) {
-	const {stdout, stderr} = result;
+	const {stdout, stderr, code, signal} = result;
+	let {error} = result
+	const {joinedCommand, timedOut, parsed:{options:{timeout}}} = options;
 
-	let {error} = result;
-	const {code, signal} = result;
+	const [codeString, codeNumber] = getCode(result, code)
 
-	const {parsed, joinedCommand} = options;
-	const timedOut = options.timedOut || false;
-
-	if (!error) {
-		let output = '';
-
-		if (Array.isArray(parsed.options.stdio)) {
-			if (parsed.options.stdio[2] !== 'inherit') {
-				output += output.length > 0 ? stderr : `\n${stderr}`;
-			}
-
-			if (parsed.options.stdio[1] !== 'inherit') {
-				output += `\n${stdout}`;
-			}
-		} else if (parsed.options.stdio !== 'inherit') {
-			output = `\n${stderr}${stdout}`;
-		}
-
-		error = new Error(`Command failed: ${joinedCommand}${output}`);
-		error.code = code < 0 ? errname(code) : code;
+	if (!(error instanceof Error)) {
+		const message = [joinedCommand, stderr, stdout].filter(Boolean).join('\n')
+		error = new Error(message);
 	}
 
+	const prefix = getErrorPrefix({ timedOut, timeout, signal, codeString, codeNumber })
+	error.message = `Command ${prefix}: ${error.message}`
+	console.log(error.message)
+
+	error.code = codeNumber || codeString
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
-	error.signal = signal || null;
+	error.signal = signal;
 	error.cmd = joinedCommand;
-	error.timedOut = timedOut;
+	error.timedOut = Boolean(timedOut);
 
 	return error;
+}
+
+function getCode({ error = {} }, code) {
+	if (error.code) {
+		return [error.code, os.constants.errno[error.code]]
+	}
+
+	if (Number.isInteger(code)) {
+		return [errname(-Math.abs(code)), Math.abs(code)]
+	}
+
+	return []
+}
+
+function getErrorPrefix({ timedOut, timeout, signal, codeString, codeNumber }) {
+	if (timedOut) {
+		return `timed out after ${timeout} milliseconds`
+	}
+
+	if (signal) {
+		return `was killed by ${signal}`
+	}
+
+	if (codeString !== undefined && codeNumber !== undefined) {
+		return `failed with exit code ${codeNumber} (${codeString})`
+	}
+
+	if (codeString !== undefined) {
+		return `failed with exit code ${codeString}`
+	}
+
+	if (codeNumber !== undefined) {
+		return `failed with exit code ${codeNumber}`
+	}
+
+	return `failed`
 }
 
 function joinCommand(command, args) {

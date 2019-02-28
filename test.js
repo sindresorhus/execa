@@ -305,7 +305,10 @@ test('error.killed is false if process was killed indirectly', async t => {
 		process.kill(cp.pid, 'SIGINT');
 	}, 100);
 
-	const error = await t.throwsAsync(cp, {message: /was killed with SIGINT/});
+	// `process.kill()` is emulated by Node.js on Windows
+	const message = process.platform === 'windows' ? /failed with exit code 1/ : /was killed with SIGINT/;
+
+	const error = await t.throwsAsync(cp, {message});
 	t.false(error.killed);
 });
 
@@ -397,8 +400,8 @@ async function errorMessage(t, expected, ...args) {
 
 errorMessage.title = (message, expected) => `error.message matches: ${expected}`;
 
-test(errorMessage, /Command failed with exit code 2 \(ENOENT\): exit 2 foo bar/, 2, 'foo', 'bar');
-test(errorMessage, /Command failed with exit code 3 \(ESRCH\): exit 3 baz quz/, 3, 'baz', 'quz');
+test(errorMessage, /Command failed with exit code 2.*: exit 2 foo bar/, 2, 'foo', 'bar');
+test(errorMessage, /Command failed with exit code 3.*: exit 3 baz quz/, 3, 'baz', 'quz');
 
 async function cmd(t, expected, ...args) {
 	const error = await t.throwsAsync(m('fail', args));

@@ -165,7 +165,7 @@ function getErrorPrefix({ timedOut, timeout, signal, codeString, codeNumber }) {
 	}
 
 	if (signal) {
-		return `was killed by ${signal}`
+		return `was killed with ${signal}`
 	}
 
 	if (codeString !== undefined && codeNumber !== undefined) {

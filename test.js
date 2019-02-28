@@ -12,6 +12,9 @@ import m from '.';
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 process.env.FOO = 'foo';
 
+const NO_NEWLINES_REGEXP = /^[^\n]*$/
+const STDERR_STDOUT_REGEXP = /stderr[^]*stdout/
+
 test('execa()', async t => {
 	const {stdout} = await m('noop', ['foo']);
 	t.is(stdout, 'foo');
@@ -48,36 +51,28 @@ test('stdout/stderr available on errors', async t => {
 });
 
 test('include stdout and stderr in errors for improved debugging', async t => {
-	const err = await t.throwsAsync(m('fixtures/error-message.js'));
-	t.regex(err.message, /stdout/);
-	t.regex(err.message, /stderr/);
-	t.is(err.code, 1);
+	await t.throwsAsync(m('fixtures/error-message.js'), { message: STDERR_STDOUT_REGEXP, code: 1 });
 });
 
 test('do not include in errors when `stdio` is set to `inherit`', async t => {
-	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdio: 'inherit'}));
-	t.notRegex(err.message, /\n/);
+	await t.throwsAsync(m('fixtures/error-message.js', {stdio: 'inherit'}), { message: NO_NEWLINES_REGEXP });
 });
 
 test('do not include `stderr` and `stdout` in errors when set to `inherit`', async t => {
-	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdout: 'inherit', stderr: 'inherit'}));
-	t.notRegex(err.message, /\n/);
+	await t.throwsAsync(m('fixtures/error-message.js', {stdout: 'inherit', stderr: 'inherit' }), { message: NO_NEWLINES_REGEXP });
 });
 
 test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inherit`', async t => {
-	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdio: [null, 'inherit', 'inherit']}));
-	t.notRegex(err.message, /\n/);
+	await t.throwsAsync(m('fixtures/error-message.js', {stdio: [null, 'inherit', 'inherit']}), { message: NO_NEWLINES_REGEXP });
 });
 
 test('do not include `stdout` in errors when set to `inherit`', async t => {
-	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdout: 'inherit'}));
+	const err = await t.throwsAsync(m('fixtures/error-message.js', {stdout: 'inherit'}), { message: /stderr/ });
 	t.notRegex(err.message, /stdout/);
-	t.regex(err.message, /stderr/);
 });
 
 test('do not include `stderr` in errors when set to `inherit`', async t => {
-	const err = await t.throwsAsync(m('fixtures/error-message.js', {stderr: 'inherit'}));
-	t.regex(err.message, /stdout/);
+	const err = await t.throwsAsync(m('fixtures/error-message.js', {stderr: 'inherit'}), { message: /stdout/ });
 	t.notRegex(err.message, /stderr/);
 });
 
@@ -108,10 +103,7 @@ test('execa.sync() throws error if written to stderr', t => {
 });
 
 test('execa.sync() includes stdout and stderr in errors for improved debugging', t => {
-	const err = t.throws(() => m.sync('node', ['fixtures/error-message.js']));
-	t.regex(err.message, /stdout/);
-	t.regex(err.message, /stderr/);
-	t.is(err.code, 1);
+	t.throws(() => m.sync('node', ['fixtures/error-message.js']), { message: STDERR_STDOUT_REGEXP, code: 1 });
 });
 
 test('skip throwing when using reject option in execa.sync()', t => {
@@ -126,10 +118,7 @@ test('execa.shellSync()', t => {
 });
 
 test('execa.shellSync() includes stdout and stderr in errors for improved debugging', t => {
-	const err = t.throws(() => m.shellSync('node fixtures/error-message.js'));
-	t.regex(err.message, /stdout/);
-	t.regex(err.message, /stderr/);
-	t.is(err.code, 1);
+	t.throws(() => m.shellSync('node fixtures/error-message.js'), { message: STDERR_STDOUT_REGEXP, code: 1 });
 });
 
 test('skip throwing when using reject option in execa.shellSync()', t => {
@@ -269,10 +258,9 @@ test('skip throwing when using reject option', async t => {
 
 test('execa() returns code and failed properties', async t => {
 	const {code, failed} = await m('noop', ['foo']);
-	const error = await t.throwsAsync(m('exit', ['2']));
+	const error = await t.throwsAsync(m('exit', ['2']), { code: 2 });
 	t.is(code, 0);
 	t.false(failed);
-	t.is(error.code, 2);
 	t.true(error.failed);
 });
 
@@ -365,8 +353,7 @@ test('result.signal is null if process failed, but was not killed', async t => {
 });
 
 async function code(t, num) {
-	const error = await t.throwsAsync(m('exit', [`${num}`]));
-	t.is(error.code, num);
+	await t.throwsAsync(m('exit', [`${num}`]), { code: num });
 }
 
 test('error.code is 2', code, 2);
@@ -381,10 +368,8 @@ test('timeout will kill the process early', async t => {
 });
 
 test('timeout will not kill the process early', async t => {
-	const error = await t.throwsAsync(m('delay', ['3000', '22'], {timeout: 30000}));
-
+	const error = await t.throwsAsync(m('delay', ['3000', '22'], {timeout: 30000}), { code: 22 });
 	t.false(error.timedOut);
-	t.is(error.code, 22);
 });
 
 test('timedOut will be false if no timeout was set and zero exit code', async t => {
@@ -398,8 +383,7 @@ test('timedOut will be false if no timeout was set and non-zero exit code', asyn
 });
 
 async function errorMessage(t, expected, ...args) {
-	const error = await t.throwsAsync(m('exit', args));
-	t.regex(error.message, expected);
+	await t.throwsAsync(m('exit', args), { message: expected });
 }
 
 errorMessage.title = (message, expected) => `error.message matches: ${expected}`;

@@ -92,10 +92,10 @@ const handleEscaping = function (tokens, token, index) {
 	const previousToken = tokens[index - 1];
 
 	if (!previousToken.endsWith('\\')) {
-		return tokens.concat(token);
+		return [...tokens, token];
 	}
 
-	return tokens.slice(0, index - 1).concat(`${previousToken.slice(0, -1)} ${token}`);
+	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
 };
 
 function handleInput(spawned, input) {

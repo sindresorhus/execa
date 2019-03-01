@@ -52,7 +52,7 @@ const execa = require('execa');
 	execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 
 
-	// Run a shell command as a string
+	// Run a shell command
 	const {stdout} = await execa.shell('echo unicorns');
 	//=> 'unicorns'
 

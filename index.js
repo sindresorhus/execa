@@ -86,7 +86,7 @@ function handleOutput(options, value) {
 }
 
 function handleShell(fn, command, options) {
-	return fn(command, Object.assign({}, options, { shell: true }));
+	return fn(command, Object.assign({}, options, {shell: true}));
 }
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {

@@ -16,6 +16,10 @@ const stdio = require('./lib/stdio');
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(command, args, options) {
+	if (!options.shell && command.includes(' ')) {
+		[command, args] = parseCommand(command, args);
+	}
+
 	const parsed = crossSpawn._parse(command, args, options);
 	command = parsed.command;
 	args = parsed.args;
@@ -67,6 +71,32 @@ function handleArgs(command, args, options) {
 
 	return {command, args, options, parsed};
 }
+
+function parseCommand(command, args = []) {
+	const [newCommand, ...extraArgs] = command
+		.trim()
+		.split(SPACES_REGEXP)
+		.reduce(handleEscaping, []);
+	const newArgs = [...extraArgs, ...args];
+	return [newCommand, newArgs];
+}
+
+const SPACES_REGEXP = / +/g;
+
+// Allow spaces to be escaped by a backslash if not meant as a delimiter
+const handleEscaping = function (tokens, token, index) {
+	if (index === 0) {
+		return [token];
+	}
+
+	const previousToken = tokens[index - 1];
+
+	if (!previousToken.endsWith('\\')) {
+		return tokens.concat(token);
+	}
+
+	return tokens.slice(0, index - 1).concat(`${previousToken.slice(0, -1)} ${token}`);
+};
 
 function handleInput(spawned, input) {
 	if (input === undefined) {

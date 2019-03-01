@@ -73,12 +73,12 @@ function handleArgs(command, args, options) {
 }
 
 function parseCommand(command, args = []) {
-	const [newCommand, ...extraArgs] = command
+	const [file, ...extraArgs] = command
 		.trim()
 		.split(SPACES_REGEXP)
 		.reduce(handleEscaping, []);
 	const newArgs = [...extraArgs, ...args];
-	return [newCommand, newArgs];
+	return [file, newArgs];
 }
 
 const SPACES_REGEXP = / +/g;

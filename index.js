@@ -14,8 +14,6 @@ const stdio = require('./lib/stdio');
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(command, args, options) {
-	let parsed;
-
 	options = Object.assign({
 		extendEnv: true,
 		env: {}
@@ -25,21 +23,7 @@ function handleArgs(command, args, options) {
 		options.env = Object.assign({}, process.env, options.env);
 	}
 
-	if (options.__winShell === true) {
-		delete options.__winShell;
-		parsed = {
-			command,
-			args,
-			options,
-			file: command,
-			original: {
-				command,
-				args
-			}
-		};
-	} else {
-		parsed = crossSpawn._parse(command, args, options);
-	}
+	const parsed = crossSpawn._parse(command, args, options);
 
 	options = Object.assign({
 		maxBuffer: TEN_MEGABYTES,
@@ -102,24 +86,7 @@ function handleOutput(options, value) {
 }
 
 function handleShell(fn, command, options) {
-	let file = '/bin/sh';
-	let args = ['-c', command];
-
-	options = Object.assign({}, options);
-
-	if (process.platform === 'win32') {
-		options.__winShell = true;
-		file = process.env.comspec || 'cmd.exe';
-		args = ['/s', '/c', `"${command}"`];
-		options.windowsVerbatimArguments = true;
-	}
-
-	if (options.shell) {
-		file = options.shell;
-		delete options.shell;
-	}
-
-	return fn(file, args, options);
+	return fn(command, Object.assign({}, options, { shell: true }));
 }
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {

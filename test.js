@@ -533,7 +533,7 @@ if (Promise.prototype.finally) {
 
 	test('finally function is executed on failure', async t => {
 		let called = false;
-		const err = await t.throws(m('exit', ['2']).finally(() => {
+		const err = await t.throwsAsync(m('exit', ['2']).finally(() => {
 			called = true;
 		}));
 		t.is(called, true);
@@ -542,14 +542,14 @@ if (Promise.prototype.finally) {
 	});
 
 	test('throw in finally function bubbles up on success', async t => {
-		const result = await t.throws(m('noop', ['foo']).finally(() => {
+		const result = await t.throwsAsync(m('noop', ['foo']).finally(() => {
 			throw new Error('called');
 		}));
 		t.is(result.message, 'called');
 	});
 
 	test('throw in finally bubbles up on error', async t => {
-		const result = await t.throws(m('exit', ['2']).finally(() => {
+		const result = await t.throwsAsync(m('exit', ['2']).finally(() => {
 			throw new Error('called');
 		}));
 		t.is(result.message, 'called');

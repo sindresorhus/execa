@@ -126,17 +126,17 @@ function makeError(result, options) {
 	let {error} = result;
 	const {joinedCommand, timedOut, parsed: {options: {timeout}}} = options;
 
-	const [codeString, codeNumber] = getCode(result, code);
+	const [exitCodeName, exitCode] = getCode(result, code);
 
 	if (!(error instanceof Error)) {
 		const message = [joinedCommand, stderr, stdout].filter(Boolean).join('\n');
 		error = new Error(message);
 	}
 
-	const prefix = getErrorPrefix({timedOut, timeout, signal, codeString, codeNumber});
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode});
 	error.message = `Command ${prefix}: ${error.message}`;
 
-	error.code = codeNumber || codeString;
+	error.code = exitCode || exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
@@ -159,7 +159,7 @@ function getCode({error = {}}, code) {
 	return [];
 }
 
-function getErrorPrefix({timedOut, timeout, signal, codeString, codeNumber}) {
+function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode}) {
 	if (timedOut) {
 		return `timed out after ${timeout} milliseconds`;
 	}
@@ -168,16 +168,16 @@ function getErrorPrefix({timedOut, timeout, signal, codeString, codeNumber}) {
 		return `was killed with ${signal}`;
 	}
 
-	if (codeString !== undefined && codeNumber !== undefined) {
-		return `failed with exit code ${codeNumber} (${codeString})`;
+	if (exitCodeName !== undefined && exitCode !== undefined) {
+		return `failed with exit code ${exitCode} (${exitCodeName})`;
 	}
 
-	if (codeString !== undefined) {
-		return `failed with exit code ${codeString}`;
+	if (exitCodeName !== undefined) {
+		return `failed with exit code ${exitCodeName}`;
 	}
 
-	if (codeNumber !== undefined) {
-		return `failed with exit code ${codeNumber}`;
+	if (exitCode !== undefined) {
+		return `failed with exit code ${exitCode}`;
 	}
 
 	return 'failed';

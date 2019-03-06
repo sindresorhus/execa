@@ -137,6 +137,8 @@ function makeError(result, options) {
 	error.message = `Command ${prefix}: ${error.message}`;
 
 	error.code = exitCode || exitCodeName;
+	error.exitCode = exitCode;
+	error.exitCodeName = exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;

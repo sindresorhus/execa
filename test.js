@@ -487,11 +487,11 @@ test('do not extend environment with `extendEnv: false` option', async t => {
 	]);
 });
 
-test('use extend environment with `extendEnv: true` option', async t => {
+test('use extend environment with `extendEnv: true` option and `shell: true`', async t => {
 	process.env.TEST = 'test';
 	const command = process.platform === 'win32' ? 'echo %TEST%' : 'echo $TEST';
-	const result = await m.shellSync(command, {env: {}, extendEnv: true});
-	t.is(result.stdout, 'test');
+	const stdout = await m.stdout(command, {shell: true, env: {}, extendEnv: true});
+	t.is(stdout, 'test');
 	delete process.env.TEST;
 });
 

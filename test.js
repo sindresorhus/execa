@@ -478,7 +478,7 @@ test('extend environment variables by default', async t => {
 	]);
 });
 
-test('do not extend environment with `extendEnv: false` option', async t => {
+test('do not extend environment with `extendEnv: false`', async t => {
 	const result = await m.stdout('environment', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
 
 	t.deepEqual(result.split('\n'), [
@@ -487,7 +487,7 @@ test('do not extend environment with `extendEnv: false` option', async t => {
 	]);
 });
 
-test('use extend environment with `extendEnv: true` option and `shell: true`', async t => {
+test('use extend environment with `extendEnv: true` and `shell: true`', async t => {
 	process.env.TEST = 'test';
 	const command = process.platform === 'win32' ? 'echo %TEST%' : 'echo $TEST';
 	const stdout = await m.stdout(command, {shell: true, env: {}, extendEnv: true});

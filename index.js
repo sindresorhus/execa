@@ -15,27 +15,31 @@ const stdio = require('./lib/stdio');
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(command, args, options) {
-	options = Object.assign({
-		extendEnv: true,
-		env: {}
-	}, options);
-
-	if (options.extendEnv) {
-		options.env = Object.assign({}, process.env, options.env);
-	}
-
 	const parsed = crossSpawn._parse(command, args, options);
+	command = parsed.command;
+	args = parsed.args;
+	options = parsed.options;
 
 	options = Object.assign({
 		maxBuffer: TEN_MEGABYTES,
 		buffer: true,
 		stripFinalNewline: true,
 		preferLocal: true,
-		localDir: parsed.options.cwd || process.cwd(),
+		localDir: options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true
-	}, parsed.options, {windowsHide: true});
+	}, options, {
+		windowsHide: true
+	});
+
+	if (options.extendEnv !== false) {
+		options.env = Object.assign({}, process.env, options.env);
+	}
+
+	if (options.preferLocal) {
+		options.env = npmRunPath.env(Object.assign({}, options, {cwd: options.localDir}));
+	}
 
 	// TODO: Remove in the next major release
 	if (options.stripEof === false) {
@@ -44,26 +48,17 @@ function handleArgs(command, args, options) {
 
 	options.stdio = stdio(options);
 
-	if (options.preferLocal) {
-		options.env = npmRunPath.env(Object.assign({}, options, {cwd: options.localDir}));
-	}
-
 	if (options.detached) {
 		// #115
 		options.cleanup = false;
 	}
 
-	if (process.platform === 'win32' && path.basename(parsed.command) === 'cmd.exe') {
+	if (process.platform === 'win32' && path.basename(command) === 'cmd.exe') {
 		// #116
-		parsed.args.unshift('/q');
+		args.unshift('/q');
 	}
 
-	return {
-		command: parsed.command,
-		args: parsed.args,
-		options,
-		parsed
-	};
+	return {command, args, options, parsed};
 }
 
 function handleInput(spawned, input) {

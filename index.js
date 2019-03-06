@@ -16,6 +16,13 @@ const stdio = require('./lib/stdio');
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(command, args, options) {
+	if (args && !Array.isArray(args)) {
+		options = args;
+		args = null;
+	}
+
+	options = options || {};
+
 	if (!options.shell && command.includes(' ')) {
 		[command, args] = parseCommand(command, args);
 	}
@@ -30,7 +37,7 @@ function handleArgs(command, args, options) {
 		buffer: true,
 		stripFinalNewline: true,
 		preferLocal: true,
-		localDir: options.cwd || process.cwd(),
+		localDir: parsed.options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true,
@@ -64,9 +71,9 @@ function handleArgs(command, args, options) {
 		options.cleanup = false;
 	}
 
-	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
+	if (process.platform === 'win32' && path.basename(parsed.command, 'exe') === 'cmd') {
 		// #116
-		args.unshift('/q');
+		parsed.args.unshift('/q');
 	}
 
 	return {command, args, options, parsed};

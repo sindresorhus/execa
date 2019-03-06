@@ -478,13 +478,20 @@ test('extend environment variables by default', async t => {
 	]);
 });
 
-test('do not extend environment with `extendEnv` option', async t => {
+test('do not extend environment with `extendEnv: false` option', async t => {
 	const result = await m.stdout('environment', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
 
 	t.deepEqual(result.split('\n'), [
 		'undefined',
 		'bar'
 	]);
+});
+
+test('use extend environment with `extendEnv: true` option', async t => {
+	process.env.TEST = 'test';
+	const result = await m.shellSync('echo $TEST', {env: {}, extendEnv: true});
+	t.is(result.stdout, 'test');
+	delete process.env.TEST;
 });
 
 test('do not buffer when streaming', async t => {

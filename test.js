@@ -438,10 +438,8 @@ if (process.platform !== 'win32') {
 	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
 }
 
-// See: https://github.com/sindresorhus/execa/issues/56
-const onlyWinFailing = test[process.platform === 'win32' ? 'failing' : 'serial'];
-onlyWinFailing('execa.shell() supports the `shell` option', async t => {
-	const {stdout} = await m.shell('noop foo', {
+test('execa.shell() supports the `shell` option', async t => {
+	const {stdout} = await m.shell('node fixtures/noop foo', {
 		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
 	});
 	t.is(stdout, 'foo');

@@ -19,7 +19,7 @@ function handleArgs(command, args, options) {
 	args = parsed.args;
 	options = parsed.options;
 
-	options = {
+	options = Object.assign({
 		maxBuffer: TEN_MEGABYTES,
 		buffer: true,
 		stripFinalNewline: true,
@@ -27,17 +27,17 @@ function handleArgs(command, args, options) {
 		localDir: options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
-		cleanup: true,
-		...options,
+		cleanup: true
+	}, options, {
 		windowsHide: true
-	};
+	});
 
 	if (options.extendEnv !== false) {
-		options.env = {...process.env, ...options.env};
+		options.env = Object.assign({}, process.env, options.env);
 	}
 
 	if (options.preferLocal) {
-		options.env = npmRunPath.env({...options, cwd: options.localDir});
+		options.env = npmRunPath.env(Object.assign({}, options, {cwd: options.localDir}));
 	}
 
 	// TODO: Remove in the next major release

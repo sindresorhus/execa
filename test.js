@@ -273,7 +273,7 @@ test('execa() returns code and failed properties', async t => {
 
 	const error = await t.throwsAsync(execa('exit', ['2']), {code: 2, message: getExitRegExp('2')});
 	t.is(error.exitCode, 2);
-	const expectedName = process.platform === 'win32' ? 'Unknown system error -2' : 'ENOENT'
+	const expectedName = process.platform === 'win32' ? 'Unknown system error -2' : 'ENOENT';
 	t.is(error.exitCodeName, expectedName);
 	t.true(error.failed);
 });

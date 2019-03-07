@@ -102,32 +102,32 @@ test('pass `stderr` to a file descriptor', async t => {
 });
 
 test('allow string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo bar');
+	const stdout = await execa.stdout('node fixtures/echo foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('allow string arguments together with array arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo bar', ['foo', 'bar']);
+	const stdout = await execa.stdout('node fixtures/echo foo bar', ['foo', 'bar']);
 	t.is(stdout, 'foo\nbar\nfoo\nbar');
 });
 
 test('ignore consecutive spaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo    bar');
+	const stdout = await execa.stdout('node fixtures/echo foo    bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('escape other whitespaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo\tbar');
+	const stdout = await execa.stdout('node fixtures/echo foo\tbar');
 	t.is(stdout, 'foo\tbar');
 });
 
 test('allow escaping spaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo\\ bar');
+	const stdout = await execa.stdout('node fixtures/echo foo\\ bar');
 	t.is(stdout, 'foo bar');
 });
 
 test('trim string arguments', async t => {
-	const {stdout} = await execa('  node fixtures/echo foo bar  ');
+	const stdout = await execa.stdout('  node fixtures/echo foo bar  ');
 	t.is(stdout, 'foo\nbar');
 });
 

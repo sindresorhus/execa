@@ -100,7 +100,7 @@ Execute a file.
 
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
-Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout`, `stderr` and `all` (interleaved `stdout` and `stderr` stream) properties.
 
 ### execa.stdout(file, [arguments], [options])
 
@@ -120,9 +120,9 @@ The `child_process` instance is enhanced to also be promise for a result object 
 
 ### execa.sync(file, [arguments], [options])
 
-Execute a file synchronously.
+Execute a file synchronously. 
 
-Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
+Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options). It's not possible to obtain a true interleaved `all` stream as `execa` does, because `child_process.spawnSync` does not expose `stdout` and `stderr` until termination.
 
 This method throws an `Error` if the command fails.
 

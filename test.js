@@ -126,6 +126,11 @@ test('allow escaping spaces in string arguments', async t => {
 	t.is(stdout, 'foo bar');
 });
 
+test('trim string arguments', async t => {
+	const {stdout} = await execa('  node fixtures/echo foo bar  ');
+	t.is(stdout, 'foo\nbar');
+});
+
 test('execa.shell()', async t => {
 	const {stdout} = await execa.shell('node fixtures/noop foo');
 	t.is(stdout, 'foo');

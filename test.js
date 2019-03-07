@@ -265,10 +265,15 @@ test('allow unknown exit code', async t => {
 });
 
 test('execa() returns code and failed properties', async t => {
-	const {code, failed} = await execa('noop', ['foo']);
-	const error = await t.throwsAsync(execa('exit', ['2']), {code: 2, message: getExitRegExp('2')});
+	const {code, exitCode, exitCodeName, failed} = await execa('noop', ['foo']);
 	t.is(code, 0);
+	t.is(exitCode, 0);
+	t.is(exitCodeName, 'SUCCESS');
 	t.false(failed);
+
+	const error = await t.throwsAsync(execa('exit', ['2']), {code: 2, message: getExitRegExp('2')});
+	t.is(error.exitCode, 2);
+	t.is(error.exitCodeName, 'ENOENT');
 	t.true(error.failed);
 });
 
@@ -363,7 +368,8 @@ test('result.signal is null if process failed, but was not killed', async t => {
 });
 
 async function code(t, num) {
-	await t.throwsAsync(execa('exit', [`${num}`]), {code: num, message: getExitRegExp(num)});
+	const error = await t.throwsAsync(execa('exit', [`${num}`]), {code: num, message: getExitRegExp(num)});
+	t.is(error.exitCode, num);
 }
 
 test('error.code is 2', code, 2);
@@ -374,7 +380,7 @@ test('timeout will kill the process early', async t => {
 	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 1500, message: TIMEOUT_REGEXP}));
 
 	t.true(error.timedOut);
-	t.not(error.code, 22);
+	t.not(error.exitCode, 22);
 });
 
 test('timeout will not kill the process early', async t => {
@@ -463,7 +469,7 @@ if (process.platform !== 'win32') {
 			await execa(`fast-exit-${process.platform}`, [], {input: 'data'});
 			t.pass();
 		} catch (error) {
-			t.is(error.code, 32);
+			t.is(error.exitCode, 32);
 		}
 	});
 }

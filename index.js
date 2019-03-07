@@ -15,13 +15,11 @@ const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
-function handleArgs(command, args, options) {
+function handleArgs(command, args, options = {}) {
 	if (args && !Array.isArray(args)) {
 		options = args;
-		args = null;
+		args = [];
 	}
-
-	options = options || {};
 
 	if (!options.shell && command.includes(' ')) {
 		[command, args] = parseCommand(command, args);

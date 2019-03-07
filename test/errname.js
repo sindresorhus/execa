@@ -1,7 +1,7 @@
 import test from 'ava';
 import errname from '../lib/errname';
 
-const isWin = process.platform === 'win32';
+const isWindows = process.platform === 'win32';
 
 // Simulates failure to capture `process.binding('uv');`
 const fallback = code => errname.__test__(null, code);
@@ -22,5 +22,5 @@ function makeTests(name, m, expected) {
 
 const unknown = 'Unknown system error -2';
 
-makeTests('native', errname, isWin ? unknown : 'ENOENT');
+makeTests('native', errname, isWindows ? unknown : 'ENOENT');
 makeTests('fallback', fallback, unknown);

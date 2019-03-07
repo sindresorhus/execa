@@ -20,7 +20,7 @@ function handleArgs(command, args, options) {
 	args = parsed.args;
 	options = parsed.options;
 
-	options = Object.assign({
+	options = {
 		maxBuffer: TEN_MEGABYTES,
 		buffer: true,
 		stripFinalNewline: true,
@@ -28,17 +28,23 @@ function handleArgs(command, args, options) {
 		localDir: options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
-		cleanup: true
-	}, options, {
+		cleanup: true,
+		...options,
 		windowsHide: true
-	});
+	};
 
 	if (options.extendEnv !== false) {
-		options.env = Object.assign({}, process.env, options.env);
+		options.env = {
+			...process.env,
+			...options.env
+		};
 	}
 
 	if (options.preferLocal) {
-		options.env = npmRunPath.env(Object.assign({}, options, {cwd: options.localDir}));
+		options.env = npmRunPath.env({
+			...options,
+			cwd: options.localDir
+		});
 	}
 
 	// TODO: Remove in the next major release
@@ -82,7 +88,7 @@ function handleOutput(options, value) {
 }
 
 function handleShell(fn, command, options) {
-	return fn(command, Object.assign({}, options, {shell: true}));
+	return fn(command, {...options, shell: true});
 }
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
@@ -257,14 +263,15 @@ module.exports = (command, args, options) => {
 		}
 	}
 
+	// TODO: Use native "finally" syntax when targeting Node.js 10
 	const handlePromise = () => pFinally(Promise.all([
 		processDone,
 		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
 		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
-	]).then(arr => {
-		const result = arr[0];
-		result.stdout = arr[1];
-		result.stderr = arr[2];
+	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
+		const result = results[0];
+		result.stdout = results[1];
+		result.stderr = results[2];
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
 			const error = makeError(result, {
@@ -301,21 +308,29 @@ module.exports = (command, args, options) => {
 
 	handleInput(spawned, parsed.options.input);
 
-	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
-	spawned.catch = onrejected => handlePromise().catch(onrejected);
-	// eslint-disable-next-line no-use-extend-native/no-use-extend-native
+	// eslint-disable-next-line promise/prefer-await-to-then
+	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
+	spawned.catch = onRejected => handlePromise().catch(onRejected);
+
+	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {
-		spawned.finally = onfinally => handlePromise().finally(onfinally);
+		spawned.finally = onFinally => handlePromise().finally(onFinally);
 	}
 
 	return spawned;
 };
 
 // TODO: set `stderr: 'ignore'` when that option is implemented
-module.exports.stdout = (...args) => module.exports(...args).then(x => x.stdout);
+module.exports.stdout = async (...args) => {
+	const {stdout} = await module.exports(...args);
+	return stdout;
+};
 
 // TODO: set `stdout: 'ignore'` when that option is implemented
-module.exports.stderr = (...args) => module.exports(...args).then(x => x.stderr);
+module.exports.stderr = async (...args) => {
+	const {stderr} = await module.exports(...args);
+	return stderr;
+};
 
 module.exports.shell = (command, options) => handleShell(module.exports, command, options);
 

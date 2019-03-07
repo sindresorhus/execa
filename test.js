@@ -49,11 +49,6 @@ test('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	t.is(result.all, '132');
 });
 
-test('result.all shows both `stdout` and `stderr` concatenated - sync', t => {
-	const result = m.sync('noop-132');
-	t.is(result.all, '132');
-});
-
 test('stdout/stderr available on errors', async t => {
 	const err = await t.throws(m('exit', ['2']));
 	t.is(typeof err.stdout, 'string');

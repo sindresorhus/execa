@@ -124,11 +124,11 @@ function handleShell(fn, command, options) {
 }
 
 function makeAllStream(spawned) {
-	const mixed = mergeStream();
-
 	if (!spawned.stdout && !spawned.stderr) {
 		return null;
 	}
+
+	const mixed = mergeStream();
 
 	if (spawned.stdout) {
 		mixed.add(spawned.stdout);
@@ -367,10 +367,6 @@ module.exports.sync = (command, args, options) => {
 	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
 	result.code = result.status;
 
-	// `spawnSync` doesn't expose the stdout/stderr before terminating, which means
-	// the streams can't be merged unless proxying on `options.stdio`
-	result.all = result.stdout + result.stderr;
-
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
 			joinedCommand,
@@ -387,7 +383,6 @@ module.exports.sync = (command, args, options) => {
 	return {
 		stdout: handleOutput(parsed.options, result.stdout),
 		stderr: handleOutput(parsed.options, result.stderr),
-		all: handleOutput(parsed.options, result.all),
 		code: 0,
 		failed: false,
 		signal: null,

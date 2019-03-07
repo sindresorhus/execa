@@ -13,10 +13,11 @@
 		"node": ">=8"
 	},
 	"scripts": {
-		"test": "xo && nyc ava"
+		"test": "xo && nyc ava && tsd-check"
 	},
 	"files": [
 		"index.js",
+		"index.d.ts",
 		"lib"
 	],
 	"keywords": [
@@ -46,6 +47,7 @@
 		"strip-final-newline": "^2.0.0"
 	},
 	"devDependencies": {
+		"@types/node": "^11.10.0",
 		"ava": "^1.3.1",
 		"cat-names": "^2.0.0",
 		"coveralls": "^3.0.3",
@@ -53,6 +55,7 @@
 		"is-running": "^2.0.0",
 		"nyc": "^13.3.0",
 		"tempfile": "^2.0.0",
+		"tsd-check": "^0.3.0",
 		"xo": "^0.24.0"
 	},
 	"nyc": {

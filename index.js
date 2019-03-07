@@ -193,7 +193,7 @@ function joinCommand(command, args) {
 	return joinedCommand;
 }
 
-module.exports = (command, args, options) => {
+const execa = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
 	const joinedCommand = joinCommand(command, args);
@@ -319,6 +319,9 @@ module.exports = (command, args, options) => {
 
 	return spawned;
 };
+
+module.exports = execa;
+module.exports.default = execa;
 
 // TODO: set `stderr: 'ignore'` when that option is implemented
 module.exports.stdout = async (...args) => {

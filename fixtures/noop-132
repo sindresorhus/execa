@@ -9,6 +9,8 @@
 // - console.log/error
 
 process.stdout.write('1');
-process.stdout.write('3');
-// Ideally, to demonstrate the interleaving, the next line should go before '3'
-process.stderr.write('2');
+process.stderr.write('3');
+
+setTimeout(() => {
+	process.stdout.write('2');
+}, 5000);

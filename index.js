@@ -292,6 +292,7 @@ module.exports = (command, args, options) => {
 		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
 		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
 		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
+
 	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
 		const result = results[0];
 		result.stdout = results[1];
@@ -335,7 +336,7 @@ module.exports = (command, args, options) => {
 	handleInput(spawned, parsed.options.input);
 
 	spawned.all = makeAllStream(spawned);
-
+  
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);

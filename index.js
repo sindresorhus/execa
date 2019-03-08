@@ -336,7 +336,7 @@ module.exports = (command, args, options) => {
 	handleInput(spawned, parsed.options.input);
 
 	spawned.all = makeAllStream(spawned);
-  
+
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);

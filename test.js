@@ -59,10 +59,11 @@ test.serial('result.all shows both `stdout` and `stderr` intermixed', async t =>
 	t.is(result.all, '132');
 });
 
-test('stdout/stderr available on errors', async t => {
+test('stdout/stderr/all available on errors', async t => {
 	const err = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
+	t.is(typeof err.all, 'string');
 });
 
 test('include stdout and stderr in errors for improved debugging', async t => {

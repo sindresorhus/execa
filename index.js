@@ -163,6 +163,10 @@ function makeError(result, options) {
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
 
+	if ('all' in result) {
+		error.all = result.all;
+	}
+
 	return error;
 }
 
@@ -292,7 +296,6 @@ module.exports = (command, args, options) => {
 		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
 		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
 		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
-
 	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
 		const result = results[0];
 		result.stdout = results[1];

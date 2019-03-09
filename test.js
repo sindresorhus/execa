@@ -46,7 +46,7 @@ test('execa.stderr()', async t => {
 	t.is(stderr, 'foo');
 });
 
-test('result.all shows both `stdout` and `stderr` intermixed', async t => {
+test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const result = await execa('noop-132');
 	// Due to the async nature of process.stdout/stderr on POSIX, this test
 	// is very unpredictable, although it should interleave the streams

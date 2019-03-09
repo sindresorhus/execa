@@ -13,4 +13,4 @@ process.stderr.write('3');
 
 setTimeout(() => {
 	process.stdout.write('2');
-}, 5000);
+}, 1000);

@@ -54,8 +54,8 @@ test.serial('execa.all()', async t => {
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const result = await execa('noop-132');
 	// Due to the async nature of process.stdout/stderr on POSIX, this test
-	// is very unpredictable, although it should interleave the streams
-	// https://nodejs.org/api/process.html#process_a_note_on_process_i_os
+	// is very unpredictable, although it should interleave the streams.
+	// https://nodejs.org/api/process.html#process_a_note_on_process_i_o
 	t.is(result.all, '132');
 });
 

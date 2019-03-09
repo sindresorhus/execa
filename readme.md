@@ -12,6 +12,7 @@
 - Higher max buffer. 10 MB instead of 200 KB.
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
+- [Adds `all` interleaved output](#execafile-arguments-options) from `stdout` and `stderr`, similar to what the terminal sees. [(async only)](#execasyncfile-arguments-options)
 
 
 ## Install
@@ -66,6 +67,7 @@ const execa = require('execa');
 			cmd: '/bin/sh -c exit 3',
 			stdout: '',
 			stderr: '',
+			all: '',
 			timedOut: false
 		}
 		*/
@@ -100,7 +102,9 @@ Execute a file.
 
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
-Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout`, `stderr` and `all` (interleaved `stdout` and `stderr` stream) properties.
+Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which is enhanced to be a `Promise`.
+It exposes an additional `all` stream, with both `stdout` and `stderr` outputs combined.
+The promise result is an `Object` with `stdout`, `stderr` and `all` properties.
 
 ### execa.stdout(file, [arguments], [options])
 
@@ -109,6 +113,10 @@ Same as `execa()`, but returns only `stdout`.
 ### execa.stderr(file, [arguments], [options])
 
 Same as `execa()`, but returns only `stderr`.
+
+### execa.all(file, [arguments], [options])
+
+Same as `execa()`, but returns only `all`.
 
 ### execa.shell(command, [options])
 
@@ -122,7 +130,7 @@ The `child_process` instance is enhanced to also be promise for a result object 
 
 Execute a file synchronously. 
 
-Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options). It's not possible to obtain a true interleaved `all` stream as `execa` does, because `child_process.spawnSync` does not expose `stdout` and `stderr` until termination.
+Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options). It's not possible to obtain a true interleaved `all` stream as `execa()` does, because `child_process.spawnSync` does not expose `stdout` and `stderr` to be combined until termination.
 
 This method throws an `Error` if the command fails.
 

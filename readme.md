@@ -51,6 +51,10 @@ const execa = require('execa');
 	const {stdout} = await execa.shell('echo unicorns');
 	//=> 'unicorns'
 
+	// Cancelling a spawned process
+	const spawned = execa("echo unicorns");
+	spawned.catch(() => {}); // To handle the CancelError
+	spawned.cancel();
 
 	// Catching an error
 	try {

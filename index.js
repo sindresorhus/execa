@@ -1,11 +1,13 @@
 'use strict';
 const path = require('path');
+const os = require('os');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
+const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
@@ -16,45 +18,37 @@ const isWin = process.platform === 'win32';
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(command, args, options) {
-	let parsed;
+	const parsed = crossSpawn._parse(command, args, options);
+	command = parsed.command;
+	args = parsed.args;
+	options = parsed.options;
 
-	options = Object.assign({
-		extendEnv: true,
-		env: {}
-	}, options);
-
-	if (options.extendEnv) {
-		options.env = Object.assign({}, process.env, options.env);
-	}
-
-	if (options.__winShell === true) {
-		delete options.__winShell;
-		parsed = {
-			command,
-			args,
-			options,
-			file: command,
-			original: {
-				command,
-				args
-			}
-		};
-	} else {
-		parsed = crossSpawn._parse(command, args, options);
-	}
-
-	options = Object.assign({
+	options = {
 		maxBuffer: TEN_MEGABYTES,
 		buffer: true,
 		stripFinalNewline: true,
 		preferLocal: true,
-		localDir: parsed.options.cwd || process.cwd(),
+		localDir: options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
-		cleanup: true
-	}, parsed.options, {
+		cleanup: true,
+		...options,
 		windowsHide: true
-	});
+	};
+
+	if (options.extendEnv !== false) {
+		options.env = {
+			...process.env,
+			...options.env
+		};
+	}
+
+	if (options.preferLocal) {
+		options.env = npmRunPath.env({
+			...options,
+			cwd: options.localDir
+		});
+	}
 
 	// TODO: Remove in the next major release
 	if (options.stripEof === false) {
@@ -63,33 +57,17 @@ function handleArgs(command, args, options) {
 
 	options.stdio = stdio(options);
 
-	if (options.preferLocal) {
-		options.env = npmRunPath.env(Object.assign({}, options, {cwd: options.localDir}));
-	}
-
 	if (options.detached) {
 		// #115
 		options.cleanup = false;
 	}
 
-	if (!isWin) {
-		// #96
-		// Windows automatically kills every descendents of the child process
-		// On Linux and macOS we need to detach the process and kill by pid range
-		options.detached = true;
-	}
-
-	if (isWin && path.basename(parsed.command) === 'cmd.exe') {
+	if (process.platform === 'win32' && path.basename(command) === 'cmd.exe') {
 		// #116
-		parsed.args.unshift('/q');
+		args.unshift('/q');
 	}
 
-	return {
-		command: parsed.command,
-		args: parsed.args,
-		options,
-		parsed
-	};
+	return {command, args, options, parsed};
 }
 
 function handleInput(spawned, input) {
@@ -113,24 +91,25 @@ function handleOutput(options, value) {
 }
 
 function handleShell(fn, command, options) {
-	let file = '/bin/sh';
-	let args = ['-c', command];
+	return fn(command, {...options, shell: true});
+}
 
-	options = Object.assign({}, options);
-
-	if (process.platform === 'win32') {
-		options.__winShell = true;
-		file = process.env.comspec || 'cmd.exe';
-		args = ['/s', '/c', `"${command}"`];
-		options.windowsVerbatimArguments = true;
+function makeAllStream(spawned) {
+	if (!spawned.stdout && !spawned.stderr) {
+		return null;
 	}
 
-	if (options.shell) {
-		file = options.shell;
-		delete options.shell;
+	const mixed = mergeStream();
+
+	if (spawned.stdout) {
+		mixed.add(spawned.stdout);
 	}
 
-	return fn(file, args, options);
+	if (spawned.stderr) {
+		mixed.add(spawned.stderr);
+	}
+
+	return mixed;
 }
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
@@ -164,41 +143,71 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 }
 
 function makeError(result, options) {
-	const {stdout, stderr} = result;
-
+	const {stdout, stderr, code, signal} = result;
 	let {error} = result;
-	const {code, signal} = result;
+	const {joinedCommand, timedOut, parsed: {options: {timeout}}} = options;
 
-	const {parsed, joinedCommand} = options;
-	const timedOut = options.timedOut || false;
+	const [exitCodeName, exitCode] = getCode(result, code);
 
-	if (!error) {
-		let output = '';
-
-		if (Array.isArray(parsed.options.stdio)) {
-			if (parsed.options.stdio[2] !== 'inherit') {
-				output += output.length > 0 ? stderr : `\n${stderr}`;
-			}
-
-			if (parsed.options.stdio[1] !== 'inherit') {
-				output += `\n${stdout}`;
-			}
-		} else if (parsed.options.stdio !== 'inherit') {
-			output = `\n${stderr}${stdout}`;
-		}
-
-		error = new Error(`Command failed: ${joinedCommand}${output}`);
-		error.code = code < 0 ? errname(code) : code;
+	if (!(error instanceof Error)) {
+		const message = [joinedCommand, stderr, stdout].filter(Boolean).join('\n');
+		error = new Error(message);
 	}
 
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode});
+	error.message = `Command ${prefix}: ${error.message}`;
+
+	error.code = exitCode || exitCodeName;
+	error.exitCode = exitCode;
+	error.exitCodeName = exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
 	error.signal = signal || null;
 	error.cmd = joinedCommand;
-	error.timedOut = timedOut;
+	error.timedOut = Boolean(timedOut);
+
+	if ('all' in result) {
+		error.all = result.all;
+	}
 
 	return error;
+}
+
+function getCode({error = {}}, code) {
+	if (error.code) {
+		return [error.code, os.constants.errno[error.code]];
+	}
+
+	if (Number.isInteger(code)) {
+		return [errname(-Math.abs(code)), Math.abs(code)];
+	}
+
+	return [];
+}
+
+function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode}) {
+	if (timedOut) {
+		return `timed out after ${timeout} milliseconds`;
+	}
+
+	if (signal) {
+		return `was killed with ${signal}`;
+	}
+
+	if (exitCodeName !== undefined && exitCode !== undefined) {
+		return `failed with exit code ${exitCode} (${exitCodeName})`;
+	}
+
+	if (exitCodeName !== undefined) {
+		return `failed with exit code ${exitCodeName}`;
+	}
+
+	if (exitCode !== undefined) {
+		return `failed with exit code ${exitCode}`;
+	}
+
+	return 'failed';
 }
 
 function joinCommand(command, args) {
@@ -292,16 +301,23 @@ module.exports = (command, args, options) => {
 		if (spawned.stderr) {
 			spawned.stderr.destroy();
 		}
+
+		if (spawned.all) {
+			spawned.all.destroy();
+		}
 	}
 
+	// TODO: Use native "finally" syntax when targeting Node.js 10
 	const handlePromise = () => pFinally(Promise.all([
 		processDone,
 		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
-	]).then(arr => {
-		const result = arr[0];
-		result.stdout = arr[1];
-		result.stderr = arr[2];
+		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
+		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
+	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
+		const result = results[0];
+		result.stdout = results[1];
+		result.stderr = results[2];
+		result.all = results[3];
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
 			const error = makeError(result, {
@@ -325,7 +341,10 @@ module.exports = (command, args, options) => {
 		return {
 			stdout: handleOutput(parsed.options, result.stdout),
 			stderr: handleOutput(parsed.options, result.stderr),
+			all: handleOutput(parsed.options, result.all),
 			code: 0,
+			exitCode: 0,
+			exitCodeName: 'SUCCESS',
 			failed: false,
 			killed: false,
 			signal: null,
@@ -341,17 +360,31 @@ module.exports = (command, args, options) => {
 
 	handleInput(spawned, parsed.options.input);
 
-	spawned.then = (onfulfilled, onrejected) => handlePromise().then(onfulfilled, onrejected);
-	spawned.catch = onrejected => handlePromise().catch(onrejected);
+	spawned.all = makeAllStream(spawned);
+
+	// eslint-disable-next-line promise/prefer-await-to-then
+	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
+	spawned.catch = onRejected => handlePromise().catch(onRejected);
+
+	// TOOD: Remove the `if`-guard when targeting Node.js 10
+	if (Promise.prototype.finally) {
+		spawned.finally = onFinally => handlePromise().finally(onFinally);
+	}
 
 	return spawned;
 };
 
 // TODO: set `stderr: 'ignore'` when that option is implemented
-module.exports.stdout = (...args) => module.exports(...args).then(x => x.stdout);
+module.exports.stdout = async (...args) => {
+	const {stdout} = await module.exports(...args);
+	return stdout;
+};
 
 // TODO: set `stdout: 'ignore'` when that option is implemented
-module.exports.stderr = (...args) => module.exports(...args).then(x => x.stderr);
+module.exports.stderr = async (...args) => {
+	const {stderr} = await module.exports(...args);
+	return stderr;
+};
 
 module.exports.shell = (command, options) => handleShell(module.exports, command, options);
 
@@ -383,6 +416,8 @@ module.exports.sync = (command, args, options) => {
 		stdout: handleOutput(parsed.options, result.stdout),
 		stderr: handleOutput(parsed.options, result.stderr),
 		code: 0,
+		exitCode: 0,
+		exitCodeName: 'SUCCESS',
 		failed: false,
 		signal: null,
 		cmd: joinedCommand,

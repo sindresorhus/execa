@@ -1,6 +1,6 @@
 import {expectType} from 'tsd-check';
 import execa, {
-	ExecaReturns,
+	ExecaReturnValue,
 	ExecaChildProcess,
 	stdout,
 	stderr,
@@ -71,13 +71,13 @@ execa('unicorns', {stdout: undefined});
 execa('unicorns', {windowsVerbatimArguments: true});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
-expectType<ExecaReturns<string>>(await execa('unicorns'));
-expectType<ExecaReturns<string>>(await execa('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturns<Buffer>>(await execa('unicorns', {encoding: null}));
-expectType<ExecaReturns<string>>(
+expectType<ExecaReturnValue<string>>(await execa('unicorns'));
+expectType<ExecaReturnValue<string>>(await execa('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await execa('unicorns', {encoding: null}));
+expectType<ExecaReturnValue<string>>(
 	await execa('unicorns', ['foo'], {encoding: 'utf8'})
 );
-expectType<ExecaReturns<Buffer>>(
+expectType<ExecaReturnValue<Buffer>>(
 	await execa('unicorns', ['foo'], {encoding: null})
 );
 
@@ -96,16 +96,16 @@ expectType<string>(await stderr('unicorns', ['foo'], {encoding: 'utf8'}));
 expectType<Buffer>(await stderr('unicorns', ['foo'], {encoding: null}));
 
 expectType<ExecaChildProcess<string>>(shell('unicorns'));
-expectType<ExecaReturns<string>>(await shell('unicorns'));
-expectType<ExecaReturns<string>>(await shell('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturns<Buffer>>(await shell('unicorns', {encoding: null}));
+expectType<ExecaReturnValue<string>>(await shell('unicorns'));
+expectType<ExecaReturnValue<string>>(await shell('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await shell('unicorns', {encoding: null}));
 
-expectType<ExecaReturns<string>>(sync('unicorns'));
-expectType<ExecaReturns<string>>(sync('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturns<Buffer>>(sync('unicorns', {encoding: null}));
-expectType<ExecaReturns<string>>(sync('unicorns', ['foo'], {encoding: 'utf8'}));
-expectType<ExecaReturns<Buffer>>(sync('unicorns', ['foo'], {encoding: null}));
+expectType<ExecaReturnValue<string>>(sync('unicorns'));
+expectType<ExecaReturnValue<string>>(sync('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(sync('unicorns', {encoding: null}));
+expectType<ExecaReturnValue<string>>(sync('unicorns', ['foo'], {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(sync('unicorns', ['foo'], {encoding: null}));
 
-expectType<ExecaReturns<string>>(shellSync('unicorns'));
-expectType<ExecaReturns<string>>(shellSync('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturns<Buffer>>(shellSync('unicorns', {encoding: null}));
+expectType<ExecaReturnValue<string>>(shellSync('unicorns'));
+expectType<ExecaReturnValue<string>>(shellSync('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(shellSync('unicorns', {encoding: null}));

@@ -1,6 +1,6 @@
 /// <reference types="node"/>
 import {ChildProcess} from 'child_process';
-import {Stream, Readable} from 'stream';
+import {Stream, Readable as ReadableStream} from 'stream';
 
 export type StdIOOption =
 	| 'pipe'
@@ -174,7 +174,7 @@ export interface Options<EncodingType = string>
 	/**
 	 * Write some input to the `stdin` of your binary.
 	 */
-	readonly input?: string | Buffer | Readable;
+	readonly input?: string | Buffer | ReadableStream;
 }
 
 export interface SyncOptions<EncodingType = string>
@@ -185,7 +185,7 @@ export interface SyncOptions<EncodingType = string>
 	readonly input?: string | Buffer;
 }
 
-export interface ExecaReturns<StdOutErrType = string> {
+export interface ExecaReturnValue<StdOutErrType = string> {
 	/**
 	 * The command that was run.
 	 */
@@ -227,7 +227,7 @@ export interface ExecaReturns<StdOutErrType = string> {
 	timedOut: boolean;
 }
 
-export type ExecaError<StdOutErrType> = Error & ExecaReturns<StdOutErrType>;
+export type ExecaError<StdOutErrType> = Error & ExecaReturnValue<StdOutErrType>;
 
 export interface ExecaChildPromise<StdOutErrType> {
 	catch<ResultType = never>(
@@ -236,12 +236,12 @@ export interface ExecaChildPromise<StdOutErrType> {
 					reason: ExecaError<StdOutErrType>
 			  ) => ResultType | PromiseLike<ResultType>)
 			| null
-	): Promise<ExecaReturns<StdOutErrType> | ResultType>;
+	): Promise<ExecaReturnValue<StdOutErrType> | ResultType>;
 }
 
 export type ExecaChildProcess<StdOutErrType = string> = ChildProcess &
 	ExecaChildPromise<StdOutErrType> &
-	Promise<ExecaReturns<StdOutErrType>>;
+	Promise<ExecaReturnValue<StdOutErrType>>;
 
 /**
  * Execute a file.
@@ -338,17 +338,17 @@ export function sync(
 	file: string,
 	arguments?: ReadonlyArray<string>,
 	options?: SyncOptions
-): ExecaReturns;
+): ExecaReturnValue;
 export function sync(
 	file: string,
 	arguments?: ReadonlyArray<string>,
 	options?: SyncOptions<null>
-): ExecaReturns<Buffer>;
-export function sync(file: string, options?: SyncOptions): ExecaReturns;
+): ExecaReturnValue<Buffer>;
+export function sync(file: string, options?: SyncOptions): ExecaReturnValue;
 export function sync(
 	file: string,
 	options?: SyncOptions<null>
-): ExecaReturns<Buffer>;
+): ExecaReturnValue<Buffer>;
 
 /**
  * Execute a command synchronously through the system shell.
@@ -358,8 +358,8 @@ export function sync(
  * @param command - The command to execute.
  * @returns The same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
  */
-export function shellSync(command: string, options?: Options): ExecaReturns;
+export function shellSync(command: string, options?: Options): ExecaReturnValue;
 export function shellSync(
 	command: string,
 	options?: Options<null>
-): ExecaReturns<Buffer>;
+): ExecaReturnValue<Buffer>;

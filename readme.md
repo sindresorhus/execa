@@ -322,6 +322,7 @@ getStream(stream).then(value => {
 ```
 
 
-## License
+## Maintainers
 
-MIT © [Sindre Sorhus](https://sindresorhus.com)
+- [Sindre Sorhus](https://github.com/sindresorhus)
+- [@ehmicky](https://github.com/ehmicky)

@@ -7,6 +7,7 @@ const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
+const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
@@ -91,6 +92,24 @@ function handleShell(fn, command, options) {
 	return fn(command, {...options, shell: true});
 }
 
+function makeAllStream(spawned) {
+	if (!spawned.stdout && !spawned.stderr) {
+		return null;
+	}
+
+	const mixed = mergeStream();
+
+	if (spawned.stdout) {
+		mixed.add(spawned.stdout);
+	}
+
+	if (spawned.stderr) {
+		mixed.add(spawned.stderr);
+	}
+
+	return mixed;
+}
+
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
 		return null;
@@ -145,6 +164,10 @@ function makeError(result, options) {
 	error.signal = signal || null;
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
+
+	if ('all' in result) {
+		error.all = result.all;
+	}
 
 	return error;
 }
@@ -263,17 +286,23 @@ module.exports = (command, args, options) => {
 		if (spawned.stderr) {
 			spawned.stderr.destroy();
 		}
+
+		if (spawned.all) {
+			spawned.all.destroy();
+		}
 	}
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
 	const handlePromise = () => pFinally(Promise.all([
 		processDone,
 		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
+		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
+		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
 	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
 		const result = results[0];
 		result.stdout = results[1];
 		result.stderr = results[2];
+		result.all = results[3];
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
 			const error = makeError(result, {
@@ -297,6 +326,7 @@ module.exports = (command, args, options) => {
 		return {
 			stdout: handleOutput(parsed.options, result.stdout),
 			stderr: handleOutput(parsed.options, result.stderr),
+			all: handleOutput(parsed.options, result.all),
 			code: 0,
 			exitCode: 0,
 			exitCodeName: 'SUCCESS',
@@ -311,6 +341,8 @@ module.exports = (command, args, options) => {
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
 	handleInput(spawned, parsed.options.input);
+
+	spawned.all = makeAllStream(spawned);
 
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);

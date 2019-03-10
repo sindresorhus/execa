@@ -46,10 +46,16 @@ test('execa.stderr()', async t => {
 	t.is(stderr, 'foo');
 });
 
-test('stdout/stderr available on errors', async t => {
+test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
+	const result = await execa('noop-132');
+	t.is(result.all, '132');
+});
+
+test('stdout/stderr/all available on errors', async t => {
 	const err = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
+	t.is(typeof err.all, 'string');
 });
 
 test('include stdout and stderr in errors for improved debugging', async t => {
@@ -234,7 +240,8 @@ test('do not buffer stdout when `buffer` set to `false`', async t => {
 	const promise = execa('max-buffer', ['stdout', '10'], {buffer: false});
 	const [result, stdout] = await Promise.all([
 		promise,
-		getStream(promise.stdout)
+		getStream(promise.stdout),
+		getStream(promise.all)
 	]);
 
 	t.is(result.stdout, undefined);
@@ -245,7 +252,8 @@ test('do not buffer stderr when `buffer` set to `false`', async t => {
 	const promise = execa('max-buffer', ['stderr', '10'], {buffer: false});
 	const [result, stderr] = await Promise.all([
 		promise,
-		getStream(promise.stderr)
+		getStream(promise.stderr),
+		getStream(promise.all)
 	]);
 
 	t.is(result.stderr, undefined);

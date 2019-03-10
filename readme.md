@@ -66,7 +66,7 @@ const execa = require('execa');
 			exitCodeName: 'ESRCH',
 			stdout: '',
 			stderr: '',
-      all: '',
+			all: '',
 			failed: true,
 			signal: null,
 			cmd: 'exit 3',

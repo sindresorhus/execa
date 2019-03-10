@@ -60,15 +60,18 @@ const execa = require('execa');
 		console.log(error);
 		/*
 		{
-			message: 'Command failed: /bin/sh -c exit 3'
-			killed: false,
+			message: 'Command failed with exit code 3 (ESRCH): exit 3',
 			code: 3,
-			signal: null,
-			cmd: '/bin/sh -c exit 3',
+			exitCode: 3,
+			exitCodeName: 'ESRCH',
 			stdout: '',
 			stderr: '',
-			all: '',
-			timedOut: false
+      all: '',
+			failed: true,
+			signal: null,
+			cmd: 'exit 3',
+			timedOut: false,
+			killed: false
 		}
 		*/
 	}
@@ -81,12 +84,15 @@ try {
 	console.log(error);
 	/*
 	{
-		message: 'Command failed: /bin/sh -c exit 3'
+		message: 'Command failed with exit code 3 (ESRCH): exit 3',
 		code: 3,
-		signal: null,
-		cmd: '/bin/sh -c exit 3',
+		exitCode: 3,
+		exitCodeName: 'ESRCH',
 		stdout: '',
 		stderr: '',
+		failed: true,
+		signal: null,
+		cmd: 'exit 3',
 		timedOut: false
 	}
 	*/
@@ -330,6 +336,7 @@ getStream(stream).then(value => {
 ```
 
 
-## License
+## Maintainers
 
-MIT © [Sindre Sorhus](https://sindresorhus.com)
+- [Sindre Sorhus](https://github.com/sindresorhus)
+- [@ehmicky](https://github.com/ehmicky)

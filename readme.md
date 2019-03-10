@@ -12,7 +12,7 @@
 - Higher max buffer. 10 MB instead of 200 KB.
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
-- [Adds `all` interleaved output](#execafile-arguments-options) from `stdout` and `stderr`, similar to what the terminal sees. [(async only)](#execasyncfile-arguments-options)
+- [Adds an `.all` property](#execafile-arguments-options) with interleaved output from `stdout` and `stderr`, similar to what the terminal sees. [*(Async only)*](#execasyncfile-arguments-options)
 
 
 ## Install

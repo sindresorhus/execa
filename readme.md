@@ -59,14 +59,17 @@ const execa = require('execa');
 		console.log(error);
 		/*
 		{
-			message: 'Command failed: /bin/sh -c exit 3'
-			killed: false,
+			message: 'Command failed with exit code 3 (ESRCH): exit 3',
 			code: 3,
-			signal: null,
-			cmd: '/bin/sh -c exit 3',
+			exitCode: 3,
+			exitCodeName: 'ESRCH',
 			stdout: '',
 			stderr: '',
-			timedOut: false
+			failed: true,
+			signal: null,
+			cmd: 'exit 3',
+			timedOut: false,
+			killed: false
 		}
 		*/
 	}
@@ -79,12 +82,15 @@ try {
 	console.log(error);
 	/*
 	{
-		message: 'Command failed: /bin/sh -c exit 3'
+		message: 'Command failed with exit code 3 (ESRCH): exit 3',
 		code: 3,
-		signal: null,
-		cmd: '/bin/sh -c exit 3',
+		exitCode: 3,
+		exitCodeName: 'ESRCH',
 		stdout: '',
 		stderr: '',
+		failed: true,
+		signal: null,
+		cmd: 'exit 3',
 		timedOut: false
 	}
 	*/

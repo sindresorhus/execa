@@ -46,11 +46,6 @@ test('execa.stderr()', async t => {
 	t.is(stderr, 'foo');
 });
 
-test.serial('execa.all()', async t => {
-	const all = await execa.all('noop-132');
-	t.is(all, '132');
-});
-
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const result = await execa('noop-132');
 	t.is(result.all, '132');

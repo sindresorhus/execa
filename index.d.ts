@@ -185,36 +185,16 @@ export interface SyncOptions<EncodingType = string>
 	readonly input?: string | Buffer;
 }
 
-export interface ExecaReturnValue<StdOutErrType = string> {
+export interface ExecaReturnBase<StdOutErrType> {
 	/**
-	 * The command that was run.
+	 * The numeric exit code of the process that was run.
 	 */
-	cmd: string;
+	exitCode: number;
 
 	/**
-	 * The exit code of the process that was run.
+	 * The textual exit code of the process that was run.
 	 */
-	code: number;
-
-	/**
-	 * Whether the process failed to run.
-	 */
-	failed: boolean;
-
-	/**
-	 * Whether the process was killed.
-	 */
-	killed: boolean;
-
-	/**
-	 * The signal that was used to terminate the process.
-	 */
-	signal: string | null;
-
-	/**
-	 * The output of the process on stderr.
-	 */
-	stderr: StdOutErrType;
+	exitCodeName: string;
 
 	/**
 	 * The output of the process on stdout.
@@ -222,12 +202,73 @@ export interface ExecaReturnValue<StdOutErrType = string> {
 	stdout: StdOutErrType;
 
 	/**
+	 * The output of the process on stderr.
+	 */
+	stderr: StdOutErrType;
+
+	/**
+	 * Whether the process failed to run.
+	 */
+	failed: boolean;
+
+	/**
+	 * The signal that was used to terminate the process.
+	 */
+	signal: string | null;
+
+	/**
+	 * The command that was run.
+	 */
+	cmd: string;
+
+	/**
 	 * Whether the process timed out.
 	 */
 	timedOut: boolean;
+
+	/**
+	 * Whether the process was killed.
+	 */
+	killed: boolean;
 }
 
-export type ExecaError<StdOutErrType> = Error & ExecaReturnValue<StdOutErrType>;
+export interface ExecaSyncReturnValue<StdOutErrType = string>
+	extends ExecaReturnBase<StdOutErrType> {
+	/**
+	 * The exit code of the process that was run.
+	 */
+	code: number;
+}
+
+export interface ExecaReturnValue<StdOutErrType = string>
+	extends ExecaSyncReturnValue<StdOutErrType> {
+	/**
+	 * The output of the process with `stdout` and `stderr` interleaved.
+	 */
+	all: StdOutErrType;
+}
+
+export interface ExecaSyncError<StdOutErrType = string>
+	extends Error,
+		ExecaReturnBase<StdOutErrType> {
+	/**
+	 * The error message.
+	 */
+	message: string;
+
+	/**
+	 * The exit code (either numeric or textual) of the process that was run.
+	 */
+	code: number | string;
+}
+
+export interface ExecaError<StdOutErrType = string>
+	extends ExecaSyncError<StdOutErrType> {
+	/**
+	 * The output of the process with `stdout` and `stderr` interleaved.
+	 */
+	all: StdOutErrType;
+}
 
 export interface ExecaChildPromise<StdOutErrType> {
 	catch<ResultType = never>(
@@ -243,123 +284,115 @@ export type ExecaChildProcess<StdOutErrType = string> = ChildProcess &
 	ExecaChildPromise<StdOutErrType> &
 	Promise<ExecaReturnValue<StdOutErrType>>;
 
-/**
- * Execute a file.
- *
- * Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
- *
- * @param file - The program/script to execute.
- * @param arguments - Arguments to pass to `file` on execution.
- * @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
- */
-export default function execa(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: Options
-): ExecaChildProcess;
-export default function execa(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: Options<null>
-): ExecaChildProcess<Buffer>;
-export default function execa(
-	file: string,
-	options?: Options
-): ExecaChildProcess;
-export default function execa(
-	file: string,
-	options?: Options<null>
-): ExecaChildProcess<Buffer>;
+declare const execa: {
+	/**
+	 * Execute a file.
+	 *
+	 * Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
+	 *
+	 * @param file - The program/script to execute.
+	 * @param arguments - Arguments to pass to `file` on execution.
+	 * @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+	 */
+	(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: Options
+	): ExecaChildProcess;
+	(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: Options<null>
+	): ExecaChildProcess<Buffer>;
+	(file: string, options?: Options): ExecaChildProcess;
+	(file: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
-/**
- * Same as `execa()`, but returns only `stdout`.
- *
- * @param file - The program/script to execute.
- * @param arguments - Arguments to pass to `file` on execution.
- * @returns A `Promise` that will be resolved with the contents of executed processe's `stdout` contents.
- */
-export function stdout(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: Options
-): Promise<string>;
-export function stdout(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: Options<null>
-): Promise<Buffer>;
-export function stdout(file: string, options?: Options): Promise<string>;
-export function stdout(file: string, options?: Options<null>): Promise<Buffer>;
+	/**
+	 * Same as `execa()`, but returns only `stdout`.
+	 *
+	 * @param file - The program/script to execute.
+	 * @param arguments - Arguments to pass to `file` on execution.
+	 * @returns A `Promise` that will be resolved with the contents of executed processe's `stdout` contents.
+	 */
+	stdout(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: Options
+	): Promise<string>;
+	stdout(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: Options<null>
+	): Promise<Buffer>;
+	stdout(file: string, options?: Options): Promise<string>;
+	stdout(file: string, options?: Options<null>): Promise<Buffer>;
 
-/**
- * Same as `execa()`, but returns only `stderr`.
- *
- * @param file - The program/script to execute.
- * @param arguments - Arguments to pass to `file` on execution.
- * @returns A `Promise` that will be resolved with the contents of executed processe's `stderr` contents.
- */
-export function stderr(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: Options
-): Promise<string>;
-export function stderr(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: Options<null>
-): Promise<Buffer>;
-export function stderr(file: string, options?: Options): Promise<string>;
-export function stderr(file: string, options?: Options<null>): Promise<Buffer>;
+	/**
+	 * Same as `execa()`, but returns only `stderr`.
+	 *
+	 * @param file - The program/script to execute.
+	 * @param arguments - Arguments to pass to `file` on execution.
+	 * @returns A `Promise` that will be resolved with the contents of executed processe's `stderr` contents.
+	 */
+	stderr(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: Options
+	): Promise<string>;
+	stderr(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: Options<null>
+	): Promise<Buffer>;
+	stderr(file: string, options?: Options): Promise<string>;
+	stderr(file: string, options?: Options<null>): Promise<Buffer>;
 
-/**
- * Execute a command through the system shell.
- *
- * Prefer `execa()` whenever possible, as it's both faster and safer.
- *
- * @param command - The command to execute.
- * @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
- */
-export function shell(command: string, options?: Options): ExecaChildProcess;
-export function shell(
-	command: string,
-	options?: Options<null>
-): ExecaChildProcess<Buffer>;
+	/**
+	 * Execute a command through the system shell.
+	 *
+	 * Prefer `execa()` whenever possible, as it's both faster and safer.
+	 *
+	 * @param command - The command to execute.
+	 * @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
+	 */
+	shell(command: string, options?: Options): ExecaChildProcess;
+	shell(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
-/**
- * Execute a file synchronously.
- *
- * This method throws an `Error` if the command fails.
- *
- * @param file - The program/script to execute.
- * @param arguments - Arguments to pass to `file` on execution.
- * @returns The same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
- */
-export function sync(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: SyncOptions
-): ExecaReturnValue;
-export function sync(
-	file: string,
-	arguments?: ReadonlyArray<string>,
-	options?: SyncOptions<null>
-): ExecaReturnValue<Buffer>;
-export function sync(file: string, options?: SyncOptions): ExecaReturnValue;
-export function sync(
-	file: string,
-	options?: SyncOptions<null>
-): ExecaReturnValue<Buffer>;
+	/**
+	 * Execute a file synchronously.
+	 *
+	 * This method throws an `Error` if the command fails.
+	 *
+	 * @param file - The program/script to execute.
+	 * @param arguments - Arguments to pass to `file` on execution.
+	 * @returns The same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
+	 */
+	sync(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: SyncOptions
+	): ExecaSyncReturnValue;
+	sync(
+		file: string,
+		arguments?: ReadonlyArray<string>,
+		options?: SyncOptions<null>
+	): ExecaSyncReturnValue<Buffer>;
+	sync(file: string, options?: SyncOptions): ExecaSyncReturnValue;
+	sync(file: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
 
-/**
- * Execute a command synchronously through the system shell.
- *
- * This method throws an `Error` if the command fails.
- *
- * @param command - The command to execute.
- * @returns The same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
- */
-export function shellSync(command: string, options?: Options): ExecaReturnValue;
-export function shellSync(
-	command: string,
-	options?: Options<null>
-): ExecaReturnValue<Buffer>;
+	/**
+	 * Execute a command synchronously through the system shell.
+	 *
+	 * This method throws an `Error` if the command fails.
+	 *
+	 * @param command - The command to execute.
+	 * @returns The same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
+	 */
+	shellSync(command: string, options?: Options): ExecaSyncReturnValue;
+	shellSync(
+		command: string,
+		options?: Options<null>
+	): ExecaSyncReturnValue<Buffer>;
+};
+
+export default execa;

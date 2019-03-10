@@ -2,22 +2,46 @@ import {expectType} from 'tsd-check';
 import execa, {
 	ExecaReturnValue,
 	ExecaChildProcess,
-	stdout,
-	stderr,
-	shell,
-	sync,
-	shellSync
+	ExecaError,
+	ExecaSyncReturnValue,
+	ExecaSyncError
 } from '.';
 
-const unicornsResult = await execa('unicorns');
-expectType<string>(unicornsResult.cmd);
-expectType<number>(unicornsResult.code);
-expectType<boolean>(unicornsResult.failed);
-expectType<boolean>(unicornsResult.killed);
-expectType<string | null>(unicornsResult.signal);
-expectType<string>(unicornsResult.stderr);
-expectType<string>(unicornsResult.stdout);
-expectType<boolean>(unicornsResult.timedOut);
+try {
+	const unicornsResult = await execa('unicorns');
+	expectType<string>(unicornsResult.cmd);
+	expectType<string | number>(unicornsResult.code);
+	expectType<boolean>(unicornsResult.failed);
+	expectType<boolean>(unicornsResult.killed);
+	expectType<string | null>(unicornsResult.signal);
+	expectType<string>(unicornsResult.stderr);
+	expectType<string>(unicornsResult.stdout);
+	expectType<string>(unicornsResult.all);
+	expectType<boolean>(unicornsResult.timedOut);
+} catch (error) {
+	const execaError: ExecaError = error;
+
+	expectType<string>(execaError.message);
+	expectType<number | string>(execaError.code);
+	expectType<string>(execaError.all);
+}
+
+try {
+	const unicornsResult = execa.sync('unicorns');
+	expectType<string>(unicornsResult.cmd);
+	expectType<string | number>(unicornsResult.code);
+	expectType<boolean>(unicornsResult.failed);
+	expectType<boolean>(unicornsResult.killed);
+	expectType<string | null>(unicornsResult.signal);
+	expectType<string>(unicornsResult.stderr);
+	expectType<string>(unicornsResult.stdout);
+	expectType<boolean>(unicornsResult.timedOut);
+} catch (error) {
+	const execaError: ExecaSyncError = error;
+
+	expectType<string>(execaError.message);
+	expectType<number | string>(execaError.code);
+}
 
 execa('unicorns', {cwd: '.'});
 execa('unicorns', {env: {PATH: ''}});
@@ -72,7 +96,9 @@ execa('unicorns', {windowsVerbatimArguments: true});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa('unicorns'));
-expectType<ExecaReturnValue<string>>(await execa('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<string>>(
+	await execa('unicorns', {encoding: 'utf8'})
+);
 expectType<ExecaReturnValue<Buffer>>(await execa('unicorns', {encoding: null}));
 expectType<ExecaReturnValue<string>>(
 	await execa('unicorns', ['foo'], {encoding: 'utf8'})
@@ -81,31 +107,47 @@ expectType<ExecaReturnValue<Buffer>>(
 	await execa('unicorns', ['foo'], {encoding: null})
 );
 
-expectType<Promise<string>>(stdout('unicorns'));
-expectType<string>(await stdout('unicorns'));
-expectType<string>(await stdout('unicorns', {encoding: 'utf8'}));
-expectType<Buffer>(await stdout('unicorns', {encoding: null}));
-expectType<string>(await stdout('unicorns', ['foo'], {encoding: 'utf8'}));
-expectType<Buffer>(await stdout('unicorns', ['foo'], {encoding: null}));
+expectType<Promise<string>>(execa.stdout('unicorns'));
+expectType<string>(await execa.stdout('unicorns'));
+expectType<string>(await execa.stdout('unicorns', {encoding: 'utf8'}));
+expectType<Buffer>(await execa.stdout('unicorns', {encoding: null}));
+expectType<string>(await execa.stdout('unicorns', ['foo'], {encoding: 'utf8'}));
+expectType<Buffer>(await execa.stdout('unicorns', ['foo'], {encoding: null}));
 
-expectType<Promise<string>>(stderr('unicorns'));
-expectType<string>(await stderr('unicorns'));
-expectType<string>(await stderr('unicorns', {encoding: 'utf8'}));
-expectType<Buffer>(await stderr('unicorns', {encoding: null}));
-expectType<string>(await stderr('unicorns', ['foo'], {encoding: 'utf8'}));
-expectType<Buffer>(await stderr('unicorns', ['foo'], {encoding: null}));
+expectType<Promise<string>>(execa.stderr('unicorns'));
+expectType<string>(await execa.stderr('unicorns'));
+expectType<string>(await execa.stderr('unicorns', {encoding: 'utf8'}));
+expectType<Buffer>(await execa.stderr('unicorns', {encoding: null}));
+expectType<string>(await execa.stderr('unicorns', ['foo'], {encoding: 'utf8'}));
+expectType<Buffer>(await execa.stderr('unicorns', ['foo'], {encoding: null}));
 
-expectType<ExecaChildProcess<string>>(shell('unicorns'));
-expectType<ExecaReturnValue<string>>(await shell('unicorns'));
-expectType<ExecaReturnValue<string>>(await shell('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(await shell('unicorns', {encoding: null}));
+expectType<ExecaChildProcess<string>>(execa.shell('unicorns'));
+expectType<ExecaReturnValue<string>>(await execa.shell('unicorns'));
+expectType<ExecaReturnValue<string>>(
+	await execa.shell('unicorns', {encoding: 'utf8'})
+);
+expectType<ExecaReturnValue<Buffer>>(
+	await execa.shell('unicorns', {encoding: null})
+);
 
-expectType<ExecaReturnValue<string>>(sync('unicorns'));
-expectType<ExecaReturnValue<string>>(sync('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(sync('unicorns', {encoding: null}));
-expectType<ExecaReturnValue<string>>(sync('unicorns', ['foo'], {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(sync('unicorns', ['foo'], {encoding: null}));
+expectType<ExecaSyncReturnValue<string>>(execa.sync('unicorns'));
+expectType<ExecaSyncReturnValue<string>>(
+	execa.sync('unicorns', {encoding: 'utf8'})
+);
+expectType<ExecaSyncReturnValue<Buffer>>(
+	execa.sync('unicorns', {encoding: null})
+);
+expectType<ExecaSyncReturnValue<string>>(
+	execa.sync('unicorns', ['foo'], {encoding: 'utf8'})
+);
+expectType<ExecaSyncReturnValue<Buffer>>(
+	execa.sync('unicorns', ['foo'], {encoding: null})
+);
 
-expectType<ExecaReturnValue<string>>(shellSync('unicorns'));
-expectType<ExecaReturnValue<string>>(shellSync('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(shellSync('unicorns', {encoding: null}));
+expectType<ExecaSyncReturnValue<string>>(execa.shellSync('unicorns'));
+expectType<ExecaSyncReturnValue<string>>(
+	execa.shellSync('unicorns', {encoding: 'utf8'})
+);
+expectType<ExecaSyncReturnValue<Buffer>>(
+	execa.shellSync('unicorns', {encoding: null})
+);

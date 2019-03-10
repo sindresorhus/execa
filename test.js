@@ -569,3 +569,10 @@ if (Promise.prototype.finally) {
 		t.is(result.message, 'called');
 	});
 }
+
+test('the spawned process is cancelable', t => {
+	const spawned = execa('ls');
+	spawned.catch(() => {}); // To handle the CancelError
+	spawned.cancel();
+	t.true(spawned.killed);
+});

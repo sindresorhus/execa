@@ -8,6 +8,7 @@ const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
 const pFinally = require('p-finally');
+const PCancelable = require('p-cancelable');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
 const stdio = require('./lib/stdio');
@@ -234,7 +235,7 @@ module.exports = (command, args, options) => {
 		}, parsed.options.timeout);
 	}
 
-	const processDone = new Promise(resolve => {
+	const processDone = new PCancelable((resolve, reject, oncancel) => {
 		spawned.on('exit', (code, signal) => {
 			cleanup();
 			resolve({code, signal});
@@ -251,6 +252,10 @@ module.exports = (command, args, options) => {
 				resolve({error});
 			});
 		}
+
+		oncancel(() => {
+			spawned.kill();
+		});
 	});
 
 	function destroy() {
@@ -311,6 +316,7 @@ module.exports = (command, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
+	spawned.cancel = () => processDone.cancel();
 
 	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {

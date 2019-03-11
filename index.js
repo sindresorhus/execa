@@ -235,7 +235,7 @@ module.exports = (command, args, options) => {
 		}, parsed.options.timeout);
 	}
 
-	const processDone = new PCancelable((resolve, reject, oncancel) => {
+	const processDone = new PCancelable((resolve, reject, onCancel) => {
 		spawned.on('exit', (code, signal) => {
 			cleanup();
 			resolve({code, signal});
@@ -253,7 +253,7 @@ module.exports = (command, args, options) => {
 			});
 		}
 
-		oncancel(() => {
+		onCancel(() => {
 			spawned.kill();
 		});
 	});
@@ -316,7 +316,7 @@ module.exports = (command, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
-	spawned.cancel = () => processDone.cancel();
+	spawned.cancel = reason => processDone.cancel(reason);
 
 	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {

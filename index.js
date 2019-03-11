@@ -368,6 +368,11 @@ module.exports.stderr = async (...args) => {
 	return stderr;
 };
 
+module.exports.all = async (...args) => {
+	const {all} = await module.exports(...args);
+	return all;
+};
+
 module.exports.shell = (command, options) => handleShell(module.exports, command, options);
 
 module.exports.sync = (command, args, options) => {

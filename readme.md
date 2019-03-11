@@ -122,6 +122,10 @@ Same as `execa()`, but returns only `stdout`.
 
 Same as `execa()`, but returns only `stderr`.
 
+### execa.all(file, [arguments], [options])
+
+Same as `execa()`, but returns only `all`.
+
 ### execa.shell(command, [options])
 
 Execute a command through the system shell. Prefer `execa()` whenever possible, as it's both faster and safer.

@@ -316,7 +316,7 @@ module.exports = (command, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
-	spawned.cancel = reason => processDone.cancel(reason);
+	spawned.cancel = (reason = 'command was canceled') => processDone.cancel(reason);
 
 	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {

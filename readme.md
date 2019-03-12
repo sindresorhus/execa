@@ -53,11 +53,10 @@ const execa = require('execa');
 
 	// Cancelling a spawned process
 	const spawned = execa("echo unicorns");
-	spawned.catch( error => {
-		// This would be equal to the reason provided for canceling
+	spawned.catch(error => {
 		console.log(error.message);
 	}); // To handle the CancelError
-	spawned.cancel("reason for canceling");
+	spawned.cancel();
 
 	// Catching an error
 	try {

@@ -7,6 +7,7 @@ import getStream from 'get-stream';
 import isRunning from 'is-running';
 import delay from 'delay';
 import tempfile from 'tempfile';
+import {CancelError} from 'p-cancelable';
 import execa from '.';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -570,15 +571,29 @@ if (Promise.prototype.finally) {
 	});
 }
 
-test('the spawned process is cancelable', t => {
+test('cancel method kills the spawned process', t => {
 	const spawned = execa('ls');
-	spawned.catch(error => {
-		if (error.message === 'reason' && error.isCanceled) {
-			return;
-		}
-
-		throw error;
-	}); // To handle the CancelError
-	spawned.cancel('reason');
+	spawned.catch(() => { }); // To handle the CancelError
+	spawned.cancel();
 	t.true(spawned.killed);
+});
+
+test('invoking cancel method throws CancelError', async t => {
+	const spawned = execa('ls');
+	spawned.cancel();
+	await t.throwsAsync(spawned, CancelError);
+});
+
+test('default CancelError message is "command was canceled"', async t => {
+	const spawned = execa('ls');
+	spawned.cancel();
+	const error = await t.throwsAsync(spawned);
+	t.is(error.message, 'command was canceled');
+});
+
+test('CancelError message is equal to reason argument passed to cancel method', async t => {
+	const spawned = execa('ls');
+	spawned.cancel('reason for canceling');
+	const error = await t.throwsAsync(spawned);
+	t.is(error.message, 'reason for canceling');
 });

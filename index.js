@@ -8,7 +8,6 @@ const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
 const pFinally = require('p-finally');
-const PCancelable = require('p-cancelable');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
 const stdio = require('./lib/stdio');
@@ -215,6 +214,7 @@ module.exports = (command, args, options) => {
 
 	let timeoutId = null;
 	let timedOut = false;
+	let canceled = false;
 
 	const cleanup = () => {
 		if (timeoutId) {
@@ -235,7 +235,7 @@ module.exports = (command, args, options) => {
 		}, parsed.options.timeout);
 	}
 
-	const processDone = new PCancelable((resolve, reject, onCancel) => {
+	const processDone = new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
 			cleanup();
 			resolve({code, signal});
@@ -252,11 +252,16 @@ module.exports = (command, args, options) => {
 				resolve({error});
 			});
 		}
-
-		onCancel(() => {
-			spawned.kill();
-		});
 	});
+
+	processDone.cancel = function () {
+		if (canceled) {
+			return;
+		}
+
+		canceled = true;
+		spawned.kill();
+	};
 
 	function destroy() {
 		if (spawned.stdout) {
@@ -305,7 +310,8 @@ module.exports = (command, args, options) => {
 			killed: false,
 			signal: null,
 			cmd: joinedCommand,
-			timedOut: false
+			timedOut: false,
+			canceled
 		};
 	}), destroy);
 
@@ -316,7 +322,7 @@ module.exports = (command, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
-	spawned.cancel = (reason = 'command was canceled') => processDone.cancel(reason);
+	spawned.cancel = () => processDone.cancel();
 
 	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {

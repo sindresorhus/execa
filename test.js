@@ -587,13 +587,11 @@ test('invoking cancel method throws CancelError', async t => {
 test('default CancelError message is "command was canceled"', async t => {
 	const spawned = execa('ls');
 	spawned.cancel();
-	const error = await t.throwsAsync(spawned);
-	t.is(error.message, 'command was canceled');
+	await t.throwsAsync(spawned, {message: 'command was canceled'});
 });
 
 test('CancelError message is equal to reason argument passed to cancel method', async t => {
 	const spawned = execa('ls');
 	spawned.cancel('reason for canceling');
-	const error = await t.throwsAsync(spawned);
-	t.is(error.message, 'reason for canceling');
+	await t.throwsAsync(spawned, {message: 'reason for canceling'});
 });

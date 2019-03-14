@@ -356,9 +356,12 @@ module.exports = (command, args, options) => {
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
 	spawned.cancel = function () {
-		if (!spawned.killed) {
+		if (spawned.killed) {
+			return;
+		}
+
+		if (spawned.kill()) {
 			canceled = true;
-			spawned.kill();
 		}
 	};
 

@@ -576,16 +576,35 @@ test('cancel method kills the spawned process', t => {
 	t.true(spawned.killed);
 });
 
-test('calling cancel method makes result.cancel true', async t => {
-	const spawned = execa('ls');
-	spawned.cancel();
-	const result = await spawned;
-	t.true(result.canceled);
-});
-
-test('result.cancel is false when spawned.cancel isn\'t called', async t => {
+test('result.canceled is false when spawned.cancel isn\'t called', async t => {
 	const spawned = execa('noop');
 	const result = await spawned;
 	t.false(result.canceled);
 });
 
+test('calling cancel method throws an error with message "Command was canceled"', async t => {
+	const spawned = execa('noop');
+	spawned.cancel();
+	const error = await t.throwsAsync(async () => {
+		await spawned;
+	});
+	t.regex(error.message, /Command\swas\scanceled/);
+});
+
+test('error.canceled is true when cancel method is used', async t => {
+	const spawned = execa('noop');
+	spawned.cancel();
+	const error = await t.throwsAsync(async () => {
+		await spawned;
+	});
+	t.true(error.canceled);
+});
+
+test('error.canceled is false when kill method is used', async t => {
+	const spawned = execa('noop');
+	spawned.kill();
+	const error = await t.throwsAsync(async () => {
+		await spawned;
+	});
+	t.false(error.canceled);
+});

@@ -46,10 +46,16 @@ test('execa.stderr()', async t => {
 	t.is(stderr, 'foo');
 });
 
-test('stdout/stderr available on errors', async t => {
+test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
+	const result = await execa('noop-132');
+	t.is(result.all, '132');
+});
+
+test('stdout/stderr/all available on errors', async t => {
 	const err = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
 	t.is(typeof err.stdout, 'string');
 	t.is(typeof err.stderr, 'string');
+	t.is(typeof err.all, 'string');
 });
 
 test('include stdout and stderr in errors for improved debugging', async t => {
@@ -234,7 +240,8 @@ test('do not buffer stdout when `buffer` set to `false`', async t => {
 	const promise = execa('max-buffer', ['stdout', '10'], {buffer: false});
 	const [result, stdout] = await Promise.all([
 		promise,
-		getStream(promise.stdout)
+		getStream(promise.stdout),
+		getStream(promise.all)
 	]);
 
 	t.is(result.stdout, undefined);
@@ -245,7 +252,8 @@ test('do not buffer stderr when `buffer` set to `false`', async t => {
 	const promise = execa('max-buffer', ['stderr', '10'], {buffer: false});
 	const [result, stderr] = await Promise.all([
 		promise,
-		getStream(promise.stderr)
+		getStream(promise.stderr),
+		getStream(promise.all)
 	]);
 
 	t.is(result.stderr, undefined);
@@ -259,14 +267,22 @@ test('skip throwing when using reject option', async t => {
 });
 
 test('allow unknown exit code', async t => {
-	await t.throwsAsync(execa('exit', ['255']), {message: /exit code 255 \(Unknown system error -255\)/});
+	const {exitCode, exitCodeName} = await t.throwsAsync(execa('exit', ['255']), {message: /exit code 255 \(Unknown system error -255\)/});
+	t.is(exitCode, 255);
+	t.is(exitCodeName, 'Unknown system error -255');
 });
 
 test('execa() returns code and failed properties', async t => {
-	const {code, failed} = await execa('noop', ['foo']);
-	const error = await t.throwsAsync(execa('exit', ['2']), {code: 2, message: getExitRegExp('2')});
+	const {code, exitCode, exitCodeName, failed} = await execa('noop', ['foo']);
 	t.is(code, 0);
+	t.is(exitCode, 0);
+	t.is(exitCodeName, 'SUCCESS');
 	t.false(failed);
+
+	const error = await t.throwsAsync(execa('exit', ['2']), {code: 2, message: getExitRegExp('2')});
+	t.is(error.exitCode, 2);
+	const expectedName = process.platform === 'win32' ? 'Unknown system error -2' : 'ENOENT';
+	t.is(error.exitCodeName, expectedName);
 	t.true(error.failed);
 });
 
@@ -361,7 +377,8 @@ test('result.signal is null if process failed, but was not killed', async t => {
 });
 
 async function code(t, num) {
-	await t.throwsAsync(execa('exit', [`${num}`]), {code: num, message: getExitRegExp(num)});
+	const error = await t.throwsAsync(execa('exit', [`${num}`]), {code: num, message: getExitRegExp(num)});
+	t.is(error.exitCode, num);
 }
 
 test('error.code is 2', code, 2);
@@ -372,7 +389,7 @@ test('timeout will kill the process early', async t => {
 	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 1500, message: TIMEOUT_REGEXP}));
 
 	t.true(error.timedOut);
-	t.not(error.code, 22);
+	t.not(error.exitCode, 22);
 });
 
 test('timeout will not kill the process early', async t => {
@@ -461,7 +478,7 @@ if (process.platform !== 'win32') {
 			await execa(`fast-exit-${process.platform}`, [], {input: 'data'});
 			t.pass();
 		} catch (error) {
-			t.is(error.code, 32);
+			t.is(error.exitCode, 32);
 		}
 	});
 }

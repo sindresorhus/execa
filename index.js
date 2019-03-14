@@ -7,6 +7,7 @@ const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
 const _getStream = require('get-stream');
+const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const errname = require('./lib/errname');
@@ -91,6 +92,24 @@ function handleShell(fn, command, options) {
 	return fn(command, {...options, shell: true});
 }
 
+function makeAllStream(spawned) {
+	if (!spawned.stdout && !spawned.stderr) {
+		return null;
+	}
+
+	const mixed = mergeStream();
+
+	if (spawned.stdout) {
+		mixed.add(spawned.stdout);
+	}
+
+	if (spawned.stderr) {
+		mixed.add(spawned.stderr);
+	}
+
+	return mixed;
+}
+
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
 		return null;
@@ -126,16 +145,19 @@ function makeError(result, options) {
 	let {error} = result;
 	const {joinedCommand, timedOut, canceled, parsed: {options: {timeout}}} = options;
 
-	const [codeString, codeNumber] = getCode(result, code);
+	const [exitCodeName, exitCode] = getCode(result, code);
 
 	if (!(error instanceof Error)) {
 		const message = [joinedCommand, stderr, stdout].filter(Boolean).join('\n');
 		error = new Error(message);
 	}
 
-	const prefix = getErrorPrefix({timedOut, timeout, signal, codeString, codeNumber, canceled});
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCode, exitCodeName, canceled});
 	error.message = `Command ${prefix}: ${error.message}`;
-	error.code = codeNumber || codeString;
+
+	error.code = exitCode || exitCodeName;
+	error.exitCode = exitCode;
+	error.exitCodeName = exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
@@ -143,6 +165,10 @@ function makeError(result, options) {
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
 	error.canceled = canceled;
+
+	if ('all' in result) {
+		error.all = result.all;
+	}
 
 	return error;
 }
@@ -159,7 +185,7 @@ function getCode({error = {}}, code) {
 	return [];
 }
 
-function getErrorPrefix({timedOut, timeout, signal, codeString, codeNumber, canceled}) {
+function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, canceled}) {
 	if (timedOut) {
 		return `timed out after ${timeout} milliseconds`;
 	}
@@ -172,16 +198,16 @@ function getErrorPrefix({timedOut, timeout, signal, codeString, codeNumber, canc
 		return `was killed with ${signal}`;
 	}
 
-	if (codeString !== undefined && codeNumber !== undefined) {
-		return `failed with exit code ${codeNumber} (${codeString})`;
+	if (exitCodeName !== undefined && exitCode !== undefined) {
+		return `failed with exit code ${exitCode} (${exitCodeName})`;
 	}
 
-	if (codeString !== undefined) {
-		return `failed with exit code ${codeString}`;
+	if (exitCodeName !== undefined) {
+		return `failed with exit code ${exitCodeName}`;
 	}
 
-	if (codeNumber !== undefined) {
-		return `failed with exit code ${codeNumber}`;
+	if (exitCode !== undefined) {
+		return `failed with exit code ${exitCode}`;
 	}
 
 	return 'failed';
@@ -266,17 +292,23 @@ module.exports = (command, args, options) => {
 		if (spawned.stderr) {
 			spawned.stderr.destroy();
 		}
+
+		if (spawned.all) {
+			spawned.all.destroy();
+		}
 	}
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
 	const handlePromise = () => pFinally(Promise.all([
 		processDone,
 		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer})
+		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
+		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
 	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
 		const result = results[0];
 		result.stdout = results[1];
 		result.stderr = results[2];
+		result.all = results[3];
 
 		if (result.error || result.code !== 0 || result.signal !== null || canceled) {
 			const error = makeError(result, {
@@ -301,7 +333,10 @@ module.exports = (command, args, options) => {
 		return {
 			stdout: handleOutput(parsed.options, result.stdout),
 			stderr: handleOutput(parsed.options, result.stderr),
+			all: handleOutput(parsed.options, result.all),
 			code: 0,
+			exitCode: 0,
+			exitCodeName: 'SUCCESS',
 			failed: false,
 			killed: false,
 			signal: null,
@@ -314,6 +349,8 @@ module.exports = (command, args, options) => {
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
 	handleInput(spawned, parsed.options.input);
+
+	spawned.all = makeAllStream(spawned);
 
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
@@ -375,6 +412,8 @@ module.exports.sync = (command, args, options) => {
 		stdout: handleOutput(parsed.options, result.stdout),
 		stderr: handleOutput(parsed.options, result.stderr),
 		code: 0,
+		exitCode: 0,
+		exitCodeName: 'SUCCESS',
 		failed: false,
 		signal: null,
 		cmd: joinedCommand,

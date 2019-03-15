@@ -68,7 +68,6 @@ const execa = require('execa');
 			stderr: '',
 			all: '',
 			failed: true,
-			signal: null,
 			cmd: 'exit 3',
 			timedOut: false,
 			killed: false
@@ -91,7 +90,6 @@ try {
 		stdout: '',
 		stderr: '',
 		failed: true,
-		signal: null,
 		cmd: 'exit 3',
 		timedOut: false
 	}

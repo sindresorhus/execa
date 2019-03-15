@@ -53,8 +53,14 @@ const execa = require('execa');
 	//=> 'unicorns'
 
 	// Cancelling a spawned process
-	const spawned = execa("echo unicorns");
+	const spawned = execa("node");
 	spawned.cancel();
+	try {
+		await spawned;
+	} catch (error) {
+		console.log(spawned.killed); // true
+		console.log(error.canceled); // true
+	}
 
 	// Catching an error
 	try {
@@ -148,6 +154,13 @@ This method throws an `Error` if the command fails.
 Execute a command synchronously through the system shell.
 
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
+
+### spawned.cancel()
+
+Cancel a process spawned using execa. Calling this method kills it.
+
+Throws an error with `error.canceled` equal to `true`, provided that the process gets canceled.
+Process would not get canceled if it has already exited or has been killed by `spawned.kill()`.
 
 ### options
 

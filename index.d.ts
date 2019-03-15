@@ -2,7 +2,7 @@
 import {ChildProcess} from 'child_process';
 import {Stream, Readable as ReadableStream} from 'stream';
 
-export type StdIOOption =
+export type StdioOption =
 	| 'pipe'
 	| 'ipc'
 	| 'ignore'
@@ -44,10 +44,12 @@ export interface CommonOptions<EncodingType> {
 	 *
 	 * @default 'pipe'
 	 */
-	readonly stdio?: 'pipe' | 'ignore' | 'inherit' | ReadonlyArray<StdIOOption>;
+	readonly stdio?: 'pipe' | 'ignore' | 'inherit' | ReadonlyArray<StdioOption>;
 
 	/**
 	 * Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
+	 *
+	 * @default false
 	 */
 	readonly detached?: boolean;
 
@@ -145,21 +147,21 @@ export interface CommonOptions<EncodingType> {
 	 *
 	 * @default 'pipe'
 	 */
-	readonly stdin?: StdIOOption;
+	readonly stdin?: StdioOption;
 
 	/**
 	 * Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 	 *
 	 * @default 'pipe'
 	 */
-	readonly stdout?: StdIOOption;
+	readonly stdout?: StdioOption;
 
 	/**
 	 * Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 	 *
 	 * @default 'pipe'
 	 */
-	readonly stderr?: StdIOOption;
+	readonly stderr?: StdioOption;
 
 	/**
 	 * If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
@@ -185,7 +187,7 @@ export interface SyncOptions<EncodingType = string>
 	readonly input?: string | Buffer;
 }
 
-export interface ExecaReturnBase<StdOutErrType> {
+export interface ExecaReturnBase<StdoutStderrType> {
 	/**
 	 * The numeric exit code of the process that was run.
 	 */
@@ -199,12 +201,12 @@ export interface ExecaReturnBase<StdOutErrType> {
 	/**
 	 * The output of the process on stdout.
 	 */
-	stdout: StdOutErrType;
+	stdout: StdoutStderrType;
 
 	/**
 	 * The output of the process on stderr.
 	 */
-	stderr: StdOutErrType;
+	stderr: StdoutStderrType;
 
 	/**
 	 * Whether the process failed to run.
@@ -272,7 +274,7 @@ export interface ExecaError<StdOutErrType = string>
 
 export interface ExecaChildPromise<StdOutErrType> {
 	catch<ResultType = never>(
-		onrejected?:
+		onRejected?:
 			| ((
 					reason: ExecaError<StdOutErrType>
 			  ) => ResultType | PromiseLike<ResultType>)

@@ -69,7 +69,7 @@ function handleArgs(command, args, options) {
 }
 
 function handleInput(spawned, input) {
-	if (input === undefined) {
+	if (input === null || input === undefined) {
 		return;
 	}
 

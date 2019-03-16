@@ -54,7 +54,7 @@ const execa = require('execa');
 
 	// Cancelling a spawned process
 	const spawned = execa("node");
-	spawned.cancel();
+	setTimeout(() => { spawned.cancel() }, 1000);
 	try {
 		await spawned;
 	} catch (error) {
@@ -160,7 +160,7 @@ Returns the same result object as [`child_process.spawnSync`](https://nodejs.org
 Cancel a process spawned using execa. Calling this method kills it.
 
 Throws an error with `error.canceled` equal to `true`, provided that the process gets canceled.
-Process would not get canceled if it has already exited or has been killed by `spawned.kill()`.
+Process would not get canceled if it has already exited.
 
 ### options
 

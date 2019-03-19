@@ -134,9 +134,7 @@ try {
 
 Execute a file.
 
-Arguments can be specified either inside `command` (a string) or `arguments`
-(an array of strings). When specified inside `command`, spaces can be escaped
-with a backslash. Otherwise arguments need neither escaping nor quoting.
+Arguments can be specified either inside `command` (a string) or `arguments` (an array of strings). When specified inside `command`, spaces can be escaped with a backslash. Otherwise arguments need neither escaping nor quoting.
 
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
@@ -158,8 +156,7 @@ Same as `execa()`, but returns only `stderr`.
 
 ### execa.shell(command, [options])
 
-Execute a command through the system shell. Prefer `execa()` whenever possible,
-as it's faster, safer and more cross-platform.
+Execute a command through the system shell. Prefer `execa()` whenever possible, as it's faster, safer and more cross-platform.
 
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 

@@ -94,7 +94,7 @@ function handleShell(fn, command, options) {
 
 function makeAllStream(spawned) {
 	if (!spawned.stdout && !spawned.stderr) {
-		return null;
+		return;
 	}
 
 	const mixed = mergeStream();
@@ -112,7 +112,7 @@ function makeAllStream(spawned) {
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
-		return null;
+		return;
 	}
 
 	let ret;
@@ -161,7 +161,9 @@ function makeError(result, options) {
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
-	error.signal = signal || null;
+	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
+	// it to `undefined`
+	error.signal = signal || undefined;
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
 
@@ -237,13 +239,13 @@ module.exports = (command, args, options) => {
 		});
 	}
 
-	let timeoutId = null;
+	let timeoutId;
 	let timedOut = false;
 
 	const cleanup = () => {
-		if (timeoutId) {
+		if (timeoutId !== undefined) {
 			clearTimeout(timeoutId);
-			timeoutId = null;
+			timeoutId = undefined;
 		}
 
 		if (removeExitHandler) {
@@ -253,7 +255,7 @@ module.exports = (command, args, options) => {
 
 	if (parsed.options.timeout > 0) {
 		timeoutId = setTimeout(() => {
-			timeoutId = null;
+			timeoutId = undefined;
 			timedOut = true;
 			spawned.kill(parsed.options.killSignal);
 		}, parsed.options.timeout);
@@ -332,7 +334,6 @@ module.exports = (command, args, options) => {
 			exitCodeName: 'SUCCESS',
 			failed: false,
 			killed: false,
-			signal: null,
 			cmd: joinedCommand,
 			timedOut: false
 		};
@@ -401,7 +402,6 @@ module.exports.sync = (command, args, options) => {
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
 		failed: false,
-		signal: null,
 		cmd: joinedCommand,
 		timedOut: false
 	};

@@ -4,7 +4,7 @@ import errname from '../lib/errname';
 const isWindows = process.platform === 'win32';
 
 // Simulates failure to capture `process.binding('uv');`
-const fallback = code => errname.__test__(null, code);
+const fallback = code => errname.__test__(undefined, code);
 
 function makeTests(name, m, expected) {
 	test(`${name}: >=0 exit codes`, t => {

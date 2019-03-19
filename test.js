@@ -210,7 +210,7 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 		input: 'hello',
 		stdio: [null, 'ignore', null]
 	});
-	t.is(stdout, null);
+	t.is(stdout, undefined);
 });
 
 test('helpful error trying to provide an input stream in sync mode', t => {
@@ -367,13 +367,13 @@ if (process.platform !== 'win32') {
 	});
 }
 
-test('result.signal is null for successful execution', async t => {
-	t.is((await execa('noop')).signal, null);
+test('result.signal is undefined for successful execution', async t => {
+	t.is((await execa('noop')).signal, undefined);
 });
 
-test('result.signal is null if process failed, but was not killed', async t => {
+test('result.signal is undefined if process failed, but was not killed', async t => {
 	const error = await t.throwsAsync(execa('exit', [2]), {message: getExitRegExp('2')});
-	t.is(error.signal, null);
+	t.is(error.signal, undefined);
 });
 
 async function code(t, num) {

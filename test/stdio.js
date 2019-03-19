@@ -21,27 +21,27 @@ function macro(t, input, expected) {
 
 macro.title = (providedTitle, input) => providedTitle || util.inspect(input, {colors: true});
 
-test(macro, undefined, null);
-test(macro, null, null);
+test(macro, undefined, undefined);
+test(macro, null, undefined);
 
 test(macro, {stdio: 'inherit'}, 'inherit');
 test(macro, {stdio: 'pipe'}, 'pipe');
 test(macro, {stdio: 'ignore'}, 'ignore');
 test(macro, {stdio: [0, 1, 2]}, [0, 1, 2]);
 
-test(macro, {}, [null, null, null]);
-test(macro, {stdio: []}, [null, null, null]);
-test(macro, {stdin: 'pipe'}, ['pipe', null, null]);
-test(macro, {stdout: 'ignore'}, [null, 'ignore', null]);
-test(macro, {stderr: 'inherit'}, [null, null, 'inherit']);
+test(macro, {}, [undefined, undefined, undefined]);
+test(macro, {stdio: []}, [undefined, undefined, undefined]);
+test(macro, {stdin: 'pipe'}, ['pipe', undefined, undefined]);
+test(macro, {stdout: 'ignore'}, [undefined, 'ignore', undefined]);
+test(macro, {stderr: 'inherit'}, [undefined, undefined, 'inherit']);
 test(macro, {stdin: 'pipe', stdout: 'ignore', stderr: 'inherit'}, ['pipe', 'ignore', 'inherit']);
-test(macro, {stdin: 'pipe', stdout: 'ignore'}, ['pipe', 'ignore', null]);
-test(macro, {stdin: 'pipe', stderr: 'inherit'}, ['pipe', null, 'inherit']);
-test(macro, {stdout: 'ignore', stderr: 'inherit'}, [null, 'ignore', 'inherit']);
+test(macro, {stdin: 'pipe', stdout: 'ignore'}, ['pipe', 'ignore', undefined]);
+test(macro, {stdin: 'pipe', stderr: 'inherit'}, ['pipe', undefined, 'inherit']);
+test(macro, {stdout: 'ignore', stderr: 'inherit'}, [undefined, 'ignore', 'inherit']);
 test(macro, {stdin: 0, stdout: 1, stderr: 2}, [0, 1, 2]);
-test(macro, {stdin: 0, stdout: 1}, [0, 1, null]);
-test(macro, {stdin: 0, stderr: 2}, [0, null, 2]);
-test(macro, {stdout: 1, stderr: 2}, [null, 1, 2]);
+test(macro, {stdin: 0, stdout: 1}, [0, 1, undefined]);
+test(macro, {stdin: 0, stderr: 2}, [0, undefined, 2]);
+test(macro, {stdout: 1, stderr: 2}, [undefined, 1, 2]);
 
 test(macro, {stdio: {foo: 'bar'}}, new TypeError('Expected `stdio` to be of type `string` or `Array`, got `object`'));
 

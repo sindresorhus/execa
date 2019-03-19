@@ -132,7 +132,7 @@ try {
 
 ### execa(file | command, [arguments], [options])
 
-Execute a `file`.
+Execute a file.
 
 Arguments can be specified either inside `command` (a string) or `arguments` (an array of strings). When specified inside `command`, spaces can be escaped with a backslash. Otherwise arguments need neither escaping nor quoting.
 

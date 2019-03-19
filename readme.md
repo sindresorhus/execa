@@ -53,13 +53,13 @@ const execa = require('execa');
 	//=> 'unicorns'
 
 	// Cancelling a spawned process
-	const spawned = execa("node");
+	const subprocess = execa('node');
 	setTimeout(() => { spawned.cancel() }, 1000);
 	try {
-		await spawned;
+		await subprocess;
 	} catch (error) {
-		console.log(spawned.killed); // true
-		console.log(error.canceled); // true
+		console.log(subprocess.killed); // true
+		console.log(error.isCanceled); // true
 	}
 
 	// Catching an error
@@ -121,6 +121,9 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
 
 It exposes an additional `.all` stream, with `stdout` and `stderr` interleaved.
 
+It can be canceled with `.cancel` method which throws an error with `error.isCanceled` equal to `true`, provided that the process gets canceled.
+Process would not get canceled if it has already exited.
+
 The promise result is an `Object` with `stdout`, `stderr` and `all` properties.
 
 ### execa.stdout(file, [arguments], [options])
@@ -154,13 +157,6 @@ This method throws an `Error` if the command fails.
 Execute a command synchronously through the system shell.
 
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
-
-### spawned.cancel()
-
-Cancel a process spawned using execa. Calling this method kills it.
-
-Throws an error with `error.canceled` equal to `true`, provided that the process gets canceled.
-Process would not get canceled if it has already exited.
 
 ### options
 

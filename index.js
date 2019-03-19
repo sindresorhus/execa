@@ -94,7 +94,7 @@ function handleShell(fn, command, options) {
 
 function makeAllStream(spawned) {
 	if (!spawned.stdout && !spawned.stderr) {
-		return null;
+		return;
 	}
 
 	const mixed = mergeStream();
@@ -112,7 +112,7 @@ function makeAllStream(spawned) {
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
-		return null;
+		return;
 	}
 
 	let ret;
@@ -143,7 +143,7 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 function makeError(result, options) {
 	const {stdout, stderr, code, signal} = result;
 	let {error} = result;
-	const {joinedCommand, timedOut, parsed: {options: {timeout}}} = options;
+	const {joinedCommand, timedOut, isCanceled, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
@@ -152,7 +152,7 @@ function makeError(result, options) {
 		error = new Error(message);
 	}
 
-	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode});
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
 	error.message = `Command ${prefix}: ${error.message}`;
 
 	error.code = exitCode || exitCodeName;
@@ -161,9 +161,12 @@ function makeError(result, options) {
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
-	error.signal = signal || null;
+	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
+	// it to `undefined`
+	error.signal = signal || undefined;
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
+	error.isCanceled = isCanceled;
 
 	if ('all' in result) {
 		error.all = result.all;
@@ -184,9 +187,13 @@ function getCode({error = {}}, code) {
 	return [];
 }
 
-function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode}) {
+function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled}) {
 	if (timedOut) {
 		return `timed out after ${timeout} milliseconds`;
+	}
+
+	if (isCanceled) {
+		return 'was canceled';
 	}
 
 	if (signal) {
@@ -237,13 +244,14 @@ const execa = (command, args, options) => {
 		});
 	}
 
-	let timeoutId = null;
+	let timeoutId;
 	let timedOut = false;
+	let isCanceled = false;
 
 	const cleanup = () => {
-		if (timeoutId) {
+		if (timeoutId !== undefined) {
 			clearTimeout(timeoutId);
-			timeoutId = null;
+			timeoutId = undefined;
 		}
 
 		if (removeExitHandler) {
@@ -253,7 +261,7 @@ const execa = (command, args, options) => {
 
 	if (parsed.options.timeout > 0) {
 		timeoutId = setTimeout(() => {
-			timeoutId = null;
+			timeoutId = undefined;
 			timedOut = true;
 			spawned.kill(parsed.options.killSignal);
 		}, parsed.options.timeout);
@@ -304,11 +312,12 @@ const execa = (command, args, options) => {
 		result.stderr = results[2];
 		result.all = results[3];
 
-		if (result.error || result.code !== 0 || result.signal !== null) {
+		if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
 			const error = makeError(result, {
 				joinedCommand,
 				parsed,
-				timedOut
+				timedOut,
+				isCanceled
 			});
 
 			// TODO: missing some timeout logic for killed
@@ -332,9 +341,9 @@ const execa = (command, args, options) => {
 			exitCodeName: 'SUCCESS',
 			failed: false,
 			killed: false,
-			signal: null,
 			cmd: joinedCommand,
-			timedOut: false
+			timedOut: false,
+			isCanceled: false
 		};
 	}), destroy);
 
@@ -347,6 +356,15 @@ const execa = (command, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
+	spawned.cancel = () => {
+		if (spawned.killed) {
+			return;
+		}
+
+		if (spawned.kill()) {
+			isCanceled = true;
+		}
+	};
 
 	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {
@@ -404,7 +422,6 @@ module.exports.sync = (command, args, options) => {
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
 		failed: false,
-		signal: null,
 		cmd: joinedCommand,
 		timedOut: false
 	};

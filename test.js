@@ -106,6 +106,11 @@ test('allow string arguments', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('allow string arguments in synchronous mode', t => {
+	const {stdout} = execa.sync('node fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
 test('allow string arguments together with array arguments', async t => {
 	const {stdout} = await execa('node fixtures/echo foo bar', ['foo', 'bar']);
 	t.is(stdout, 'foo\nbar\nfoo\nbar');

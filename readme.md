@@ -130,9 +130,9 @@ try {
 
 ## API
 
-### execa(command, [arguments], [options])
+### execa(file | command, [arguments], [options])
 
-Execute a file.
+Execute a `file`.
 
 Arguments can be specified either inside `command` (a string) or `arguments` (an array of strings). When specified inside `command`, spaces can be escaped with a backslash. Otherwise arguments need neither escaping nor quoting.
 
@@ -146,11 +146,11 @@ The spawned process can be canceled with the `.cancel()` method on the promise, 
 
 The promise result is an `Object` with `stdout`, `stderr` and `all` properties.
 
-### execa.stdout(command, [arguments], [options])
+### execa.stdout(file | command, [arguments], [options])
 
 Same as `execa()`, but returns only `stdout`.
 
-### execa.stderr(command, [arguments], [options])
+### execa.stderr(file | command, [arguments], [options])
 
 Same as `execa()`, but returns only `stderr`.
 
@@ -162,7 +162,7 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
 
 The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
 
-### execa.sync(command, [arguments], [options])
+### execa.sync(file | command, [arguments], [options])
 
 Execute a file synchronously.
 

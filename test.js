@@ -593,9 +593,9 @@ test('cancel method kills the spawned process', t => {
 	t.true(spawned.killed);
 });
 
-test('result.canceled is false when spawned.cancel isn\'t called', async t => {
+test('result.isCanceled is false when spawned.cancel isn\'t called', async t => {
 	const result = await execa('noop');
-	t.false(result.canceled);
+	t.false(result.isCanceled);
 });
 
 test('calling cancel method throws an error with message "Command was canceled"', async t => {
@@ -604,18 +604,18 @@ test('calling cancel method throws an error with message "Command was canceled"'
 	await t.throwsAsync(spawned, {message: /Command was canceled/});
 });
 
-test('error.canceled is true when cancel method is used', async t => {
+test('error.isCanceled is true when cancel method is used', async t => {
 	const spawned = execa('noop');
 	spawned.cancel();
 	const error = await t.throwsAsync(spawned);
-	t.true(error.canceled);
+	t.true(error.isCanceled);
 });
 
-test('error.canceled is false when kill method is used', async t => {
+test('error.isCanceled is false when kill method is used', async t => {
 	const spawned = execa('noop');
 	spawned.kill();
 	const error = await t.throwsAsync(spawned);
-	t.false(error.canceled);
+	t.false(error.isCanceled);
 });
 
 test('calling cancel method twice should show the same behaviour as calling it once', async t => {
@@ -623,7 +623,7 @@ test('calling cancel method twice should show the same behaviour as calling it o
 	spawned.cancel();
 	spawned.cancel();
 	const error = await t.throwsAsync(spawned);
-	t.true(error.canceled);
+	t.true(error.isCanceled);
 	t.true(spawned.killed);
 });
 
@@ -631,12 +631,12 @@ test('calling cancel method on a successfuly completed process does not make res
 	const spawned = execa('noop');
 	const result = await spawned;
 	spawned.cancel();
-	t.false(result.canceled);
+	t.false(result.isCanceled);
 });
 
-test('calling cancel method on a process which has been killed does not make error.canceled true', async t => {
+test('calling cancel method on a process which has been killed does not make error.isCanceled true', async t => {
 	const spawned = execa('noop');
 	spawned.kill();
 	const error = await t.throwsAsync(spawned);
-	t.false(error.canceled);
+	t.false(error.isCanceled);
 });

@@ -143,7 +143,7 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 function makeError(result, options) {
 	const {stdout, stderr, code, signal} = result;
 	let {error} = result;
-	const {joinedCommand, timedOut, canceled, parsed: {options: {timeout}}} = options;
+	const {joinedCommand, timedOut, isCanceled, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
@@ -152,7 +152,7 @@ function makeError(result, options) {
 		error = new Error(message);
 	}
 
-	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCode, exitCodeName, canceled});
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCode, exitCodeName, isCanceled});
 	error.message = `Command ${prefix}: ${error.message}`;
 
 	error.code = exitCode || exitCodeName;
@@ -164,7 +164,7 @@ function makeError(result, options) {
 	error.signal = signal || null;
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
-	error.canceled = canceled;
+	error.isCanceled = isCanceled;
 
 	if ('all' in result) {
 		error.all = result.all;
@@ -185,12 +185,12 @@ function getCode({error = {}}, code) {
 	return [];
 }
 
-function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, canceled}) {
+function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled}) {
 	if (timedOut) {
 		return `timed out after ${timeout} milliseconds`;
 	}
 
-	if (canceled) {
+	if (isCanceled) {
 		return 'was canceled';
 	}
 
@@ -244,7 +244,7 @@ module.exports = (command, args, options) => {
 
 	let timeoutId = null;
 	let timedOut = false;
-	let canceled = false;
+	let isCanceled = false;
 
 	const cleanup = () => {
 		if (timeoutId) {
@@ -310,12 +310,12 @@ module.exports = (command, args, options) => {
 		result.stderr = results[2];
 		result.all = results[3];
 
-		if (result.error || result.code !== 0 || result.signal !== null || canceled) {
+		if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
 			const error = makeError(result, {
 				joinedCommand,
 				parsed,
 				timedOut,
-				canceled
+				isCanceled
 			});
 
 			// TODO: missing some timeout logic for killed
@@ -342,7 +342,7 @@ module.exports = (command, args, options) => {
 			signal: null,
 			cmd: joinedCommand,
 			timedOut: false,
-			canceled: false
+			isCanceled: false
 		};
 	}), destroy);
 
@@ -355,13 +355,13 @@ module.exports = (command, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
-	spawned.cancel = function () {
+	spawned.cancel = () => {
 		if (spawned.killed) {
 			return;
 		}
 
 		if (spawned.kill()) {
-			canceled = true;
+			isCanceled = true;
 		}
 	};
 

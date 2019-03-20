@@ -1,4 +1,4 @@
-import {expectType, expectError} from 'tsd-check';
+import {expectType, expectError} from 'tsd';
 import execa, {
 	ExecaReturnValue,
 	ExecaChildProcess,

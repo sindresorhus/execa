@@ -41,17 +41,15 @@ try {
 	expectType<string>(unicornsResult.stderr);
 	expectType<string>(unicornsResult.stdout);
 	expectType<boolean>(unicornsResult.timedOut);
-	// TODO: this produces false positives, waiting for https://github.com/SamVerschueren/tsd-check/pull/19
-	// expectError(unicornsResult.all);
-	// expectError(unicornsResult.isCanceled);
+	expectError(unicornsResult.all);
+	expectError(unicornsResult.isCanceled);
 } catch (error) {
 	const execaError: ExecaSyncError = error;
 
 	expectType<string>(execaError.message);
 	expectType<number | string>(execaError.code);
-	// TODO: this produces false positives, waiting for https://github.com/SamVerschueren/tsd-check/pull/19
-	// expectError(execaError.all);
-	// expectError(execaError.isCanceled);
+	expectError(execaError.all);
+	expectError(execaError.isCanceled);
 }
 
 execa('unicorns', {cwd: '.'});

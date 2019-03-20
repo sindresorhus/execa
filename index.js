@@ -164,7 +164,7 @@ function makeError(result, options) {
 	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
 	// it to `undefined`
 	error.signal = signal || undefined;
-	error.cmd = joinedCommand;
+	error.command = joinedCommand;
 	error.timedOut = Boolean(timedOut);
 	error.isCanceled = isCanceled;
 
@@ -341,7 +341,7 @@ const execa = (command, args, options) => {
 			exitCodeName: 'SUCCESS',
 			failed: false,
 			killed: false,
-			cmd: joinedCommand,
+			command: joinedCommand,
 			timedOut: false,
 			isCanceled: false
 		};
@@ -422,7 +422,7 @@ module.exports.sync = (command, args, options) => {
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
 		failed: false,
-		cmd: joinedCommand,
+		command: joinedCommand,
 		timedOut: false
 	};
 };

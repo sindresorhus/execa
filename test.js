@@ -416,19 +416,19 @@ errorMessage.title = (message, expected) => `error.message matches: ${expected}`
 test(errorMessage, /Command failed with exit code 2.*: exit 2 foo bar/, 2, 'foo', 'bar');
 test(errorMessage, /Command failed with exit code 3.*: exit 3 baz quz/, 3, 'baz', 'quz');
 
-async function cmd(t, expected, ...args) {
+async function command(t, expected, ...args) {
 	const error = await t.throwsAsync(execa('fail', args));
-	t.is(error.cmd, `fail${expected}`);
+	t.is(error.command, `fail${expected}`);
 
 	const result = await execa('noop', args);
-	t.is(result.cmd, `noop${expected}`);
+	t.is(result.command, `noop${expected}`);
 }
 
-cmd.title = (message, expected) => `cmd is: ${JSON.stringify(expected)}`;
+command.title = (message, expected) => `command is: ${JSON.stringify(expected)}`;
 
-test(cmd, ' foo bar', 'foo', 'bar');
-test(cmd, ' baz quz', 'baz', 'quz');
-test(cmd, '');
+test(command, ' foo bar', 'foo', 'bar');
+test(command, ' baz quz', 'baz', 'quz');
+test(command, '');
 
 async function spawnAndKill(t, signal, cleanup) {
 	const name = cleanup ? 'sub-process' : 'sub-process-false';

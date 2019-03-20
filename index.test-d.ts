@@ -12,7 +12,7 @@ try {
 	execaPromise.cancel();
 
 	const unicornsResult = await execaPromise;
-	expectType<string>(unicornsResult.cmd);
+	expectType<string>(unicornsResult.command);
 	expectType<string | number>(unicornsResult.code);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.killed);
@@ -33,7 +33,7 @@ try {
 
 try {
 	const unicornsResult = execa.sync('unicorns');
-	expectType<string>(unicornsResult.cmd);
+	expectType<string>(unicornsResult.command);
 	expectType<string | number>(unicornsResult.code);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.killed);

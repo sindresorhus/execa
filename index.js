@@ -13,8 +13,6 @@ const onExit = require('signal-exit');
 const errname = require('./lib/errname');
 const stdio = require('./lib/stdio');
 
-const isWin = process.platform === 'win32';
-
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 function handleArgs(command, args, options) {
@@ -239,24 +237,11 @@ const execa = (command, args, options) => {
 		return Promise.reject(error);
 	}
 
-	let killedByPid = false;
-
-	spawned._kill = spawned.kill;
-
-	const killSpawned = signal => {
-		if (process.platform === 'win32') {
-			spawned._kill(signal);
-		} else {
-			// Kills the spawned process and its descendents using the pid range hack
-			// Source: https://azimi.me/2014/12/31/kill-child_process-node-js.html
-			process.kill(-spawned.pid, signal);
-			killedByPid = true;
-		}
-	};
-
 	let removeExitHandler;
 	if (parsed.options.cleanup) {
-		removeExitHandler = onExit(killSpawned);
+		removeExitHandler = onExit(() => {
+			spawned.kill();
+		});
 	}
 
 	let timeoutId;
@@ -278,7 +263,7 @@ const execa = (command, args, options) => {
 		timeoutId = setTimeout(() => {
 			timeoutId = undefined;
 			timedOut = true;
-			killSpawned(parsed.options.killSignal);
+			spawned.kill(parsed.options.killSignal);
 		}, parsed.options.timeout);
 	}
 
@@ -338,7 +323,7 @@ const execa = (command, args, options) => {
 			// TODO: missing some timeout logic for killed
 			// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
 			// error.killed = spawned.killed || killed;
-			error.killed = error.killed || spawned.killed || killedByPid;
+			error.killed = error.killed || spawned.killed;
 
 			if (!parsed.options.reject) {
 				return error;
@@ -364,8 +349,20 @@ const execa = (command, args, options) => {
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
+	spawned._kill = spawned.kill;
+
+	const killSpawnedAndDescendants = signal => {
+		if (process.platform === 'win32') {
+			spawned._kill(signal);
+		} else {
+			spawned._kill(signal);
+			// TODO kill with pidtree
+			// do not kill this process via pidtree, exclude this PID?
+		}
+	};
+
 	// Enhance the `ChildProcess#kill` to ensure killing the process and its descendents
-	spawned.kill = killSpawned;
+	spawned.kill = killSpawnedAndDescendants;
 
 	handleInput(spawned, parsed.options.input);
 

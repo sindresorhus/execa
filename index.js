@@ -349,21 +349,6 @@ const execa = (command, args, options) => {
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
-	spawned._kill = spawned.kill;
-
-	const killSpawnedAndDescendants = signal => {
-		if (process.platform === 'win32') {
-			spawned._kill(signal);
-		} else {
-			spawned._kill(signal);
-			// TODO kill with pidtree
-			// do not kill this process via pidtree, exclude this PID?
-		}
-	};
-
-	// Enhance the `ChildProcess#kill` to ensure killing the process and its descendents
-	spawned.kill = killSpawnedAndDescendants;
-
 	handleInput(spawned, parsed.options.input);
 
 	spawned.all = makeAllStream(spawned);
@@ -378,6 +363,17 @@ const execa = (command, args, options) => {
 
 		if (spawned.kill()) {
 			isCanceled = true;
+		}
+	};
+
+	spawned._kill = spawned.kill;
+	spawned.kill = signal => {
+		if (process.platform === 'win32') {
+			return spawned._kill(signal);
+		} else {
+			return spawned._kill(signal);
+			// TODO kill with pidtree
+			// do not kill this process via pidtree, exclude this PID?
 		}
 	};
 

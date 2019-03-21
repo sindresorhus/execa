@@ -234,20 +234,20 @@ export interface ExecaReturnBase<StdoutStderrType> {
 	killed: boolean;
 }
 
-export interface ExecaSyncReturnValue<StdOutErrType = string>
-	extends ExecaReturnBase<StdOutErrType> {
+export interface ExecaSyncReturnValue<StdoutErrorType = string>
+	extends ExecaReturnBase<StdoutErrorType> {
 	/**
 	The exit code of the process that was run.
 	*/
 	code: number;
 }
 
-export interface ExecaReturnValue<StdOutErrType = string>
-	extends ExecaSyncReturnValue<StdOutErrType> {
+export interface ExecaReturnValue<StdoutErrorType = string>
+	extends ExecaSyncReturnValue<StdoutErrorType> {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 	*/
-	all: StdOutErrType;
+	all: StdoutErrorType;
 
 	/**
 	Whether the process was canceled.
@@ -255,9 +255,9 @@ export interface ExecaReturnValue<StdOutErrType = string>
 	isCanceled: boolean;
 }
 
-export interface ExecaSyncError<StdOutErrType = string>
+export interface ExecaSyncError<StdoutErrorType = string>
 	extends Error,
-		ExecaReturnBase<StdOutErrType> {
+		ExecaReturnBase<StdoutErrorType> {
 	/**
 	The error message.
 	*/
@@ -269,12 +269,12 @@ export interface ExecaSyncError<StdOutErrType = string>
 	code: number | string;
 }
 
-export interface ExecaError<StdOutErrType = string>
-	extends ExecaSyncError<StdOutErrType> {
+export interface ExecaError<StdoutErrorType = string>
+	extends ExecaSyncError<StdoutErrorType> {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 	*/
-	all: StdOutErrType;
+	all: StdoutErrorType;
 
 	/**
 	Whether the process was canceled.
@@ -282,14 +282,12 @@ export interface ExecaError<StdOutErrType = string>
 	isCanceled: boolean;
 }
 
-export interface ExecaChildPromise<StdOutErrType> {
+export interface ExecaChildPromise<StdoutErrorType> {
 	catch<ResultType = never>(
 		onRejected?:
-			| ((
-					reason: ExecaError<StdOutErrType>
-			  ) => ResultType | PromiseLike<ResultType>)
+			| ((reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>)
 			| null
-	): Promise<ExecaReturnValue<StdOutErrType> | ResultType>;
+	): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
 
 	/**
 	Cancel the subprocess.
@@ -299,9 +297,9 @@ export interface ExecaChildPromise<StdOutErrType> {
 	cancel(): void;
 }
 
-export type ExecaChildProcess<StdOutErrType = string> = ChildProcess &
-	ExecaChildPromise<StdOutErrType> &
-	Promise<ExecaReturnValue<StdOutErrType>>;
+export type ExecaChildProcess<StdoutErrorType = string> = ChildProcess &
+	ExecaChildPromise<StdoutErrorType> &
+	Promise<ExecaReturnValue<StdoutErrorType>>;
 
 declare const execa: {
 	/**

@@ -96,7 +96,7 @@ function handleShell(fn, command, options) {
 
 function makeAllStream(spawned) {
 	if (!spawned.stdout && !spawned.stderr) {
-		return null;
+		return;
 	}
 
 	const mixed = mergeStream();
@@ -114,7 +114,7 @@ function makeAllStream(spawned) {
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
-		return null;
+		return;
 	}
 
 	let ret;
@@ -145,7 +145,7 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 function makeError(result, options) {
 	const {stdout, stderr, code, signal} = result;
 	let {error} = result;
-	const {joinedCommand, timedOut, parsed: {options: {timeout}}} = options;
+	const {joinedCommand, timedOut, isCanceled, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
@@ -154,7 +154,7 @@ function makeError(result, options) {
 		error = new Error(message);
 	}
 
-	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode});
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
 	error.message = `Command ${prefix}: ${error.message}`;
 
 	error.code = exitCode || exitCodeName;
@@ -163,9 +163,12 @@ function makeError(result, options) {
 	error.stdout = stdout;
 	error.stderr = stderr;
 	error.failed = true;
-	error.signal = signal || null;
+	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
+	// it to `undefined`
+	error.signal = signal || undefined;
 	error.cmd = joinedCommand;
 	error.timedOut = Boolean(timedOut);
+	error.isCanceled = isCanceled;
 
 	if ('all' in result) {
 		error.all = result.all;
@@ -186,9 +189,13 @@ function getCode({error = {}}, code) {
 	return [];
 }
 
-function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode}) {
+function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled}) {
 	if (timedOut) {
 		return `timed out after ${timeout} milliseconds`;
+	}
+
+	if (isCanceled) {
+		return 'was canceled';
 	}
 
 	if (signal) {
@@ -220,7 +227,7 @@ function joinCommand(command, args) {
 	return joinedCommand;
 }
 
-module.exports = (command, args, options) => {
+const execa = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
 	const joinedCommand = joinCommand(command, args);
@@ -252,13 +259,14 @@ module.exports = (command, args, options) => {
 		removeExitHandler = onExit(killSpawned);
 	}
 
-	let timeoutId = null;
+	let timeoutId;
 	let timedOut = false;
+	let isCanceled = false;
 
 	const cleanup = () => {
-		if (timeoutId) {
+		if (timeoutId !== undefined) {
 			clearTimeout(timeoutId);
-			timeoutId = null;
+			timeoutId = undefined;
 		}
 
 		if (removeExitHandler) {
@@ -268,7 +276,7 @@ module.exports = (command, args, options) => {
 
 	if (parsed.options.timeout > 0) {
 		timeoutId = setTimeout(() => {
-			timeoutId = null;
+			timeoutId = undefined;
 			timedOut = true;
 			killSpawned(parsed.options.killSignal);
 		}, parsed.options.timeout);
@@ -319,11 +327,12 @@ module.exports = (command, args, options) => {
 		result.stderr = results[2];
 		result.all = results[3];
 
-		if (result.error || result.code !== 0 || result.signal !== null) {
+		if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
 			const error = makeError(result, {
 				joinedCommand,
 				parsed,
-				timedOut
+				timedOut,
+				isCanceled
 			});
 
 			// TODO: missing some timeout logic for killed
@@ -347,9 +356,9 @@ module.exports = (command, args, options) => {
 			exitCodeName: 'SUCCESS',
 			failed: false,
 			killed: false,
-			signal: null,
 			cmd: joinedCommand,
-			timedOut: false
+			timedOut: false,
+			isCanceled: false
 		};
 	}), destroy);
 
@@ -365,6 +374,15 @@ module.exports = (command, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
+	spawned.cancel = () => {
+		if (spawned.killed) {
+			return;
+		}
+
+		if (spawned.kill()) {
+			isCanceled = true;
+		}
+	};
 
 	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {
@@ -374,19 +392,22 @@ module.exports = (command, args, options) => {
 	return spawned;
 };
 
+module.exports = execa;
+module.exports.default = execa;
+
 // TODO: set `stderr: 'ignore'` when that option is implemented
 module.exports.stdout = async (...args) => {
-	const {stdout} = await module.exports(...args);
+	const {stdout} = await execa(...args);
 	return stdout;
 };
 
 // TODO: set `stdout: 'ignore'` when that option is implemented
 module.exports.stderr = async (...args) => {
-	const {stderr} = await module.exports(...args);
+	const {stderr} = await execa(...args);
 	return stderr;
 };
 
-module.exports.shell = (command, options) => handleShell(module.exports, command, options);
+module.exports.shell = (command, options) => handleShell(execa, command, options);
 
 module.exports.sync = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
@@ -419,10 +440,9 @@ module.exports.sync = (command, args, options) => {
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
 		failed: false,
-		signal: null,
 		cmd: joinedCommand,
 		timedOut: false
 	};
 };
 
-module.exports.shellSync = (command, options) => handleShell(module.exports.sync, command, options);
+module.exports.shellSync = (command, options) => handleShell(execa.sync, command, options);

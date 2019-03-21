@@ -210,7 +210,7 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 		input: 'hello',
 		stdio: [null, 'ignore', null]
 	});
-	t.is(stdout, null);
+	t.is(stdout, undefined);
 });
 
 test('helpful error trying to provide an input stream in sync mode', t => {
@@ -367,13 +367,13 @@ if (process.platform !== 'win32') {
 	});
 }
 
-test('result.signal is null for successful execution', async t => {
-	t.is((await execa('noop')).signal, null);
+test('result.signal is undefined for successful execution', async t => {
+	t.is((await execa('noop')).signal, undefined);
 });
 
-test('result.signal is null if process failed, but was not killed', async t => {
+test('result.signal is undefined if process failed, but was not killed', async t => {
 	const error = await t.throwsAsync(execa('exit', [2]), {message: getExitRegExp('2')});
-	t.is(error.signal, null);
+	t.is(error.signal, undefined);
 });
 
 async function code(t, num) {
@@ -586,3 +586,57 @@ if (Promise.prototype.finally) {
 		t.is(result.message, 'called');
 	});
 }
+
+test('cancel method kills the subprocess', t => {
+	const subprocess = execa('node');
+	subprocess.cancel();
+	t.true(subprocess.killed);
+});
+
+test('result.isCanceled is false when spawned.cancel isn\'t called', async t => {
+	const result = await execa('noop');
+	t.false(result.isCanceled);
+});
+
+test('calling cancel method throws an error with message "Command was canceled"', async t => {
+	const subprocess = execa('noop');
+	subprocess.cancel();
+	await t.throwsAsync(subprocess, {message: /Command was canceled/});
+});
+
+test('error.isCanceled is true when cancel method is used', async t => {
+	const subprocess = execa('noop');
+	subprocess.cancel();
+	const error = await t.throwsAsync(subprocess);
+	t.true(error.isCanceled);
+});
+
+test('error.isCanceled is false when kill method is used', async t => {
+	const subprocess = execa('noop');
+	subprocess.kill();
+	const error = await t.throwsAsync(subprocess);
+	t.false(error.isCanceled);
+});
+
+test('calling cancel method twice should show the same behaviour as calling it once', async t => {
+	const subprocess = execa('noop');
+	subprocess.cancel();
+	subprocess.cancel();
+	const error = await t.throwsAsync(subprocess);
+	t.true(error.isCanceled);
+	t.true(subprocess.killed);
+});
+
+test('calling cancel method on a successfuly completed process does not make result.isCanceled true', async t => {
+	const subprocess = execa('noop');
+	const result = await subprocess;
+	subprocess.cancel();
+	t.false(result.isCanceled);
+});
+
+test('calling cancel method on a process which has been killed does not make error.isCanceled true', async t => {
+	const subprocess = execa('noop');
+	subprocess.kill();
+	const error = await t.throwsAsync(subprocess);
+	t.false(error.isCanceled);
+});

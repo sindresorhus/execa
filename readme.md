@@ -52,7 +52,6 @@ const execa = require('execa');
 	const {stdout} = await execa.shell('echo unicorns');
 	//=> 'unicorns'
 
-
 	// Catching an error
 	try {
 		await execa.shell('exit 3');
@@ -68,12 +67,23 @@ const execa = require('execa');
 			stderr: '',
 			all: '',
 			failed: true,
-			signal: null,
 			cmd: 'exit 3',
 			timedOut: false,
 			killed: false
 		}
 		*/
+	}
+
+	// Cancelling a spawned process
+	const subprocess = execa('node');
+	setTimeout(() => {
+		subprocess.cancel();
+	}, 1000);
+	try {
+		await subprocess;
+	} catch (error) {
+		console.log(subprocess.killed); // true
+		console.log(error.isCanceled); // true
 	}
 })();
 
@@ -91,7 +101,6 @@ try {
 		stdout: '',
 		stderr: '',
 		failed: true,
-		signal: null,
 		cmd: 'exit 3',
 		timedOut: false
 	}
@@ -111,6 +120,8 @@ Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which is enhanced to be a `Promise`.
 
 It exposes an additional `.all` stream, with `stdout` and `stderr` interleaved.
+
+The spawned process can be canceled with the `.cancel()` method on the promise, which causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
 
 The promise result is an `Object` with `stdout`, `stderr` and `all` properties.
 

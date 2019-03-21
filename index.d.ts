@@ -292,9 +292,9 @@ export interface ExecaChildPromise<StdOutErrType> {
 	): Promise<ExecaReturnValue<StdOutErrType> | ResultType>;
 
 	/**
-	A process can be canceled with `.cancel` method which throws an error with `error.isCanceled` equal to `true`, provided that the process gets canceled.
+	Cancel the subprocess.
 
-	Process would not get canceled if it has already exited.
+	Causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
 	*/
 	cancel(): void;
 }
@@ -355,7 +355,7 @@ declare const execa: {
 
 	@param file - The program/script to execute.
 	@param arguments - Arguments to pass to `file` on execution.
-	@returns A `Promise` that will be resolved with the contents of executed processe's `stdout` contents.
+	@returns The contents of the executed process' `stdout`.
 	*/
 	stdout(
 		file: string,
@@ -375,7 +375,7 @@ declare const execa: {
 
 	@param file - The program/script to execute.
 	@param arguments - Arguments to pass to `file` on execution.
-	@returns A `Promise` that will be resolved with the contents of executed processe's `stderr` contents.
+	@returns The contents of the executed process' `stderr`.
 	*/
 	stderr(
 		file: string,

@@ -370,11 +370,11 @@ const execa = (command, args, options) => {
 	spawned.kill = signal => {
 		if (process.platform === 'win32') {
 			return spawned._kill(signal);
-		} else {
-			return spawned._kill(signal);
-			// TODO kill with pidtree
-			// do not kill this process via pidtree, exclude this PID?
 		}
+
+		return spawned._kill(signal);
+		// TODO kill with pidtree
+		// do not kill this process via pidtree, exclude this PID?
 	};
 
 	// TOOD: Remove the `if`-guard when targeting Node.js 10

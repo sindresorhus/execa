@@ -225,7 +225,7 @@ function joinCommand(command, args) {
 	return joinedCommand;
 }
 
-module.exports = (command, args, options) => {
+const execa = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
 	const joinedCommand = joinCommand(command, args);
@@ -374,19 +374,22 @@ module.exports = (command, args, options) => {
 	return spawned;
 };
 
+module.exports = execa;
+module.exports.default = execa;
+
 // TODO: set `stderr: 'ignore'` when that option is implemented
 module.exports.stdout = async (...args) => {
-	const {stdout} = await module.exports(...args);
+	const {stdout} = await execa(...args);
 	return stdout;
 };
 
 // TODO: set `stdout: 'ignore'` when that option is implemented
 module.exports.stderr = async (...args) => {
-	const {stderr} = await module.exports(...args);
+	const {stderr} = await execa(...args);
 	return stderr;
 };
 
-module.exports.shell = (command, options) => handleShell(module.exports, command, options);
+module.exports.shell = (command, options) => handleShell(execa, command, options);
 
 module.exports.sync = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
@@ -424,4 +427,4 @@ module.exports.sync = (command, args, options) => {
 	};
 };
 
-module.exports.shellSync = (command, options) => handleShell(module.exports.sync, command, options);
+module.exports.shellSync = (command, options) => handleShell(execa.sync, command, options);

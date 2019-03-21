@@ -463,6 +463,29 @@ if (process.platform !== 'win32') {
 	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
 }
 
+test('when killing the child process, kill all its descendants as well', async t => {
+	const cp = execa('descendant');
+	let descendantPid;
+
+	cp.stdout.setEncoding('utf8');
+	cp.stdout.on('data', chunk => {
+		descendantPid = parseInt(chunk, 10);
+		t.is(typeof descendantPid, 'number');
+
+		setTimeout(() => {
+			cp.kill();
+		}, 100);
+	});
+
+	await t.throwsAsync(cp);
+
+	// Give everybody some time to breath and kill things
+	// await delay(200);
+
+	t.false(isRunning(cp.pid));
+	t.false(isRunning(descendantPid));
+});
+
 test('execa.shell() supports the `shell` option', async t => {
 	const {stdout} = await execa.shell('node fixtures/noop foo', {
 		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'

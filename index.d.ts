@@ -221,7 +221,7 @@ export interface ExecaReturnBase<StdoutStderrType> {
 	/**
 	The command that was run.
 	*/
-	cmd: string;
+	command: string;
 
 	/**
 	Whether the process timed out.
@@ -419,7 +419,7 @@ declare const execa: {
 			//	stderr: '',
 			//	all: '',
 			//	failed: true,
-			//	cmd: 'exit 3',
+			//	command: 'exit 3',
 			//	timedOut: false,
 			//	killed: false
 			//}
@@ -476,7 +476,7 @@ declare const execa: {
 		//	stdout: '',
 		//	stderr: '',
 		//	failed: true,
-		//	cmd: 'exit 3',
+		//	command: 'exit 3',
 		//	timedOut: false
 		//}
 	}

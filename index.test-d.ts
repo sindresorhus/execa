@@ -1,5 +1,6 @@
 import {expectType, expectError} from 'tsd';
-import execa, {
+import execa = require('.');
+import {
 	ExecaReturnValue,
 	ExecaChildProcess,
 	ExecaError,

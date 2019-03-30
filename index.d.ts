@@ -2,304 +2,307 @@
 import {ChildProcess} from 'child_process';
 import {Stream, Readable as ReadableStream} from 'stream';
 
-export type StdioOption =
-	| 'pipe'
-	| 'ipc'
-	| 'ignore'
-	| 'inherit'
-	| Stream
-	| number
-	| null
-	| undefined;
+declare namespace execa {
+	type StdioOption =
+		| 'pipe'
+		| 'ipc'
+		| 'ignore'
+		| 'inherit'
+		| Stream
+		| number
+		| null
+		| undefined;
 
-export interface CommonOptions<EncodingType> {
-	/**
-	Current working directory of the child process.
+	interface CommonOptions<EncodingType> {
+		/**
+		Current working directory of the child process.
 
-	@default process.cwd()
-	*/
-	readonly cwd?: string;
+		@default process.cwd()
+		*/
+		readonly cwd?: string;
 
-	/**
-	Environment key-value pairs. Extends automatically from `process.env`. Set `extendEnv` to `false` if you don't want this.
+		/**
+		Environment key-value pairs. Extends automatically from `process.env`. Set `extendEnv` to `false` if you don't want this.
 
-	@default process.env
-	*/
-	readonly env?: NodeJS.ProcessEnv;
+		@default process.env
+		*/
+		readonly env?: NodeJS.ProcessEnv;
 
-	/**
-	Set to `false` if you don't want to extend the environment variables when providing the `env` property.
+		/**
+		Set to `false` if you don't want to extend the environment variables when providing the `env` property.
 
-	@default true
-	*/
-	readonly extendEnv?: boolean;
+		@default true
+		*/
+		readonly extendEnv?: boolean;
 
-	/**
-	Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
-	*/
-	readonly argv0?: string;
+		/**
+		Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
+		*/
+		readonly argv0?: string;
 
-	/**
-	Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.
+		/**
+		Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.
 
-	@default 'pipe'
-	*/
-	readonly stdio?: 'pipe' | 'ignore' | 'inherit' | ReadonlyArray<StdioOption>;
+		@default 'pipe'
+		*/
+		readonly stdio?: 'pipe' | 'ignore' | 'inherit' | ReadonlyArray<StdioOption>;
 
-	/**
-	Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
+		/**
+		Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
-	@default false
-	*/
-	readonly detached?: boolean;
+		@default false
+		*/
+		readonly detached?: boolean;
 
-	/**
-	Sets the user identity of the process.
-	*/
-	readonly uid?: number;
+		/**
+		Sets the user identity of the process.
+		*/
+		readonly uid?: number;
 
-	/**
-	Sets the group identity of the process.
-	*/
-	readonly gid?: number;
+		/**
+		Sets the group identity of the process.
+		*/
+		readonly gid?: number;
 
-	/**
-	If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
+		/**
+		If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
-	@default false
-	*/
-	readonly shell?: boolean | string;
+		@default false
+		*/
+		readonly shell?: boolean | string;
 
-	/**
-	Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
+		/**
+		Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
 
-	@default true
-	*/
-	readonly stripFinalNewline?: boolean;
+		@default true
+		*/
+		readonly stripFinalNewline?: boolean;
 
-	/**
-	Prefer locally installed binaries when looking for a binary to execute.
+		/**
+		Prefer locally installed binaries when looking for a binary to execute.
 
-	If you `$ npm install foo`, you can then `execa('foo')`.
+		If you `$ npm install foo`, you can then `execa('foo')`.
 
-	@default true
-	*/
-	readonly preferLocal?: boolean;
+		@default true
+		*/
+		readonly preferLocal?: boolean;
 
-	/**
-	Preferred path to find locally installed binaries in (use with `preferLocal`).
+		/**
+		Preferred path to find locally installed binaries in (use with `preferLocal`).
 
-	@default process.cwd()
-	*/
-	readonly localDir?: string;
+		@default process.cwd()
+		*/
+		readonly localDir?: string;
 
-	/**
-	Setting this to `false` resolves the promise with the error instead of rejecting it.
+		/**
+		Setting this to `false` resolves the promise with the error instead of rejecting it.
 
-	@default true
-	*/
-	readonly reject?: boolean;
+		@default true
+		*/
+		readonly reject?: boolean;
 
-	/**
-	Keep track of the spawned process and `kill` it when the parent process exits.
+		/**
+		Keep track of the spawned process and `kill` it when the parent process exits.
 
-	@default true
-	*/
-	readonly cleanup?: boolean;
+		@default true
+		*/
+		readonly cleanup?: boolean;
 
-	/**
-	Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
+		/**
+		Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
 
-	@default 'utf8'
-	*/
-	readonly encoding?: EncodingType;
+		@default 'utf8'
+		*/
+		readonly encoding?: EncodingType;
 
-	/**
-	If `timeout` is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than `timeout` milliseconds.
+		/**
+		If `timeout` is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than `timeout` milliseconds.
 
-	@default 0
-	*/
-	readonly timeout?: number;
+		@default 0
+		*/
+		readonly timeout?: number;
 
-	/**
-	Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
+		/**
+		Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
 
-	@default true
-	*/
-	readonly buffer?: boolean;
+		@default true
+		*/
+		readonly buffer?: boolean;
 
-	/**
-	Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 10MB.
+		/**
+		Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 10MB.
 
-	@default 10000000
-	*/
-	readonly maxBuffer?: number;
+		@default 10000000
+		*/
+		readonly maxBuffer?: number;
 
-	/**
-	Signal value to be used when the spawned process will be killed.
+		/**
+		Signal value to be used when the spawned process will be killed.
 
-	@default 'SIGTERM'
-	*/
-	readonly killSignal?: string | number;
+		@default 'SIGTERM'
+		*/
+		readonly killSignal?: string | number;
 
-	/**
-	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+		/**
+		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	@default 'pipe'
-	*/
-	readonly stdin?: StdioOption;
+		@default 'pipe'
+		*/
+		readonly stdin?: StdioOption;
 
-	/**
-	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+		/**
+		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	@default 'pipe'
-	*/
-	readonly stdout?: StdioOption;
+		@default 'pipe'
+		*/
+		readonly stdout?: StdioOption;
 
-	/**
-	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+		/**
+		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	@default 'pipe'
-	*/
-	readonly stderr?: StdioOption;
+		@default 'pipe'
+		*/
+		readonly stderr?: StdioOption;
 
-	/**
-	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
+		/**
+		If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
-	@default false
-	*/
-	readonly windowsVerbatimArguments?: boolean;
+		@default false
+		*/
+		readonly windowsVerbatimArguments?: boolean;
+	}
+
+	interface Options<EncodingType = string> extends CommonOptions<EncodingType> {
+		/**
+		Write some input to the `stdin` of your binary.
+		*/
+		readonly input?: string | Buffer | ReadableStream;
+	}
+
+	interface SyncOptions<EncodingType = string>
+		extends CommonOptions<EncodingType> {
+		/**
+		Write some input to the `stdin` of your binary.
+		*/
+		readonly input?: string | Buffer;
+	}
+
+	interface ExecaReturnBase<StdoutStderrType> {
+		/**
+		The numeric exit code of the process that was run.
+		*/
+		exitCode: number;
+
+		/**
+		The textual exit code of the process that was run.
+		*/
+		exitCodeName: string;
+
+		/**
+		The output of the process on stdout.
+		*/
+		stdout: StdoutStderrType;
+
+		/**
+		The output of the process on stderr.
+		*/
+		stderr: StdoutStderrType;
+
+		/**
+		Whether the process failed to run.
+		*/
+		failed: boolean;
+
+		/**
+		The signal that was used to terminate the process.
+		*/
+		signal?: string;
+
+		/**
+		The command that was run.
+		*/
+		command: string;
+
+		/**
+		Whether the process timed out.
+		*/
+		timedOut: boolean;
+
+		/**
+		Whether the process was killed.
+		*/
+		killed: boolean;
+	}
+
+	interface ExecaSyncReturnValue<StdoutErrorType = string>
+		extends ExecaReturnBase<StdoutErrorType> {
+		/**
+		The exit code of the process that was run.
+		*/
+		code: number;
+	}
+
+	interface ExecaReturnValue<StdoutErrorType = string>
+		extends ExecaSyncReturnValue<StdoutErrorType> {
+		/**
+		The output of the process with `stdout` and `stderr` interleaved.
+		*/
+		all: StdoutErrorType;
+
+		/**
+		Whether the process was canceled.
+		*/
+		isCanceled: boolean;
+	}
+
+	interface ExecaSyncError<StdoutErrorType = string>
+		extends Error,
+			ExecaReturnBase<StdoutErrorType> {
+		/**
+		The error message.
+		*/
+		message: string;
+
+		/**
+		The exit code (either numeric or textual) of the process that was run.
+		*/
+		code: number | string;
+	}
+
+	interface ExecaError<StdoutErrorType = string>
+		extends ExecaSyncError<StdoutErrorType> {
+		/**
+		The output of the process with `stdout` and `stderr` interleaved.
+		*/
+		all: StdoutErrorType;
+
+		/**
+		Whether the process was canceled.
+		*/
+		isCanceled: boolean;
+	}
+
+	interface ExecaChildPromise<StdoutErrorType> {
+		catch<ResultType = never>(
+			onRejected?:
+				| ((
+						reason: ExecaError<StdoutErrorType>
+				  ) => ResultType | PromiseLike<ResultType>)
+				| null
+		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
+
+		/**
+		Cancel the subprocess.
+
+		Causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
+		*/
+		cancel(): void;
+	}
+
+	type ExecaChildProcess<StdoutErrorType = string> = ChildProcess &
+		ExecaChildPromise<StdoutErrorType> &
+		Promise<ExecaReturnValue<StdoutErrorType>>;
 }
-
-export interface Options<EncodingType = string>
-	extends CommonOptions<EncodingType> {
-	/**
-	Write some input to the `stdin` of your binary.
-	*/
-	readonly input?: string | Buffer | ReadableStream;
-}
-
-export interface SyncOptions<EncodingType = string>
-	extends CommonOptions<EncodingType> {
-	/**
-	Write some input to the `stdin` of your binary.
-	*/
-	readonly input?: string | Buffer;
-}
-
-export interface ExecaReturnBase<StdoutStderrType> {
-	/**
-	The numeric exit code of the process that was run.
-	*/
-	exitCode: number;
-
-	/**
-	The textual exit code of the process that was run.
-	*/
-	exitCodeName: string;
-
-	/**
-	The output of the process on stdout.
-	*/
-	stdout: StdoutStderrType;
-
-	/**
-	The output of the process on stderr.
-	*/
-	stderr: StdoutStderrType;
-
-	/**
-	Whether the process failed to run.
-	*/
-	failed: boolean;
-
-	/**
-	The signal that was used to terminate the process.
-	*/
-	signal?: string;
-
-	/**
-	The command that was run.
-	*/
-	command: string;
-
-	/**
-	Whether the process timed out.
-	*/
-	timedOut: boolean;
-
-	/**
-	Whether the process was killed.
-	*/
-	killed: boolean;
-}
-
-export interface ExecaSyncReturnValue<StdoutErrorType = string>
-	extends ExecaReturnBase<StdoutErrorType> {
-	/**
-	The exit code of the process that was run.
-	*/
-	code: number;
-}
-
-export interface ExecaReturnValue<StdoutErrorType = string>
-	extends ExecaSyncReturnValue<StdoutErrorType> {
-	/**
-	The output of the process with `stdout` and `stderr` interleaved.
-	*/
-	all: StdoutErrorType;
-
-	/**
-	Whether the process was canceled.
-	*/
-	isCanceled: boolean;
-}
-
-export interface ExecaSyncError<StdoutErrorType = string>
-	extends Error,
-		ExecaReturnBase<StdoutErrorType> {
-	/**
-	The error message.
-	*/
-	message: string;
-
-	/**
-	The exit code (either numeric or textual) of the process that was run.
-	*/
-	code: number | string;
-}
-
-export interface ExecaError<StdoutErrorType = string>
-	extends ExecaSyncError<StdoutErrorType> {
-	/**
-	The output of the process with `stdout` and `stderr` interleaved.
-	*/
-	all: StdoutErrorType;
-
-	/**
-	Whether the process was canceled.
-	*/
-	isCanceled: boolean;
-}
-
-export interface ExecaChildPromise<StdoutErrorType> {
-	catch<ResultType = never>(
-		onRejected?:
-			| ((reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>)
-			| null
-	): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
-
-	/**
-	Cancel the subprocess.
-
-	Causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
-	*/
-	cancel(): void;
-}
-
-export type ExecaChildProcess<StdoutErrorType = string> = ChildProcess &
-	ExecaChildPromise<StdoutErrorType> &
-	Promise<ExecaReturnValue<StdoutErrorType>>;
 
 declare const execa: {
 	/**
@@ -338,15 +341,17 @@ declare const execa: {
 	(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: Options
-	): ExecaChildProcess;
+		options?: execa.Options
+	): execa.ExecaChildProcess;
 	(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: Options<null>
-	): ExecaChildProcess<Buffer>;
-	(file: string, options?: Options): ExecaChildProcess;
-	(file: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+		options?: execa.Options<null>
+	): execa.ExecaChildProcess<Buffer>;
+	(file: string, options?: execa.Options): execa.ExecaChildProcess;
+	(file: string, options?: execa.Options<null>): execa.ExecaChildProcess<
+		Buffer
+	>;
 
 	/**
 	Same as `execa()`, but returns only `stdout`.
@@ -358,15 +363,15 @@ declare const execa: {
 	stdout(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: Options
+		options?: execa.Options
 	): Promise<string>;
 	stdout(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: Options<null>
+		options?: execa.Options<null>
 	): Promise<Buffer>;
-	stdout(file: string, options?: Options): Promise<string>;
-	stdout(file: string, options?: Options<null>): Promise<Buffer>;
+	stdout(file: string, options?: execa.Options): Promise<string>;
+	stdout(file: string, options?: execa.Options<null>): Promise<Buffer>;
 
 	/**
 	Same as `execa()`, but returns only `stderr`.
@@ -378,15 +383,15 @@ declare const execa: {
 	stderr(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: Options
+		options?: execa.Options
 	): Promise<string>;
 	stderr(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: Options<null>
+		options?: execa.Options<null>
 	): Promise<Buffer>;
-	stderr(file: string, options?: Options): Promise<string>;
-	stderr(file: string, options?: Options<null>): Promise<Buffer>;
+	stderr(file: string, options?: execa.Options): Promise<string>;
+	stderr(file: string, options?: execa.Options<null>): Promise<Buffer>;
 
 	/**
 	Execute a command through the system shell.
@@ -427,8 +432,11 @@ declare const execa: {
 	})();
 	```
 	*/
-	shell(command: string, options?: Options): ExecaChildProcess;
-	shell(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+	shell(command: string, options?: execa.Options): execa.ExecaChildProcess;
+	shell(
+		command: string,
+		options?: execa.Options<null>
+	): execa.ExecaChildProcess<Buffer>;
 
 	/**
 	Execute a file synchronously.
@@ -442,15 +450,18 @@ declare const execa: {
 	sync(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: SyncOptions
-	): ExecaSyncReturnValue;
+		options?: execa.SyncOptions
+	): execa.ExecaSyncReturnValue;
 	sync(
 		file: string,
 		arguments?: ReadonlyArray<string>,
-		options?: SyncOptions<null>
-	): ExecaSyncReturnValue<Buffer>;
-	sync(file: string, options?: SyncOptions): ExecaSyncReturnValue;
-	sync(file: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
+		options?: execa.SyncOptions<null>
+	): execa.ExecaSyncReturnValue<Buffer>;
+	sync(file: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;
+	sync(
+		file: string,
+		options?: execa.SyncOptions<null>
+	): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**
 	Execute a command synchronously through the system shell.
@@ -482,11 +493,14 @@ declare const execa: {
 	}
 	```
 	*/
-	shellSync(command: string, options?: Options): ExecaSyncReturnValue;
 	shellSync(
 		command: string,
-		options?: Options<null>
-	): ExecaSyncReturnValue<Buffer>;
+		options?: execa.Options
+	): execa.ExecaSyncReturnValue;
+	shellSync(
+		command: string,
+		options?: execa.Options<null>
+	): execa.ExecaSyncReturnValue<Buffer>;
 };
 
-export default execa;
+export = execa;

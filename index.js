@@ -375,7 +375,6 @@ const execa = (command, args, options) => {
 };
 
 module.exports = execa;
-module.exports.default = execa;
 
 // TODO: set `stderr: 'ignore'` when that option is implemented
 module.exports.stdout = async (...args) => {

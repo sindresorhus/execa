@@ -427,3 +427,12 @@ module.exports.sync = (command, args, options) => {
 };
 
 module.exports.shellSync = (command, options) => handleShell(execa.sync, command, options);
+
+module.exports.fork = (filePath, args, options) =>{
+	return execa('node', [filePath, ...(args || [])], {
+		...options,
+		ipc: 'pipe',
+		execPath: path.resolve(filePath),
+		shell: false,
+	});
+};

@@ -640,3 +640,9 @@ test('calling cancel method on a process which has been killed does not make err
 	const error = await t.throwsAsync(subprocess);
 	t.false(error.isCanceled);
 });
+
+test.only('fork', async t => {
+	const result = await execa.fork('./fixtures/simple-log.js');
+
+	t.is(result.stdout, 'ok');
+});

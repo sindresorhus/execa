@@ -429,10 +429,13 @@ module.exports.sync = (command, args, options) => {
 module.exports.shellSync = (command, options) => handleShell(execa.sync, command, options);
 
 module.exports.fork = (filePath, args, options) =>{
-	return execa('node', [filePath, ...(args || [])], {
+	const absolutePath =  path.resolve(filePath);
+
+	return execa(absolutePath, args, {
 		...options,
-		ipc: 'pipe',
-		execPath: path.resolve(filePath),
+		stdio: stdio.fork(options),
+		execPath: absolutePath,
+		execArgv: options.execArgv || process.execArgv,
 		shell: false,
 	});
 };

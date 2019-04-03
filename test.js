@@ -392,7 +392,7 @@ test('timeout will kill the process early', async t => {
 
 	t.true(error.timedOut);
 	t.not(error.exitCode, 22);
-	t.true(diff < 2000);
+	t.true(diff < 4000);
 });
 
 test('timeout will kill the process early (sleep)', async t => {
@@ -402,7 +402,7 @@ test('timeout will kill the process early (sleep)', async t => {
 
 	t.true(error.timedOut);
 	t.not(error.stdout, 'ok');
-	t.true(diff < 2000);
+	t.true(diff < 4000);
 });
 
 test('timeout will not kill the process early', async t => {

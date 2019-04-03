@@ -385,7 +385,7 @@ test('error.code is 2', code, 2);
 test('error.code is 3', code, 3);
 test('error.code is 4', code, 4);
 
-test('timeout will kill the process early', async t => {
+test.serial('timeout will kill the process early', async t => {
 	const time = Date.now();
 	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 500, message: TIMEOUT_REGEXP}));
 	const diff = Date.now() - time;
@@ -395,7 +395,7 @@ test('timeout will kill the process early', async t => {
 	t.true(diff < 4000);
 });
 
-test('timeout will kill the process early (sleep)', async t => {
+test.serial('timeout will kill the process early (sleep)', async t => {
 	const time = Date.now();
 	const error = await t.throwsAsync(execa('sleeper', [], {timeout: 500, message: TIMEOUT_REGEXP}));
 	const diff = Date.now() - time;

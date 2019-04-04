@@ -57,14 +57,16 @@ test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'
 
 const forkMacro = createMacro(stdio.fork);
 
-test(forkMacro, undefined, ['pipe', 'pipe', 'pipe', 'ipc']);
+test(forkMacro, undefined, ['inherit', 'inherit', 'inherit', 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 3]}, [0, 1, 2, 3, 'ipc']);
+test(forkMacro, {stdio: [0, 1, 2, 'ipc']}, [0, 1, 2, 'ipc']);
 
-test(forkMacro, {stdout: 'ignore'}, ['pipe', 'ignore', 'pipe', 'ipc']);
-test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, ['pipe', 'ignore', 'ignore', 'ipc']);
+test(forkMacro, {stdout: 'ignore'}, ['inherit', 'ignore', 'inherit', 'ipc']);
+test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, ['inherit', 'ignore', 'ignore', 'ipc']);
 
-test(forkMacro, {silent: true, stdio: 'ignore'}, ['pipe', 'pipe', 'pipe', 'ipc']);
-test(forkMacro, {silent: true, stdio: [0, 1, 2, 42, 5]}, ['pipe', 'pipe', 'pipe', 'ipc']);
-test(forkMacro, {silent: true, stdout: 'ignore'}, ['pipe', 'pipe', 'pipe', 'ipc']);
+test(forkMacro, {silent: true}, ['pipe', 'pipe', 'pipe', 'ipc']);
+test(forkMacro, {silent: true, stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
+test(forkMacro, {silent: true, stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
+test(forkMacro, {silent: true, stdout: 'ignore'}, ['pipe', 'ignore', 'pipe', 'ipc']);

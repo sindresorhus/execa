@@ -627,7 +627,7 @@ test('calling cancel method twice should show the same behaviour as calling it o
 	t.true(subprocess.killed);
 });
 
-test('calling cancel method on a successfuly completed process does not make result.isCanceled true', async t => {
+test('calling cancel method on a successfully completed process does not make result.isCanceled true', async t => {
 	const subprocess = execa('noop');
 	const result = await subprocess;
 	subprocess.cancel();
@@ -641,8 +641,10 @@ test('calling cancel method on a process which has been killed does not make err
 	t.false(error.isCanceled);
 });
 
-test.only('fork', async t => {
-	const result = await execa.fork('./fixtures/simple-log.js');
+test('fork correctly set execPath', async t => {
+	const result = await execa.fork('exec-path.js', [], {
+		stdout: 'pipe'
+	});
 
-	t.is(result.stdout, 'ok');
+	t.is(result.stdout, path.resolve('fixtures/exec-path.js'));
 });

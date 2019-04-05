@@ -428,17 +428,23 @@ module.exports.sync = (command, args, options) => {
 
 module.exports.shellSync = (command, options) => handleShell(execa.sync, command, options);
 
-module.exports.fork = (command, args, options) => {
+module.exports.fork = (filePath, args = [], options = {}) => {
 	const stdioOption = stdio.fork(options);
 
-	return execa(command, args, {
-		...options,
-		stdin: undefined,
-		stdout: undefined,
-		stderr: undefined,
-		stdio: stdioOption,
-		execPath: (options && options.execPath) || process.execPath,
-		execArgv: (options && options.execArgv) || process.execArgv,
-		shell: false
-	});
+	return execa(
+		options.execPath || process.execPath,
+		[
+			filePath,
+			...(options.execArgv || process.execArgv),
+			...args
+		],
+		{
+			...options,
+			stdin: undefined,
+			stdout: undefined,
+			stderr: undefined,
+			stdio: stdioOption,
+			shell: false
+		}
+	);
 };

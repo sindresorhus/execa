@@ -641,10 +641,48 @@ test('calling cancel method on a process which has been killed does not make err
 	t.false(error.isCanceled);
 });
 
-test('fork correctly set execPath', async t => {
-	const result = await execa.fork('exec-path.js', [], {
+test.cb('fork()', t => {
+	const fork = execa.fork('fixtures/plain.js');
+
+	fork.on('close', code => {
+		t.is(code, 0);
+		t.end();
+	});
+});
+
+test('fork pipe stdout', async t => {
+	const result = await execa.fork('fixtures/plain.js', [], {
 		stdout: 'pipe'
 	});
 
-	t.is(result.stdout, path.resolve('fixtures/exec-path.js'));
+	t.is(result.stdout, 'Javascript');
+});
+
+test('fork correctly use execPath', async t => {
+	const result = await execa.fork(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', [], {
+		stdout: 'pipe',
+		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash'
+	});
+
+	t.is(result.stdout, 'Hello World');
+});
+
+test('fork pass on execArgv', async t => {
+	const result = await execa.fork('fixtures/noop', [], {
+		stdout: 'pipe',
+		execArgv: ['foo']
+	});
+
+	t.is(result.stdout, 'foo');
+});
+
+test.cb('forked script have a communication channel', t => {
+	const subprocess = execa.fork('fixtures/send.js');
+
+	subprocess.on('message', message => {
+		t.is(message, 'pong');
+		t.end();
+	});
+
+	subprocess.send('ping');
 });

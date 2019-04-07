@@ -1,4 +1,4 @@
-<img src="logo/logo.svg" width="500">
+<img src="logo.svg" width="500">
 
 [![Build Status](https://travis-ci.org/sindresorhus/execa.svg?branch=master)](https://travis-ci.org/sindresorhus/execa) [![Coverage Status](https://coveralls.io/repos/github/sindresorhus/execa/badge.svg?branch=master)](https://coveralls.io/github/sindresorhus/execa?branch=master)
 

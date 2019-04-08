@@ -60,7 +60,8 @@ function handleArgs(command, args, options) {
 		options.cleanup = false;
 	}
 
-	if (process.platform === 'win32' && path.basename(command).startsWith('cmd')) {
+	const basename = path.basename(command);
+	if (process.platform === 'win32' && (basename === 'cmd' || basename === 'cmd.exe')) {
 		// #116
 		args.unshift('/q');
 	}

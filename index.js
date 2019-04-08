@@ -434,7 +434,7 @@ module.exports.fork = (filePath, args = [], options = {}) => {
 	return execa(
 		options.execPath || process.execPath,
 		[
-			filePath,
+			path.normalize(filePath),
 			...(options.execArgv || process.execArgv),
 			...args
 		],

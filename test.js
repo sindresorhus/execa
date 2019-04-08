@@ -642,7 +642,7 @@ test('calling cancel method on a process which has been killed does not make err
 });
 
 test.cb('fork()', t => {
-	const fork = execa.fork('fixtures/plain.js');
+	const fork = execa.fork('fixtures/noop');
 
 	fork.on('close', code => {
 		t.is(code, 0);
@@ -651,11 +651,11 @@ test.cb('fork()', t => {
 });
 
 test('fork pipe stdout', async t => {
-	const result = await execa.fork('fixtures/plain.js', [], {
+	const {stdout} = await execa.fork('fixtures/noop', ['foo'], {
 		stdout: 'pipe'
 	});
 
-	t.is(result.stdout, 'Javascript');
+	t.is(stdout, 'foo');
 });
 
 test('fork correctly use execPath', async t => {

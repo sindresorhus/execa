@@ -316,7 +316,6 @@ const execa = (command, args, options) => {
 		}
 	}
 
-	// TODO: Use native "finally" syntax when targeting Node.js 10
 	const handlePromise = () => {
 		let processComplete = Promise.all([
 			processDone,
@@ -332,7 +331,9 @@ const execa = (command, args, options) => {
 			]);
 		}
 
-		return pFinally(processComplete.then(results => { // eslint-disable-line promise/prefer-await-to-then
+		const finalize = async () => {
+			const results = await processComplete;
+
 			const result = results[0];
 			result.stdout = results[1];
 			result.stderr = results[2];
@@ -371,7 +372,10 @@ const execa = (command, args, options) => {
 				timedOut: false,
 				isCanceled: false
 			};
-		}), destroy);
+		};
+
+		// TODO: Use native "finally" syntax when targeting Node.js 10
+		return pFinally(finalize(), destroy);
 	};
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);

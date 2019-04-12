@@ -267,9 +267,25 @@ const execa = (command, args, options) => {
 		}, parsed.options.timeout);
 	}
 
+	const resolvable = (() => {
+		let extracted;
+		const promise = new Promise(resolve => {
+			extracted = resolve;
+		});
+		promise.resolve = extracted;
+		return promise;
+	})();
+
 	const processDone = new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
 			cleanup();
+
+			if (timedOut) {
+				resolvable.resolve([
+					{code, signal}, '', '', ''
+				]);
+			}
+
 			resolve({code, signal});
 		});
 
@@ -300,52 +316,67 @@ const execa = (command, args, options) => {
 		}
 	}
 
-	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const handlePromise = () => pFinally(Promise.all([
-		processDone,
-		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
-	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
-		const result = results[0];
-		result.stdout = results[1];
-		result.stderr = results[2];
-		result.all = results[3];
+	const handlePromise = () => {
+		let processComplete = Promise.all([
+			processDone,
+			getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
+			getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
+			getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
+		]);
 
-		if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
-			const error = makeError(result, {
-				joinedCommand,
-				parsed,
-				timedOut,
-				isCanceled
-			});
-
-			// TODO: missing some timeout logic for killed
-			// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-			// error.killed = spawned.killed || killed;
-			error.killed = error.killed || spawned.killed;
-
-			if (!parsed.options.reject) {
-				return error;
-			}
-
-			throw error;
+		if (timeoutId) {
+			processComplete = Promise.race([
+				processComplete,
+				resolvable
+			]);
 		}
 
-		return {
-			stdout: handleOutput(parsed.options, result.stdout),
-			stderr: handleOutput(parsed.options, result.stderr),
-			all: handleOutput(parsed.options, result.all),
-			code: 0,
-			exitCode: 0,
-			exitCodeName: 'SUCCESS',
-			failed: false,
-			killed: false,
-			command: joinedCommand,
-			timedOut: false,
-			isCanceled: false
+		const finalize = async () => {
+			const results = await processComplete;
+
+			const result = results[0];
+			result.stdout = results[1];
+			result.stderr = results[2];
+			result.all = results[3];
+
+			if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
+				const error = makeError(result, {
+					joinedCommand,
+					parsed,
+					timedOut,
+					isCanceled
+				});
+
+				// TODO: missing some timeout logic for killed
+				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
+				// error.killed = spawned.killed || killed;
+				error.killed = error.killed || spawned.killed;
+
+				if (!parsed.options.reject) {
+					return error;
+				}
+
+				throw error;
+			}
+
+			return {
+				stdout: handleOutput(parsed.options, result.stdout),
+				stderr: handleOutput(parsed.options, result.stderr),
+				all: handleOutput(parsed.options, result.all),
+				code: 0,
+				exitCode: 0,
+				exitCodeName: 'SUCCESS',
+				failed: false,
+				killed: false,
+				command: joinedCommand,
+				timedOut: false,
+				isCanceled: false
+			};
 		};
-	}), destroy);
+
+		// TODO: Use native "finally" syntax when targeting Node.js 10
+		return pFinally(finalize(), destroy);
+	};
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 

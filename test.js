@@ -385,15 +385,28 @@ test('error.code is 2', code, 2);
 test('error.code is 3', code, 3);
 test('error.code is 4', code, 4);
 
-test('timeout will kill the process early', async t => {
-	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 1500, message: TIMEOUT_REGEXP}));
+test.serial('timeout will kill the process early', async t => {
+	const time = Date.now();
+	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 500, message: TIMEOUT_REGEXP}));
+	const diff = Date.now() - time;
 
 	t.true(error.timedOut);
 	t.not(error.exitCode, 22);
+	t.true(diff < 4000);
+});
+
+test.serial('timeout will kill the process early (sleep)', async t => {
+	const time = Date.now();
+	const error = await t.throwsAsync(execa('sleeper', [], {timeout: 500, message: TIMEOUT_REGEXP}));
+	const diff = Date.now() - time;
+
+	t.true(error.timedOut);
+	t.not(error.stdout, 'ok');
+	t.true(diff < 4000);
 });
 
 test('timeout will not kill the process early', async t => {
-	const error = await t.throwsAsync(execa('delay', ['3000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22')});
+	const error = await t.throwsAsync(execa('delay', ['2000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22')});
 	t.false(error.timedOut);
 });
 

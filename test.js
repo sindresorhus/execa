@@ -28,6 +28,11 @@ if (process.platform === 'win32') {
 		const {stdout} = await execa('hello.cmd');
 		t.is(stdout, 'Hello World');
 	});
+
+	test('execa() - run cmd command', async t => {
+		const {stdout} = await execa('cmd', ['/c', 'hello.cmd']);
+		t.is(stdout, 'Hello World');
+	});
 }
 
 test('buffer', async t => {

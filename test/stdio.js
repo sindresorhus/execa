@@ -22,7 +22,6 @@ function macro(t, input, expected) {
 macro.title = (providedTitle, input) => providedTitle || util.inspect(input, {colors: true});
 
 test(macro, undefined, undefined);
-test(macro, null, undefined);
 
 test(macro, {stdio: 'inherit'}, 'inherit');
 test(macro, {stdio: 'pipe'}, 'pipe');

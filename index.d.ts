@@ -10,7 +10,6 @@ declare namespace execa {
 		| 'inherit'
 		| Stream
 		| number
-		| null
 		| undefined;
 
 	interface CommonOptions<EncodingType> {
@@ -45,7 +44,7 @@ declare namespace execa {
 
 		@default 'pipe'
 		*/
-		readonly stdio?: 'pipe' | 'ignore' | 'inherit' | ReadonlyArray<StdioOption>;
+		readonly stdio?: 'pipe' | 'ignore' | 'inherit' | readonly StdioOption[];
 
 		/**
 		Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
@@ -284,11 +283,7 @@ declare namespace execa {
 
 	interface ExecaChildPromise<StdoutErrorType> {
 		catch<ResultType = never>(
-			onRejected?:
-				| ((
-						reason: ExecaError<StdoutErrorType>
-				  ) => ResultType | PromiseLike<ResultType>)
-				| null
+			onRejected?: (reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>
 		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
 
 		/**
@@ -340,12 +335,12 @@ declare const execa: {
 	*/
 	(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.Options
 	): execa.ExecaChildProcess;
 	(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.Options<null>
 	): execa.ExecaChildProcess<Buffer>;
 	(file: string, options?: execa.Options): execa.ExecaChildProcess;
@@ -362,12 +357,12 @@ declare const execa: {
 	*/
 	stdout(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.Options
 	): Promise<string>;
 	stdout(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.Options<null>
 	): Promise<Buffer>;
 	stdout(file: string, options?: execa.Options): Promise<string>;
@@ -382,12 +377,12 @@ declare const execa: {
 	*/
 	stderr(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.Options
 	): Promise<string>;
 	stderr(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.Options<null>
 	): Promise<Buffer>;
 	stderr(file: string, options?: execa.Options): Promise<string>;
@@ -449,12 +444,12 @@ declare const execa: {
 	*/
 	sync(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.SyncOptions
 	): execa.ExecaSyncReturnValue;
 	sync(
 		file: string,
-		arguments?: ReadonlyArray<string>,
+		arguments?: readonly string[],
 		options?: execa.SyncOptions<null>
 	): execa.ExecaSyncReturnValue<Buffer>;
 	sync(file: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;

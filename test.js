@@ -76,7 +76,7 @@ test('do not include `stderr` and `stdout` in errors when set to `inherit`', asy
 });
 
 test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inherit`', async t => {
-	await t.throwsAsync(execa('fixtures/error-message.js', {stdio: [null, 'inherit', 'inherit']}), {message: NO_NEWLINES_REGEXP});
+	await t.throwsAsync(execa('fixtures/error-message.js', {stdio: [undefined, 'inherit', 'inherit']}), {message: NO_NEWLINES_REGEXP});
 });
 
 test('do not include `stdout` in errors when set to `inherit`', async t => {
@@ -213,7 +213,7 @@ test('input option can be a Buffer - sync', t => {
 test('opts.stdout:ignore - stdout will not collect data', async t => {
 	const {stdout} = await execa('stdin', {
 		input: 'hello',
-		stdio: [null, 'ignore', null]
+		stdio: [undefined, 'ignore', undefined]
 	});
 	t.is(stdout, undefined);
 });

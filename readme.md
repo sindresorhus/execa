@@ -162,7 +162,7 @@ Returns the same result object as [`child_process.spawnSync`](https://nodejs.org
 
 ### options
 
-Type: `Object`
+Type: `object`
 
 #### cwd
 
@@ -173,7 +173,7 @@ Current working directory of the child process.
 
 #### env
 
-Type: `Object`<br>
+Type: `object`<br>
 Default: `process.env`
 
 Environment key-value pairs. Extends automatically from `process.env`. Set `extendEnv` to `false` if you don't want this.
@@ -193,7 +193,7 @@ Explicitly set the value of `argv[0]` sent to the child process. This will be se
 
 #### stdio
 
-Type: `string[]` `string`<br>
+Type: `string | string[]`<br>
 Default: `pipe`
 
 Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.
@@ -218,7 +218,7 @@ Sets the group identity of the process.
 
 #### shell
 
-Type: `boolean` `string`<br>
+Type: `boolean | string`<br>
 Default: `false`
 
 If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
@@ -247,7 +247,7 @@ Preferred path to find locally installed binaries in (use with `preferLocal`).
 
 #### input
 
-Type: `string` `Buffer` `stream.Readable`
+Type: `string | Buffer | stream.Readable`
 
 Write some input to the `stdin` of your binary.<br>
 Streams are not allowed when using the synchronous methods.
@@ -268,7 +268,7 @@ Keep track of the spawned process and `kill` it when the parent process exits.
 
 #### encoding
 
-Type: `string` `null`<br>
+Type: `string | null`<br>
 Default: `utf8`
 
 Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
@@ -296,28 +296,28 @@ Largest amount of data in bytes allowed on `stdout` or `stderr`.
 
 #### killSignal
 
-Type: `string` `number`<br>
+Type: `string | number`<br>
 Default: `SIGTERM`
 
 Signal value to be used when the spawned process will be killed.
 
 #### stdin
 
-Type: `string` `number` `Stream` `undefined` `null`<br>
+Type: `string | number | Stream | undefined`<br>
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 #### stdout
 
-Type: `string` `number` `Stream` `undefined` `null`<br>
+Type: `string | number | Stream | undefined`<br>
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 #### stderr
 
-Type: `string` `number` `Stream` `undefined` `null`<br>
+Type: `string | number | Stream | undefined`<br>
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).

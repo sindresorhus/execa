@@ -56,21 +56,6 @@ const execa = require('execa');
 	const {stdout} = await execa.shell('echo unicorns');
 	//=> 'unicorns'
 
-	// Cancelling a spawned process
-	const subprocess = execa('node');
-	setTimeout(() => { spawned.cancel() }, 1000);
-	try {
-		await subprocess;
-	} catch (error) {
-		console.log(subprocess.killed); // true
-		console.log(error.isCanceled); // true
-	}
-
-	// Run a command as a string without a shell
-	const {stdout} = await execa('echo unicorns');
-	//=> 'unicorns'
-
-
 	// Catching an error
 	try {
 		await execa.shell('exit 3');

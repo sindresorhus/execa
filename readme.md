@@ -128,6 +128,8 @@ Arguments should not be escaped nor quoted. Exception: inside `command`, spaces 
 
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
+As opposed to [`execa.shell()`](#execashellcommand-options), no shell interpreter (Bash, `cmd.exe`, etc.) is used, so you cannot use shell features such as variables substitution `echo $PATH`.
+
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which is enhanced to be a `Promise`.
 
 It exposes an additional `.all` stream, with `stdout` and `stderr` interleaved.

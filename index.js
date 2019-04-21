@@ -18,12 +18,15 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 const SPACES_REGEXP = / +/g;
 
 function parseCommand(command, args = []) {
+	if (args.length !== 0) {
+		throw new Error('Arguments cannot be inside `command` when also specified as an array of strings');
+	}
+
 	const [file, ...extraArgs] = command
 		.trim()
 		.split(SPACES_REGEXP)
 		.reduce(handleEscaping, []);
-	const newArgs = [...extraArgs, ...args];
-	return [file, newArgs];
+	return [file, extraArgs];
 }
 
 function handleArgs(command, args, options = {}) {

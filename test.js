@@ -111,9 +111,8 @@ test('allow string arguments in synchronous mode', t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-test('allow string arguments together with array arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo bar', ['foo', 'bar']);
-	t.is(stdout, 'foo\nbar\nfoo\nbar');
+test('forbid string arguments together with array arguments', t => {
+	t.throws(() => execa('node fixtures/echo foo bar', ['foo', 'bar']), /Arguments cannot be inside/);
 });
 
 test('ignore consecutive spaces in string arguments', async t => {

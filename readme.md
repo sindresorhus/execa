@@ -120,7 +120,11 @@ try {
 
 Execute a file.
 
-Arguments can be specified either inside `command` (a string) or `arguments` (an array of strings). When specified inside `command`, spaces can be escaped with a backslash. Otherwise arguments need neither escaping nor quoting.
+Arguments can be specified either:
+	- `arguments`: `execa('echo', ['unicorns'])`.
+  - `command`: `execa('echo unicorns')`.
+
+Arguments should not be escaped nor quoted. Exception: inside `command`, spaces can be escaped with a backslash.
 
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 

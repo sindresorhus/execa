@@ -120,7 +120,7 @@ try {
 
 Execute a file.
 
-Arguments can be specified either:
+Arguments can be specified in either:
   - `arguments`: `execa('echo', ['unicorns'])`.
   - `command`: `execa('echo unicorns')`.
 

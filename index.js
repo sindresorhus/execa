@@ -89,7 +89,7 @@ function handleArgs(command, args, options = {}) {
 }
 
 // Allow spaces to be escaped by a backslash if not meant as a delimiter
-const handleEscaping = function (tokens, token, index) {
+const handleEscaping = (tokens, token, index) => {
 	if (index === 0) {
 		return [token];
 	}

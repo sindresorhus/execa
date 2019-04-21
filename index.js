@@ -17,6 +17,21 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 const SPACES_REGEXP = / +/g;
 
+// Allow spaces to be escaped by a backslash if not meant as a delimiter
+const handleEscaping = (tokens, token, index) => {
+	if (index === 0) {
+		return [token];
+	}
+
+	const previousToken = tokens[index - 1];
+
+	if (!previousToken.endsWith('\\')) {
+		return [...tokens, token];
+	}
+
+	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
+};
+
 function parseCommand(command, args = []) {
 	if (args.length !== 0) {
 		throw new Error('Arguments cannot be inside `command` when also specified as an array of strings');
@@ -90,21 +105,6 @@ function handleArgs(command, args, options = {}) {
 
 	return {command, args, options, parsed};
 }
-
-// Allow spaces to be escaped by a backslash if not meant as a delimiter
-const handleEscaping = (tokens, token, index) => {
-	if (index === 0) {
-		return [token];
-	}
-
-	const previousToken = tokens[index - 1];
-
-	if (!previousToken.endsWith('\\')) {
-		return [...tokens, token];
-	}
-
-	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
-};
 
 function handleInput(spawned, input) {
 	if (input === undefined) {

@@ -18,7 +18,7 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 const SPACES_REGEXP = / +/g;
 
 // Allow spaces to be escaped by a backslash if not meant as a delimiter
-const handleEscaping = (tokens, token, index) => {
+function handleEscaping(tokens, token, index) {
 	if (index === 0) {
 		return [token];
 	}
@@ -30,7 +30,7 @@ const handleEscaping = (tokens, token, index) => {
 	}
 
 	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
-};
+}
 
 function parseCommand(command, args = []) {
 	if (args.length !== 0) {

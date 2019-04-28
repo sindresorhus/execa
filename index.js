@@ -237,10 +237,10 @@ const execa = (file, args, options) => {
 					// All good - process killed
 				}
 			}, retryAfter);
-			originalKill(signal);
-		} else {
-			originalKill(signal);
+			return originalKill(signal);
 		}
+
+		return originalKill(signal);
 	};
 
 	// #115

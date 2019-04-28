@@ -221,6 +221,28 @@ const execa = (file, args, options) => {
 		return Promise.reject(error);
 	}
 
+	const originalKill = spawned.kill.bind(spawned);
+	spawned.kill = (signal, options) => {
+		if (signal === undefined || signal === 'SIGTERM') {
+			const retryAfter = options !== undefined &&
+				['number', 'string'].includes(typeof options.retryAfter)
+				? Number(options.retryAfter)
+				: 2000;
+
+				setTimeout(() => {
+					try {
+						originalKill(0);
+						originalKill('SIGKILL');
+					} catch (err) {
+						// All good - process killed
+					}
+				}, retryAfter);
+				originalKill(signal);
+		} else {
+			originalKill(signal);
+		}
+	};
+
 	// #115
 	let removeExitHandler;
 	if (parsed.options.cleanup && !parsed.options.detached) {

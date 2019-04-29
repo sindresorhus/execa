@@ -231,7 +231,6 @@ const execa = (file, args, options) => {
 
 			setTimeout(() => {
 				try {
-					originalKill(0);
 					originalKill('SIGKILL');
 				} catch (_) {
 					// All good - process killed

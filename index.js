@@ -231,13 +231,18 @@ const execa = (file, args, options) => {
 				Number(options.retryAfter) :
 				5000;
 
-			setTimeout(() => {
-				try {
-					originalKill('SIGKILL');
-				} catch (_) {
-					// All good - process killed
-				}
-			}, retryAfter);
+			const retry = !(options !== undefined && options.retry === false);
+
+			if (retry) {
+				setTimeout(() => {
+					try {
+						originalKill('SIGKILL');
+					} catch (_) {
+						// All good - process killed
+					}
+				}, retryAfter);
+			}
+
 			return originalKill(signal);
 		}
 

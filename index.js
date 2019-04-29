@@ -229,7 +229,7 @@ const execa = (file, args, options) => {
 			const retryAfter = options !== undefined &&
 				['number', 'string'].includes(typeof options.retryAfter) ?
 				Number(options.retryAfter) :
-				2000;
+				5000;
 
 			setTimeout(() => {
 				try {

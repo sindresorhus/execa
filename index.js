@@ -233,17 +233,20 @@ const execa = (file, args, options) => {
 
 			const retry = !(options !== undefined && options.retry === false);
 
-			if (retry) {
-				setTimeout(() => {
+			const killResult = originalKill(signal);
+
+			if (retry && killResult) {
+				const safetyTimeout = setTimeout(() => {
 					try {
 						originalKill('SIGKILL');
 					} catch (_) {
 						// All good - process killed
 					}
 				}, retryAfter);
+				safetyTimeout.unref();
 			}
 
-			return originalKill(signal);
+			return killResult;
 		}
 
 		return originalKill(signal);

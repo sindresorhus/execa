@@ -223,7 +223,9 @@ const execa = (file, args, options) => {
 
 	const originalKill = spawned.kill.bind(spawned);
 	spawned.kill = (signal, options) => {
-		if (signal === undefined || signal === 'SIGTERM') {
+		if (signal === undefined ||
+			(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM') ||
+			(typeof signal === 'number' && signal === os.constants.signals.SIGTERM)) {
 			const retryAfter = options !== undefined &&
 				['number', 'string'].includes(typeof options.retryAfter) ?
 				Number(options.retryAfter) :

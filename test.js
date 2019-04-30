@@ -101,6 +101,40 @@ test('pass `stderr` to a file descriptor', async t => {
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
+test('allow string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('allow string arguments in synchronous mode', t => {
+	const {stdout} = execa.sync('node fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('forbid string arguments together with array arguments', t => {
+	t.throws(() => execa('node fixtures/echo foo bar', ['foo', 'bar']), /Arguments cannot be inside/);
+});
+
+test('ignore consecutive spaces in string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo    bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('escape other whitespaces in string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo\tbar');
+	t.is(stdout, 'foo\tbar');
+});
+
+test('allow escaping spaces in string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo\\ bar');
+	t.is(stdout, 'foo bar');
+});
+
+test('trim string arguments', async t => {
+	const {stdout} = await execa('  node fixtures/echo foo bar  ');
+	t.is(stdout, 'foo\nbar');
+});
+
 test('execa.shell()', async t => {
 	const {stdout} = await execa.shell('node fixtures/noop foo');
 	t.is(stdout, 'foo');

@@ -16,6 +16,7 @@
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
 - [Adds an `.all` property](#execafile-arguments-options) with interleaved output from `stdout` and `stderr`, similar to what the terminal sees. [*(Async only)*](#execasyncfile-arguments-options)
+- [Can specify command and arguments as a single string without a shell](#execafile-arguments-options)
 
 
 ## Install
@@ -115,10 +116,19 @@ try {
 ## API
 
 ### execa(file, [arguments], [options])
+### execa(command, [options])
 
 Execute a file.
 
+Arguments can be specified in either:
+  - `arguments`: `execa('echo', ['unicorns'])`.
+  - `command`: `execa('echo unicorns')`.
+
+Arguments should not be escaped nor quoted. Exception: inside `command`, spaces can be escaped with a backslash.
+
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
+
+As opposed to [`execa.shell()`](#execashellcommand-options), no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which is enhanced to be a `Promise`.
 
@@ -129,22 +139,25 @@ The spawned process can be canceled with the `.cancel()` method on the promise, 
 The promise result is an `Object` with `stdout`, `stderr` and `all` properties.
 
 ### execa.stdout(file, [arguments], [options])
+### execa.stdout(command, [options])
 
 Same as `execa()`, but returns only `stdout`.
 
 ### execa.stderr(file, [arguments], [options])
+### execa.stderr(command, [options])
 
 Same as `execa()`, but returns only `stderr`.
 
 ### execa.shell(command, [options])
 
-Execute a command through the system shell. Prefer `execa()` whenever possible, as it's both faster and safer.
+Execute a command through the system shell. Prefer `execa()` whenever possible, as it's faster, safer and more cross-platform.
 
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 
 The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
 
 ### execa.sync(file, [arguments], [options])
+### execa.sync(command, [options])
 
 Execute a file synchronously.
 
@@ -154,7 +167,7 @@ It does not have the `.all` property that `execa()` has because the [underlying 
 
 This method throws an `Error` if the command fails.
 
-### execa.shellSync(file, [options])
+### execa.shellSync(command, [options])
 
 Execute a command synchronously through the system shell.
 

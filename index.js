@@ -15,7 +15,45 @@ const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
-function handleArgs(command, args, options) {
+const SPACES_REGEXP = / +/g;
+
+// Allow spaces to be escaped by a backslash if not meant as a delimiter
+function handleEscaping(tokens, token, index) {
+	if (index === 0) {
+		return [token];
+	}
+
+	const previousToken = tokens[index - 1];
+
+	if (!previousToken.endsWith('\\')) {
+		return [...tokens, token];
+	}
+
+	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
+}
+
+function parseCommand(command, args = []) {
+	if (args.length !== 0) {
+		throw new Error('Arguments cannot be inside `command` when also specified as an array of strings');
+	}
+
+	const [file, ...extraArgs] = command
+		.trim()
+		.split(SPACES_REGEXP)
+		.reduce(handleEscaping, []);
+	return [file, extraArgs];
+}
+
+function handleArgs(command, args, options = {}) {
+	if (args && !Array.isArray(args)) {
+		options = args;
+		args = [];
+	}
+
+	if (!options.shell && command.includes(' ')) {
+		[command, args] = parseCommand(command, args);
+	}
+
 	const parsed = crossSpawn._parse(command, args, options);
 	command = parsed.command;
 	args = parsed.args;

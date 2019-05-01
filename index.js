@@ -226,16 +226,15 @@ const execa = (file, args, options) => {
 		if (signal === undefined ||
 			(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM') ||
 			(typeof signal === 'number' && signal === os.constants.signals.SIGTERM)) {
-			const retryAfter = options !== undefined &&
-				['number', 'string'].includes(typeof options.retryAfter) ?
-				Number(options.retryAfter) :
-				5000;
-
 			const retry = !(options !== undefined && options.retry === false);
 
 			const killResult = originalKill(signal);
 
 			if (retry && killResult) {
+				const retryAfter = options !== undefined &&
+				['number', 'string'].includes(typeof options.retryAfter) ?
+					Number(options.retryAfter) :
+					5000;
 				const safetyTimeout = setTimeout(() => {
 					try {
 						originalKill('SIGKILL');

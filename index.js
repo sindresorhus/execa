@@ -223,12 +223,11 @@ const execa = (file, args, options) => {
 
 	const originalKill = spawned.kill.bind(spawned);
 	spawned.kill = (signal, options) => {
+		const killResult = originalKill(signal);
 		if (signal === undefined ||
 			(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM') ||
 			(typeof signal === 'number' && signal === os.constants.signals.SIGTERM)) {
 			const retry = !(options !== undefined && options.retry === false);
-
-			const killResult = originalKill(signal);
 
 			if (retry && killResult) {
 				const retryAfter = options !== undefined &&
@@ -243,11 +242,9 @@ const execa = (file, args, options) => {
 				}, retryAfter);
 				safetyTimeout.unref();
 			}
-
-			return killResult;
 		}
 
-		return originalKill(signal);
+		return killResult;
 	};
 
 	// #115

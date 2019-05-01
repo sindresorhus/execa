@@ -112,6 +112,14 @@ try {
 	}
 	*/
 }
+
+// Killing a spawned process gently, then with more force
+const subprocess = execa('node'); // Lets assume node doesn't react to SIGTERM
+setTimeout(() => {
+	subprocess.kill('SIGKILL', {
+		retryAfter: 2000,
+	});	// Attempts a kill with SIGKILL after 2 secs
+}, 1000);
 ```
 
 
@@ -128,6 +136,7 @@ Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.ex
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which:
   - is also a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
   - exposes the following additional methods and properties.
+The spawned process can be canceled with the `.cancel()` method on the promise, which causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
 
 #### cancel()
 
@@ -407,6 +416,24 @@ Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
+### child_process.kill([signal], [options])
+
+You may kill the child process with this function. It is slightly different that the original function.
+This one allows you to kill the process with `SIGTERM` and after a specified timeout (5 seconds) a `SIGKILL` is invoked to ensure killing the process.
+
+#### options.retry
+
+Type: `boolean`<br>
+Default: true
+
+Tells the kill to start a second attemp to kill.
+
+#### options.retryAfter
+
+Type: `string | number`<br>
+Default: 5000
+
+Specifies a timeout in ms. This one defines the delay until you try to kill the pocess again.
 
 ## Tips
 

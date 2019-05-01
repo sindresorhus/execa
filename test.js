@@ -128,9 +128,48 @@ test('stripFinalNewline: false', async t => {
 	t.is(stdout, 'foo\n');
 });
 
-test('stripFinalNewline on failure', async t => {
-	const {stderr} = await t.throwsAsync(execa('noop-throw', ['foo'], {stripFinalNewline: true}));
-	t.is(stderr, 'foo');
+test.cb('execa() with .kill after it with SIGKILL should kill cleanly', t => {
+	const proc = execa('node', ['fixtures/sub-process-no-killable']);
+	t.is(typeof proc.pid, 'number');
+	setTimeout(() => {
+		proc.kill('SIGKILL');
+	}, 100);
+
+	setTimeout(() => {
+		t.false(isRunning(proc.pid));
+		t.end();
+	}, 2000);
+});
+
+test.cb('execa() with .kill after it with SIGTERM should not kill (no retry)', t => {
+	const proc = execa('node', ['fixtures/sub-process-no-killable']);
+	t.is(typeof proc.pid, 'number');
+	setTimeout(() => {
+		proc.kill('SIGTERM', {
+			retry: false,
+			retryAfter: 50
+		});
+	}, 100);
+
+	setTimeout(() => {
+		t.true(isRunning(proc.pid));
+		t.end();
+	}, 200);
+});
+
+test.cb('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', t => {
+	const proc = execa('node', ['fixtures/sub-process-no-killable']);
+	t.is(typeof proc.pid, 'number');
+	setTimeout(() => {
+		proc.kill('SIGTERM', {
+			retryAfter: 50
+		});
+	}, 100);
+
+	setTimeout(() => {
+		t.false(isRunning(proc.pid));
+		t.end();
+	}, 200);
 });
 
 test('stripFinalNewline in sync mode', t => {

@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+'use strict';
+
+process.on('SIGTERM', () => {
+  console.log('got sigterm but we ignore it');
+});
+
+setInterval(() => {
+  // run forever
+}, 5000);

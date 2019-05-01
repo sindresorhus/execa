@@ -239,7 +239,6 @@ const execa = (file, args, options) => {
 					try {
 						originalKill('SIGKILL');
 					} catch (_) {
-						// All good - process killed
 					}
 				}, retryAfter);
 				safetyTimeout.unref();

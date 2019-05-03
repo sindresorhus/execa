@@ -7,4 +7,4 @@ process.on('SIGTERM', () => {
 
 setInterval(() => {
   // run forever
-}, 5000);
+}, 20000);

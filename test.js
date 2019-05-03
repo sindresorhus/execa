@@ -130,7 +130,6 @@ test('stripFinalNewline: false', async t => {
 
 test.cb('execa() with .kill after it with SIGKILL should kill cleanly', t => {
 	const proc = execa('node', ['fixtures/sub-process-no-killable']);
-	t.is(typeof proc.pid, 'number');
 	setTimeout(() => {
 		proc.kill('SIGKILL');
 	}, 100);
@@ -143,7 +142,6 @@ test.cb('execa() with .kill after it with SIGKILL should kill cleanly', t => {
 
 test.cb('execa() with .kill after it with SIGTERM should not kill (no retry)', t => {
 	const proc = execa('node', ['fixtures/sub-process-no-killable']);
-	t.is(typeof proc.pid, 'number');
 	setTimeout(() => {
 		proc.kill('SIGTERM', {
 			retry: false,
@@ -159,7 +157,6 @@ test.cb('execa() with .kill after it with SIGTERM should not kill (no retry)', t
 
 test.cb('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', t => {
 	const proc = execa('node', ['fixtures/sub-process-no-killable']);
-	t.is(typeof proc.pid, 'number');
 	setTimeout(() => {
 		proc.kill('SIGTERM', {
 			retryAfter: 50

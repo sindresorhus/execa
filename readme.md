@@ -419,8 +419,7 @@ If `true`, no quoting or escaping of arguments is done on Windows. Ignored on ot
 
 ### child_process.kill([signal], [options])
 
-You may kill the child process with this function. It is slightly different that the original function.
-+Same as the original [`child_process.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
+Same as the original [`child_process.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
 
 #### options.retry
 

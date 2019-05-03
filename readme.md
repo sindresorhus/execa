@@ -138,6 +138,7 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
   - exposes the following additional methods and properties.
 The spawned process can be canceled with the `.cancel()` method on the promise, which causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
 
+The spawned process can be killed with `.kill([signal], [options])` which allows you to retry the process killing at a later time (default: after 5 seconds)
 #### cancel()
 
 Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
@@ -419,21 +420,21 @@ If `true`, no quoting or escaping of arguments is done on Windows. Ignored on ot
 ### child_process.kill([signal], [options])
 
 You may kill the child process with this function. It is slightly different that the original function.
-This one allows you to kill the process with `SIGTERM` and after a specified timeout (5 seconds) a `SIGKILL` is invoked to ensure killing the process.
++Same as the original [`child_process.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
 
 #### options.retry
 
 Type: `boolean`<br>
 Default: true
 
-Tells the kill to start a second attemp to kill.
+If the first signal does not terminate the child after a specified timout, a `SIGKILL` will be sent to the process.
 
 #### options.retryAfter
 
 Type: `string | number`<br>
 Default: 5000
 
-Specifies a timeout in ms. This one defines the delay until you try to kill the pocess again.
+How long to wait for the child process to terminate before sending `SIGKILL`.
 
 ## Tips
 

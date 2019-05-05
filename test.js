@@ -133,12 +133,8 @@ test('execa() with .kill after it with SIGKILL should kill cleanly', async t => 
 
 	subprocess.kill('SIGKILL');
 
-	try {
-		await subprocess;
-		t.fail('Didnt expect success');
-	} catch (error) {
-		t.deepEqual(error.signal, 'SIGKILL');
-	}
+	const {signal} = await t.throwsAsync(subprocess);
+	t.is(signal, 'SIGKILL');
 });
 
 test('execa() with .kill after it with SIGTERM should not kill (no retry)', async t => {
@@ -151,12 +147,8 @@ test('execa() with .kill after it with SIGTERM should not kill (no retry)', asyn
 
 	// Weird test - The process should not die but it does...
 
-	try {
-		await subprocess;
-		t.fail('Didnt expect success');
-	} catch (error) {
-		t.deepEqual(error.signal, 'SIGTERM');
-	}
+	const {signal} = await t.throwsAsync(subprocess);
+	t.is(signal, 'SIGTERM');
 });
 
 test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
@@ -166,12 +158,8 @@ test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGK
 		retryAfter: 50
 	});
 
-	try {
-		await subprocess;
-		t.fail('Didnt expect success');
-	} catch (error) {
-		t.deepEqual(error.signal, 'SIGTERM');
-	}
+	const {signal} = await t.throwsAsync(subprocess);
+	t.is(signal, 'SIGTERM');
 });
 
 test('stripFinalNewline in sync mode', t => {

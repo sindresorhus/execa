@@ -1,3 +1,4 @@
+import {promisify} from 'util';
 import path from 'path';
 import fs from 'fs';
 import stream from 'stream';
@@ -15,11 +16,7 @@ process.env.FOO = 'foo';
 const TIMEOUT_REGEXP = /timed out after/;
 
 const waitForProcessLaunch = subprocess => {
-	return new Promise(resolve => {
-		subprocess.once('message', _ => {
-			resolve();
-		});
-	});
+	return promisify(subprocess.once.bind(subprocess))('message');
 };
 
 const getExitRegExp = exitMessage => new RegExp(`failed with exit code ${exitMessage}`);
@@ -142,6 +139,7 @@ test('execa() with .kill after it with SIGKILL should kill cleanly', async t => 
 	});
 
 	await waitForProcessLaunch(subprocess);
+
 	subprocess.kill('SIGKILL');
 
 	const {signal} = await t.throwsAsync(subprocess);
@@ -171,9 +169,7 @@ test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGK
 
 	await waitForProcessLaunch(subprocess);
 
-	subprocess.kill('SIGTERM', {
-		retryAfter: 50
-	});
+	subprocess.kill();
 
 	const {signal} = await t.throwsAsync(subprocess);
 	t.is(signal, 'SIGKILL');

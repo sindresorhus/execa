@@ -424,14 +424,14 @@ Same as the original [`child_process.kill()`](https://nodejs.org/api/child_proce
 #### options.retry
 
 Type: `boolean`<br>
-Default: true
+Default: `true`
 
 If the first signal does not terminate the child after a specified timout, a `SIGKILL` will be sent to the process.
 
 #### options.retryAfter
 
 Type: `string | number`<br>
-Default: 5000
+Default: `5000`
 
 How long to wait for the child process to terminate before sending `SIGKILL`.
 

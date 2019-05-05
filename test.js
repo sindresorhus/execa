@@ -14,6 +14,14 @@ process.env.FOO = 'foo';
 
 const TIMEOUT_REGEXP = /timed out after/;
 
+const waitForProcessLaunch = subprocess => {
+	return new Promise(resolve => {
+		subprocess.once('message', _ => {
+			resolve();
+		});
+	});
+};
+
 const getExitRegExp = exitMessage => new RegExp(`failed with exit code ${exitMessage}`);
 
 test('execa()', async t => {
@@ -129,8 +137,11 @@ test('stripFinalNewline: false', async t => {
 });
 
 test('execa() with .kill after it with SIGKILL should kill cleanly', async t => {
-	const subprocess = execa('node', ['fixtures/sub-process-no-killable']);
+	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+		stdio: ['ipc']
+	});
 
+	await waitForProcessLaunch(subprocess);
 	subprocess.kill('SIGKILL');
 
 	const {signal} = await t.throwsAsync(subprocess);
@@ -138,28 +149,49 @@ test('execa() with .kill after it with SIGKILL should kill cleanly', async t => 
 });
 
 test('execa() with .kill after it with SIGTERM should not kill (no retry)', async t => {
-	const subprocess = execa('node', ['fixtures/sub-process-no-killable']);
+	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+		stdio: ['ipc']
+	});
+
+	await waitForProcessLaunch(subprocess);
 
 	subprocess.kill('SIGTERM', {
 		retry: false,
 		retryAfter: 50
 	});
 
-	// Weird test - The process should not die but it does...
-
-	const {signal} = await t.throwsAsync(subprocess);
-	t.is(signal, 'SIGTERM');
+	t.true(isRunning(subprocess.pid));
+	subprocess.kill('SIGKILL');
 });
 
 test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
-	const subprocess = execa('node', ['fixtures/sub-process-no-killable']);
+	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+		stdio: ['ipc']
+	});
+
+	await waitForProcessLaunch(subprocess);
 
 	subprocess.kill('SIGTERM', {
 		retryAfter: 50
 	});
 
 	const {signal} = await t.throwsAsync(subprocess);
-	t.is(signal, 'SIGTERM');
+	t.is(signal, 'SIGKILL');
+});
+
+test('execa() with .kill after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
+	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+		stdio: ['ipc']
+	});
+
+	await waitForProcessLaunch(subprocess);
+
+	subprocess.kill('SIGTERM', {
+		retryAfter: 50
+	});
+
+	const {signal} = await t.throwsAsync(subprocess);
+	t.is(signal, 'SIGKILL');
 });
 
 test('stripFinalNewline in sync mode', t => {

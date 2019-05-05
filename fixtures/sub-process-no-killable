@@ -5,6 +5,8 @@ process.on('SIGTERM', () => {
   console.log('got sigterm but we ignore it');
 });
 
+process.send('process is launched');
+
 setInterval(() => {
-  // run forever
+  // Run forever
 }, 20000);

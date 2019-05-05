@@ -288,11 +288,23 @@ declare namespace execa {
 		Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
 		*/
 		cancel(): void;
+
+		/**
+		 * Kills the subprocess.
+		 *
+		 * Causes the promise to reject an error with a `.isKilled = true` property.
+		 */
+		kill(signal?: string | undefined, options?: killOptions | undefined): void;
 	}
 
 	type ExecaChildProcess<StdoutErrorType = string> = ChildProcess &
 		ExecaChildPromise<StdoutErrorType> &
 		Promise<ExecaReturnValue<StdoutErrorType>>;
+}
+
+interface killOptions {
+	retry: boolean;
+	retryAfter: number;
 }
 
 declare const execa: {

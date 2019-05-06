@@ -158,8 +158,13 @@ test('execa() with .kill after it with SIGTERM should not kill (no retry)', asyn
 		retryAfter: 50
 	});
 
-	t.true(isRunning(subprocess.pid));
-	subprocess.kill('SIGKILL');
+	if (process.platform === 'win32') {
+		// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
+		t.false(isRunning(subprocess.pid));
+	} else {
+		t.true(isRunning(subprocess.pid));
+		subprocess.kill('SIGKILL');
+	}
 });
 
 test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
@@ -172,7 +177,13 @@ test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGK
 	subprocess.kill();
 
 	const {signal} = await t.throwsAsync(subprocess);
-	t.is(signal, 'SIGKILL');
+
+	if (process.platform === 'win32') {
+		// SIGTERM doesn't exist on Windows but it's emulated to send that.
+		t.is(signal, 'SIGTERM');
+	} else {
+		t.is(signal, 'SIGKILL');
+	}
 });
 
 test('execa() with .kill after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
@@ -187,7 +198,12 @@ test('execa() with .kill after it with nothing (undefined) should kill after 50 
 	});
 
 	const {signal} = await t.throwsAsync(subprocess);
-	t.is(signal, 'SIGKILL');
+	if (process.platform === 'win32') {
+		// SIGTERM doesn't exist on Windows but it's emulated to send that.
+		t.is(signal, 'SIGTERM');
+	} else {
+		t.is(signal, 'SIGKILL');
+	}
 });
 
 test('stripFinalNewline in sync mode', t => {

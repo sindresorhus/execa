@@ -336,6 +336,12 @@ if (process.platform !== 'win32') {
 		const cp = execa('non-executable');
 		await t.throwsAsync(cp);
 	});
+
+	test('execa() rejects with correct error and doesn\'t throw if running non-executable with input', async t => {
+		await t.throwsAsync(() => {
+			return execa('non-executable', {input: 'Hey!'});
+		}, /EACCES/);
+	});
 }
 
 test('error.killed is true if process was killed directly', async t => {

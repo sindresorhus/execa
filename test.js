@@ -338,9 +338,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('execa() rejects with correct error and doesn\'t throw if running non-executable with input', async t => {
-		await t.throwsAsync(() => {
-			return execa('non-executable', {input: 'Hey!'});
-		}, /EACCES/);
+		await t.throwsAsync(execa('non-executable', {input: 'Hey!'}), /EACCES/);
 	});
 }
 

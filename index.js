@@ -107,7 +107,7 @@ function handleArgs(command, args, options = {}) {
 }
 
 function handleInput(spawned, input) {
-	if (input === undefined) {
+	if (input === undefined || spawned.stdin === undefined) {
 		return;
 	}
 

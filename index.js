@@ -93,11 +93,6 @@ function handleArgs(command, args, options = {}) {
 
 	options.stdio = stdio(options);
 
-	if (options.detached) {
-		// #115
-		options.cleanup = false;
-	}
-
 	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
 		// #116
 		args.unshift('/q');
@@ -264,8 +259,9 @@ const execa = (command, args, options) => {
 		return Promise.reject(error);
 	}
 
+	// #115
 	let removeExitHandler;
-	if (parsed.options.cleanup) {
+	if (parsed.options.cleanup && !parsed.options.detached) {
 		removeExitHandler = onExit(() => {
 			spawned.kill();
 		});

@@ -485,8 +485,8 @@ test(command, ' foo bar', 'foo', 'bar');
 test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
-async function spawnAndKill(t, signal, cleanup, isKilled) {
-	const subprocess = execa('sub-process', [cleanup], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
+async function spawnAndKill(t, signal, cleanup, detached, isKilled) {
+	const subprocess = execa('sub-process', [cleanup, detached], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
 
 	const pid = await pEvent(subprocess, 'message');
 	t.true(Number.isInteger(pid));
@@ -507,10 +507,14 @@ async function spawnAndKill(t, signal, cleanup, isKilled) {
 // With `options.cleanup`, subprocesses are always killed
 //   - `options.cleanup` with SIGKILL is a noop, since it cannot be handled
 const exitIfWindows = process.platform === 'win32';
-test('cleanup true - SIGTERM', spawnAndKill, 'SIGTERM', 'true', true);
-test('cleanup false - SIGTERM', spawnAndKill, 'SIGTERM', 'false', exitIfWindows);
-test('cleanup true - SIGKILL', spawnAndKill, 'SIGKILL', 'true', exitIfWindows);
-test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', 'false', exitIfWindows);
+test('cleanup - SIGTERM', spawnAndKill, 'SIGTERM', 'true', 'false', true);
+test('no-cleanup - SIGTERM', spawnAndKill, 'SIGTERM', 'false', 'false', exitIfWindows);
+test('cleanup - SIGKILL', spawnAndKill, 'SIGKILL', 'true', 'false', exitIfWindows);
+test('no-cleanup - SIGKILL', spawnAndKill, 'SIGKILL', 'false', 'false', exitIfWindows);
+test('cleanup detached - SIGTERM', spawnAndKill, 'SIGTERM', 'true', 'true', false);
+test('no-cleanup detached - SIGTERM', spawnAndKill, 'SIGTERM', 'false', 'true', false);
+test('cleanup detached - SIGKILL', spawnAndKill, 'SIGKILL', 'true', 'true', false);
+test('no-cleanup detached - SIGKILL', spawnAndKill, 'SIGKILL', 'false', 'true', false);
 
 test('execa.shell() supports the `shell` option', async t => {
 	const {stdout} = await execa.shell('node fixtures/noop foo', {

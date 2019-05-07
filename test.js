@@ -186,7 +186,8 @@ test('stripFinalNewline option', async t => {
 
 test('preferLocal option', async t => {
 	await execa('ava', ['--version'], {env: {PATH: ''}});
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), /spawn .* ENOENT/);
+	const errorRegExp = process.platform === 'win32' ? /not recognized/ : /spawn ava ENOENT/;
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), errorRegExp);
 });
 
 test.serial('localDir option', async t => {

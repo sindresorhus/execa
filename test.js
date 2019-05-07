@@ -28,6 +28,11 @@ if (process.platform === 'win32') {
 		const {stdout} = await execa('hello.cmd');
 		t.is(stdout, 'Hello World');
 	});
+
+	test('execa() - run cmd command', async t => {
+		const {stdout} = await execa('cmd', ['/c', 'hello.cmd']);
+		t.is(stdout, 'Hello World');
+	});
 }
 
 test('buffer', async t => {
@@ -71,7 +76,7 @@ test('do not include `stderr` and `stdout` in errors when set to `inherit`', asy
 });
 
 test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inherit`', async t => {
-	await t.throwsAsync(execa('fixtures/error-message.js', {stdio: [null, 'inherit', 'inherit']}), {message: NO_NEWLINES_REGEXP});
+	await t.throwsAsync(execa('fixtures/error-message.js', {stdio: [undefined, 'inherit', 'inherit']}), {message: NO_NEWLINES_REGEXP});
 });
 
 test('do not include `stdout` in errors when set to `inherit`', async t => {
@@ -94,6 +99,40 @@ test('pass `stderr` to a file descriptor', async t => {
 	const file = tempfile('.txt');
 	await execa('fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
+});
+
+test('allow string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('allow string arguments in synchronous mode', t => {
+	const {stdout} = execa.sync('node fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('forbid string arguments together with array arguments', t => {
+	t.throws(() => execa('node fixtures/echo foo bar', ['foo', 'bar']), /Arguments cannot be inside/);
+});
+
+test('ignore consecutive spaces in string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo    bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('escape other whitespaces in string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo\tbar');
+	t.is(stdout, 'foo\tbar');
+});
+
+test('allow escaping spaces in string arguments', async t => {
+	const {stdout} = await execa('node fixtures/echo foo\\ bar');
+	t.is(stdout, 'foo bar');
+});
+
+test('trim string arguments', async t => {
+	const {stdout} = await execa('  node fixtures/echo foo bar  ');
+	t.is(stdout, 'foo\nbar');
 });
 
 test('execa.shell()', async t => {
@@ -208,7 +247,7 @@ test('input option can be a Buffer - sync', t => {
 test('opts.stdout:ignore - stdout will not collect data', async t => {
 	const {stdout} = await execa('stdin', {
 		input: 'hello',
-		stdio: [null, 'ignore', null]
+		stdio: [undefined, 'ignore', undefined]
 	});
 	t.is(stdout, undefined);
 });
@@ -296,6 +335,10 @@ if (process.platform !== 'win32') {
 	test('execa() rejects if running non-executable', async t => {
 		const cp = execa('non-executable');
 		await t.throwsAsync(cp);
+	});
+
+	test('execa() rejects with correct error and doesn\'t throw if running non-executable with input', async t => {
+		await t.throwsAsync(execa('non-executable', {input: 'Hey!'}), /EACCES/);
 	});
 }
 
@@ -385,15 +428,28 @@ test('error.code is 2', code, 2);
 test('error.code is 3', code, 3);
 test('error.code is 4', code, 4);
 
-test('timeout will kill the process early', async t => {
-	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 1500, message: TIMEOUT_REGEXP}));
+test.serial('timeout will kill the process early', async t => {
+	const time = Date.now();
+	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 500, message: TIMEOUT_REGEXP}));
+	const diff = Date.now() - time;
 
 	t.true(error.timedOut);
 	t.not(error.exitCode, 22);
+	t.true(diff < 4000);
+});
+
+test.serial('timeout will kill the process early (sleep)', async t => {
+	const time = Date.now();
+	const error = await t.throwsAsync(execa('sleeper', [], {timeout: 500, message: TIMEOUT_REGEXP}));
+	const diff = Date.now() - time;
+
+	t.true(error.timedOut);
+	t.not(error.stdout, 'ok');
+	t.true(diff < 4000);
 });
 
 test('timeout will not kill the process early', async t => {
-	const error = await t.throwsAsync(execa('delay', ['3000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22')});
+	const error = await t.throwsAsync(execa('delay', ['2000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22')});
 	t.false(error.timedOut);
 });
 
@@ -525,13 +581,12 @@ test('do not buffer when streaming', async t => {
 });
 
 test('detach child process', async t => {
-	const file = tempfile('.txt');
+	const {stdout} = await execa('detach');
+	const pid = Number(stdout);
+	t.true(Number.isInteger(pid));
+	t.true(isRunning(pid));
 
-	await execa('detach', [file]);
-
-	await delay(5000);
-
-	t.is(fs.readFileSync(file, 'utf8'), 'foo\n');
+	process.kill(pid, 'SIGKILL');
 });
 
 // See #128

@@ -61,7 +61,7 @@ execa('unicorns', {stdio: 'pipe'});
 execa('unicorns', {stdio: 'ignore'});
 execa('unicorns', {stdio: 'inherit'});
 execa('unicorns', {
-	stdio: ['pipe', 'ipc', 'ignore', 'inherit', process.stdin, 1, null, undefined]
+	stdio: ['pipe', 'ipc', 'ignore', 'inherit', process.stdin, 1, undefined]
 });
 execa('unicorns', {detached: true});
 execa('unicorns', {uid: 0});
@@ -84,7 +84,6 @@ execa('unicorns', {stdin: 'ignore'});
 execa('unicorns', {stdin: 'inherit'});
 execa('unicorns', {stdin: process.stdin});
 execa('unicorns', {stdin: 1});
-execa('unicorns', {stdin: null});
 execa('unicorns', {stdin: undefined});
 execa('unicorns', {stderr: 'pipe'});
 execa('unicorns', {stderr: 'ipc'});
@@ -92,7 +91,6 @@ execa('unicorns', {stderr: 'ignore'});
 execa('unicorns', {stderr: 'inherit'});
 execa('unicorns', {stderr: process.stderr});
 execa('unicorns', {stderr: 1});
-execa('unicorns', {stderr: null});
 execa('unicorns', {stderr: undefined});
 execa('unicorns', {stdout: 'pipe'});
 execa('unicorns', {stdout: 'ipc'});
@@ -100,7 +98,6 @@ execa('unicorns', {stdout: 'ignore'});
 execa('unicorns', {stdout: 'inherit'});
 execa('unicorns', {stdout: process.stdout});
 execa('unicorns', {stdout: 1});
-execa('unicorns', {stdout: null});
 execa('unicorns', {stdout: undefined});
 execa('unicorns', {windowsVerbatimArguments: true});
 

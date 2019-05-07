@@ -15,7 +15,45 @@ const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
-function handleArgs(command, args, options) {
+const SPACES_REGEXP = / +/g;
+
+// Allow spaces to be escaped by a backslash if not meant as a delimiter
+function handleEscaping(tokens, token, index) {
+	if (index === 0) {
+		return [token];
+	}
+
+	const previousToken = tokens[index - 1];
+
+	if (!previousToken.endsWith('\\')) {
+		return [...tokens, token];
+	}
+
+	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
+}
+
+function parseCommand(command, args = []) {
+	if (args.length !== 0) {
+		throw new Error('Arguments cannot be inside `command` when also specified as an array of strings');
+	}
+
+	const [file, ...extraArgs] = command
+		.trim()
+		.split(SPACES_REGEXP)
+		.reduce(handleEscaping, []);
+	return [file, extraArgs];
+}
+
+function handleArgs(command, args, options = {}) {
+	if (args && !Array.isArray(args)) {
+		options = args;
+		args = [];
+	}
+
+	if (!options.shell && command.includes(' ')) {
+		[command, args] = parseCommand(command, args);
+	}
+
 	const parsed = crossSpawn._parse(command, args, options);
 	command = parsed.command;
 	args = parsed.args;
@@ -60,7 +98,7 @@ function handleArgs(command, args, options) {
 		options.cleanup = false;
 	}
 
-	if (process.platform === 'win32' && path.basename(command) === 'cmd.exe') {
+	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
 		// #116
 		args = [...new Set(['/q', '/d', '/s', '/c', ...args])];
 	}
@@ -69,7 +107,8 @@ function handleArgs(command, args, options) {
 }
 
 function handleInput(spawned, input) {
-	if (input === null || input === undefined) {
+	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852 on Node.js 10 and 12
+	if (input === undefined || spawned.stdin === undefined) {
 		return;
 	}
 
@@ -267,9 +306,25 @@ const execa = (command, args, options) => {
 		}, parsed.options.timeout);
 	}
 
+	const resolvable = (() => {
+		let extracted;
+		const promise = new Promise(resolve => {
+			extracted = resolve;
+		});
+		promise.resolve = extracted;
+		return promise;
+	})();
+
 	const processDone = new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
 			cleanup();
+
+			if (timedOut) {
+				resolvable.resolve([
+					{code, signal}, '', '', ''
+				]);
+			}
+
 			resolve({code, signal});
 		});
 
@@ -300,52 +355,67 @@ const execa = (command, args, options) => {
 		}
 	}
 
-	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const handlePromise = () => pFinally(Promise.all([
-		processDone,
-		getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
-		getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
-	]).then(results => { // eslint-disable-line promise/prefer-await-to-then
-		const result = results[0];
-		result.stdout = results[1];
-		result.stderr = results[2];
-		result.all = results[3];
+	const handlePromise = () => {
+		let processComplete = Promise.all([
+			processDone,
+			getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
+			getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
+			getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
+		]);
 
-		if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
-			const error = makeError(result, {
-				joinedCommand,
-				parsed,
-				timedOut,
-				isCanceled
-			});
-
-			// TODO: missing some timeout logic for killed
-			// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-			// error.killed = spawned.killed || killed;
-			error.killed = error.killed || spawned.killed;
-
-			if (!parsed.options.reject) {
-				return error;
-			}
-
-			throw error;
+		if (timeoutId) {
+			processComplete = Promise.race([
+				processComplete,
+				resolvable
+			]);
 		}
 
-		return {
-			stdout: handleOutput(parsed.options, result.stdout),
-			stderr: handleOutput(parsed.options, result.stderr),
-			all: handleOutput(parsed.options, result.all),
-			code: 0,
-			exitCode: 0,
-			exitCodeName: 'SUCCESS',
-			failed: false,
-			killed: false,
-			command: joinedCommand,
-			timedOut: false,
-			isCanceled: false
+		const finalize = async () => {
+			const results = await processComplete;
+
+			const result = results[0];
+			result.stdout = results[1];
+			result.stderr = results[2];
+			result.all = results[3];
+
+			if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
+				const error = makeError(result, {
+					joinedCommand,
+					parsed,
+					timedOut,
+					isCanceled
+				});
+
+				// TODO: missing some timeout logic for killed
+				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
+				// error.killed = spawned.killed || killed;
+				error.killed = error.killed || spawned.killed;
+
+				if (!parsed.options.reject) {
+					return error;
+				}
+
+				throw error;
+			}
+
+			return {
+				stdout: handleOutput(parsed.options, result.stdout),
+				stderr: handleOutput(parsed.options, result.stderr),
+				all: handleOutput(parsed.options, result.all),
+				code: 0,
+				exitCode: 0,
+				exitCodeName: 'SUCCESS',
+				failed: false,
+				killed: false,
+				command: joinedCommand,
+				timedOut: false,
+				isCanceled: false
+			};
 		};
-	}), destroy);
+
+		// TODO: Use native "finally" syntax when targeting Node.js 10
+		return pFinally(finalize(), destroy);
+	};
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 

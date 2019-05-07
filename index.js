@@ -220,7 +220,7 @@ function getCode({error = {}}, code) {
 	}
 
 	if (Number.isInteger(code)) {
-		return [util.getSystemErrorName(-Math.abs(code)), Math.abs(code)];
+		return [util.getSystemErrorName(-code), code];
 	}
 
 	return [];

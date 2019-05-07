@@ -50,7 +50,6 @@
 	"devDependencies": {
 		"@types/node": "^11.12.2",
 		"ava": "^1.4.1",
-		"cat-names": "^2.0.0",
 		"coveralls": "^3.0.3",
 		"delay": "^4.1.0",
 		"is-running": "^2.1.0",

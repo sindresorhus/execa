@@ -184,19 +184,9 @@ test('stripFinalNewline option', async t => {
 	t.is(stdout, 'foo\n');
 });
 
-test.serial('preferLocal option', async t => {
-	t.true((await execa('cat-names')).stdout.length > 2);
-
-	if (process.platform === 'win32') {
-		// TODO: figure out how to make the below not hang on Windows
-		return;
-	}
-
-	// Account for npm adding local binaries to the PATH
-	const _path = process.env.PATH;
-	process.env.PATH = '';
-	await t.throwsAsync(execa('cat-names', {preferLocal: false}), /spawn .* ENOENT/);
-	process.env.PATH = _path;
+test('preferLocal option', async t => {
+	await execa('ava', ['--version'], {env: {PATH: ''}});
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), /spawn .* ENOENT/);
 });
 
 test.serial('localDir option', async t => {

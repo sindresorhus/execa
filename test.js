@@ -5,8 +5,8 @@ import childProcess from 'child_process';
 import test from 'ava';
 import getStream from 'get-stream';
 import isRunning from 'is-running';
-import delay from 'delay';
 import tempfile from 'tempfile';
+import pEvent from 'p-event';
 import execa from '.';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -477,38 +477,32 @@ test(command, ' foo bar', 'foo', 'bar');
 test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
-async function spawnAndKill(t, signal, cleanup) {
-	const name = cleanup ? 'sub-process' : 'sub-process-false';
-	const cp = execa(name);
-	let pid;
+async function spawnAndKill(t, signal, cleanup, isKilled) {
+	const subprocess = execa('sub-process', [cleanup], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
 
-	cp.stdout.setEncoding('utf8');
-	cp.stdout.on('data', chunk => {
-		pid = parseInt(chunk, 10);
-		t.is(typeof pid, 'number');
+	const pid = await pEvent(subprocess, 'message');
+	t.true(Number.isInteger(pid));
+	t.true(isRunning(pid));
 
-		setTimeout(() => {
-			process.kill(cp.pid, signal);
-		}, 100);
-	});
+	process.kill(subprocess.pid, signal);
 
-	await t.throwsAsync(cp);
+	await t.throwsAsync(subprocess);
 
-	// Give everybody some time to breath and kill things
-	await delay(200);
-
-	t.false(isRunning(cp.pid));
-	t.is(isRunning(pid), !cleanup);
+	t.false(isRunning(subprocess.pid));
+	t.is(isRunning(pid), !isKilled);
 }
 
-test('cleanup - SIGINT', spawnAndKill, 'SIGINT', true);
-test('cleanup - SIGKILL', spawnAndKill, 'SIGTERM', true);
-
-if (process.platform !== 'win32') {
-	// On Windows the subprocesses are actually always killed
-	test('cleanup false - SIGINT', spawnAndKill, 'SIGTERM', false);
-	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
-}
+// Without `options.cleanup`:
+//   - on Windows subprocesses are killed if `options.detached: false`, but not
+//     if `options.detached: true`
+//   - on Linux subprocesses are never killed regardless of `options.detached`
+// With `options.cleanup`, subprocesses are always killed
+//   - `options.cleanup` with SIGKILL is a noop, since it cannot be handled
+const exitIfWindows = process.platform === 'win32';
+test('cleanup true - SIGTERM', spawnAndKill, 'SIGTERM', 'true', true);
+test('cleanup false - SIGTERM', spawnAndKill, 'SIGTERM', 'false', exitIfWindows);
+test('cleanup true - SIGKILL', spawnAndKill, 'SIGKILL', 'true', exitIfWindows);
+test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', 'false', exitIfWindows);
 
 test('execa.shell() supports the `shell` option', async t => {
 	const {stdout} = await execa.shell('node fixtures/noop foo', {

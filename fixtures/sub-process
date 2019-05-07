@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 'use strict';
-const m = require('../');
+const execa = require('..');
 
-console.log(m('forever').pid);
+const cleanup = process.argv[2] === 'true';
+const subprocess = execa('node', ['./fixtures/forever'], {cleanup});
+process.send(subprocess.pid);

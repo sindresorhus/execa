@@ -199,15 +199,12 @@ test.serial('preferLocal option', async t => {
 	process.env.PATH = _path;
 });
 
-test.serial('localDir option', async t => {
-	const cwd = 'fixtures/local-dir';
-	const bin = path.resolve(cwd, 'node_modules/.bin/self-path');
-
-	await execa('npm', ['install', '--no-package-lock'], {cwd});
-
-	const {stdout} = await execa(bin, {localDir: cwd});
-
-	t.is(path.relative(cwd, stdout), path.normalize('node_modules/self-path'));
+test('localDir option', async t => {
+	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
+	const {stdout} = await execa(command, {shell: true, localDir: '/test'});
+	const [firstPath] = stdout.split(path.delimiter);
+	const firstUnixPath = firstPath.replace(/\\/g, '/').replace(/^[^/]+/, '');
+	t.is(firstUnixPath, '/test/node_modules/.bin');
 });
 
 test('input option can be a String', async t => {

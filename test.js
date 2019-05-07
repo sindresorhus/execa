@@ -487,7 +487,7 @@ test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
 async function spawnAndKill(t, signal, cleanup, isKilled) {
-	const subprocess = execa('sub-process', [cleanup], {stdio: ['ignore', 'inherit', 'ignore', 'ipc']});
+	const subprocess = execa('sub-process', [cleanup], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
 
 	const pid = await pEvent(subprocess, 'message');
 	t.true(Number.isInteger(pid));
@@ -501,11 +501,15 @@ async function spawnAndKill(t, signal, cleanup, isKilled) {
 	t.is(isRunning(pid), !isKilled);
 }
 
-// On Windows subprocesses are always killed
+// Without `options.cleanup`:
+//   - on Windows subprocesses are killed if `options.detached: false`, but not
+//     if `options.detached: true`
+//   - on Linux subprocesses are never killed regardless of `options.detached`
+// With `options.cleanup`, subprocesses are always killed
+//   - `options.cleanup` with SIGKILL is a noop, since it cannot be handled
 const exitIfWindows = process.platform === 'win32';
 test('cleanup true - SIGTERM', spawnAndKill, 'SIGTERM', 'true', true);
 test('cleanup false - SIGTERM', spawnAndKill, 'SIGTERM', 'false', exitIfWindows);
-// SIGKILL cannot be handled, so `options.cleanup` does not work with it
 test('cleanup true - SIGKILL', spawnAndKill, 'SIGKILL', 'true', exitIfWindows);
 test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', 'false', exitIfWindows);
 

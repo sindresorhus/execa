@@ -49,7 +49,7 @@ const execa = require('execa');
 
 (async () => {
 	// Pipe the child process stdout to the current stdout
-	execa('echo unicorns').stdout.pipe(process.stdout);
+	execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 
 
 	// Catching an error

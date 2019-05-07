@@ -498,6 +498,10 @@ async function spawnAndKill(t, signal, cleanup, detached, isKilled) {
 
 	t.false(isRunning(subprocess.pid));
 	t.is(isRunning(pid), !isKilled);
+
+	if (!isKilled) {
+		process.kill(pid, 'SIGKILL');
+	}
 }
 
 // Without `options.cleanup`:

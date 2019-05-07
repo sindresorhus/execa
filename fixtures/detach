@@ -1,13 +1,8 @@
 #!/usr/bin/env node
-const fs = require('fs');
+'use strict';
+
 const execa = require('..');
 
-const fd = fs.openSync(process.argv[2], 'w');
-
-const cp = execa('noop', ['foo'], {
-	detached: true,
-	stdio: ['ignore', fd]
-});
-cp.unref();
-
+const subprocess = execa('node', ['./fixtures/forever'], {detached: true});
+console.log(subprocess.pid);
 process.exit();

@@ -581,13 +581,12 @@ test('do not buffer when streaming', async t => {
 });
 
 test('detach child process', async t => {
-	const file = tempfile('.txt');
+	const {stdout} = await execa('detach');
+	const pid = Number(stdout);
+	t.true(Number.isInteger(pid));
+	t.true(isRunning(pid));
 
-	await execa('detach', [file]);
-
-	await delay(5000);
-
-	t.is(fs.readFileSync(file, 'utf8'), 'foo\n');
+	process.kill(pid, 'SIGKILL');
 });
 
 // See #128

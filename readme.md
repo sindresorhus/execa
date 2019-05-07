@@ -218,7 +218,7 @@ If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe
 We recommend against using this option since it is:
 - not cross-platform, encouraging shell-specific syntax.
 - slower, because of the additional shell interpretation.
-- unsafe, allowing command injection.
+- unsafe, potentially allowing command injection.
 
 #### stripFinalNewline
 

@@ -239,19 +239,7 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 		return `was killed with ${signal}`;
 	}
 
-	if (exitCodeName !== undefined && exitCode !== undefined) {
-		return `failed with exit code ${exitCode} (${exitCodeName})`;
-	}
-
-	if (exitCodeName !== undefined) {
-		return `failed with exit code ${exitCodeName}`;
-	}
-
-	if (exitCode !== undefined) {
-		return `failed with exit code ${exitCode}`;
-	}
-
-	return 'failed';
+	return `failed with exit code ${exitCode} (${exitCodeName})`;
 }
 
 function joinCommand(command, args) {

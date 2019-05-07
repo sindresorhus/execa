@@ -202,9 +202,10 @@ test.serial('preferLocal option', async t => {
 test('localDir option', async t => {
 	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
 	const {stdout} = await execa(command, {shell: true, localDir: '/test'});
-	const [firstPath] = stdout.split(path.delimiter);
-	const firstUnixPath = firstPath.replace(/\\/g, '/').replace(/^[^/]+/, '');
-	t.is(firstUnixPath, '/test/node_modules/.bin');
+	const envPaths = stdout.split(path.delimiter).map(envPath =>
+		envPath.replace(/\\/g, '/').replace(/^[^/]+/, '')
+	);
+	t.true(envPaths.some(envPath => envPath === '/test/node_modules/.bin'));
 });
 
 test('input option can be a String', async t => {

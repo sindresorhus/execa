@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const os = require('os');
+const util = require('util');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
@@ -10,7 +11,6 @@ const _getStream = require('get-stream');
 const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
-const errname = require('./lib/errname');
 const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
@@ -220,7 +220,7 @@ function getCode({error = {}}, code) {
 	}
 
 	if (Number.isInteger(code)) {
-		return [errname(-Math.abs(code)), Math.abs(code)];
+		return [util.getSystemErrorName(-Math.abs(code)), Math.abs(code)];
 	}
 
 	return [];

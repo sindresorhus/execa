@@ -52,28 +52,25 @@ const execa = require('execa');
 	execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 
 
-	// Run a shell command
-	const {stdout} = await execa.shell('echo unicorns');
-	//=> 'unicorns'
-
 	// Catching an error
 	try {
-		await execa.shell('exit 3');
+		await execa('wrong command');
 	} catch (error) {
 		console.log(error);
 		/*
 		{
-			message: 'Command failed with exit code 3 (ESRCH): exit 3',
-			code: 3,
-			exitCode: 3,
-			exitCodeName: 'ESRCH',
+			message: 'spawn wrong command ENOENT',
+			errno: 'ENOENT',
+			code: 'ENOENT',
+			syscall: 'spawn wrong command',
+			path: 'wrong command',
+			killed: false,
 			stdout: '',
 			stderr: '',
-			all: '',
 			failed: true,
-			command: 'exit 3',
-			timedOut: false,
-			killed: false
+			signal: null,
+			cmd: 'wrong command',
+			timedOut: false
 		}
 		*/
 	}
@@ -93,20 +90,16 @@ const execa = require('execa');
 
 // Catching an error with a sync method
 try {
-	execa.shellSync('exit 3');
+	execa.sync('wrong command');
 } catch (error) {
 	console.log(error);
 	/*
 	{
-		message: 'Command failed with exit code 3 (ESRCH): exit 3',
-		code: 3,
-		exitCode: 3,
-		exitCodeName: 'ESRCH',
-		stdout: '',
-		stderr: '',
-		failed: true,
-		command: 'exit 3',
-		timedOut: false
+		message: 'spawnSync wrong command ENOENT',
+		errno: 'ENOENT',
+		code: 'ENOENT',
+		syscall: 'spawnSync wrong command',
+		path: 'wrong command',
 	}
 	*/
 }
@@ -128,7 +121,7 @@ Arguments should not be escaped nor quoted. Exception: inside `command`, spaces 
 
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
-As opposed to [`execa.shell()`](#execashellcommand-options), no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
+Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which is enhanced to be a `Promise`.
 
@@ -148,14 +141,6 @@ Same as `execa()`, but returns only `stdout`.
 
 Same as `execa()`, but returns only `stderr`.
 
-### execa.shell(command, [options])
-
-Execute a command through the system shell. Prefer `execa()` whenever possible, as it's faster, safer and more cross-platform.
-
-Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
-
-The `child_process` instance is enhanced to also be promise for a result object with `stdout` and `stderr` properties.
-
 ### execa.sync(file, [arguments], [options])
 ### execa.sync(command, [options])
 
@@ -166,12 +151,6 @@ Returns the same result object as [`child_process.spawnSync`](https://nodejs.org
 It does not have the `.all` property that `execa()` has because the [underlying synchronous implementation](https://nodejs.org/api/child_process.html#child_process_child_process_execfilesync_file_args_options) only returns `stdout` and `stderr` at the end of the execution, so they cannot be interleaved.
 
 This method throws an `Error` if the command fails.
-
-### execa.shellSync(command, [options])
-
-Execute a command synchronously through the system shell.
-
-Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 
 ### options
 
@@ -235,6 +214,11 @@ Type: `boolean | string`<br>
 Default: `false`
 
 If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
+
+We recommend against using this option since it is:
+- not cross-platform, encouraging shell-specific syntax.
+- slower, because of the additional shell interpretation.
+- unsafe, potentially allowing command injection.
 
 #### stripFinalNewline
 

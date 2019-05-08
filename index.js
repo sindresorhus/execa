@@ -127,10 +127,6 @@ function handleOutput(options, value) {
 	return value;
 }
 
-function handleShell(fn, command, options) {
-	return fn(command, {...options, shell: true});
-}
-
 function makeAllStream(spawned) {
 	if (!spawned.stdout && !spawned.stderr) {
 		return;
@@ -446,8 +442,6 @@ module.exports.stderr = async (...args) => {
 	return stderr;
 };
 
-module.exports.shell = (command, options) => handleShell(execa, command, options);
-
 module.exports.sync = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
 	const joinedCommand = joinCommand(command, args);
@@ -483,5 +477,3 @@ module.exports.sync = (command, args, options) => {
 		timedOut: false
 	};
 };
-
-module.exports.shellSync = (command, options) => handleShell(execa.sync, command, options);

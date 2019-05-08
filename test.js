@@ -137,11 +137,6 @@ test('trim string arguments', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.shell()', async t => {
-	const {stdout} = await execa.shell('node fixtures/noop foo');
-	t.is(stdout, 'foo');
-});
-
 test('execa.sync()', t => {
 	const {stdout} = execa.sync('noop', ['foo']);
 	t.is(stdout, 'foo');
@@ -161,23 +156,6 @@ test('execa.sync() includes stdout and stderr in errors for improved debugging',
 
 test('skip throwing when using reject option in execa.sync()', t => {
 	const error = execa.sync('node', ['fixtures/error-message.js'], {reject: false});
-	t.is(typeof error.stdout, 'string');
-	t.is(typeof error.stderr, 'string');
-});
-
-test('execa.shellSync()', t => {
-	const {stdout} = execa.shellSync('node fixtures/noop foo');
-	t.is(stdout, 'foo');
-});
-
-test('execa.shellSync() includes stdout and stderr in errors for improved debugging', t => {
-	t.throws(() => {
-		execa.shellSync('node fixtures/error-message.js');
-	}, {message: STDERR_STDOUT_REGEXP, code: 1});
-});
-
-test('skip throwing when using reject option in execa.shellSync()', t => {
-	const error = execa.shellSync('node fixtures/error-message.js', {reject: false});
 	t.is(typeof error.stdout, 'string');
 	t.is(typeof error.stderr, 'string');
 });
@@ -512,13 +490,6 @@ test('cleanup false - SIGTERM', spawnAndKill, 'SIGTERM', 'false', exitIfWindows)
 test('cleanup true - SIGKILL', spawnAndKill, 'SIGKILL', 'true', exitIfWindows);
 test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', 'false', exitIfWindows);
 
-test('execa.shell() supports the `shell` option', async t => {
-	const {stdout} = await execa.shell('node fixtures/noop foo', {
-		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
-	});
-	t.is(stdout, 'foo');
-});
-
 if (process.platform !== 'win32') {
 	test('write to fast-exit process', async t => {
 		// Try-catch here is necessary, because this test is not 100% accurate
@@ -557,6 +528,18 @@ test('do not extend environment with `extendEnv: false`', async t => {
 		'undefined',
 		'bar'
 	]);
+});
+
+test('can use `options.shell: true`', async t => {
+	const {stdout} = await execa('node fixtures/noop foo', {shell: true});
+	t.is(stdout, 'foo');
+});
+
+test('can use `options.shell: string`', async t => {
+	const {stdout} = await execa('node fixtures/noop foo', {
+		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
+	});
+	t.is(stdout, 'foo');
 });
 
 test('use extend environment with `extendEnv: true` and `shell: true`', async t => {

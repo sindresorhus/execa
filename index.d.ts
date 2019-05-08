@@ -65,6 +65,7 @@ declare namespace execa {
 
 		/**
 		If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
+		We recommend against using this option since it is not cross-platform, slower and unsafe.
 
 		@default false
 		*/

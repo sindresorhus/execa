@@ -57,10 +57,10 @@ test.serial('result.all shows both `stdout` and `stderr` intermixed', async t =>
 });
 
 test('stdout/stderr/all available on errors', async t => {
-	const err = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
-	t.is(typeof err.stdout, 'string');
-	t.is(typeof err.stderr, 'string');
-	t.is(typeof err.all, 'string');
+	const error = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
+	t.is(typeof error.stdout, 'string');
+	t.is(typeof error.stderr, 'string');
+	t.is(typeof error.all, 'string');
 });
 
 test('include stdout and stderr in errors for improved debugging', async t => {
@@ -80,13 +80,13 @@ test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inh
 });
 
 test('do not include `stdout` in errors when set to `inherit`', async t => {
-	const err = await t.throwsAsync(execa('fixtures/error-message.js', {stdout: 'inherit'}), {message: /stderr/});
-	t.notRegex(err.message, /stdout/);
+	const error = await t.throwsAsync(execa('fixtures/error-message.js', {stdout: 'inherit'}), {message: /stderr/});
+	t.notRegex(error.message, /stdout/);
 });
 
 test('do not include `stderr` in errors when set to `inherit`', async t => {
-	const err = await t.throwsAsync(execa('fixtures/error-message.js', {stderr: 'inherit'}), {message: /stdout/});
-	t.notRegex(err.message, /stderr/);
+	const error = await t.throwsAsync(execa('fixtures/error-message.js', {stderr: 'inherit'}), {message: /stdout/});
+	t.notRegex(error.message, /stderr/);
 });
 
 test('pass `stdout` to a file descriptor', async t => {
@@ -112,7 +112,9 @@ test('allow string arguments in synchronous mode', t => {
 });
 
 test('forbid string arguments together with array arguments', t => {
-	t.throws(() => execa('node fixtures/echo foo bar', ['foo', 'bar']), /Arguments cannot be inside/);
+	t.throws(() => {
+		execa('node fixtures/echo foo bar', ['foo', 'bar']);
+	}, /Arguments cannot be inside/);
 });
 
 test('ignore consecutive spaces in string arguments', async t => {
@@ -146,17 +148,21 @@ test('execa.sync()', t => {
 });
 
 test('execa.sync() throws error if written to stderr', t => {
-	t.throws(() => execa.sync('foo'), process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : /spawnSync foo ENOENT/);
+	t.throws(() => {
+		execa.sync('foo');
+	}, process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : /spawnSync foo ENOENT/);
 });
 
 test('execa.sync() includes stdout and stderr in errors for improved debugging', t => {
-	t.throws(() => execa.sync('node', ['fixtures/error-message.js']), {message: STDERR_STDOUT_REGEXP, code: 1});
+	t.throws(() => {
+		execa.sync('node', ['fixtures/error-message.js']);
+	}, {message: STDERR_STDOUT_REGEXP, code: 1});
 });
 
 test('skip throwing when using reject option in execa.sync()', t => {
-	const err = execa.sync('node', ['fixtures/error-message.js'], {reject: false});
-	t.is(typeof err.stdout, 'string');
-	t.is(typeof err.stderr, 'string');
+	const error = execa.sync('node', ['fixtures/error-message.js'], {reject: false});
+	t.is(typeof error.stdout, 'string');
+	t.is(typeof error.stderr, 'string');
 });
 
 test('execa.shellSync()', t => {
@@ -165,13 +171,15 @@ test('execa.shellSync()', t => {
 });
 
 test('execa.shellSync() includes stdout and stderr in errors for improved debugging', t => {
-	t.throws(() => execa.shellSync('node fixtures/error-message.js'), {message: STDERR_STDOUT_REGEXP, code: 1});
+	t.throws(() => {
+		execa.shellSync('node fixtures/error-message.js');
+	}, {message: STDERR_STDOUT_REGEXP, code: 1});
 });
 
 test('skip throwing when using reject option in execa.shellSync()', t => {
-	const err = execa.shellSync('node fixtures/error-message.js', {reject: false});
-	t.is(typeof err.stdout, 'string');
-	t.is(typeof err.stderr, 'string');
+	const error = execa.shellSync('node fixtures/error-message.js', {reject: false});
+	t.is(typeof error.stdout, 'string');
+	t.is(typeof error.stderr, 'string');
 });
 
 test('stripEof option (legacy)', async t => {
@@ -243,7 +251,9 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 
 test('helpful error trying to provide an input stream in sync mode', t => {
 	t.throws(
-		() => execa.sync('stdin', {input: new stream.PassThrough()}),
+		() => {
+			execa.sync('stdin', {input: new stream.PassThrough()});
+		},
 		/The `input` option cannot be a stream in sync mode/
 	);
 });
@@ -592,22 +602,22 @@ test('removes exit handler on exit', async t => {
 // TOOD: Remove the `if`-guard when targeting Node.js 10
 if (Promise.prototype.finally) {
 	test('finally function is executed on success', async t => {
-		let called = false;
+		let isCalled = false;
 		const {stdout} = await execa('noop', ['foo']).finally(() => {
-			called = true;
+			isCalled = true;
 		});
-		t.is(called, true);
+		t.is(isCalled, true);
 		t.is(stdout, 'foo');
 	});
 
 	test('finally function is executed on failure', async t => {
-		let called = false;
-		const err = await t.throwsAsync(execa('exit', ['2']).finally(() => {
-			called = true;
+		let isError = false;
+		const error = await t.throwsAsync(execa('exit', ['2']).finally(() => {
+			isError = true;
 		}));
-		t.is(called, true);
-		t.is(typeof err.stdout, 'string');
-		t.is(typeof err.stderr, 'string');
+		t.is(isError, true);
+		t.is(typeof error.stdout, 'string');
+		t.is(typeof error.stderr, 'string');
 	});
 
 	test('throw in finally function bubbles up on success', async t => {

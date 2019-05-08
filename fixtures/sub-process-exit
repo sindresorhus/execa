@@ -4,5 +4,4 @@ const execa = require('..');
 
 const cleanup = process.argv[2] === 'true';
 const detached = process.argv[3] === 'true';
-const subprocess = execa('node', ['./fixtures/forever'], {cleanup, detached});
-process.send(subprocess.pid);
+execa('node', ['./fixtures/noop'], {cleanup, detached});

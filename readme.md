@@ -261,7 +261,9 @@ Setting this to `false` resolves the promise with the error instead of rejecting
 Type: `boolean`<br>
 Default: `true`
 
-Keep track of the spawned process and `kill` it when the parent process exits.
+Kill the spawned process when the parent process exits unless either:
+	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
 
 #### encoding
 

@@ -463,8 +463,19 @@ test(command, ' foo bar', 'foo', 'bar');
 test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
-async function spawnAndKill(t, signal, cleanup, isKilled) {
-	const subprocess = execa('sub-process', [cleanup], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
+// When child process exits before parent process
+async function spawnAndExit(t, cleanup, detached) {
+	await t.notThrowsAsync(execa('sub-process-exit', [cleanup, detached]));
+}
+
+test('spawnAndExit', spawnAndExit, false, false);
+test('spawnAndExit cleanup', spawnAndExit, true, false);
+test('spawnAndExit detached', spawnAndExit, false, true);
+test('spawnAndExit cleanup detached', spawnAndExit, true, true);
+
+// When parent process exits before child process
+async function spawnAndKill(t, signal, cleanup, detached, isKilled) {
+	const subprocess = execa('sub-process', [cleanup, detached], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
 
 	const pid = await pEvent(subprocess, 'message');
 	t.true(Number.isInteger(pid));
@@ -476,6 +487,10 @@ async function spawnAndKill(t, signal, cleanup, isKilled) {
 
 	t.false(isRunning(subprocess.pid));
 	t.is(isRunning(pid), !isKilled);
+
+	if (!isKilled) {
+		process.kill(pid, 'SIGKILL');
+	}
 }
 
 // Without `options.cleanup`:
@@ -485,10 +500,14 @@ async function spawnAndKill(t, signal, cleanup, isKilled) {
 // With `options.cleanup`, subprocesses are always killed
 //   - `options.cleanup` with SIGKILL is a noop, since it cannot be handled
 const exitIfWindows = process.platform === 'win32';
-test('cleanup true - SIGTERM', spawnAndKill, 'SIGTERM', 'true', true);
-test('cleanup false - SIGTERM', spawnAndKill, 'SIGTERM', 'false', exitIfWindows);
-test('cleanup true - SIGKILL', spawnAndKill, 'SIGKILL', 'true', exitIfWindows);
-test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', 'false', exitIfWindows);
+test('spawnAndKill SIGTERM', spawnAndKill, 'SIGTERM', false, false, exitIfWindows);
+test('spawnAndKill SIGKILL', spawnAndKill, 'SIGKILL', false, false, exitIfWindows);
+test('spawnAndKill cleanup SIGTERM', spawnAndKill, 'SIGTERM', true, false, true);
+test('spawnAndKill cleanup SIGKILL', spawnAndKill, 'SIGKILL', true, false, exitIfWindows);
+test('spawnAndKill detached SIGTERM', spawnAndKill, 'SIGTERM', false, true, false);
+test('spawnAndKill detached SIGKILL', spawnAndKill, 'SIGKILL', false, true, false);
+test('spawnAndKill cleanup detached SIGTERM', spawnAndKill, 'SIGTERM', true, true, false);
+test('spawnAndKill cleanup detached SIGKILL', spawnAndKill, 'SIGKILL', true, true, false);
 
 if (process.platform !== 'win32') {
 	test('write to fast-exit process', async t => {

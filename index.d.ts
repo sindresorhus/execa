@@ -102,6 +102,7 @@ declare namespace execa {
 
 		/**
 		Keep track of the spawned process and `kill` it when the parent process exits.
+		Kill the spawned process when the parent process exits unless either the spawned process is detached, or the parent process is terminated abruptly.
 
 		@default true
 		*/

@@ -358,7 +358,7 @@ const execa = (command, args, options) => {
 			result.stderr = results[2];
 			result.all = results[3];
 
-			if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
+			if (result.error || result.code !== 0 || result.signal !== null) {
 				const error = makeError(result, {
 					joinedCommand,
 					parsed,
@@ -407,10 +407,6 @@ const execa = (command, args, options) => {
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
 	spawned.cancel = () => {
-		if (spawned.killed) {
-			return;
-		}
-
 		if (spawned.kill()) {
 			isCanceled = true;
 		}

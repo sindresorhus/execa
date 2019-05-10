@@ -293,7 +293,6 @@ test('error.killed is true if process was killed directly', async t => {
 	t.true(error.killed);
 });
 
-// TODO: Should this really be the case, or should we improve on child_process?
 test('error.killed is false if process was killed indirectly', async t => {
 	const cp = execa('forever');
 
@@ -372,6 +371,7 @@ test('error.code is 4', code, 4);
 
 test('timeout kills the process if it times out', async t => {
 	const error = await t.throwsAsync(execa('forever', {timeout: 1, message: TIMEOUT_REGEXP}));
+	t.false(error.killed);
 	t.true(error.timedOut);
 });
 

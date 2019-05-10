@@ -173,7 +173,7 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 function makeError(result, options) {
 	const {stdout, stderr, code, signal} = result;
 	let {error} = result;
-	const {joinedCommand, timedOut, isCanceled, parsed: {options: {timeout}}} = options;
+	const {joinedCommand, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
@@ -198,6 +198,7 @@ function makeError(result, options) {
 	error.command = joinedCommand;
 	error.timedOut = timedOut;
 	error.isCanceled = isCanceled;
+	error.killed = killed && !timedOut;
 
 	if ('all' in result) {
 		error.all = result.all;
@@ -364,13 +365,9 @@ const execa = (command, args, options) => {
 					joinedCommand,
 					parsed,
 					timedOut,
-					isCanceled
+					isCanceled,
+					killed: spawned.killed
 				});
-
-				// TODO: missing some timeout logic for killed
-				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-				// error.killed = spawned.killed || killed;
-				error.killed = error.killed || spawned.killed;
 
 				if (!parsed.options.reject) {
 					return error;

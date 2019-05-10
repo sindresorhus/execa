@@ -95,7 +95,7 @@ function handleArgs(command, args, options = {}) {
 
 	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
 		// #116
-		args = [...new Set(['/q', '/d', '/s', '/c', ...args])];
+		args.unshift('/q');
 	}
 
 	return {command, args, options, parsed};

@@ -117,7 +117,7 @@ test('execa.sync()', t => {
 test('execa.sync() throws error if written to stderr', t => {
 	t.throws(() => {
 		execa.sync('foo');
-	}, process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : /spawnSync foo ENOENT/);
+	}, process.platform === 'win32' ? /Command failed with exit code 1/ : /spawnSync foo ENOENT/);
 });
 
 test('skip throwing when using reject option in execa.sync()', t => {
@@ -137,7 +137,7 @@ test('stripFinalNewline option', async t => {
 
 test('preferLocal option', async t => {
 	await execa('ava', ['--version'], {env: {PATH: ''}});
-	const errorRegExp = process.platform === 'win32' ? /not recognized/ : /spawn ava ENOENT/;
+	const errorRegExp = process.platform === 'win32' ? /Command failed with exit code 1/ : /spawn ava ENOENT/;
 	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), errorRegExp);
 });
 

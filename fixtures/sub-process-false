@@ -1,5 +1,0 @@
-#!/usr/bin/env node
-'use strict';
-const m = require('../');
-
-console.log(m('forever', {cleanup: false}).pid);

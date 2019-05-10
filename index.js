@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const os = require('os');
+const util = require('util');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
@@ -10,7 +11,6 @@ const _getStream = require('get-stream');
 const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
-const errname = require('./lib/errname');
 const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
@@ -93,11 +93,6 @@ function handleArgs(command, args, options = {}) {
 
 	options.stdio = stdio(options);
 
-	if (options.detached) {
-		// #115
-		options.cleanup = false;
-	}
-
 	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
 		// #116
 		args = [...new Set(['/q', '/d', '/s', '/c', ...args])];
@@ -125,10 +120,6 @@ function handleOutput(options, value) {
 	}
 
 	return value;
-}
-
-function handleShell(fn, command, options) {
-	return fn(command, {...options, shell: true});
 }
 
 function makeAllStream(spawned) {
@@ -220,7 +211,7 @@ function getCode({error = {}}, code) {
 	}
 
 	if (Number.isInteger(code)) {
-		return [errname(-Math.abs(code)), Math.abs(code)];
+		return [util.getSystemErrorName(-code), code];
 	}
 
 	return [];
@@ -239,19 +230,7 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 		return `was killed with ${signal}`;
 	}
 
-	if (exitCodeName !== undefined && exitCode !== undefined) {
-		return `failed with exit code ${exitCode} (${exitCodeName})`;
-	}
-
-	if (exitCodeName !== undefined) {
-		return `failed with exit code ${exitCodeName}`;
-	}
-
-	if (exitCode !== undefined) {
-		return `failed with exit code ${exitCode}`;
-	}
-
-	return 'failed';
+	return `failed with exit code ${exitCode} (${exitCodeName})`;
 }
 
 function joinCommand(command, args) {
@@ -276,8 +255,9 @@ const execa = (command, args, options) => {
 		return Promise.reject(error);
 	}
 
+	// #115
 	let removeExitHandler;
-	if (parsed.options.cleanup) {
+	if (parsed.options.cleanup && !parsed.options.detached) {
 		removeExitHandler = onExit(() => {
 			spawned.kill();
 		});
@@ -458,8 +438,6 @@ module.exports.stderr = async (...args) => {
 	return stderr;
 };
 
-module.exports.shell = (command, options) => handleShell(execa, command, options);
-
 module.exports.sync = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
 	const joinedCommand = joinCommand(command, args);
@@ -495,8 +473,6 @@ module.exports.sync = (command, args, options) => {
 		timedOut: false
 	};
 };
-
-module.exports.shellSync = (command, options) => handleShell(execa.sync, command, options);
 
 module.exports.fork = (filePath, args = [], options = {}) => {
 	const stdioOption = stdio.fork(options);

@@ -66,6 +66,11 @@ declare namespace execa {
 		/**
 		If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
+		We recommend against using this option since it is:
+		- not cross-platform, encouraging shell-specific syntax.
+		- slower, because of the additional shell interpretation.
+		- unsafe, potentially allowing command injection.
+
 		@default false
 		*/
 		readonly shell?: boolean | string;
@@ -101,7 +106,9 @@ declare namespace execa {
 		readonly reject?: boolean;
 
 		/**
-		Keep track of the spawned process and `kill` it when the parent process exits.
+		Kill the spawned process when the parent process exits unless either:
+			- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+			- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
 
 		@default true
 		*/
@@ -410,51 +417,6 @@ declare const execa: {
 	stderr(file: string, options?: execa.Options<null>): Promise<Buffer>;
 
 	/**
-	Execute a command through the system shell.
-
-	Prefer `execa()` whenever possible, as it's both faster and safer.
-
-	@param command - The command to execute.
-	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
-
-	@example
-	```
-	import execa from 'execa';
-
-	(async => {
-		// Run a shell command
-		const {stdout} = await execa.shell('echo unicorns');
-		//=> 'unicorns'
-
-		// Catching an error
-		try {
-			await execa.shell('exit 3');
-		} catch (error) {
-			console.log(error);
-			//{
-			//	message: 'Command failed with exit code 3 (ESRCH): exit 3',
-			//	code: 3,
-			//	exitCode: 3,
-			//	exitCodeName: 'ESRCH',
-			//	stdout: '',
-			//	stderr: '',
-			//	all: '',
-			//	failed: true,
-			//	command: 'exit 3',
-			//	timedOut: false,
-			//	killed: false
-			//}
-		}
-	})();
-	```
-	*/
-	shell(command: string, options?: execa.Options): execa.ExecaChildProcess;
-	shell(
-		command: string,
-		options?: execa.Options<null>
-	): execa.ExecaChildProcess<Buffer>;
-
-	/**
 	Execute a file synchronously.
 
 	This method throws an `Error` if the command fails.
@@ -477,45 +439,6 @@ declare const execa: {
 	sync(
 		file: string,
 		options?: execa.SyncOptions<null>
-	): execa.ExecaSyncReturnValue<Buffer>;
-
-	/**
-	Execute a command synchronously through the system shell.
-
-	This method throws an `Error` if the command fails.
-
-	@param command - The command to execute.
-	@returns The same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
-
-	@example
-	```
-	import execa from 'execa';
-
-	try {
-		execa.shellSync('exit 3');
-	} catch (error) {
-		console.log(error);
-		//{
-		//	message: 'Command failed with exit code 3 (ESRCH): exit 3',
-		//	code: 3,
-		//	exitCode: 3,
-		//	exitCodeName: 'ESRCH',
-		//	stdout: '',
-		//	stderr: '',
-		//	failed: true,
-		//	command: 'exit 3',
-		//	timedOut: false
-		//}
-	}
-	```
-	*/
-	shellSync(
-		command: string,
-		options?: execa.Options
-	): execa.ExecaSyncReturnValue;
-	shellSync(
-		command: string,
-		options?: execa.Options<null>
 	): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**

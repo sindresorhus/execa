@@ -5,8 +5,8 @@ import childProcess from 'child_process';
 import test from 'ava';
 import getStream from 'get-stream';
 import isRunning from 'is-running';
-import delay from 'delay';
 import tempfile from 'tempfile';
+import pEvent from 'p-event';
 import execa from '.';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -57,10 +57,10 @@ test.serial('result.all shows both `stdout` and `stderr` intermixed', async t =>
 });
 
 test('stdout/stderr/all available on errors', async t => {
-	const err = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
-	t.is(typeof err.stdout, 'string');
-	t.is(typeof err.stderr, 'string');
-	t.is(typeof err.all, 'string');
+	const error = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
+	t.is(typeof error.stdout, 'string');
+	t.is(typeof error.stderr, 'string');
+	t.is(typeof error.all, 'string');
 });
 
 test('include stdout and stderr in errors for improved debugging', async t => {
@@ -80,13 +80,13 @@ test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inh
 });
 
 test('do not include `stdout` in errors when set to `inherit`', async t => {
-	const err = await t.throwsAsync(execa('fixtures/error-message.js', {stdout: 'inherit'}), {message: /stderr/});
-	t.notRegex(err.message, /stdout/);
+	const error = await t.throwsAsync(execa('fixtures/error-message.js', {stdout: 'inherit'}), {message: /stderr/});
+	t.notRegex(error.message, /stdout/);
 });
 
 test('do not include `stderr` in errors when set to `inherit`', async t => {
-	const err = await t.throwsAsync(execa('fixtures/error-message.js', {stderr: 'inherit'}), {message: /stdout/});
-	t.notRegex(err.message, /stderr/);
+	const error = await t.throwsAsync(execa('fixtures/error-message.js', {stderr: 'inherit'}), {message: /stdout/});
+	t.notRegex(error.message, /stderr/);
 });
 
 test('pass `stdout` to a file descriptor', async t => {
@@ -112,7 +112,9 @@ test('allow string arguments in synchronous mode', t => {
 });
 
 test('forbid string arguments together with array arguments', t => {
-	t.throws(() => execa('node fixtures/echo foo bar', ['foo', 'bar']), /Arguments cannot be inside/);
+	t.throws(() => {
+		execa('node fixtures/echo foo bar', ['foo', 'bar']);
+	}, /Arguments cannot be inside/);
 });
 
 test('ignore consecutive spaces in string arguments', async t => {
@@ -135,43 +137,27 @@ test('trim string arguments', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.shell()', async t => {
-	const {stdout} = await execa.shell('node fixtures/noop foo');
-	t.is(stdout, 'foo');
-});
-
 test('execa.sync()', t => {
 	const {stdout} = execa.sync('noop', ['foo']);
 	t.is(stdout, 'foo');
 });
 
 test('execa.sync() throws error if written to stderr', t => {
-	t.throws(() => execa.sync('foo'), process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : /spawnSync foo ENOENT/);
+	t.throws(() => {
+		execa.sync('foo');
+	}, process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : /spawnSync foo ENOENT/);
 });
 
 test('execa.sync() includes stdout and stderr in errors for improved debugging', t => {
-	t.throws(() => execa.sync('node', ['fixtures/error-message.js']), {message: STDERR_STDOUT_REGEXP, code: 1});
+	t.throws(() => {
+		execa.sync('node', ['fixtures/error-message.js']);
+	}, {message: STDERR_STDOUT_REGEXP, code: 1});
 });
 
 test('skip throwing when using reject option in execa.sync()', t => {
-	const err = execa.sync('node', ['fixtures/error-message.js'], {reject: false});
-	t.is(typeof err.stdout, 'string');
-	t.is(typeof err.stderr, 'string');
-});
-
-test('execa.shellSync()', t => {
-	const {stdout} = execa.shellSync('node fixtures/noop foo');
-	t.is(stdout, 'foo');
-});
-
-test('execa.shellSync() includes stdout and stderr in errors for improved debugging', t => {
-	t.throws(() => execa.shellSync('node fixtures/error-message.js'), {message: STDERR_STDOUT_REGEXP, code: 1});
-});
-
-test('skip throwing when using reject option in execa.shellSync()', t => {
-	const err = execa.shellSync('node fixtures/error-message.js', {reject: false});
-	t.is(typeof err.stdout, 'string');
-	t.is(typeof err.stderr, 'string');
+	const error = execa.sync('node', ['fixtures/error-message.js'], {reject: false});
+	t.is(typeof error.stdout, 'string');
+	t.is(typeof error.stderr, 'string');
 });
 
 test('stripEof option (legacy)', async t => {
@@ -184,30 +170,19 @@ test('stripFinalNewline option', async t => {
 	t.is(stdout, 'foo\n');
 });
 
-test.serial('preferLocal option', async t => {
-	t.true((await execa('cat-names')).stdout.length > 2);
-
-	if (process.platform === 'win32') {
-		// TODO: figure out how to make the below not hang on Windows
-		return;
-	}
-
-	// Account for npm adding local binaries to the PATH
-	const _path = process.env.PATH;
-	process.env.PATH = '';
-	await t.throwsAsync(execa('cat-names', {preferLocal: false}), /spawn .* ENOENT/);
-	process.env.PATH = _path;
+test('preferLocal option', async t => {
+	await execa('ava', ['--version'], {env: {PATH: ''}});
+	const errorRegExp = process.platform === 'win32' ? /not recognized/ : /spawn ava ENOENT/;
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), errorRegExp);
 });
 
-test.serial('localDir option', async t => {
-	const cwd = 'fixtures/local-dir';
-	const bin = path.resolve(cwd, 'node_modules/.bin/self-path');
-
-	await execa('npm', ['install', '--no-package-lock'], {cwd});
-
-	const {stdout} = await execa(bin, {localDir: cwd});
-
-	t.is(path.relative(cwd, stdout), path.normalize('node_modules/self-path'));
+test('localDir option', async t => {
+	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
+	const {stdout} = await execa(command, {shell: true, localDir: '/test'});
+	const envPaths = stdout.split(path.delimiter).map(envPath =>
+		envPath.replace(/\\/g, '/').replace(/^[^/]+/, '')
+	);
+	t.true(envPaths.some(envPath => envPath === '/test/node_modules/.bin'));
 });
 
 test('input option can be a String', async t => {
@@ -254,7 +229,9 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 
 test('helpful error trying to provide an input stream in sync mode', t => {
 	t.throws(
-		() => execa.sync('stdin', {input: new stream.PassThrough()}),
+		() => {
+			execa.sync('stdin', {input: new stream.PassThrough()});
+		},
 		/The `input` option cannot be a stream in sync mode/
 	);
 });
@@ -486,45 +463,51 @@ test(command, ' foo bar', 'foo', 'bar');
 test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
-async function spawnAndKill(t, signal, cleanup) {
-	const name = cleanup ? 'sub-process' : 'sub-process-false';
-	const cp = execa(name);
-	let pid;
-
-	cp.stdout.setEncoding('utf8');
-	cp.stdout.on('data', chunk => {
-		pid = parseInt(chunk, 10);
-		t.is(typeof pid, 'number');
-
-		setTimeout(() => {
-			process.kill(cp.pid, signal);
-		}, 100);
-	});
-
-	await t.throwsAsync(cp);
-
-	// Give everybody some time to breath and kill things
-	await delay(200);
-
-	t.false(isRunning(cp.pid));
-	t.is(isRunning(pid), !cleanup);
+// When child process exits before parent process
+async function spawnAndExit(t, cleanup, detached) {
+	await t.notThrowsAsync(execa('sub-process-exit', [cleanup, detached]));
 }
 
-test('cleanup - SIGINT', spawnAndKill, 'SIGINT', true);
-test('cleanup - SIGKILL', spawnAndKill, 'SIGTERM', true);
+test('spawnAndExit', spawnAndExit, false, false);
+test('spawnAndExit cleanup', spawnAndExit, true, false);
+test('spawnAndExit detached', spawnAndExit, false, true);
+test('spawnAndExit cleanup detached', spawnAndExit, true, true);
 
-if (process.platform !== 'win32') {
-	// On Windows the subprocesses are actually always killed
-	test('cleanup false - SIGINT', spawnAndKill, 'SIGTERM', false);
-	test('cleanup false - SIGKILL', spawnAndKill, 'SIGKILL', false);
+// When parent process exits before child process
+async function spawnAndKill(t, signal, cleanup, detached, isKilled) {
+	const subprocess = execa('sub-process', [cleanup, detached], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
+
+	const pid = await pEvent(subprocess, 'message');
+	t.true(Number.isInteger(pid));
+	t.true(isRunning(pid));
+
+	process.kill(subprocess.pid, signal);
+
+	await t.throwsAsync(subprocess);
+
+	t.false(isRunning(subprocess.pid));
+	t.is(isRunning(pid), !isKilled);
+
+	if (!isKilled) {
+		process.kill(pid, 'SIGKILL');
+	}
 }
 
-test('execa.shell() supports the `shell` option', async t => {
-	const {stdout} = await execa.shell('node fixtures/noop foo', {
-		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
-	});
-	t.is(stdout, 'foo');
-});
+// Without `options.cleanup`:
+//   - on Windows subprocesses are killed if `options.detached: false`, but not
+//     if `options.detached: true`
+//   - on Linux subprocesses are never killed regardless of `options.detached`
+// With `options.cleanup`, subprocesses are always killed
+//   - `options.cleanup` with SIGKILL is a noop, since it cannot be handled
+const exitIfWindows = process.platform === 'win32';
+test('spawnAndKill SIGTERM', spawnAndKill, 'SIGTERM', false, false, exitIfWindows);
+test('spawnAndKill SIGKILL', spawnAndKill, 'SIGKILL', false, false, exitIfWindows);
+test('spawnAndKill cleanup SIGTERM', spawnAndKill, 'SIGTERM', true, false, true);
+test('spawnAndKill cleanup SIGKILL', spawnAndKill, 'SIGKILL', true, false, exitIfWindows);
+test('spawnAndKill detached SIGTERM', spawnAndKill, 'SIGTERM', false, true, false);
+test('spawnAndKill detached SIGKILL', spawnAndKill, 'SIGKILL', false, true, false);
+test('spawnAndKill cleanup detached SIGTERM', spawnAndKill, 'SIGTERM', true, true, false);
+test('spawnAndKill cleanup detached SIGKILL', spawnAndKill, 'SIGKILL', true, true, false);
 
 if (process.platform !== 'win32') {
 	test('write to fast-exit process', async t => {
@@ -564,6 +547,18 @@ test('do not extend environment with `extendEnv: false`', async t => {
 		'undefined',
 		'bar'
 	]);
+});
+
+test('can use `options.shell: true`', async t => {
+	const {stdout} = await execa('node fixtures/noop foo', {shell: true});
+	t.is(stdout, 'foo');
+});
+
+test('can use `options.shell: string`', async t => {
+	const {stdout} = await execa('node fixtures/noop foo', {
+		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
+	});
+	t.is(stdout, 'foo');
 });
 
 test('use extend environment with `extendEnv: true` and `shell: true`', async t => {
@@ -609,22 +604,22 @@ test('removes exit handler on exit', async t => {
 // TOOD: Remove the `if`-guard when targeting Node.js 10
 if (Promise.prototype.finally) {
 	test('finally function is executed on success', async t => {
-		let called = false;
+		let isCalled = false;
 		const {stdout} = await execa('noop', ['foo']).finally(() => {
-			called = true;
+			isCalled = true;
 		});
-		t.is(called, true);
+		t.is(isCalled, true);
 		t.is(stdout, 'foo');
 	});
 
 	test('finally function is executed on failure', async t => {
-		let called = false;
-		const err = await t.throwsAsync(execa('exit', ['2']).finally(() => {
-			called = true;
+		let isError = false;
+		const error = await t.throwsAsync(execa('exit', ['2']).finally(() => {
+			isError = true;
 		}));
-		t.is(called, true);
-		t.is(typeof err.stdout, 'string');
-		t.is(typeof err.stderr, 'string');
+		t.is(isError, true);
+		t.is(typeof error.stdout, 'string');
+		t.is(typeof error.stderr, 'string');
 	});
 
 	test('throw in finally function bubbles up on success', async t => {

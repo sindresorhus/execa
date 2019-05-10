@@ -305,6 +305,16 @@ test('error.killed is false if process was killed indirectly', async t => {
 	t.false(error.killed);
 });
 
+test('result.killed is false if not killed', async t => {
+	const result = await execa('noop');
+	t.false(result.killed);
+});
+
+test('result.killed is false if not killed, in sync mode', t => {
+	const result = execa.sync('noop');
+	t.false(result.killed);
+});
+
 if (process.platform === 'darwin') {
 	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
 		const cp = childProcess.exec('forever', error => {
@@ -372,6 +382,11 @@ test('timeout does not kill the process if it does not time out', async t => {
 
 test('timedOut is false if no timeout was set', async t => {
 	const result = await execa('noop');
+	t.false(result.timedOut);
+});
+
+test('timedOut will be false if no timeout was set and zero exit code in sync mode', t => {
+	const result = execa.sync('noop');
 	t.false(result.timedOut);
 });
 
@@ -578,9 +593,24 @@ test('cancel method kills the subprocess', t => {
 	t.true(subprocess.killed);
 });
 
-test('result.isCanceled is false when spawned.cancel isn\'t called', async t => {
+test('result.isCanceled is false when spawned.cancel() isn\'t called (success)', async t => {
 	const result = await execa('noop');
 	t.false(result.isCanceled);
+});
+
+test('result.isCanceled is false when spawned.cancel() isn\'t called (failure)', async t => {
+	const error = await t.throwsAsync(execa('fail'));
+	t.false(error.isCanceled);
+});
+
+test('result.isCanceled is false when spawned.cancel() isn\'t called in sync mode (success)', t => {
+	const result = execa.sync('noop');
+	t.false(result.isCanceled);
+});
+
+test('result.isCanceled is false when spawned.cancel() isn\'t called in sync mode (failure)', t => {
+	const error = t.throws(() => execa.sync('fail'));
+	t.false(error.isCanceled);
 });
 
 test('calling cancel method throws an error with message "Command was canceled"', async t => {

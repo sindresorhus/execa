@@ -196,7 +196,7 @@ function makeError(result, options) {
 	// it to `undefined`
 	error.signal = signal || undefined;
 	error.command = joinedCommand;
-	error.timedOut = Boolean(timedOut);
+	error.timedOut = timedOut;
 	error.isCanceled = isCanceled;
 
 	if ('all' in result) {
@@ -449,7 +449,9 @@ module.exports.sync = (command, args, options) => {
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
 			joinedCommand,
-			parsed
+			parsed,
+			timedOut: false,
+			isCanceled: false
 		});
 
 		if (!parsed.options.reject) {
@@ -466,7 +468,9 @@ module.exports.sync = (command, args, options) => {
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
 		failed: false,
+		killed: false,
 		command: joinedCommand,
-		timedOut: false
+		timedOut: false,
+		isCanceled: false
 	};
 };

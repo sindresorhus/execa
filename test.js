@@ -120,9 +120,14 @@ test('execa.sync() throws error if written to stderr', t => {
 	}, process.platform === 'win32' ? /failed with exit code 1/ : /spawnSync foo ENOENT/);
 });
 
-test('skip throwing when using reject option in execa.sync()', t => {
-	const error = execa.sync('noop-err', ['foo'], {reject: false});
-	t.is(error.stderr, 'foo');
+test('skip throwing when using reject option', async t => {
+	const error = await execa('fail', {reject: false});
+	t.is(error.exitCode, 2);
+});
+
+test('skip throwing when using reject option in sync mode', t => {
+	const error = execa.sync('fail', {reject: false});
+	t.is(error.exitCode, 2);
 });
 
 test('stripEof option (legacy)', async t => {
@@ -239,12 +244,6 @@ test('do not buffer stderr when `buffer` set to `false`', async t => {
 
 	t.is(result.stderr, undefined);
 	t.is(stderr, '.........\n');
-});
-
-test('skip throwing when using reject option', async t => {
-	const error = await execa('exit', ['2'], {reject: false});
-	t.is(typeof error.stdout, 'string');
-	t.is(typeof error.stderr, 'string');
 });
 
 test('allow unknown exit code', async t => {

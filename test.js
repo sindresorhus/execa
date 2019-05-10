@@ -322,9 +322,7 @@ if (process.platform !== 'win32') {
 test('error.killed is true if process was killed directly', async t => {
 	const cp = execa('forever');
 
-	setTimeout(() => {
-		cp.kill();
-	}, 100);
+	cp.kill();
 
 	const error = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
 	t.true(error.killed);
@@ -334,9 +332,7 @@ test('error.killed is true if process was killed directly', async t => {
 test('error.killed is false if process was killed indirectly', async t => {
 	const cp = execa('forever');
 
-	setTimeout(() => {
-		process.kill(cp.pid, 'SIGINT');
-	}, 100);
+	process.kill(cp.pid, 'SIGINT');
 
 	// `process.kill()` is emulated by Node.js on Windows
 	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
@@ -352,9 +348,7 @@ if (process.platform === 'darwin') {
 			t.end();
 		});
 
-		setTimeout(() => {
-			process.kill(cp.pid, 'SIGINT');
-		}, 100);
+		process.kill(cp.pid, 'SIGINT');
 	});
 }
 
@@ -362,9 +356,7 @@ if (process.platform !== 'win32') {
 	test('error.signal is SIGINT', async t => {
 		const cp = execa('forever');
 
-		setTimeout(() => {
-			process.kill(cp.pid, 'SIGINT');
-		}, 100);
+		process.kill(cp.pid, 'SIGINT');
 
 		const error = await t.throwsAsync(cp, {message: /was killed with SIGINT/});
 		t.is(error.signal, 'SIGINT');
@@ -373,16 +365,14 @@ if (process.platform !== 'win32') {
 	test('error.signal is SIGTERM', async t => {
 		const cp = execa('forever');
 
-		setTimeout(() => {
-			process.kill(cp.pid, 'SIGTERM');
-		}, 100);
+		process.kill(cp.pid, 'SIGTERM');
 
 		const error = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
 		t.is(error.signal, 'SIGTERM');
 	});
 
 	test('custom error.signal', async t => {
-		const error = await t.throwsAsync(execa('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500, message: TIMEOUT_REGEXP}));
+		const error = await t.throwsAsync(execa('forever', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
 		t.is(error.signal, 'SIGHUP');
 	});
 }

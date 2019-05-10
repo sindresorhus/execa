@@ -12,8 +12,6 @@ import execa from '.';
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 process.env.FOO = 'foo';
 
-const NO_NEWLINES_REGEXP = /^[^\n]*$/;
-const STDERR_STDOUT_REGEXP = /stderr[^]*stdout/;
 const TIMEOUT_REGEXP = /timed out after/;
 
 const getExitRegExp = exitMessage => new RegExp(`failed with exit code ${exitMessage}`);
@@ -61,32 +59,6 @@ test('stdout/stderr/all available on errors', async t => {
 	t.is(typeof error.stdout, 'string');
 	t.is(typeof error.stderr, 'string');
 	t.is(typeof error.all, 'string');
-});
-
-test('include stdout and stderr in errors for improved debugging', async t => {
-	await t.throwsAsync(execa('fixtures/error-message.js'), {message: STDERR_STDOUT_REGEXP, code: 1});
-});
-
-test('do not include in errors when `stdio` is set to `inherit`', async t => {
-	await t.throwsAsync(execa('fixtures/error-message.js', {stdio: 'inherit'}), {message: NO_NEWLINES_REGEXP});
-});
-
-test('do not include `stderr` and `stdout` in errors when set to `inherit`', async t => {
-	await t.throwsAsync(execa('fixtures/error-message.js', {stdout: 'inherit', stderr: 'inherit'}), {message: NO_NEWLINES_REGEXP});
-});
-
-test('do not include `stderr` and `stdout` in errors when `stdio` is set to `inherit`', async t => {
-	await t.throwsAsync(execa('fixtures/error-message.js', {stdio: [undefined, 'inherit', 'inherit']}), {message: NO_NEWLINES_REGEXP});
-});
-
-test('do not include `stdout` in errors when set to `inherit`', async t => {
-	const error = await t.throwsAsync(execa('fixtures/error-message.js', {stdout: 'inherit'}), {message: /stderr/});
-	t.notRegex(error.message, /stdout/);
-});
-
-test('do not include `stderr` in errors when set to `inherit`', async t => {
-	const error = await t.throwsAsync(execa('fixtures/error-message.js', {stderr: 'inherit'}), {message: /stdout/});
-	t.notRegex(error.message, /stderr/);
 });
 
 test('pass `stdout` to a file descriptor', async t => {
@@ -148,16 +120,9 @@ test('execa.sync() throws error if written to stderr', t => {
 	}, process.platform === 'win32' ? /'foo' is not recognized as an internal or external command/ : /spawnSync foo ENOENT/);
 });
 
-test('execa.sync() includes stdout and stderr in errors for improved debugging', t => {
-	t.throws(() => {
-		execa.sync('node', ['fixtures/error-message.js']);
-	}, {message: STDERR_STDOUT_REGEXP, code: 1});
-});
-
 test('skip throwing when using reject option in execa.sync()', t => {
-	const error = execa.sync('node', ['fixtures/error-message.js'], {reject: false});
-	t.is(typeof error.stdout, 'string');
-	t.is(typeof error.stderr, 'string');
+	const error = execa.sync('noop-err', ['foo'], {reject: false});
+	t.is(error.stderr, 'foo');
 });
 
 test('stripEof option (legacy)', async t => {

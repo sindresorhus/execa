@@ -173,7 +173,7 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 function makeError(result, options) {
 	const {stdout, stderr, code, signal} = result;
 	let {error} = result;
-	const {joinedCommand, timedOut, isCanceled, parsed: {options: {timeout}}} = options;
+	const {joinedCommand, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
@@ -195,10 +195,10 @@ function makeError(result, options) {
 	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
 	// it to `undefined`
 	error.signal = signal || undefined;
-	error.killed = signal !== null && !timedOut;
 	error.command = joinedCommand;
 	error.timedOut = Boolean(timedOut);
 	error.isCanceled = isCanceled;
+	error.killed = killed && !timedOut;
 
 	if ('all' in result) {
 		error.all = result.all;
@@ -365,7 +365,8 @@ const execa = (command, args, options) => {
 					joinedCommand,
 					parsed,
 					timedOut,
-					isCanceled
+					isCanceled,
+					killed: spawned.killed
 				});
 
 				if (!parsed.options.reject) {

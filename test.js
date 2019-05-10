@@ -322,9 +322,7 @@ if (process.platform !== 'win32') {
 test('error.killed is true if process was killed directly', async t => {
 	const cp = execa('forever');
 
-	setTimeout(() => {
-		cp.kill();
-	}, 100);
+	cp.kill();
 
 	const error = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
 	t.true(error.killed);
@@ -334,9 +332,7 @@ test('error.killed is true if process was killed directly', async t => {
 test('error.killed is false if process was killed indirectly', async t => {
 	const cp = execa('forever');
 
-	setTimeout(() => {
-		process.kill(cp.pid, 'SIGINT');
-	}, 100);
+	process.kill(cp.pid, 'SIGINT');
 
 	// `process.kill()` is emulated by Node.js on Windows
 	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
@@ -352,9 +348,7 @@ if (process.platform === 'darwin') {
 			t.end();
 		});
 
-		setTimeout(() => {
-			process.kill(cp.pid, 'SIGINT');
-		}, 100);
+		process.kill(cp.pid, 'SIGINT');
 	});
 }
 
@@ -362,9 +356,7 @@ if (process.platform !== 'win32') {
 	test('error.signal is SIGINT', async t => {
 		const cp = execa('forever');
 
-		setTimeout(() => {
-			process.kill(cp.pid, 'SIGINT');
-		}, 100);
+		process.kill(cp.pid, 'SIGINT');
 
 		const error = await t.throwsAsync(cp, {message: /was killed with SIGINT/});
 		t.is(error.signal, 'SIGINT');
@@ -373,16 +365,14 @@ if (process.platform !== 'win32') {
 	test('error.signal is SIGTERM', async t => {
 		const cp = execa('forever');
 
-		setTimeout(() => {
-			process.kill(cp.pid, 'SIGTERM');
-		}, 100);
+		process.kill(cp.pid, 'SIGTERM');
 
 		const error = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
 		t.is(error.signal, 'SIGTERM');
 	});
 
 	test('custom error.signal', async t => {
-		const error = await t.throwsAsync(execa('delay', ['3000', '0'], {killSignal: 'SIGHUP', timeout: 1500, message: TIMEOUT_REGEXP}));
+		const error = await t.throwsAsync(execa('forever', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
 		t.is(error.signal, 'SIGHUP');
 	});
 }
@@ -405,39 +395,19 @@ test('error.code is 2', code, 2);
 test('error.code is 3', code, 3);
 test('error.code is 4', code, 4);
 
-test.serial('timeout will kill the process early', async t => {
-	const time = Date.now();
-	const error = await t.throwsAsync(execa('delay', ['60000', '0'], {timeout: 500, message: TIMEOUT_REGEXP}));
-	const diff = Date.now() - time;
-
+test('timeout kills the process if it times out', async t => {
+	const error = await t.throwsAsync(execa('forever', {timeout: 1, message: TIMEOUT_REGEXP}));
 	t.true(error.timedOut);
-	t.not(error.exitCode, 22);
-	t.true(diff < 4000);
 });
 
-test.serial('timeout will kill the process early (sleep)', async t => {
-	const time = Date.now();
-	const error = await t.throwsAsync(execa('sleeper', [], {timeout: 500, message: TIMEOUT_REGEXP}));
-	const diff = Date.now() - time;
-
-	t.true(error.timedOut);
-	t.not(error.stdout, 'ok');
-	t.true(diff < 4000);
-});
-
-test('timeout will not kill the process early', async t => {
-	const error = await t.throwsAsync(execa('delay', ['2000', '22'], {timeout: 30000}), {code: 22, message: getExitRegExp('22')});
+test('timeout does not kill the process if it does not time out', async t => {
+	const error = await execa('delay', ['500'], {timeout: 1e8});
 	t.false(error.timedOut);
 });
 
-test('timedOut will be false if no timeout was set and zero exit code', async t => {
-	const result = await execa('delay', ['1000', '0']);
+test('timedOut is false if no timeout was set', async t => {
+	const result = await execa('noop');
 	t.false(result.timedOut);
-});
-
-test('timedOut will be false if no timeout was set and non-zero exit code', async t => {
-	const error = await t.throwsAsync(execa('delay', ['1000', '3']), {message: getExitRegExp('3')});
-	t.false(error.timedOut);
 });
 
 async function errorMessage(t, expected, ...args) {

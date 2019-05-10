@@ -1,9 +1,4 @@
 #!/usr/bin/env node
 'use strict';
 
-setTimeout(() => {
-	console.log('delay completed');
-	process.exit(Number(process.argv[3] || 0));
-}, Number(process.argv[2]));
-
-console.log('delay started');
+setTimeout(() => {}, Number(process.argv[2]));

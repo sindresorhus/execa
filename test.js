@@ -293,8 +293,7 @@ test('error.killed is true if process was killed directly', async t => {
 	t.true(error.killed);
 });
 
-// TODO: Should this really be the case, or should we improve on child_process?
-test('error.killed is false if process was killed indirectly', async t => {
+test('error.killed is true if process was killed indirectly', async t => {
 	const cp = execa('forever');
 
 	process.kill(cp.pid, 'SIGINT');
@@ -302,7 +301,7 @@ test('error.killed is false if process was killed indirectly', async t => {
 	// `process.kill()` is emulated by Node.js on Windows
 	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
 	const error = await t.throwsAsync(cp, {message});
-	t.false(error.killed);
+	t.true(error.killed);
 });
 
 if (process.platform === 'darwin') {
@@ -362,6 +361,7 @@ test('error.code is 4', code, 4);
 
 test('timeout kills the process if it times out', async t => {
 	const error = await t.throwsAsync(execa('forever', {timeout: 1, message: TIMEOUT_REGEXP}));
+	t.false(error.killed);
 	t.true(error.timedOut);
 });
 

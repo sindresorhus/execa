@@ -195,6 +195,7 @@ function makeError(result, options) {
 	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
 	// it to `undefined`
 	error.signal = signal || undefined;
+	error.killed = signal !== null && !timedOut;
 	error.command = joinedCommand;
 	error.timedOut = Boolean(timedOut);
 	error.isCanceled = isCanceled;
@@ -366,11 +367,6 @@ const execa = (command, args, options) => {
 					timedOut,
 					isCanceled
 				});
-
-				// TODO: missing some timeout logic for killed
-				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-				// error.killed = spawned.killed || killed;
-				error.killed = error.killed || spawned.killed;
 
 				if (!parsed.options.reject) {
 					return error;

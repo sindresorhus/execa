@@ -177,13 +177,14 @@ function makeError(result, options) {
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
-	if (!(error instanceof Error)) {
-		const message = [joinedCommand, stderr, stdout].filter(Boolean).join('\n');
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
+	const message = `Command ${prefix}: ${joinedCommand}`;
+
+	if (error instanceof Error) {
+		error.message = `${message}${error.message}`;
+	} else {
 		error = new Error(message);
 	}
-
-	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
-	error.message = `Command ${prefix}: ${error.message}`;
 
 	error.code = exitCode || exitCodeName;
 	error.exitCode = exitCode;

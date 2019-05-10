@@ -178,12 +178,33 @@ declare namespace execa {
 		readonly input?: string | Buffer | ReadableStream;
 	}
 
-	interface SyncOptions<EncodingType = string>
-		extends CommonOptions<EncodingType> {
+	interface SyncOptions<EncodingType = string> extends CommonOptions<EncodingType> {
 		/**
 		Write some input to the `stdin` of your binary.
 		*/
 		readonly input?: string | Buffer;
+	}
+
+	interface ForkOptions<EncodingType = string> extends CommonOptions<EncodingType> {
+
+		/**
+	 	Define the sub-process executable binary
+
+		@default process.execPath
+		 */
+		readonly execPath?: string;
+
+		/**
+		Define the sub-process arguments
+
+		@default process.execArgv
+		 */
+		readonly execArgv?: string[];
+
+		/**
+		If `true`, set all stdio channel to `'pipe'`
+		 */
+		readonly silent?: boolean;
 	}
 
 	interface ExecaReturnBase<StdoutStderrType> {
@@ -496,6 +517,26 @@ declare const execa: {
 		command: string,
 		options?: execa.Options<null>
 	): execa.ExecaSyncReturnValue<Buffer>;
+
+	/**
+	 Run a file through a fork of the current process.
+
+	 @param file - The program/script to execute.
+	 @param arguments - Arguments to pass to `file` on execution.
+	 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+	 */
+	fork(
+		file: string,
+		arguments?: readonly string[],
+		options?: execa.Options
+	): execa.ExecaChildProcess;
+	fork(
+		file: string,
+		arguments?: readonly string[],
+		options?: execa.Options<null>
+	): execa.ExecaChildProcess<Buffer>;
+	fork(file: string, options?: execa.Options): execa.ExecaChildProcess;
+	fork(file: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
 };
 
 export = execa;

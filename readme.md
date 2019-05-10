@@ -173,6 +173,15 @@ Execute a command synchronously through the system shell.
 
 Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 
+### execa.fork(file, [arguments], [options])
+
+Run a file through a forked process. The default sub-process is the current (node).
+
+It introduce a communication channel (IPC) that allows messages to be passed back and forth between the parent and child.<br>
+Note that the `shell` option will be ignored.
+
+Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
+
 ### options
 
 Type: `object`
@@ -342,6 +351,26 @@ Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
+#### execPath (for `fork` only)
+
+Type: `string`<br>
+Default: `process.execPath`
+
+Define the sub-process executable binary.
+
+#### execArgv (for `fork` only)
+
+Type: `string[]`<br>
+Default: `process.execArgv`
+
+Define the sub-process arguments.
+
+#### silent (for `fork` only)
+
+Type: `boolean`<br>
+Default: `false`
+
+If `true`, set all stdio channel to `'pipe'`.
 
 ## Tips
 

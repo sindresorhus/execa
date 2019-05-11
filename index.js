@@ -420,18 +420,6 @@ const execa = (command, args, options) => {
 
 module.exports = execa;
 
-// TODO: set `stderr: 'ignore'` when that option is implemented
-module.exports.stdout = async (...args) => {
-	const {stdout} = await execa(...args);
-	return stdout;
-};
-
-// TODO: set `stdout: 'ignore'` when that option is implemented
-module.exports.stderr = async (...args) => {
-	const {stderr} = await execa(...args);
-	return stderr;
-};
-
 module.exports.sync = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
 	const joinedCommand = joinCommand(command, args);

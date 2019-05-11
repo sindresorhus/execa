@@ -356,46 +356,6 @@ declare const execa: {
 	>;
 
 	/**
-	Same as `execa()`, but returns only `stdout`.
-
-	@param file - The program/script to execute.
-	@param arguments - Arguments to pass to `file` on execution.
-	@returns The contents of the executed process' `stdout`.
-	*/
-	stdout(
-		file: string,
-		arguments?: readonly string[],
-		options?: execa.Options
-	): Promise<string>;
-	stdout(
-		file: string,
-		arguments?: readonly string[],
-		options?: execa.Options<null>
-	): Promise<Buffer>;
-	stdout(file: string, options?: execa.Options): Promise<string>;
-	stdout(file: string, options?: execa.Options<null>): Promise<Buffer>;
-
-	/**
-	Same as `execa()`, but returns only `stderr`.
-
-	@param file - The program/script to execute.
-	@param arguments - Arguments to pass to `file` on execution.
-	@returns The contents of the executed process' `stderr`.
-	*/
-	stderr(
-		file: string,
-		arguments?: readonly string[],
-		options?: execa.Options
-	): Promise<string>;
-	stderr(
-		file: string,
-		arguments?: readonly string[],
-		options?: execa.Options<null>
-	): Promise<Buffer>;
-	stderr(file: string, options?: execa.Options): Promise<string>;
-	stderr(file: string, options?: execa.Options<null>): Promise<Buffer>;
-
-	/**
 	Execute a file synchronously.
 
 	This method throws an `Error` if the command fails.

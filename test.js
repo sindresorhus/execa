@@ -39,16 +39,6 @@ test('buffer', async t => {
 	t.is(stdout.toString(), 'foo');
 });
 
-test('execa.stdout()', async t => {
-	const stdout = await execa.stdout('noop', ['foo']);
-	t.is(stdout, 'foo');
-});
-
-test('execa.stderr()', async t => {
-	const stderr = await execa.stderr('noop-err', ['foo']);
-	t.is(stderr, 'foo');
-});
-
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const result = await execa('noop-132');
 	t.is(result.all, '132');
@@ -473,27 +463,27 @@ if (process.platform !== 'win32') {
 }
 
 test('use environment variables by default', async t => {
-	const result = await execa.stdout('environment');
+	const {stdout} = await execa('environment');
 
-	t.deepEqual(result.split('\n'), [
+	t.deepEqual(stdout.split('\n'), [
 		'foo',
 		'undefined'
 	]);
 });
 
 test('extend environment variables by default', async t => {
-	const result = await execa.stdout('environment', [], {env: {BAR: 'bar'}});
+	const {stdout} = await execa('environment', [], {env: {BAR: 'bar'}});
 
-	t.deepEqual(result.split('\n'), [
+	t.deepEqual(stdout.split('\n'), [
 		'foo',
 		'bar'
 	]);
 });
 
 test('do not extend environment with `extendEnv: false`', async t => {
-	const result = await execa.stdout('environment', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
+	const {stdout} = await execa('environment', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
 
-	t.deepEqual(result.split('\n'), [
+	t.deepEqual(stdout.split('\n'), [
 		'undefined',
 		'bar'
 	]);
@@ -514,7 +504,7 @@ test('can use `options.shell: string`', async t => {
 test('use extend environment with `extendEnv: true` and `shell: true`', async t => {
 	process.env.TEST = 'test';
 	const command = process.platform === 'win32' ? 'echo %TEST%' : 'echo $TEST';
-	const stdout = await execa.stdout(command, {shell: true, env: {}, extendEnv: true});
+	const {stdout} = await execa(command, {shell: true, env: {}, extendEnv: true});
 	t.is(stdout, 'test');
 	delete process.env.TEST;
 });

@@ -114,20 +114,6 @@ expectType<ExecaReturnValue<Buffer>>(
 	await execa('unicorns', ['foo'], {encoding: null})
 );
 
-expectType<Promise<string>>(execa.stdout('unicorns'));
-expectType<string>(await execa.stdout('unicorns'));
-expectType<string>(await execa.stdout('unicorns', {encoding: 'utf8'}));
-expectType<Buffer>(await execa.stdout('unicorns', {encoding: null}));
-expectType<string>(await execa.stdout('unicorns', ['foo'], {encoding: 'utf8'}));
-expectType<Buffer>(await execa.stdout('unicorns', ['foo'], {encoding: null}));
-
-expectType<Promise<string>>(execa.stderr('unicorns'));
-expectType<string>(await execa.stderr('unicorns'));
-expectType<string>(await execa.stderr('unicorns', {encoding: 'utf8'}));
-expectType<Buffer>(await execa.stderr('unicorns', {encoding: null}));
-expectType<string>(await execa.stderr('unicorns', ['foo'], {encoding: 'utf8'}));
-expectType<Buffer>(await execa.stderr('unicorns', ['foo'], {encoding: null}));
-
 expectType<ExecaSyncReturnValue<string>>(execa.sync('unicorns'));
 expectType<ExecaSyncReturnValue<string>>(
 	execa.sync('unicorns', {encoding: 'utf8'})

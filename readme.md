@@ -131,16 +131,6 @@ The spawned process can be canceled with the `.cancel()` method on the promise, 
 
 The promise result is an `Object` with `stdout`, `stderr` and `all` properties.
 
-### execa.stdout(file, [arguments], [options])
-### execa.stdout(command, [options])
-
-Same as `execa()`, but returns only `stdout`.
-
-### execa.stderr(file, [arguments], [options])
-### execa.stderr(command, [options])
-
-Same as `execa()`, but returns only `stderr`.
-
 ### execa.sync(file, [arguments], [options])
 ### execa.sync(command, [options])
 

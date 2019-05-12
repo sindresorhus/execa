@@ -143,7 +143,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### childProcessResult
 
-Type: `object | Error`
+Type: `object`
 
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
 

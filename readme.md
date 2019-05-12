@@ -112,36 +112,114 @@ try {
 ### execa(file, [arguments], [options])
 ### execa(command, [options])
 
-Execute a file.
+Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
 Arguments can be specified in either:
   - `arguments`: `execa('echo', ['unicorns'])`.
   - `command`: `execa('echo unicorns')`.
 
-Arguments should not be escaped nor quoted. Exception: inside `command`, spaces can be escaped with a backslash.
-
-Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn(`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
+Arguments should not be escaped nor quoted, except inside `command` where spaces can be escaped with a backslash.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
-Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which is enhanced to be a `Promise`.
+Returns a [`childProcess`](#childProcess).
 
-It exposes an additional `.all` stream, with `stdout` and `stderr` interleaved.
+### childProcess
 
-The spawned process can be canceled with the `.cancel()` method on the promise, which causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
+[`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
 
-The promise result is an `Object` with `stdout`, `stderr` and `all` properties.
+That instance is also a `Promise` which resolves or rejects with a [`childProcessResult`](#childProcessResult).
+
+The following methods and properties are also available.
+
+#### childProcess.cancel()
+
+Same as `childProcess.kill()` but with a different error message and with `childProcessResult.isCanceled` set to `true`.
+
+#### childProcess.all
+
+Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 ### execa.sync(file, [arguments], [options])
 ### execa.sync(command, [options])
 
 Execute a file synchronously.
 
-Returns the same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
+Returns or throws a [`childProcessResult`](#childProcessResult).
 
-It does not have the `.all` property that `execa()` has because the [underlying synchronous implementation](https://nodejs.org/api/child_process.html#child_process_child_process_execfilesync_file_args_options) only returns `stdout` and `stderr` at the end of the execution, so they cannot be interleaved.
+### childProcessResult
 
-This method throws an `Error` if the command fails.
+Type: `object|Error`
+
+Result of a child process execution.
+
+On failure this is also an `Error` instance.
+
+#### childProcessResult.exitCode
+
+Type: `number`
+
+The numeric exit code of the process that was run.
+
+#### childProcessResult.exitCodeName
+
+Type: `string`
+
+The textual exit code of the process that was run.
+
+#### childProcessResult.stdout
+
+Type: `string|Buffer`
+
+The output of the process on stdout.
+
+#### childProcessResult.stderr
+
+Type: `string|Buffer`
+
+The output of the process on stderr.
+
+#### childProcessResult.all
+
+Type: `string|Buffer`
+
+The output of the process on both stdout and stderr. `undefined` if `execa.sync()` was used.
+
+#### childProcessResult.command
+
+Type: `string`
+
+The command that was run.
+
+#### childProcessResult.failed
+
+Type: `boolean`
+
+Whether the process failed to run.
+
+#### childProcessResult.timedOut
+
+Type: `boolean`
+
+Whether the process timed out.
+
+#### childProcessResult.killed
+
+Type: `boolean`
+
+Whether the process was killed.
+
+#### childProcessResult.isCanceled
+
+Type: `boolean`
+
+Whether the process was canceled.
+
+#### childProcessResult.signal
+
+Type: `string|undefined`
+
+The signal that was used to terminate the process.
 
 ### options
 

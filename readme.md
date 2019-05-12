@@ -123,7 +123,7 @@ Arguments should not be escaped nor quoted, except inside `command` where spaces
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which:
-  - is also a `Promise` which resolves or rejects with a [`childProcessResult`](#childProcessResult).
+  - is also a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
   - exposes the following additional methods and properties.
 
 #### cancel()

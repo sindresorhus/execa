@@ -294,9 +294,7 @@ declare namespace execa {
 		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
 
 		/**
-		Cancel the subprocess.
-
-		Causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
+		Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
 		*/
 		cancel(): void;
 	}
@@ -362,7 +360,7 @@ declare const execa: {
 
 	@param file - The program/script to execute.
 	@param arguments - Arguments to pass to `file` on execution.
-	@returns The same result object as [`child_process.spawnSync`](https://nodejs.org/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
+	@returns A result `Object` with `stdout` and `stderr` properties.
 	*/
 	sync(
 		file: string,

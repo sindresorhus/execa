@@ -15,7 +15,7 @@
 - Higher max buffer. 10 MB instead of 200 KB.
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
-- [Get interleaved output](#execafile-arguments-options) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
+- [Get interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
 - [Can specify command and arguments as a single string without a shell](#execafile-arguments-options)
 - More descriptive errors.
 
@@ -122,21 +122,15 @@ Arguments should not be escaped nor quoted, except inside `command` where spaces
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
-Returns a [`childProcess`](#childProcess).
-
-### childProcess
-
-[`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess).
-
-That instance is also a `Promise` which resolves or rejects with a [`childProcessResult`](#childProcessResult).
+Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess). That instance is also a `Promise` which resolves or rejects with a [`childProcessResult`](#childProcessResult).
 
 The following methods and properties are also available.
 
-#### childProcess.cancel()
+#### cancel()
 
-Same as `childProcess.kill()` but with a different error message and with `childProcessResult.isCanceled` set to `true`.
+Same as [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) but with a different error message and with [`childProcessResult.isCanceled`](#iscanceled) set to `true`.
 
-#### childProcess.all
+#### all
 
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
@@ -151,71 +145,69 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Type: `object|Error`
 
-Result of a child process execution.
+Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
 
-On failure this is also an `Error` instance.
-
-#### childProcessResult.exitCode
+#### exitCode
 
 Type: `number`
 
 The numeric exit code of the process that was run.
 
-#### childProcessResult.exitCodeName
+#### exitCodeName
 
 Type: `string`
 
 The textual exit code of the process that was run.
 
-#### childProcessResult.stdout
+#### stdout
 
 Type: `string|Buffer`
 
 The output of the process on stdout.
 
-#### childProcessResult.stderr
+#### stderr
 
 Type: `string|Buffer`
 
 The output of the process on stderr.
 
-#### childProcessResult.all
+#### all
 
 Type: `string|Buffer`
 
 The output of the process on both stdout and stderr. `undefined` if `execa.sync()` was used.
 
-#### childProcessResult.command
+#### command
 
 Type: `string`
 
 The command that was run.
 
-#### childProcessResult.failed
+#### failed
 
 Type: `boolean`
 
 Whether the process failed to run.
 
-#### childProcessResult.timedOut
+#### timedOut
 
 Type: `boolean`
 
 Whether the process timed out.
 
-#### childProcessResult.killed
+#### killed
 
 Type: `boolean`
 
 Whether the process was killed.
 
-#### childProcessResult.isCanceled
+#### isCanceled
 
 Type: `boolean`
 
 Whether the process was canceled.
 
-#### childProcessResult.signal
+#### signal
 
 Type: `string|undefined`
 

@@ -120,11 +120,6 @@ test('skip throwing when using reject option in sync mode', t => {
 	t.is(error.exitCode, 2);
 });
 
-test('stripEof option (legacy)', async t => {
-	const {stdout} = await execa('noop', ['foo'], {stripEof: false});
-	t.is(stdout, 'foo\n');
-});
-
 test('stripFinalNewline option', async t => {
 	const {stdout} = await execa('noop', ['foo'], {stripFinalNewline: false});
 	t.is(stdout, 'foo\n');

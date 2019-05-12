@@ -86,11 +86,6 @@ function handleArgs(command, args, options = {}) {
 		});
 	}
 
-	// TODO: Remove in the next major release
-	if (options.stripEof === false) {
-		options.stripFinalNewline = false;
-	}
-
 	options.stdio = stdio(options);
 
 	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {

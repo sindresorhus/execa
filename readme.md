@@ -143,7 +143,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### childProcessResult
 
-Type: `object|Error`
+Type: `object | Error`
 
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
 
@@ -161,19 +161,19 @@ The textual exit code of the process that was run.
 
 #### stdout
 
-Type: `string|Buffer`
+Type: `string | Buffer`
 
 The output of the process on stdout.
 
 #### stderr
 
-Type: `string|Buffer`
+Type: `string | Buffer`
 
 The output of the process on stderr.
 
 #### all
 
-Type: `string|Buffer`
+Type: `string | Buffer`
 
 The output of the process on both stdout and stderr. `undefined` if `execa.sync()` was used.
 
@@ -209,7 +209,7 @@ Whether the process was canceled.
 
 #### signal
 
-Type: `string|undefined`
+Type: `string | undefined`
 
 The signal that was used to terminate the process.
 

@@ -327,14 +327,13 @@ Let's say you want to show the output of a child process in real-time while also
 
 ```js
 const execa = require('execa');
-const getStream = require('get-stream');
 
-const stream = execa('echo', ['foo']).stdout;
+const subprocess = execa('echo', ['foo']);
 
-stream.pipe(process.stdout);
+subprocess.stdout.pipe(process.stdout);
 
-getStream(stream).then(value => {
-	console.log('child output:', value);
+subprocess.then(({ stdout }) => {
+	console.log('child output:', stdout);
 });
 ```
 

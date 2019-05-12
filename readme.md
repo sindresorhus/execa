@@ -128,7 +128,7 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
 
 #### cancel()
 
-Same as [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) but with a different error message and with [`childProcessResult.isCanceled`](#iscanceled) set to `true`.
+Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
 
 #### all
 

@@ -120,7 +120,7 @@ Arguments can be specified in either:
 
 Arguments should not be escaped nor quoted. Exception: inside `command`, spaces can be escaped with a backslash.
 
-Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
+Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn(`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 

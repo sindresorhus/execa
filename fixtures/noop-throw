@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+'use strict';
+console.error(process.argv[2]);
+process.exit(2);

@@ -350,10 +350,10 @@ const execa = (command, args, options) => {
 		const finalize = async () => {
 			const results = await processComplete;
 
-			const result = results[0];
-			result.stdout = results[1];
-			result.stderr = results[2];
-			result.all = results[3];
+			const [result, stdout, stderr, all] = results;
+			result.stdout = handleOutput(parsed.options, stdout);
+			result.stderr = handleOutput(parsed.options, stderr);
+			result.all = handleOutput(parsed.options, all);
 
 			if (result.error || result.code !== 0 || result.signal !== null) {
 				const error = makeError(result, {
@@ -372,9 +372,9 @@ const execa = (command, args, options) => {
 			}
 
 			return {
-				stdout: handleOutput(parsed.options, result.stdout),
-				stderr: handleOutput(parsed.options, result.stderr),
-				all: handleOutput(parsed.options, result.all),
+				stdout: result.stdout,
+				stderr: result.stderr,
+				all: result.all,
 				code: 0,
 				exitCode: 0,
 				exitCodeName: 'SUCCESS',
@@ -425,6 +425,8 @@ module.exports.sync = (command, args, options) => {
 
 	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
 	result.code = result.status;
+	result.stdout = handleOutput(parsed.options, result.stdout);
+	result.stderr = handleOutput(parsed.options, result.stderr);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
@@ -442,8 +444,8 @@ module.exports.sync = (command, args, options) => {
 	}
 
 	return {
-		stdout: handleOutput(parsed.options, result.stdout),
-		stderr: handleOutput(parsed.options, result.stderr),
+		stdout: result.stdout,
+		stderr: result.stderr,
 		code: 0,
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',

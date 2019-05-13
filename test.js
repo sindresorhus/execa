@@ -120,9 +120,29 @@ test('skip throwing when using reject option in sync mode', t => {
 	t.is(error.exitCode, 2);
 });
 
-test('stripFinalNewline option', async t => {
+test('stripFinalNewline: true', async t => {
+	const {stdout} = await execa('noop', ['foo']);
+	t.is(stdout, 'foo');
+});
+
+test('stripFinalNewline: false', async t => {
 	const {stdout} = await execa('noop', ['foo'], {stripFinalNewline: false});
 	t.is(stdout, 'foo\n');
+});
+
+test('stripFinalNewline on failure', async t => {
+	const {stderr} = await t.throwsAsync(execa('noop-throw', ['foo'], {stripFinalNewline: true}));
+	t.is(stderr, 'foo');
+});
+
+test('stripFinalNewline in sync mode', t => {
+	const {stdout} = execa.sync('noop', ['foo'], {stripFinalNewline: true});
+	t.is(stdout, 'foo');
+});
+
+test('stripFinalNewline in sync mode on failure', t => {
+	const {stderr} = t.throws(() => execa.sync('noop-throw', ['foo'], {stripFinalNewline: true}));
+	t.is(stderr, 'foo');
 });
 
 test('preferLocal option', async t => {

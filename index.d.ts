@@ -195,6 +195,11 @@ declare namespace execa {
 
 	interface ExecaReturnBase<StdoutStderrType> {
 		/**
+		The command that was run.
+		*/
+		command: string;
+
+		/**
 		The numeric exit code of the process that was run.
 		*/
 		exitCode: number;
@@ -220,16 +225,6 @@ declare namespace execa {
 		failed: boolean;
 
 		/**
-		The signal that was used to terminate the process.
-		*/
-		signal?: string;
-
-		/**
-		The command that was run.
-		*/
-		command: string;
-
-		/**
 		Whether the process timed out.
 		*/
 		timedOut: boolean;
@@ -238,6 +233,11 @@ declare namespace execa {
 		Whether the process was killed.
 		*/
 		killed: boolean;
+
+		/**
+		The signal that was used to terminate the process.
+		*/
+		signal?: string;
 	}
 
 	interface ExecaSyncReturnValue<StdoutErrorType = string>

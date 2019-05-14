@@ -65,6 +65,22 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
+test('stdout/stderr/all on procss errors', async t => {
+	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
+	t.is(stdout, '');
+	t.is(stderr, '');
+	t.is(all, '');
+});
+
+test('stdout/stderr/all on procss errors, in sync mode', t => {
+	const {stdout, stderr, all} = t.throws(() => {
+		execa.sync('wrong command');
+	});
+	t.is(stdout, '');
+	t.is(stderr, '');
+	t.is(all, undefined);
+});
+
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
 	await execa('fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});

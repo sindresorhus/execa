@@ -40,15 +40,15 @@ test('buffer', async t => {
 });
 
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
-	const result = await execa('noop-132');
-	t.is(result.all, '132');
+	const {all} = await execa('noop-132');
+	t.is(all, '132');
 });
 
 test('stdout/stderr/all available on errors', async t => {
-	const error = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
-	t.is(typeof error.stdout, 'string');
-	t.is(typeof error.stderr, 'string');
-	t.is(typeof error.all, 'string');
+	const {stdout, stderr, all} = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
+	t.is(typeof stdout, 'string');
+	t.is(typeof stderr, 'string');
+	t.is(typeof all, 'string');
 });
 
 test('pass `stdout` to a file descriptor', async t => {
@@ -111,13 +111,13 @@ test('execa.sync() throws error if written to stderr', t => {
 });
 
 test('skip throwing when using reject option', async t => {
-	const error = await execa('fail', {reject: false});
-	t.is(error.exitCode, 2);
+	const {exitCode} = await execa('fail', {reject: false});
+	t.is(exitCode, 2);
 });
 
 test('skip throwing when using reject option in sync mode', t => {
-	const error = execa.sync('fail', {reject: false});
-	t.is(error.exitCode, 2);
+	const {exitCode} = execa.sync('fail', {reject: false});
+	t.is(exitCode, 2);
 });
 
 test('stripFinalNewline: true', async t => {
@@ -214,9 +214,9 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 });
 
 test('execa() returns a promise with kill() and pid', t => {
-	const promise = execa('noop', ['foo']);
-	t.is(typeof promise.kill, 'function');
-	t.is(typeof promise.pid, 'number');
+	const {kill, pid} = execa('noop', ['foo']);
+	t.is(typeof kill, 'function');
+	t.is(typeof pid, 'number');
 });
 
 test('maxBuffer affects stdout', async t => {
@@ -259,17 +259,19 @@ test('allow unknown exit code', async t => {
 	t.is(exitCodeName, 'Unknown system error -255');
 });
 
-test('execa() returns code and failed properties', async t => {
+test('execa() does not return code and failed properties on success', async t => {
 	const {exitCode, exitCodeName, failed} = await execa('noop', ['foo']);
 	t.is(exitCode, 0);
 	t.is(exitCodeName, 'SUCCESS');
 	t.false(failed);
+});
 
-	const error = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
-	t.is(error.exitCode, 2);
+test('execa() returns code and failed properties', async t => {
+	const {exitCode, exitCodeName, failed} = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
+	t.is(exitCode, 2);
 	const expectedName = process.platform === 'win32' ? 'Unknown system error -2' : 'ENOENT';
-	t.is(error.exitCodeName, expectedName);
-	t.true(error.failed);
+	t.is(exitCodeName, expectedName);
+	t.true(failed);
 });
 
 test('use relative path with \'..\' chars', async t => {
@@ -294,8 +296,8 @@ test('error.killed is true if process was killed directly', async t => {
 
 	cp.kill();
 
-	const error = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
-	t.true(error.killed);
+	const {killed} = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
+	t.true(killed);
 });
 
 test('error.killed is false if process was killed indirectly', async t => {
@@ -305,18 +307,18 @@ test('error.killed is false if process was killed indirectly', async t => {
 
 	// `process.kill()` is emulated by Node.js on Windows
 	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
-	const error = await t.throwsAsync(cp, {message});
-	t.false(error.killed);
+	const {killed} = await t.throwsAsync(cp, {message});
+	t.false(killed);
 });
 
 test('result.killed is false if not killed', async t => {
-	const result = await execa('noop');
-	t.false(result.killed);
+	const {killed} = await execa('noop');
+	t.false(killed);
 });
 
 test('result.killed is false if not killed, in sync mode', t => {
-	const result = execa.sync('noop');
-	t.false(result.killed);
+	const {killed} = execa.sync('noop');
+	t.false(killed);
 });
 
 test('result.killed is false on process error', async t => {
@@ -333,13 +335,13 @@ test('result.killed is false on process error, in sync mode', t => {
 
 if (process.platform === 'darwin') {
 	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
-		const cp = childProcess.exec('forever', error => {
+		const {pid} = childProcess.exec('forever', error => {
 			t.truthy(error);
 			t.false(error.killed);
 			t.end();
 		});
 
-		process.kill(cp.pid, 'SIGINT');
+		process.kill(pid, 'SIGINT');
 	});
 }
 
@@ -349,8 +351,8 @@ if (process.platform !== 'win32') {
 
 		process.kill(cp.pid, 'SIGINT');
 
-		const error = await t.throwsAsync(cp, {message: /was killed with SIGINT/});
-		t.is(error.signal, 'SIGINT');
+		const {signal} = await t.throwsAsync(cp, {message: /was killed with SIGINT/});
+		t.is(signal, 'SIGINT');
 	});
 
 	test('error.signal is SIGTERM', async t => {
@@ -358,23 +360,24 @@ if (process.platform !== 'win32') {
 
 		process.kill(cp.pid, 'SIGTERM');
 
-		const error = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
-		t.is(error.signal, 'SIGTERM');
+		const {signal} = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
+		t.is(signal, 'SIGTERM');
 	});
 
 	test('custom error.signal', async t => {
-		const error = await t.throwsAsync(execa('forever', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
-		t.is(error.signal, 'SIGHUP');
+		const {signal} = await t.throwsAsync(execa('forever', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
+		t.is(signal, 'SIGHUP');
 	});
 }
 
 test('result.signal is undefined for successful execution', async t => {
-	t.is((await execa('noop')).signal, undefined);
+	const {signal} = await execa('noop');
+	t.is(signal, undefined);
 });
 
 test('result.signal is undefined if process failed, but was not killed', async t => {
-	const error = await t.throwsAsync(execa('exit', [2]), {message: getExitRegExp('2')});
-	t.is(error.signal, undefined);
+	const {signal} = await t.throwsAsync(execa('exit', [2]), {message: getExitRegExp('2')});
+	t.is(signal, undefined);
 });
 
 async function testExitCode(t, num) {
@@ -387,24 +390,24 @@ test('error.exitCode is 3', testExitCode, 3);
 test('error.exitCode is 4', testExitCode, 4);
 
 test('timeout kills the process if it times out', async t => {
-	const error = await t.throwsAsync(execa('forever', {timeout: 1, message: TIMEOUT_REGEXP}));
-	t.false(error.killed);
-	t.true(error.timedOut);
+	const {killed, timedOut} = await t.throwsAsync(execa('forever', {timeout: 1, message: TIMEOUT_REGEXP}));
+	t.false(killed);
+	t.true(timedOut);
 });
 
 test('timeout does not kill the process if it does not time out', async t => {
-	const error = await execa('delay', ['500'], {timeout: 1e8});
-	t.false(error.timedOut);
+	const {timedOut} = await execa('delay', ['500'], {timeout: 1e8});
+	t.false(timedOut);
 });
 
 test('timedOut is false if no timeout was set', async t => {
-	const result = await execa('noop');
-	t.false(result.timedOut);
+	const {timedOut} = await execa('noop');
+	t.false(timedOut);
 });
 
 test('timedOut will be false if no timeout was set and zero exit code in sync mode', t => {
-	const result = execa.sync('noop');
-	t.false(result.timedOut);
+	const {timedOut} = execa.sync('noop');
+	t.false(timedOut);
 });
 
 async function errorMessage(t, expected, ...args) {
@@ -417,11 +420,11 @@ test(errorMessage, /Command failed with exit code 2.*: exit 2 foo bar/, 2, 'foo'
 test(errorMessage, /Command failed with exit code 3.*: exit 3 baz quz/, 3, 'baz', 'quz');
 
 async function command(t, expected, ...args) {
-	const error = await t.throwsAsync(execa('fail', args));
-	t.is(error.command, `fail${expected}`);
+	const {command: failCommand} = await t.throwsAsync(execa('fail', args));
+	t.is(failCommand, `fail${expected}`);
 
-	const result = await execa('noop', args);
-	t.is(result.command, `noop${expected}`);
+	const {command} = await execa('noop', args);
+	t.is(command, `noop${expected}`);
 }
 
 command.title = (message, expected) => `command is: ${JSON.stringify(expected)}`;
@@ -491,29 +494,17 @@ if (process.platform !== 'win32') {
 
 test('use environment variables by default', async t => {
 	const {stdout} = await execa('environment');
-
-	t.deepEqual(stdout.split('\n'), [
-		'foo',
-		'undefined'
-	]);
+	t.deepEqual(stdout.split('\n'), ['foo', 'undefined']);
 });
 
 test('extend environment variables by default', async t => {
 	const {stdout} = await execa('environment', [], {env: {BAR: 'bar'}});
-
-	t.deepEqual(stdout.split('\n'), [
-		'foo',
-		'bar'
-	]);
+	t.deepEqual(stdout.split('\n'), ['foo', 'bar']);
 });
 
 test('do not extend environment with `extendEnv: false`', async t => {
 	const {stdout} = await execa('environment', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
-
-	t.deepEqual(stdout.split('\n'), [
-		'undefined',
-		'bar'
-	]);
+	t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
 });
 
 test('can use `options.shell: true`', async t => {
@@ -522,9 +513,8 @@ test('can use `options.shell: true`', async t => {
 });
 
 test('can use `options.shell: string`', async t => {
-	const {stdout} = await execa('node fixtures/noop foo', {
-		shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
-	});
+	const shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/bash';
+	const {stdout} = await execa('node fixtures/noop foo', {shell});
 	t.is(stdout, 'foo');
 });
 
@@ -537,8 +527,8 @@ test('use extend environment with `extendEnv: true` and `shell: true`', async t 
 });
 
 test('do not buffer when streaming', async t => {
-	const result = await getStream(execa('max-buffer', ['stdout', '21'], {maxBuffer: 10}).stdout);
-
+	const {stdout} = execa('max-buffer', ['stdout', '21'], {maxBuffer: 10});
+	const result = await getStream(stdout);
 	t.is(result, '....................\n');
 });
 
@@ -581,26 +571,26 @@ if (Promise.prototype.finally) {
 
 	test('finally function is executed on failure', async t => {
 		let isError = false;
-		const error = await t.throwsAsync(execa('exit', ['2']).finally(() => {
+		const {stdout, stderr} = await t.throwsAsync(execa('exit', ['2']).finally(() => {
 			isError = true;
 		}));
 		t.is(isError, true);
-		t.is(typeof error.stdout, 'string');
-		t.is(typeof error.stderr, 'string');
+		t.is(typeof stdout, 'string');
+		t.is(typeof stderr, 'string');
 	});
 
 	test('throw in finally function bubbles up on success', async t => {
-		const result = await t.throwsAsync(execa('noop', ['foo']).finally(() => {
+		const {message} = await t.throwsAsync(execa('noop', ['foo']).finally(() => {
 			throw new Error('called');
 		}));
-		t.is(result.message, 'called');
+		t.is(message, 'called');
 	});
 
 	test('throw in finally bubbles up on error', async t => {
-		const result = await t.throwsAsync(execa('exit', ['2']).finally(() => {
+		const {message} = await t.throwsAsync(execa('exit', ['2']).finally(() => {
 			throw new Error('called');
 		}));
-		t.is(result.message, 'called');
+		t.is(message, 'called');
 	});
 }
 
@@ -611,25 +601,25 @@ test('cancel method kills the subprocess', t => {
 });
 
 test('result.isCanceled is false when spawned.cancel() isn\'t called (success)', async t => {
-	const result = await execa('noop');
-	t.false(result.isCanceled);
+	const {isCanceled} = await execa('noop');
+	t.false(isCanceled);
 });
 
 test('result.isCanceled is false when spawned.cancel() isn\'t called (failure)', async t => {
-	const error = await t.throwsAsync(execa('fail'));
-	t.false(error.isCanceled);
+	const {isCanceled} = await t.throwsAsync(execa('fail'));
+	t.false(isCanceled);
 });
 
 test('result.isCanceled is false when spawned.cancel() isn\'t called in sync mode (success)', t => {
-	const result = execa.sync('noop');
-	t.false(result.isCanceled);
+	const {isCanceled} = execa.sync('noop');
+	t.false(isCanceled);
 });
 
 test('result.isCanceled is false when spawned.cancel() isn\'t called in sync mode (failure)', t => {
-	const error = t.throws(() => {
+	const {isCanceled} = t.throws(() => {
 		execa.sync('fail');
 	});
-	t.false(error.isCanceled);
+	t.false(isCanceled);
 });
 
 test('calling cancel method throws an error with message "Command was canceled"', async t => {
@@ -641,36 +631,36 @@ test('calling cancel method throws an error with message "Command was canceled"'
 test('error.isCanceled is true when cancel method is used', async t => {
 	const subprocess = execa('noop');
 	subprocess.cancel();
-	const error = await t.throwsAsync(subprocess);
-	t.true(error.isCanceled);
+	const {isCanceled} = await t.throwsAsync(subprocess);
+	t.true(isCanceled);
 });
 
 test('error.isCanceled is false when kill method is used', async t => {
 	const subprocess = execa('noop');
 	subprocess.kill();
-	const error = await t.throwsAsync(subprocess);
-	t.false(error.isCanceled);
+	const {isCanceled} = await t.throwsAsync(subprocess);
+	t.false(isCanceled);
 });
 
 test('calling cancel method twice should show the same behaviour as calling it once', async t => {
 	const subprocess = execa('noop');
 	subprocess.cancel();
 	subprocess.cancel();
-	const error = await t.throwsAsync(subprocess);
-	t.true(error.isCanceled);
+	const {isCanceled} = await t.throwsAsync(subprocess);
+	t.true(isCanceled);
 	t.true(subprocess.killed);
 });
 
 test('calling cancel method on a successfuly completed process does not make result.isCanceled true', async t => {
 	const subprocess = execa('noop');
-	const result = await subprocess;
+	const {isCanceled} = await subprocess;
 	subprocess.cancel();
-	t.false(result.isCanceled);
+	t.false(isCanceled);
 });
 
 test('calling cancel method on a process which has been killed does not make error.isCanceled true', async t => {
 	const subprocess = execa('noop');
 	subprocess.kill();
-	const error = await t.throwsAsync(subprocess);
-	t.false(error.isCanceled);
+	const {isCanceled} = await t.throwsAsync(subprocess);
+	t.false(isCanceled);
 });

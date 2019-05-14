@@ -114,6 +114,15 @@ function handleOutput(options, value) {
 		value = stripFinalNewline(value);
 	}
 
+	const {transform} = options;
+	if (value && transform) {
+		if (transform === 'line') {
+			value = value.split('\n');
+		} else if (typeof transform === 'function') {
+			value = transform(value);
+		}
+	}
+
 	return value;
 }
 

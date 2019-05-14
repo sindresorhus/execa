@@ -431,7 +431,7 @@ module.exports.sync = (command, args, options) => {
 			code: result.status,
 			joinedCommand,
 			parsed,
-			timedOut: false,
+			timedOut: result.error && result.error.errno === 'ETIMEDOUT',
 			isCanceled: false,
 			killed: result.signal !== null
 		});

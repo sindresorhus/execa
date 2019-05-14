@@ -15,8 +15,10 @@ try {
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
 	expectType<string | number>(unicornsResult.code);
-	expectType<string>(unicornsResult.stderr);
+	expectType<number>(unicornsResult.exitCode);
+	expectType<string>(unicornsResult.exitCodeName);
 	expectType<string>(unicornsResult.stdout);
+	expectType<string>(unicornsResult.stderr);
 	expectType<string>(unicornsResult.all);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
@@ -28,16 +30,26 @@ try {
 
 	expectType<string>(execaError.message);
 	expectType<number | string>(execaError.code);
+	expectType<number>(execaError.exitCode);
+	expectType<string>(execaError.exitCodeName);
+	expectType<string>(execaError.stdout);
+	expectType<string>(execaError.stderr);
 	expectType<string>(execaError.all);
+	expectType<boolean>(execaError.failed);
+	expectType<boolean>(execaError.timedOut);
 	expectType<boolean>(execaError.isCanceled);
+	expectType<boolean>(execaError.killed);
+	expectType<string | undefined>(execaError.signal);
 }
 
 try {
 	const unicornsResult = execa.sync('unicorns');
 	expectType<string>(unicornsResult.command);
 	expectType<string | number>(unicornsResult.code);
-	expectType<string>(unicornsResult.stderr);
+	expectType<number>(unicornsResult.exitCode);
+	expectType<string>(unicornsResult.exitCodeName);
 	expectType<string>(unicornsResult.stdout);
+	expectType<string>(unicornsResult.stderr);
 	expectError(unicornsResult.all);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
@@ -49,8 +61,16 @@ try {
 
 	expectType<string>(execaError.message);
 	expectType<number | string>(execaError.code);
+	expectType<number>(execaError.exitCode);
+	expectType<string>(execaError.exitCodeName);
+	expectType<string>(execaError.stdout);
+	expectType<string>(execaError.stderr);
 	expectError(execaError.all);
+	expectType<boolean>(execaError.failed);
+	expectType<boolean>(execaError.timedOut);
 	expectError(execaError.isCanceled);
+	expectType<boolean>(execaError.killed);
+	expectType<string | undefined>(execaError.signal);
 }
 
 execa('unicorns', {cwd: '.'});
@@ -85,13 +105,6 @@ execa('unicorns', {stdin: 'inherit'});
 execa('unicorns', {stdin: process.stdin});
 execa('unicorns', {stdin: 1});
 execa('unicorns', {stdin: undefined});
-execa('unicorns', {stderr: 'pipe'});
-execa('unicorns', {stderr: 'ipc'});
-execa('unicorns', {stderr: 'ignore'});
-execa('unicorns', {stderr: 'inherit'});
-execa('unicorns', {stderr: process.stderr});
-execa('unicorns', {stderr: 1});
-execa('unicorns', {stderr: undefined});
 execa('unicorns', {stdout: 'pipe'});
 execa('unicorns', {stdout: 'ipc'});
 execa('unicorns', {stdout: 'ignore'});
@@ -99,7 +112,17 @@ execa('unicorns', {stdout: 'inherit'});
 execa('unicorns', {stdout: process.stdout});
 execa('unicorns', {stdout: 1});
 execa('unicorns', {stdout: undefined});
+execa('unicorns', {stderr: 'pipe'});
+execa('unicorns', {stderr: 'ipc'});
+execa('unicorns', {stderr: 'ignore'});
+execa('unicorns', {stderr: 'inherit'});
+execa('unicorns', {stderr: process.stderr});
+execa('unicorns', {stderr: 1});
+execa('unicorns', {stderr: undefined});
 execa('unicorns', {windowsVerbatimArguments: true});
+execa('unicorns', {input: ''});
+execa('unicorns', {input: Buffer.from('')});
+execa('unicorns', {input: process.stdin});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa('unicorns'));

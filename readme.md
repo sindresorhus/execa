@@ -113,7 +113,8 @@ try {
 		stderr: null,
 		failed: true,
 		timedOut: false,
-		isCanceled: false
+		isCanceled: false,
+		killed: false
 	}
 	*/
 }

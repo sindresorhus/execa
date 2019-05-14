@@ -432,7 +432,8 @@ module.exports.sync = (command, args, options) => {
 			joinedCommand,
 			parsed,
 			timedOut: false,
-			isCanceled: false
+			isCanceled: false,
+			killed: result.signal !== null
 		});
 
 		if (!parsed.options.reject) {

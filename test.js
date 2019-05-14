@@ -141,7 +141,9 @@ test('stripFinalNewline in sync mode', t => {
 });
 
 test('stripFinalNewline in sync mode on failure', t => {
-	const {stderr} = t.throws(() => execa.sync('noop-throw', ['foo'], {stripFinalNewline: true}));
+	const {stderr} = t.throws(() => {
+		execa.sync('noop-throw', ['foo'], {stripFinalNewline: true});
+	});
 	t.is(stderr, 'foo');
 });
 
@@ -316,6 +318,18 @@ test('result.killed is false if not killed', async t => {
 test('result.killed is false if not killed, in sync mode', t => {
 	const result = execa.sync('noop');
 	t.false(result.killed);
+});
+
+test('result.killed is false on process error', async t => {
+	const {killed} = await t.throwsAsync(execa('wrong command'));
+	t.false(killed);
+});
+
+test('result.killed is false on process error, in sync mode', t => {
+	const {killed} = t.throws(() => {
+		execa.sync('wrong command');
+	});
+	t.false(killed);
 });
 
 if (process.platform === 'darwin') {
@@ -613,7 +627,9 @@ test('result.isCanceled is false when spawned.cancel() isn\'t called in sync mod
 });
 
 test('result.isCanceled is false when spawned.cancel() isn\'t called in sync mode (failure)', t => {
-	const error = t.throws(() => execa.sync('fail'));
+	const error = t.throws(() => {
+		execa.sync('fail');
+	});
 	t.false(error.isCanceled);
 });
 

@@ -195,7 +195,7 @@ function makeError(result, options) {
 	error.failed = true;
 	error.timedOut = timedOut;
 	error.isCanceled = isCanceled;
-	error.killed = killed && !timedOut;
+	error.killed = Boolean(killed) && !timedOut;
 	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
 	// it to `undefined`
 	error.signal = signal || undefined;

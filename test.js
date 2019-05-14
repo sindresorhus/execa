@@ -318,6 +318,16 @@ test('result.killed is false if not killed, in sync mode', t => {
 	t.false(result.killed);
 });
 
+test('result.killed is false on process error', async t => {
+	const {killed} = await t.throwsAsync(execa('wrong command'));
+	t.false(killed);
+});
+
+test('result.killed is false on process error, in sync mode', t => {
+	const {killed} = t.throws(() => execa.sync('wrong command'));
+	t.false(killed);
+});
+
 if (process.platform === 'darwin') {
 	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
 		const cp = childProcess.exec('forever', error => {

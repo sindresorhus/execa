@@ -260,13 +260,12 @@ test('allow unknown exit code', async t => {
 });
 
 test('execa() returns code and failed properties', async t => {
-	const {code, exitCode, exitCodeName, failed} = await execa('noop', ['foo']);
-	t.is(code, 0);
+	const {exitCode, exitCodeName, failed} = await execa('noop', ['foo']);
 	t.is(exitCode, 0);
 	t.is(exitCodeName, 'SUCCESS');
 	t.false(failed);
 
-	const error = await t.throwsAsync(execa('exit', ['2']), {code: 2, message: getExitRegExp('2')});
+	const error = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
 	t.is(error.exitCode, 2);
 	const expectedName = process.platform === 'win32' ? 'Unknown system error -2' : 'ENOENT';
 	t.is(error.exitCodeName, expectedName);
@@ -378,14 +377,14 @@ test('result.signal is undefined if process failed, but was not killed', async t
 	t.is(error.signal, undefined);
 });
 
-async function code(t, num) {
-	const error = await t.throwsAsync(execa('exit', [`${num}`]), {code: num, message: getExitRegExp(num)});
-	t.is(error.exitCode, num);
+async function testExitCode(t, num) {
+	const {exitCode} = await t.throwsAsync(execa('exit', [`${num}`]), {message: getExitRegExp(num)});
+	t.is(exitCode, num);
 }
 
-test('error.code is 2', code, 2);
-test('error.code is 3', code, 3);
-test('error.code is 4', code, 4);
+test('error.exitCode is 2', testExitCode, 2);
+test('error.exitCode is 3', testExitCode, 3);
+test('error.exitCode is 4', testExitCode, 4);
 
 test('timeout kills the process if it times out', async t => {
 	const error = await t.throwsAsync(execa('forever', {timeout: 1, message: TIMEOUT_REGEXP}));

@@ -62,7 +62,6 @@ const execa = require('execa');
 		{
 			message: 'Command failed with exit code 2 (ENOENT): wrong command spawn wrong ENOENT',
 			errno: 'ENOENT',
-			code: 2,
 			syscall: 'spawn wrong',
 			path: 'wrong',
 			spawnargs: ['command'],
@@ -102,7 +101,6 @@ try {
 	{
 		message: 'Command failed with exit code 2 (ENOENT): wrong command spawnSync wrong ENOENT',
 		errno: 'ENOENT',
-		code: 2,
 		syscall: 'spawnSync wrong',
 		path: 'wrong',
 		spawnargs: ['command'],

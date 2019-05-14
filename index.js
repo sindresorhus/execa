@@ -166,9 +166,9 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 }
 
 function makeError(result, options) {
-	const {stdout, stderr, code, signal} = result;
+	const {stdout, stderr, signal} = result;
 	let {error} = result;
-	const {joinedCommand, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
+	const {code, joinedCommand, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
@@ -182,9 +182,9 @@ function makeError(result, options) {
 	}
 
 	error.command = joinedCommand;
+	delete error.code;
 	error.exitCode = exitCode;
 	error.exitCodeName = exitCodeName;
-	error.code = exitCode || exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
 
@@ -356,6 +356,7 @@ const execa = (command, args, options) => {
 
 			if (result.error || result.code !== 0 || result.signal !== null) {
 				const error = makeError(result, {
+					code: result.code,
 					joinedCommand,
 					parsed,
 					timedOut,
@@ -374,7 +375,6 @@ const execa = (command, args, options) => {
 				command: joinedCommand,
 				exitCode: 0,
 				exitCodeName: 'SUCCESS',
-				code: 0,
 				stdout: result.stdout,
 				stderr: result.stderr,
 				all: result.all,
@@ -423,12 +423,12 @@ module.exports.sync = (command, args, options) => {
 	}
 
 	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
-	result.code = result.status;
 	result.stdout = handleOutput(parsed.options, result.stdout);
 	result.stderr = handleOutput(parsed.options, result.stderr);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
+			code: result.status,
 			joinedCommand,
 			parsed,
 			timedOut: false,
@@ -447,7 +447,6 @@ module.exports.sync = (command, args, options) => {
 		command: joinedCommand,
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
-		code: 0,
 		stdout: result.stdout,
 		stderr: result.stderr,
 		failed: false,

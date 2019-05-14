@@ -110,8 +110,12 @@ function handleInput(spawned, input) {
 }
 
 function handleOutput(options, value) {
-	if (value && options.stripFinalNewline) {
-		value = stripFinalNewline(value);
+	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
+		return;
+	}
+
+	if (options.stripFinalNewline) {
+		return stripFinalNewline(value);
 	}
 
 	return value;

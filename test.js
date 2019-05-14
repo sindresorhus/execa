@@ -51,6 +51,20 @@ test('stdout/stderr/all available on errors', async t => {
 	t.is(typeof error.all, 'string');
 });
 
+test('stdout/stderr/all are undefined if ignored', async t => {
+	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore'});
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.is(all, undefined);
+});
+
+test('stdout/stderr/all are undefined if ignored in sync mode', t => {
+	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore'});
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.is(all, undefined);
+});
+
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
 	await execa('fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});

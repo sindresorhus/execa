@@ -195,7 +195,7 @@ function makeError(result, options) {
 	error.failed = true;
 	error.timedOut = timedOut;
 	error.isCanceled = isCanceled;
-	error.killed = Boolean(killed) && !timedOut;
+	error.killed = killed && !timedOut;
 	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
 	// it to `undefined`
 	error.signal = signal || undefined;
@@ -432,7 +432,8 @@ module.exports.sync = (command, args, options) => {
 			joinedCommand,
 			parsed,
 			timedOut: false,
-			isCanceled: false
+			isCanceled: false,
+			killed: result.signal !== null
 		});
 
 		if (!parsed.options.reject) {

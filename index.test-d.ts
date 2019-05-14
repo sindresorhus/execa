@@ -14,7 +14,6 @@ try {
 
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
-	expectType<string | number>(unicornsResult.code);
 	expectType<number>(unicornsResult.exitCode);
 	expectType<string>(unicornsResult.exitCodeName);
 	expectType<string>(unicornsResult.stdout);
@@ -29,7 +28,6 @@ try {
 	const execaError: ExecaError = error;
 
 	expectType<string>(execaError.message);
-	expectType<number | string>(execaError.code);
 	expectType<number>(execaError.exitCode);
 	expectType<string>(execaError.exitCodeName);
 	expectType<string>(execaError.stdout);
@@ -45,7 +43,6 @@ try {
 try {
 	const unicornsResult = execa.sync('unicorns');
 	expectType<string>(unicornsResult.command);
-	expectType<string | number>(unicornsResult.code);
 	expectType<number>(unicornsResult.exitCode);
 	expectType<string>(unicornsResult.exitCodeName);
 	expectType<string>(unicornsResult.stdout);
@@ -60,7 +57,6 @@ try {
 	const execaError: ExecaSyncError = error;
 
 	expectType<string>(execaError.message);
-	expectType<number | string>(execaError.code);
 	expectType<number>(execaError.exitCode);
 	expectType<string>(execaError.exitCodeName);
 	expectType<string>(execaError.stdout);

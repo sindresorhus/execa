@@ -242,10 +242,6 @@ declare namespace execa {
 
 	interface ExecaSyncReturnValue<StdoutErrorType = string>
 		extends ExecaReturnBase<StdoutErrorType> {
-		/**
-		The exit code of the process that was run.
-		*/
-		code: number;
 	}
 
 	interface ExecaReturnValue<StdoutErrorType = string>
@@ -268,11 +264,6 @@ declare namespace execa {
 		The error message.
 		*/
 		message: string;
-
-		/**
-		The exit code (either numeric or textual) of the process that was run.
-		*/
-		code: number | string;
 	}
 
 	interface ExecaError<StdoutErrorType = string>

@@ -73,7 +73,7 @@ test('stdout/stderr/all on process errors', async t => {
 	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
 	t.is(stdout, '');
 	t.is(stderr, WRONG_COMMAND_STDERR);
-	t.is(all, '');
+	t.is(all, WRONG_COMMAND_STDERR);
 });
 
 test('stdout/stderr/all on process errors, in sync mode', t => {

@@ -65,14 +65,14 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
-test('stdout/stderr/all on procss errors', async t => {
+test('stdout/stderr/all on process errors', async t => {
 	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
 	t.is(stdout, '');
 	t.is(stderr, '');
 	t.is(all, '');
 });
 
-test('stdout/stderr/all on procss errors, in sync mode', t => {
+test('stdout/stderr/all on process errors, in sync mode', t => {
 	const {stdout, stderr, all} = t.throws(() => {
 		execa.sync('wrong command');
 	});

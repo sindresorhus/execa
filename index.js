@@ -230,14 +230,12 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 	return `failed with exit code ${exitCode} (${exitCodeName})`;
 }
 
-function joinCommand(command, args) {
-	let joinedCommand = command;
-
-	if (Array.isArray(args) && args.length > 0) {
-		joinedCommand += ' ' + args.join(' ');
+function joinCommand(command, args = []) {
+	if (!Array.isArray(args)) {
+		return command;
 	}
 
-	return joinedCommand;
+	return [command, ...args].join(' ');
 }
 
 const execa = (command, args, options) => {

@@ -60,18 +60,22 @@ const execa = require('execa');
 		console.log(error);
 		/*
 		{
-			message: 'spawn wrong command ENOENT',
+			message: 'Command failed with exit code 2 (ENOENT): wrong command spawn wrong ENOENT',
 			errno: 'ENOENT',
-			code: 'ENOENT',
-			syscall: 'spawn wrong command',
-			path: 'wrong command',
-			killed: false,
+			code: 2,
+			syscall: 'spawn wrong',
+			path: 'wrong',
+			spawnargs: ['command'],
+			command: 'wrong command',
+			exitCode: 2,
+			exitCodeName: 'ENOENT',
 			stdout: '',
 			stderr: '',
+			all: '',
 			failed: true,
-			signal: null,
-			cmd: 'wrong command',
-			timedOut: false
+			timedOut: false,
+			isCanceled: false,
+			killed: false
 		}
 		*/
 	}
@@ -96,11 +100,20 @@ try {
 	console.log(error);
 	/*
 	{
-		message: 'spawnSync wrong command ENOENT',
+		message: 'Command failed with exit code 2 (ENOENT): wrong command spawnSync wrong ENOENT',
 		errno: 'ENOENT',
-		code: 'ENOENT',
-		syscall: 'spawnSync wrong command',
-		path: 'wrong command',
+		code: 2,
+		syscall: 'spawnSync wrong',
+		path: 'wrong',
+		spawnargs: ['command'],
+		command: 'wrong command',
+		exitCode: 2,
+		exitCodeName: 'ENOENT',
+		stdout: null,
+		stderr: null,
+		failed: true,
+		timedOut: false,
+		isCanceled: false
 	}
 	*/
 }
@@ -147,6 +160,12 @@ Type: `object`
 
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
 
+#### command
+
+Type: `string`
+
+The command that was run.
+
 #### exitCode
 
 Type: `number`
@@ -177,12 +196,6 @@ Type: `string | Buffer`
 
 The output of the process on both stdout and stderr. `undefined` if `execa.sync()` was used.
 
-#### command
-
-Type: `string`
-
-The command that was run.
-
 #### failed
 
 Type: `boolean`
@@ -195,17 +208,17 @@ Type: `boolean`
 
 Whether the process timed out.
 
-#### killed
-
-Type: `boolean`
-
-Whether the process was killed.
-
 #### isCanceled
 
 Type: `boolean`
 
 Whether the process was canceled.
+
+#### killed
+
+Type: `boolean`
+
+Whether the process was killed.
 
 #### signal
 

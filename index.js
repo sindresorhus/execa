@@ -181,23 +181,24 @@ function makeError(result, options) {
 		error = new Error(message);
 	}
 
-	error.code = exitCode || exitCodeName;
+	error.command = joinedCommand;
 	error.exitCode = exitCode;
 	error.exitCodeName = exitCodeName;
+	error.code = exitCode || exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
-	error.failed = true;
-	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
-	// it to `undefined`
-	error.signal = signal || undefined;
-	error.command = joinedCommand;
-	error.timedOut = timedOut;
-	error.isCanceled = isCanceled;
-	error.killed = killed && !timedOut;
 
 	if ('all' in result) {
 		error.all = result.all;
 	}
+
+	error.failed = true;
+	error.timedOut = timedOut;
+	error.isCanceled = isCanceled;
+	error.killed = killed && !timedOut;
+	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
+	// it to `undefined`
+	error.signal = signal || undefined;
 
 	return error;
 }
@@ -372,17 +373,17 @@ const execa = (command, args, options) => {
 			}
 
 			return {
+				command: joinedCommand,
+				exitCode: 0,
+				exitCodeName: 'SUCCESS',
+				code: 0,
 				stdout: result.stdout,
 				stderr: result.stderr,
 				all: result.all,
-				code: 0,
-				exitCode: 0,
-				exitCodeName: 'SUCCESS',
 				failed: false,
-				killed: false,
-				command: joinedCommand,
 				timedOut: false,
-				isCanceled: false
+				isCanceled: false,
+				killed: false
 			};
 		};
 
@@ -444,15 +445,15 @@ module.exports.sync = (command, args, options) => {
 	}
 
 	return {
-		stdout: result.stdout,
-		stderr: result.stderr,
-		code: 0,
+		command: joinedCommand,
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
+		code: 0,
+		stdout: result.stdout,
+		stderr: result.stderr,
 		failed: false,
-		killed: false,
-		command: joinedCommand,
 		timedOut: false,
-		isCanceled: false
+		isCanceled: false,
+		killed: false
 	};
 };

@@ -15,14 +15,14 @@ try {
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
 	expectType<string | number>(unicornsResult.code);
-	expectType<boolean>(unicornsResult.failed);
-	expectType<boolean>(unicornsResult.killed);
-	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string>(unicornsResult.stderr);
 	expectType<string>(unicornsResult.stdout);
 	expectType<string>(unicornsResult.all);
+	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
 	expectType<boolean>(unicornsResult.isCanceled);
+	expectType<boolean>(unicornsResult.killed);
+	expectType<string | undefined>(unicornsResult.signal);
 } catch (error) {
 	const execaError: ExecaError = error;
 
@@ -36,14 +36,14 @@ try {
 	const unicornsResult = execa.sync('unicorns');
 	expectType<string>(unicornsResult.command);
 	expectType<string | number>(unicornsResult.code);
-	expectType<boolean>(unicornsResult.failed);
-	expectType<boolean>(unicornsResult.killed);
-	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string>(unicornsResult.stderr);
 	expectType<string>(unicornsResult.stdout);
-	expectType<boolean>(unicornsResult.timedOut);
 	expectError(unicornsResult.all);
+	expectType<boolean>(unicornsResult.failed);
+	expectType<boolean>(unicornsResult.timedOut);
 	expectError(unicornsResult.isCanceled);
+	expectType<boolean>(unicornsResult.killed);
+	expectType<string | undefined>(unicornsResult.signal);
 } catch (error) {
 	const execaError: ExecaSyncError = error;
 

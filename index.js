@@ -182,9 +182,9 @@ function makeError(result, options) {
 	}
 
 	error.command = joinedCommand;
+	delete error.code;
 	error.exitCode = exitCode;
 	error.exitCodeName = exitCodeName;
-	error.code = exitCode || exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
 
@@ -374,7 +374,6 @@ const execa = (command, args, options) => {
 				command: joinedCommand,
 				exitCode: 0,
 				exitCodeName: 'SUCCESS',
-				code: 0,
 				stdout: result.stdout,
 				stderr: result.stderr,
 				all: result.all,
@@ -446,7 +445,6 @@ module.exports.sync = (command, args, options) => {
 		command: joinedCommand,
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
-		code: 0,
 		stdout: result.stdout,
 		stderr: result.stderr,
 		failed: false,

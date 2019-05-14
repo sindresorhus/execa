@@ -206,7 +206,9 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 
 test('helpful error trying to provide an input stream in sync mode', t => {
 	t.throws(
-		() => execa.sync('stdin', {input: new stream.PassThrough()}),
+		() => {
+			execa.sync('stdin', {input: new stream.PassThrough()});
+		},
 		/The `input` option cannot be a stream in sync mode/
 	);
 });

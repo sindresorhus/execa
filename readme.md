@@ -107,8 +107,6 @@ try {
 		command: 'wrong command',
 		exitCode: 2,
 		exitCodeName: 'ENOENT',
-		stdout: null,
-		stderr: null,
 		failed: true,
 		timedOut: false,
 		isCanceled: false,

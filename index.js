@@ -176,7 +176,7 @@ function makeError(result, options) {
 	const message = `Command ${prefix}: ${joinedCommand}`;
 
 	if (error instanceof Error) {
-		error.message = `${message}${error.message}`;
+		error.message = `${message}\n${error.message}`;
 	} else {
 		error = new Error(message);
 	}

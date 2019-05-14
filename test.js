@@ -393,6 +393,12 @@ test('timeout kills the process if it times out', async t => {
 	t.true(error.timedOut);
 });
 
+test('timeout kills the process if it times out, in sync mode', async t => {
+	const {killed, timedOut} = await t.throws(() => execa.sync('forever', {timeout: 1, message: TIMEOUT_REGEXP}));
+	t.false(killed);
+	t.true(timedOut);
+});
+
 test('timeout does not kill the process if it does not time out', async t => {
 	const error = await execa('delay', ['500'], {timeout: 1e8});
 	t.false(error.timedOut);

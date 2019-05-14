@@ -431,7 +431,7 @@ module.exports.sync = (command, args, options) => {
 		const error = makeError(result, {
 			joinedCommand,
 			parsed,
-			timedOut: false,
+			timedOut: result.error && result.error.errno === 'ETIMEDOUT',
 			isCanceled: false,
 			killed: result.signal !== null
 		});

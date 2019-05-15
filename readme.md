@@ -113,12 +113,12 @@ try {
 	*/
 }
 
-// Killing a spawned process gently, then with more force
-const subprocess = execa('node'); // Lets assume node doesn't react to SIGTERM
+// Kill a  process with SIGTERM and after 2 seconds, kill it  with SIGKILL
+const subprocess = execa('node');
 setTimeout(() => {
-	subprocess.kill('SIGKILL', {
+	subprocess.kill('SIGTERM', {
 		retryAfter: 2000,
-	});	// Attempts a kill with SIGKILL after 2 secs
+	});
 }, 1000);
 ```
 

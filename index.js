@@ -109,9 +109,14 @@ function handleInput(spawned, input) {
 	}
 }
 
-function handleOutput(options, value) {
-	if (value && options.stripFinalNewline) {
-		value = stripFinalNewline(value);
+function handleOutput(options, value, error) {
+	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
+		// When `execa.sync()` errors, we normalize it to '' to mimic `execa()`
+		return error === undefined ? undefined : '';
+	}
+
+	if (options.stripFinalNewline) {
+		return stripFinalNewline(value);
 	}
 
 	return value;
@@ -423,8 +428,8 @@ module.exports.sync = (command, args, options) => {
 	}
 
 	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
-	result.stdout = handleOutput(parsed.options, result.stdout);
-	result.stderr = handleOutput(parsed.options, result.stderr);
+	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
+	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {

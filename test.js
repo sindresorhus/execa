@@ -51,6 +51,40 @@ test('stdout/stderr/all available on errors', async t => {
 	t.is(typeof all, 'string');
 });
 
+test('stdout/stderr/all are undefined if ignored', async t => {
+	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore'});
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.is(all, undefined);
+});
+
+test('stdout/stderr/all are undefined if ignored in sync mode', t => {
+	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore'});
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.is(all, undefined);
+});
+
+const WRONG_COMMAND_STDERR = process.platform === 'win32' ?
+	'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
+	'';
+
+test('stdout/stderr/all on process errors', async t => {
+	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
+	t.is(stdout, '');
+	t.is(stderr, WRONG_COMMAND_STDERR);
+	t.is(all, WRONG_COMMAND_STDERR);
+});
+
+test('stdout/stderr/all on process errors, in sync mode', t => {
+	const {stdout, stderr, all} = t.throws(() => {
+		execa.sync('wrong command');
+	});
+	t.is(stdout, '');
+	t.is(stderr, WRONG_COMMAND_STDERR);
+	t.is(all, undefined);
+});
+
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
 	await execa('fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});

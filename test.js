@@ -56,40 +56,6 @@ test('stdout/stderr/all available on errors', async t => {
 	t.is(typeof all, 'string');
 });
 
-test('stdout/stderr/all are undefined if ignored', async t => {
-	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore'});
-	t.is(stdout, undefined);
-	t.is(stderr, undefined);
-	t.is(all, undefined);
-});
-
-test('stdout/stderr/all are undefined if ignored in sync mode', t => {
-	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore'});
-	t.is(stdout, undefined);
-	t.is(stderr, undefined);
-	t.is(all, undefined);
-});
-
-const WRONG_COMMAND_STDERR = process.platform === 'win32' ?
-	'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
-	'';
-
-test('stdout/stderr/all on process errors', async t => {
-	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
-	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND_STDERR);
-	t.is(all, WRONG_COMMAND_STDERR);
-});
-
-test('stdout/stderr/all on process errors, in sync mode', t => {
-	const {stdout, stderr, all} = t.throws(() => {
-		execa.sync('wrong command');
-	});
-	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND_STDERR);
-	t.is(all, undefined);
-});
-
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
 	await execa('fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
@@ -146,65 +112,58 @@ test('execa() with .kill after it with SIGKILL should kill cleanly', async t => 
 	t.is(signal, 'SIGKILL');
 });
 
-test('execa() with .kill after it with SIGTERM should not kill (no retry)', async t => {
-	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
-		stdio: ['ipc']
-	});
+// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
+if (process.platform !== 'win32') {
+	test('execa() with .kill after it with SIGTERM should not kill (no retry)', async t => {
+		const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+			stdio: ['ipc']
+		});
 
-	await waitForProcessLaunch(subprocess);
+		await waitForProcessLaunch(subprocess);
 
-	subprocess.kill('SIGTERM', {
-		retry: false,
-		retryAfter: 50
-	});
+		subprocess.kill('SIGTERM', {
+			retry: false,
+			retryAfter: 50
+		});
 
-	if (process.platform === 'win32') {
-		// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
-		t.false(isRunning(subprocess.pid));
-	} else {
 		t.true(isRunning(subprocess.pid));
 		subprocess.kill('SIGKILL');
-	}
-});
-
-test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
-	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
-		stdio: ['ipc']
 	});
+}
 
-	await waitForProcessLaunch(subprocess);
+// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
+if (process.platform !== 'win32') {
+	test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
+		const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+			stdio: ['ipc']
+		});
 
-	subprocess.kill();
+		await waitForProcessLaunch(subprocess);
 
-	const {signal} = await t.throwsAsync(subprocess);
+		subprocess.kill('SIGTERM', {
+			retryAfter: 50
+		});
 
-	if (process.platform === 'win32') {
-		// SIGTERM doesn't exist on Windows but it's emulated to send that.
-		t.is(signal, 'SIGTERM');
-	} else {
+		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
-	}
-});
-
-test('execa() with .kill after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
-	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
-		stdio: ['ipc']
 	});
+}
 
-	await waitForProcessLaunch(subprocess);
+// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
+if (process.platform !== 'win32') {
+	test('execa() with .kill after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
+		const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+			stdio: ['ipc']
+		});
 
-	subprocess.kill('SIGTERM', {
-		retryAfter: 50
-	});
+		await waitForProcessLaunch(subprocess);
 
-	const {signal} = await t.throwsAsync(subprocess);
-	if (process.platform === 'win32') {
-		// SIGTERM doesn't exist on Windows but it's emulated to send that.
-		t.is(signal, 'SIGTERM');
-	} else {
+		subprocess.kill();
+
+		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
-	}
-});
+	});
+}
 
 test('stripFinalNewline in sync mode', t => {
 	const {stdout} = execa.sync('noop', ['foo'], {stripFinalNewline: true});

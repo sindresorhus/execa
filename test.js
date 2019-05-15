@@ -99,7 +99,7 @@ test('stripFinalNewline: false', async t => {
 });
 
 test('execa() with .kill after it with SIGKILL should kill cleanly', async t => {
-	const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+	const subprocess = execa('node', ['fixtures/no-killable'], {
 		stdio: ['ipc']
 	});
 
@@ -114,7 +114,7 @@ test('execa() with .kill after it with SIGKILL should kill cleanly', async t => 
 // Windows doesn't support sending signals. No re-emulates them down to SIGKILL
 if (process.platform !== 'win32') {
 	test('execa() with .kill after it with SIGTERM should not kill (no retry)', async t => {
-		const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+		const subprocess = execa('node', ['fixtures/no-killable'], {
 			stdio: ['ipc']
 		});
 
@@ -133,7 +133,7 @@ if (process.platform !== 'win32') {
 // Windows doesn't support sending signals. No re-emulates them down to SIGKILL
 if (process.platform !== 'win32') {
 	test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
-		const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+		const subprocess = execa('node', ['fixtures/no-killable'], {
 			stdio: ['ipc']
 		});
 
@@ -151,7 +151,7 @@ if (process.platform !== 'win32') {
 // Windows doesn't support sending signals. No re-emulates them down to SIGKILL
 if (process.platform !== 'win32') {
 	test('execa() with .kill after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
-		const subprocess = execa('node', ['fixtures/sub-process-no-killable'], {
+		const subprocess = execa('node', ['fixtures/no-killable'], {
 			stdio: ['ipc']
 		});
 

@@ -1,4 +1,3 @@
-import {promisify} from 'util';
 import path from 'path';
 import fs from 'fs';
 import stream from 'stream';
@@ -16,7 +15,7 @@ process.env.FOO = 'foo';
 const TIMEOUT_REGEXP = /timed out after/;
 
 const waitForProcessLaunch = subprocess => {
-	return promisify(subprocess.once.bind(subprocess))('message');
+	return pEvent(subprocess, 'message');
 };
 
 const getExitRegExp = exitMessage => new RegExp(`failed with exit code ${exitMessage}`);

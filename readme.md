@@ -136,9 +136,25 @@ Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.ex
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which:
   - is also a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
   - exposes the following additional methods and properties.
-The spawned process can be canceled with the `.cancel()` method on the promise, which causes the promise to reject an error with a `.isCanceled = true` property, provided the process gets canceled. The process will not be canceled if it has already exited.
 
-The spawned process can be killed with `.kill([signal], [options])` which allows you to retry the process killing at a later time (default: after 5 seconds)
+#### kill([signal], [options])
+
+Same as the original [`child_process.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
+
+##### options.retry
+
+Type: `boolean`<br>
+Default: `true`
+
+If the first signal does not terminate the child after a specified timout, a `SIGKILL` will be sent to the process.
+
+##### options.retryAfter
+
+Type: `string | number`<br>
+Default: `5000`
+
+How long to wait for the child process to terminate before sending `SIGKILL`.
+
 #### cancel()
 
 Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
@@ -416,24 +432,6 @@ Type: `boolean`<br>
 Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
-
-### child_process.kill([signal], [options])
-
-Same as the original [`child_process.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
-
-#### options.retry
-
-Type: `boolean`<br>
-Default: `true`
-
-If the first signal does not terminate the child after a specified timout, a `SIGKILL` will be sent to the process.
-
-#### options.retryAfter
-
-Type: `string | number`<br>
-Default: `5000`
-
-How long to wait for the child process to terminate before sending `SIGKILL`.
 
 ## Tips
 

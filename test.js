@@ -14,10 +14,6 @@ process.env.FOO = 'foo';
 
 const TIMEOUT_REGEXP = /timed out after/;
 
-const waitForProcessLaunch = subprocess => {
-	return pEvent(subprocess, 'message');
-};
-
 const getExitRegExp = exitMessage => new RegExp(`failed with exit code ${exitMessage}`);
 
 test('execa()', async t => {
@@ -88,22 +84,12 @@ test('skip throwing when using reject option in sync mode', t => {
 	t.is(exitCode, 2);
 });
 
-test('stripFinalNewline: true', async t => {
-	const {stdout} = await execa('noop', ['foo']);
-	t.is(stdout, 'foo');
-});
-
-test('stripFinalNewline: false', async t => {
-	const {stdout} = await execa('noop', ['foo'], {stripFinalNewline: false});
-	t.is(stdout, 'foo\n');
-});
-
 test('execa() with .kill after it with SIGKILL should kill cleanly', async t => {
 	const subprocess = execa('node', ['fixtures/no-killable'], {
 		stdio: ['ipc']
 	});
 
-	await waitForProcessLaunch(subprocess);
+	await pEvent(subprocess, 'message');
 
 	subprocess.kill('SIGKILL');
 
@@ -118,7 +104,7 @@ if (process.platform !== 'win32') {
 			stdio: ['ipc']
 		});
 
-		await waitForProcessLaunch(subprocess);
+		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {
 			retry: false,
@@ -134,7 +120,7 @@ if (process.platform !== 'win32') {
 			stdio: ['ipc']
 		});
 
-		await waitForProcessLaunch(subprocess);
+		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {
 			retryAfter: 50
@@ -149,7 +135,7 @@ if (process.platform !== 'win32') {
 			stdio: ['ipc']
 		});
 
-		await waitForProcessLaunch(subprocess);
+		await pEvent(subprocess, 'message');
 
 		subprocess.kill();
 
@@ -157,6 +143,16 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGKILL');
 	});
 }
+
+test('stripFinalNewline: true', async t => {
+	const {stdout} = await execa('noop', ['foo']);
+	t.is(stdout, 'foo');
+});
+
+test('stripFinalNewline: false', async t => {
+	const {stdout} = await execa('noop', ['foo'], {stripFinalNewline: false});
+	t.is(stdout, 'foo\n');
+});
 
 test('stripFinalNewline in sync mode', t => {
 	const {stdout} = execa.sync('noop', ['foo'], {stripFinalNewline: true});

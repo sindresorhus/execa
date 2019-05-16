@@ -128,10 +128,7 @@ if (process.platform !== 'win32') {
 		t.true(isRunning(subprocess.pid));
 		subprocess.kill('SIGKILL');
 	});
-}
 
-// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
-if (process.platform !== 'win32') {
 	test('execa() with .kill after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
 		const subprocess = execa('node', ['fixtures/no-killable'], {
 			stdio: ['ipc']
@@ -146,10 +143,7 @@ if (process.platform !== 'win32') {
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
 	});
-}
 
-// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
-if (process.platform !== 'win32') {
 	test('execa() with .kill after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
 		const subprocess = execa('node', ['fixtures/no-killable'], {
 			stdio: ['ipc']

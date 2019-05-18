@@ -14,6 +14,80 @@ declare namespace execa {
 
 	interface CommonOptions<EncodingType> {
 		/**
+		Kill the spawned process when the parent process exits unless either:
+			- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+			- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+
+		@default true
+		*/
+		readonly cleanup?: boolean;
+
+		/**
+		Prefer locally installed binaries when looking for a binary to execute.
+
+		If you `$ npm install foo`, you can then `execa('foo')`.
+
+		@default true
+		*/
+		readonly preferLocal?: boolean;
+
+		/**
+		Preferred path to find locally installed binaries in (use with `preferLocal`).
+
+		@default process.cwd()
+		*/
+		readonly localDir?: string;
+
+		/**
+		Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
+
+		@default true
+		*/
+		readonly buffer?: boolean;
+
+		/**
+		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+		@default 'pipe'
+		*/
+		readonly stdin?: StdioOption;
+
+		/**
+		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+		@default 'pipe'
+		*/
+		readonly stdout?: StdioOption;
+
+		/**
+		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+		@default 'pipe'
+		*/
+		readonly stderr?: StdioOption;
+
+		/**
+		Setting this to `false` resolves the promise with the error instead of rejecting it.
+
+		@default true
+		*/
+		readonly reject?: boolean;
+
+		/**
+		Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
+
+		@default true
+		*/
+		readonly stripFinalNewline?: boolean;
+
+		/**
+		Set to `false` if you don't want to extend the environment variables when providing the `env` property.
+
+		@default true
+		*/
+		readonly extendEnv?: boolean;
+
+		/**
 		Current working directory of the child process.
 
 		@default process.cwd()
@@ -26,13 +100,6 @@ declare namespace execa {
 		@default process.env
 		*/
 		readonly env?: NodeJS.ProcessEnv;
-
-		/**
-		Set to `false` if you don't want to extend the environment variables when providing the `env` property.
-
-		@default true
-		*/
-		readonly extendEnv?: boolean;
 
 		/**
 		Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
@@ -76,45 +143,6 @@ declare namespace execa {
 		readonly shell?: boolean | string;
 
 		/**
-		Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
-
-		@default true
-		*/
-		readonly stripFinalNewline?: boolean;
-
-		/**
-		Prefer locally installed binaries when looking for a binary to execute.
-
-		If you `$ npm install foo`, you can then `execa('foo')`.
-
-		@default true
-		*/
-		readonly preferLocal?: boolean;
-
-		/**
-		Preferred path to find locally installed binaries in (use with `preferLocal`).
-
-		@default process.cwd()
-		*/
-		readonly localDir?: string;
-
-		/**
-		Setting this to `false` resolves the promise with the error instead of rejecting it.
-
-		@default true
-		*/
-		readonly reject?: boolean;
-
-		/**
-		Kill the spawned process when the parent process exits unless either:
-			- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-			- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
-
-		@default true
-		*/
-		readonly cleanup?: boolean;
-
-		/**
 		Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
 
 		@default 'utf8'
@@ -129,13 +157,6 @@ declare namespace execa {
 		readonly timeout?: number;
 
 		/**
-		Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
-
-		@default true
-		*/
-		readonly buffer?: boolean;
-
-		/**
 		Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 10MB.
 
 		@default 10000000
@@ -148,27 +169,6 @@ declare namespace execa {
 		@default 'SIGTERM'
 		*/
 		readonly killSignal?: string | number;
-
-		/**
-		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
-
-		@default 'pipe'
-		*/
-		readonly stdin?: StdioOption;
-
-		/**
-		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
-
-		@default 'pipe'
-		*/
-		readonly stdout?: StdioOption;
-
-		/**
-		Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
-
-		@default 'pipe'
-		*/
-		readonly stderr?: StdioOption;
 
 		/**
 		If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.

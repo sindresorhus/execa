@@ -69,31 +69,13 @@ try {
 	expectType<string | undefined>(execaError.signal);
 }
 
-execa('unicorns', {cwd: '.'});
-execa('unicorns', {env: {PATH: ''}});
-execa('unicorns', {extendEnv: false});
-execa('unicorns', {argv0: ''});
-execa('unicorns', {stdio: 'pipe'});
-execa('unicorns', {stdio: 'ignore'});
-execa('unicorns', {stdio: 'inherit'});
-execa('unicorns', {
-	stdio: ['pipe', 'ipc', 'ignore', 'inherit', process.stdin, 1, undefined]
-});
-execa('unicorns', {detached: true});
-execa('unicorns', {uid: 0});
-execa('unicorns', {gid: 0});
-execa('unicorns', {shell: true});
-execa('unicorns', {shell: '/bin/sh'});
-execa('unicorns', {stripFinalNewline: false});
+execa('unicorns', {cleanup: false});
 execa('unicorns', {preferLocal: false});
 execa('unicorns', {localDir: '.'});
-execa('unicorns', {reject: false});
-execa('unicorns', {cleanup: false});
-execa('unicorns', {timeout: 1000});
 execa('unicorns', {buffer: false});
-execa('unicorns', {maxBuffer: 1000});
-execa('unicorns', {killSignal: 'SIGTERM'});
-execa('unicorns', {killSignal: 9});
+execa('unicorns', {input: ''});
+execa('unicorns', {input: Buffer.from('')});
+execa('unicorns', {input: process.stdin});
 execa('unicorns', {stdin: 'pipe'});
 execa('unicorns', {stdin: 'ipc'});
 execa('unicorns', {stdin: 'ignore'});
@@ -115,10 +97,28 @@ execa('unicorns', {stderr: 'inherit'});
 execa('unicorns', {stderr: process.stderr});
 execa('unicorns', {stderr: 1});
 execa('unicorns', {stderr: undefined});
+execa('unicorns', {reject: false});
+execa('unicorns', {stripFinalNewline: false});
+execa('unicorns', {extendEnv: false});
+execa('unicorns', {cwd: '.'});
+execa('unicorns', {env: {PATH: ''}});
+execa('unicorns', {argv0: ''});
+execa('unicorns', {stdio: 'pipe'});
+execa('unicorns', {stdio: 'ignore'});
+execa('unicorns', {stdio: 'inherit'});
+execa('unicorns', {
+	stdio: ['pipe', 'ipc', 'ignore', 'inherit', process.stdin, 1, undefined]
+});
+execa('unicorns', {detached: true});
+execa('unicorns', {uid: 0});
+execa('unicorns', {gid: 0});
+execa('unicorns', {shell: true});
+execa('unicorns', {shell: '/bin/sh'});
+execa('unicorns', {timeout: 1000});
+execa('unicorns', {maxBuffer: 1000});
+execa('unicorns', {killSignal: 'SIGTERM'});
+execa('unicorns', {killSignal: 9});
 execa('unicorns', {windowsVerbatimArguments: true});
-execa('unicorns', {input: ''});
-execa('unicorns', {input: Buffer.from('')});
-execa('unicorns', {input: process.stdin});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa('unicorns'));

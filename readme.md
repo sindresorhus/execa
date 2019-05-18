@@ -113,7 +113,7 @@ try {
 	*/
 }
 
-// Kill a process with SIGTERM and after 2 seconds, kill it with SIGKILL
+// Kill a process with SIGTERM, and after 2 seconds, kill it with SIGKILL
 const subprocess = execa('node');
 setTimeout(() => {
 	subprocess.kill('SIGTERM', {

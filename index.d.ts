@@ -283,11 +283,11 @@ declare namespace execa {
 		/**
 		If the first signal does not terminate the child after a specified timeout, a `SIGKILL` signal will be sent to the process.
 		*/
-		retry?: boolean;
+		forceKill?: boolean;
 		/**
 		Milliseconds to wait for the child process to terminate before sending a `SIGKILL` signal.
 		*/
-		retryAfter?: number;
+		forceKillAfter?: number;
 	}
 
 	interface ExecaChildPromise<StdoutErrorType> {

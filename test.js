@@ -107,8 +107,8 @@ if (process.platform !== 'win32') {
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {
-			retry: false,
-			retryAfter: 50
+			forceKill: false,
+			forceKillAfter: 50
 		});
 
 		t.true(isRunning(subprocess.pid));
@@ -123,7 +123,7 @@ if (process.platform !== 'win32') {
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {
-			retryAfter: 50
+			forceKillAfter: 50
 		});
 
 		const {signal} = await t.throwsAsync(subprocess);

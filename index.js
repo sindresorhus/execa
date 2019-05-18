@@ -227,17 +227,17 @@ const execa = (file, args, options) => {
 		if (signal === undefined ||
 			(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM') ||
 			(typeof signal === 'number' && signal === os.constants.signals.SIGTERM)) {
-			const retry = !(options !== undefined && options.retry === false);
+			const forceKill = !(options !== undefined && options.forceKill === false);
 
-			if (retry && killResult) {
-				const retryAfter = ['number'].includes(typeof options.retryAfter) ?
-					Number(options.retryAfter) :
+			if (forceKill && killResult) {
+				const forceKillAfter = ['number'].includes(typeof options.forceKillAfter) ?
+					Number(options.forceKillAfter) :
 					5000;
 				setTimeout(() => {
 					try {
 						originalKill('SIGKILL');
 					} catch (_) {}
-				}, retryAfter).unref();
+				}, forceKillAfter).unref();
 			}
 		}
 

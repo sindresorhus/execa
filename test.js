@@ -97,7 +97,8 @@ test('execa() with .kill() after it with SIGKILL should kill cleanly', async t =
 	t.is(signal, 'SIGKILL');
 });
 
-// Windows doesn't support sending signals. No re-emulates them down to SIGKILL
+// `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
+// Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
 	test('execa() with .kill() after it with SIGTERM should not kill (no retry)', async t => {
 		const subprocess = execa('node', ['fixtures/no-killable'], {

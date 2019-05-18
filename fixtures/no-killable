@@ -2,7 +2,7 @@
 'use strict';
 
 process.on('SIGTERM', () => {
-  console.log('got sigterm but we ignore it');
+  console.log('Received SIGTERM, but we ignore it');
 });
 
 process.send('');

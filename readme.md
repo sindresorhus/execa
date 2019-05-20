@@ -426,7 +426,7 @@ subprocess.stdout.pipe(process.stdout);
 ```
 
 
-## See also
+## Related
 
 - [`gulp-execa`](https://github.com/ehmicky/gulp-execa): Gulp plugin for `execa`
 

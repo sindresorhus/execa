@@ -309,9 +309,9 @@ Default: `true`
 
 Set to `false` if you don't want to extend the environment variables when providing the `env` property.
 
-### options from child_process#spawn and child_process#exec
+---
 
-The same options as both [`child_process#spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) and [`child_process#exec()`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback) can also be used.
+Execa also accepts the below options which are passed directly to [`child_process#spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)/[`child_process#exec()`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback)
 
 #### cwd
 

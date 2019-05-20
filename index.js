@@ -332,7 +332,8 @@ const execa = (command, args, options) => {
 			spawned.stderr.destroy();
 		}
 
-		if (spawned.all) {
+		// TODO: Remove `&& spawned.all.destroy` once https://github.com/grncdr/merge-stream/issues/37 is fixed
+		if (spawned.all && spawned.all.destroy) {
 			spawned.all.destroy();
 		}
 	}

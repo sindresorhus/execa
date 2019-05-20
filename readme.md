@@ -229,6 +229,90 @@ The signal that was used to terminate the process.
 
 Type: `object`
 
+#### cleanup
+
+Type: `boolean`<br>
+Default: `true`
+
+Kill the spawned process when the parent process exits unless either:
+	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+
+#### preferLocal
+
+Type: `boolean`<br>
+Default: `true`
+
+Prefer locally installed binaries when looking for a binary to execute.<br>
+If you `$ npm install foo`, you can then `execa('foo')`.
+
+#### localDir
+
+Type: `string`<br>
+Default: `process.cwd()`
+
+Preferred path to find locally installed binaries in (use with `preferLocal`).
+
+#### buffer
+
+Type: `boolean`<br>
+Default: `true`
+
+Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
+
+#### input
+
+Type: `string | Buffer | stream.Readable`
+
+Write some input to the `stdin` of your binary.<br>
+Streams are not allowed when using the synchronous methods.
+
+#### stdin
+
+Type: `string | number | Stream | undefined`<br>
+Default: `pipe`
+
+Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### stdout
+
+Type: `string | number | Stream | undefined`<br>
+Default: `pipe`
+
+Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### stderr
+
+Type: `string | number | Stream | undefined`<br>
+Default: `pipe`
+
+Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### reject
+
+Type: `boolean`<br>
+Default: `true`
+
+Setting this to `false` resolves the promise with the error instead of rejecting it.
+
+#### stripFinalNewline
+
+Type: `boolean`<br>
+Default: `true`
+
+Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
+
+#### extendEnv
+
+Type: `boolean`<br>
+Default: `true`
+
+Set to `false` if you don't want to extend the environment variables when providing the `env` property.
+
+---
+
+Execa also accepts the below options which are the same as the options for [`child_process#spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)/[`child_process#exec()`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback)
+
 #### cwd
 
 Type: `string`<br>
@@ -241,14 +325,7 @@ Current working directory of the child process.
 Type: `object`<br>
 Default: `process.env`
 
-Environment key-value pairs. Extends automatically from `process.env`. Set `extendEnv` to `false` if you don't want this.
-
-#### extendEnv
-
-Type: `boolean`<br>
-Default: `true`
-
-Set to `false` if you don't want to extend the environment variables when providing the `env` property.
+Environment key-value pairs. Extends automatically from `process.env`. Set [`extendEnv`](#extendenv) to `false` if you don't want this.
 
 #### argv0
 
@@ -293,51 +370,6 @@ We recommend against using this option since it is:
 - slower, because of the additional shell interpretation.
 - unsafe, potentially allowing command injection.
 
-#### stripFinalNewline
-
-Type: `boolean`<br>
-Default: `true`
-
-Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
-
-#### preferLocal
-
-Type: `boolean`<br>
-Default: `true`
-
-Prefer locally installed binaries when looking for a binary to execute.<br>
-If you `$ npm install foo`, you can then `execa('foo')`.
-
-#### localDir
-
-Type: `string`<br>
-Default: `process.cwd()`
-
-Preferred path to find locally installed binaries in (use with `preferLocal`).
-
-#### input
-
-Type: `string | Buffer | stream.Readable`
-
-Write some input to the `stdin` of your binary.<br>
-Streams are not allowed when using the synchronous methods.
-
-#### reject
-
-Type: `boolean`<br>
-Default: `true`
-
-Setting this to `false` resolves the promise with the error instead of rejecting it.
-
-#### cleanup
-
-Type: `boolean`<br>
-Default: `true`
-
-Kill the spawned process when the parent process exits unless either:
-	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
-
 #### encoding
 
 Type: `string | null`<br>
@@ -352,13 +384,6 @@ Default: `0`
 
 If timeout is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than timeout milliseconds.
 
-#### buffer
-
-Type: `boolean`<br>
-Default: `true`
-
-Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
-
 #### maxBuffer
 
 Type: `number`<br>
@@ -372,27 +397,6 @@ Type: `string | number`<br>
 Default: `SIGTERM`
 
 Signal value to be used when the spawned process will be killed.
-
-#### stdin
-
-Type: `string | number | Stream | undefined`<br>
-Default: `pipe`
-
-Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
-
-#### stdout
-
-Type: `string | number | Stream | undefined`<br>
-Default: `pipe`
-
-Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
-
-#### stderr
-
-Type: `string | number | Stream | undefined`<br>
-Default: `pipe`
-
-Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 #### windowsVerbatimArguments
 

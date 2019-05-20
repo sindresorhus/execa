@@ -426,6 +426,11 @@ subprocess.stdout.pipe(process.stdout);
 ```
 
 
+## Related
+
+- [gulp-execa](https://github.com/ehmicky/gulp-execa) - Gulp plugin for `execa`
+
+
 ## Maintainers
 
 - [Sindre Sorhus](https://github.com/sindresorhus)

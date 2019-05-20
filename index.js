@@ -97,7 +97,8 @@ function handleArgs(command, args, options = {}) {
 }
 
 function handleInput(spawned, input) {
-	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852 on Node.js 10 and 12
+	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852
+	// TODO: remove `|| spawned.stdin === undefined` once we drop support for Node <=12.2.0
 	if (input === undefined || spawned.stdin === undefined) {
 		return;
 	}

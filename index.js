@@ -32,26 +32,20 @@ function handleEscaping(tokens, token, index) {
 	return [...tokens, token];
 }
 
-function parseCommand(command, args = []) {
-	if (args.length !== 0) {
-		throw new Error('Arguments cannot be inside `command` when also specified as an array of strings');
-	}
-
-	const [file, ...extraArgs] = command
+function parseCommand(command) {
+	return command
 		.trim()
 		.split(SPACES_REGEXP)
 		.reduce(handleEscaping, []);
-	return [file, extraArgs];
 }
 
 function handleArgs(command, args, options = {}) {
-	if (args && !Array.isArray(args)) {
+	if (args && !Array.isArray(args) && typeof args === 'object') {
 		options = args;
-		args = [];
 	}
 
-	if (!options.shell && command.includes(' ')) {
-		[command, args] = parseCommand(command, args);
+	if (!options.shell && command.includes(' ') && !Array.isArray(args)) {
+		[command, ...args] = parseCommand(command);
 	}
 
 	const parsed = crossSpawn._parse(command, args, options);

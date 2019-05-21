@@ -86,11 +86,6 @@ function handleArgs(command, args, options = {}) {
 		});
 	}
 
-	// TODO: Remove in the next major release
-	if (options.stripEof === false) {
-		options.stripFinalNewline = false;
-	}
-
 	options.stdio = stdio(options);
 
 	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
@@ -102,7 +97,8 @@ function handleArgs(command, args, options = {}) {
 }
 
 function handleInput(spawned, input) {
-	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852 on Node.js 10 and 12
+	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852
+	// TODO: Remove `|| spawned.stdin === undefined` once we drop support for Node.js <=12.2.0
 	if (input === undefined || spawned.stdin === undefined) {
 		return;
 	}
@@ -114,9 +110,14 @@ function handleInput(spawned, input) {
 	}
 }
 
-function handleOutput(options, value) {
-	if (value && options.stripFinalNewline) {
-		value = stripFinalNewline(value);
+function handleOutput(options, value, error) {
+	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
+		// When `execa.sync()` errors, we normalize it to '' to mimic `execa()`
+		return error === undefined ? undefined : '';
+	}
+
+	if (options.stripFinalNewline) {
+		return stripFinalNewline(value);
 	}
 
 	return value;
@@ -171,36 +172,39 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 }
 
 function makeError(result, options) {
-	const {stdout, stderr, code, signal} = result;
+	const {stdout, stderr, signal} = result;
 	let {error} = result;
-	const {joinedCommand, timedOut, isCanceled, parsed: {options: {timeout}}} = options;
+	const {code, joinedCommand, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
-	if (!(error instanceof Error)) {
-		const message = [joinedCommand, stderr, stdout].filter(Boolean).join('\n');
+	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
+	const message = `Command ${prefix}: ${joinedCommand}`;
+
+	if (error instanceof Error) {
+		error.message = `${message}\n${error.message}`;
+	} else {
 		error = new Error(message);
 	}
 
-	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
-	error.message = `Command ${prefix}: ${error.message}`;
-
-	error.code = exitCode || exitCodeName;
+	error.command = joinedCommand;
+	delete error.code;
 	error.exitCode = exitCode;
 	error.exitCodeName = exitCodeName;
 	error.stdout = stdout;
 	error.stderr = stderr;
-	error.failed = true;
-	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
-	// it to `undefined`
-	error.signal = signal || undefined;
-	error.command = joinedCommand;
-	error.timedOut = Boolean(timedOut);
-	error.isCanceled = isCanceled;
 
 	if ('all' in result) {
 		error.all = result.all;
 	}
+
+	error.failed = true;
+	error.timedOut = timedOut;
+	error.isCanceled = isCanceled;
+	error.killed = killed && !timedOut;
+	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
+	// it to `undefined`
+	error.signal = signal || undefined;
 
 	return error;
 }
@@ -233,14 +237,12 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 	return `failed with exit code ${exitCode} (${exitCodeName})`;
 }
 
-function joinCommand(command, args) {
-	let joinedCommand = command;
-
-	if (Array.isArray(args) && args.length > 0) {
-		joinedCommand += ' ' + args.join(' ');
+function joinCommand(command, args = []) {
+	if (!Array.isArray(args)) {
+		return command;
 	}
 
-	return joinedCommand;
+	return [command, ...args].join(' ');
 }
 
 const execa = (command, args, options) => {
@@ -353,23 +355,20 @@ const execa = (command, args, options) => {
 		const finalize = async () => {
 			const results = await processComplete;
 
-			const result = results[0];
-			result.stdout = results[1];
-			result.stderr = results[2];
-			result.all = results[3];
+			const [result, stdout, stderr, all] = results;
+			result.stdout = handleOutput(parsed.options, stdout);
+			result.stderr = handleOutput(parsed.options, stderr);
+			result.all = handleOutput(parsed.options, all);
 
-			if (result.error || result.code !== 0 || result.signal !== null || isCanceled) {
+			if (result.error || result.code !== 0 || result.signal !== null) {
 				const error = makeError(result, {
+					code: result.code,
 					joinedCommand,
 					parsed,
 					timedOut,
-					isCanceled
+					isCanceled,
+					killed: spawned.killed
 				});
-
-				// TODO: missing some timeout logic for killed
-				// https://github.com/nodejs/node/blob/master/lib/child_process.js#L203
-				// error.killed = spawned.killed || killed;
-				error.killed = error.killed || spawned.killed;
 
 				if (!parsed.options.reject) {
 					return error;
@@ -379,17 +378,16 @@ const execa = (command, args, options) => {
 			}
 
 			return {
-				stdout: handleOutput(parsed.options, result.stdout),
-				stderr: handleOutput(parsed.options, result.stderr),
-				all: handleOutput(parsed.options, result.all),
-				code: 0,
+				command: joinedCommand,
 				exitCode: 0,
 				exitCodeName: 'SUCCESS',
+				stdout: result.stdout,
+				stderr: result.stderr,
+				all: result.all,
 				failed: false,
-				killed: false,
-				command: joinedCommand,
 				timedOut: false,
-				isCanceled: false
+				isCanceled: false,
+				killed: false
 			};
 		};
 
@@ -407,10 +405,6 @@ const execa = (command, args, options) => {
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
 	spawned.cancel = () => {
-		if (spawned.killed) {
-			return;
-		}
-
 		if (spawned.kill()) {
 			isCanceled = true;
 		}
@@ -426,18 +420,6 @@ const execa = (command, args, options) => {
 
 module.exports = execa;
 
-// TODO: set `stderr: 'ignore'` when that option is implemented
-module.exports.stdout = async (...args) => {
-	const {stdout} = await execa(...args);
-	return stdout;
-};
-
-// TODO: set `stdout: 'ignore'` when that option is implemented
-module.exports.stderr = async (...args) => {
-	const {stderr} = await execa(...args);
-	return stderr;
-};
-
 module.exports.sync = (command, args, options) => {
 	const parsed = handleArgs(command, args, options);
 	const joinedCommand = joinCommand(command, args);
@@ -447,12 +429,17 @@ module.exports.sync = (command, args, options) => {
 	}
 
 	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
-	result.code = result.status;
+	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
+	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
+			code: result.status,
 			joinedCommand,
-			parsed
+			parsed,
+			timedOut: result.error && result.error.errno === 'ETIMEDOUT',
+			isCanceled: false,
+			killed: result.signal !== null
 		});
 
 		if (!parsed.options.reject) {
@@ -463,14 +450,15 @@ module.exports.sync = (command, args, options) => {
 	}
 
 	return {
-		stdout: handleOutput(parsed.options, result.stdout),
-		stderr: handleOutput(parsed.options, result.stderr),
-		code: 0,
+		command: joinedCommand,
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
+		stdout: result.stdout,
+		stderr: result.stderr,
 		failed: false,
-		command: joinedCommand,
-		timedOut: false
+		timedOut: false,
+		isCanceled: false,
+		killed: false
 	};
 };
 

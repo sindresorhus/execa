@@ -210,6 +210,8 @@ declare namespace execa {
 
 		/**
 		If `true`, set all stdio channel to `'pipe'`
+
+		@default false
 		 */
 		readonly silent?: boolean;
 	}

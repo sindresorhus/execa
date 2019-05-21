@@ -707,13 +707,9 @@ test('calling cancel method on a process which has been killed does not make err
 	t.false(isCanceled);
 });
 
-test.cb('fork()', t => {
-	const fork = execa.fork('fixtures/noop');
-
-	fork.on('close', code => {
-		t.is(code, 0);
-		t.end();
-	});
+test('fork()', async t => {
+	const {exitCode} = await execa.fork('fixtures/noop');
+	t.is(exitCode, 0);
 });
 
 test('fork pipe stdout', async t => {
@@ -725,21 +721,22 @@ test('fork pipe stdout', async t => {
 });
 
 test('fork correctly use execPath', async t => {
-	const result = await execa.fork(process.platform === 'win32' ? '/c hello.cmd' : 'hello.sh', [], {
+	const {stdout} = await execa.fork(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', [], {
 		stdout: 'pipe',
-		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash'
+		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
+		execArgv: ['/c']
 	});
 
-	t.is(result.stdout, 'Hello World');
+	t.is(stdout, 'Hello World');
 });
 
 test('fork pass on execArgv', async t => {
-	const result = await execa.fork('fixtures/noop', [], {
+	const {stdout} = await execa.fork('fixtures/noop', [], {
 		stdout: 'pipe',
 		execArgv: ['foo']
 	});
 
-	t.is(result.stdout, 'foo');
+	t.is(stdout, 'foo');
 });
 
 test.cb('forked script have a communication channel', t => {

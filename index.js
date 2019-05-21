@@ -462,15 +462,16 @@ module.exports.sync = (command, args, options) => {
 	};
 };
 
-module.exports.fork = (filePath, args = [], options = {}) => {
+module.exports.fork = (filePath, args, options) => {
 	const stdioOption = stdio.fork(options);
+	options = options || {};
 
 	return execa(
 		options.execPath || process.execPath,
 		[
-			filePath,
 			...(options.execArgv || process.execArgv),
-			...args
+			filePath,
+			...(Array.isArray(args) ? args : [])
 		],
 		{
 			...options,

@@ -225,10 +225,8 @@ const execa = (file, args, options) => {
 	spawned.kill = (signal = 'SIGTERM', options = {}) => {
 		const killResult = originalKill(signal);
 		if ((typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM') ||
-			(signal === os.constants.signals.SIGTERM)) {
-			const forceKill = !(options.forceKill === false);
-
-			if (forceKill && killResult) {
+			signal === os.constants.signals.SIGTERM) {
+			if (options.forceKill !== false && killResult) {
 				const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
 					options.forceKillAfter :
 					5000;

@@ -725,7 +725,7 @@ test('fork pipe stdout', async t => {
 });
 
 test('fork correctly use execPath', async t => {
-	const result = await execa.fork(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', [], {
+	const result = await execa.fork(process.platform === 'win32' ? '/c hello.cmd' : 'hello.sh', [], {
 		stdout: 'pipe',
 		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash'
 	});

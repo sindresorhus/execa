@@ -154,8 +154,7 @@ Same as `execa('node', [file, ...arguments], options)` except (like [`child_proc
   - the `execPath`, `execArgv` and `silent` options can be used
   - the [`shell`](#shell) option cannot be used 
   - the [`stdio`](#stdio)-related options defaults to `inherit` instead of `pipe`
-
-Returns the same object as [execa](#execafile-arguments-options).
+  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
 ### execa.sync(file, [arguments], [options])
 ### execa.sync(command, [options])

@@ -195,21 +195,21 @@ declare namespace execa {
 	interface ForkOptions<EncodingType = string> extends CommonOptions<EncodingType> {
 
 		/**
-	 	Define the sub-process executable binary
+		 Executable used to create the child process.
 
 		@default process.execPath
 		 */
 		readonly execPath?: string;
 
 		/**
-		Define the sub-process arguments
+		 List of string arguments passed to the executable.
 
 		@default process.execArgv
 		 */
 		readonly execArgv?: string[];
 
 		/**
-		If `true`, set all stdio channel to `'pipe'`
+		 If `true`, set all stdio channels to `'pipe'`.
 
 		@default false
 		 */
@@ -393,7 +393,7 @@ declare const execa: {
 	): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**
-	 Run a file through a fork of the current process.
+	 Run a file through a forked process.
 
 	 @param file - The program/script to execute.
 	 @param arguments - Arguments to pass to `file` on execution.

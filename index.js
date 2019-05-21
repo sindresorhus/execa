@@ -222,16 +222,15 @@ const execa = (file, args, options) => {
 	}
 
 	const originalKill = spawned.kill.bind(spawned);
-	spawned.kill = (signal, options = {}) => {
+	spawned.kill = (signal = 'SIGTERM', options = {}) => {
 		const killResult = originalKill(signal);
-		if (signal === undefined ||
-			(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM') ||
-			(typeof signal === 'number' && signal === os.constants.signals.SIGTERM)) {
-			const forceKill = !(options !== undefined && options.forceKill === false);
+		if ((typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM') ||
+			(signal === os.constants.signals.SIGTERM)) {
+			const forceKill = !(options.forceKill === false);
 
 			if (forceKill && killResult) {
-				const forceKillAfter = ['number'].includes(typeof options.forceKillAfter) ?
-					Number(options.forceKillAfter) :
+				const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
+					options.forceKillAfter :
 					5000;
 				setTimeout(() => {
 					try {

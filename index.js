@@ -23,13 +23,13 @@ function handleEscaping(tokens, token, index) {
 		return [token];
 	}
 
-	const previousToken = tokens[index - 1];
+	const lastToken = tokens[tokens.length - 1];
 
-	if (!previousToken.endsWith('\\')) {
+	if (!lastToken.endsWith('\\')) {
 		return [...tokens, token];
 	}
 
-	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
+	return [...tokens.slice(0, -1), `${lastToken.slice(0, -1)} ${token}`];
 }
 
 function parseCommand(command, args = []) {

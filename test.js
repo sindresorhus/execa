@@ -123,6 +123,11 @@ test('escape other whitespaces in string arguments', async t => {
 	t.is(stdout, 'foo\tbar');
 });
 
+test('allow escaping spaces in commands', async t => {
+	const {stdout} = await execa('./fixtures/command\\ with\\ space foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
 test('allow escaping spaces in string arguments', async t => {
 	const {stdout} = await execa('node fixtures/echo foo\\ bar');
 	t.is(stdout, 'foo bar');

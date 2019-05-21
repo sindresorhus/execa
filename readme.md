@@ -121,16 +121,14 @@ try {
 
 ## API
 
-### execa(file, [arguments], [options])
+### execa(file, arguments, [options])
 ### execa(command, [options])
 
 Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
 Arguments can be specified in either:
-  - `arguments`: `execa('echo', ['unicorns'])`.
-  - `command`: `execa('echo unicorns')`.
-
-Arguments should not be escaped nor quoted, except inside `command` where spaces can be escaped with a backslash.
+  - `arguments`: `execa('echo', ['unicorns'])`. No escaping/quoting is needed.
+  - `command`: `execa('echo unicorns')`. No escaping/quoting is needed, except significant spaces which must be escaped with a backlash.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 

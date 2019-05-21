@@ -724,16 +724,16 @@ test('fork correctly use execPath', async t => {
 	const {stdout} = await execa.fork(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', [], {
 		stdout: 'pipe',
 		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
-		execArgv: ['/c']
+		execArgv: process.platform === 'win32' ? ['/c'] : []
 	});
 
 	t.is(stdout, 'Hello World');
 });
 
 test('fork pass on execArgv', async t => {
-	const {stdout} = await execa.fork('fixtures/noop', [], {
+	const {stdout} = await execa.fork('console.log("foo")', [], {
 		stdout: 'pipe',
-		execArgv: ['foo']
+		execArgv: ['-e']
 	});
 
 	t.is(stdout, 'foo');

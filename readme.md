@@ -128,7 +128,7 @@ Execute a file. Think of this as a mix of [`child_process.execFile()`](https://n
 
 Arguments can be specified in either:
   - `arguments`: `execa('echo', ['unicorns'])`. No escaping/quoting is needed.
-  - `command`: `execa('echo unicorns')`. No escaping/quoting is needed, except significant spaces which must be escaped with a backlash.
+  - `command`: `execa('echo unicorns')`. No escaping/quoting is needed, except significant spaces which must be escaped with a backslash.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 

@@ -10,38 +10,6 @@ import {
 
 try {
 	const execaPromise = execa('unicorns');
-	execaPromise.kill();
-
-	const unicornsResult = await execaPromise;
-	expectType<string>(unicornsResult.command);
-	expectType<number>(unicornsResult.exitCode);
-	expectType<string>(unicornsResult.exitCodeName);
-	expectType<string>(unicornsResult.stdout);
-	expectType<string>(unicornsResult.stderr);
-	expectType<string>(unicornsResult.all);
-	expectType<boolean>(unicornsResult.failed);
-	expectType<boolean>(unicornsResult.timedOut);
-	expectType<boolean>(unicornsResult.isCanceled);
-	expectType<boolean>(unicornsResult.killed);
-	expectType<string | undefined>(unicornsResult.signal);
-} catch (error) {
-	const execaError: ExecaError = error;
-
-	expectType<string>(execaError.message);
-	expectType<number>(execaError.exitCode);
-	expectType<string>(execaError.exitCodeName);
-	expectType<string>(execaError.stdout);
-	expectType<string>(execaError.stderr);
-	expectType<string>(execaError.all);
-	expectType<boolean>(execaError.failed);
-	expectType<boolean>(execaError.timedOut);
-	expectType<boolean>(execaError.isCanceled);
-	expectType<boolean>(execaError.killed);
-	expectType<string | undefined>(execaError.signal);
-}
-
-try {
-	const execaPromise = execa('unicorns');
 	execaPromise.cancel();
 
 	const unicornsResult = await execaPromise;
@@ -151,6 +119,14 @@ execa('unicorns', {maxBuffer: 1000});
 execa('unicorns', {killSignal: 'SIGTERM'});
 execa('unicorns', {killSignal: 9});
 execa('unicorns', {windowsVerbatimArguments: true});
+execa('unicorns').kill();
+execa('unicorns').kill('SIGKILL');
+execa('unicorns').kill(undefined);
+execa('unicorns').kill('SIGKILL', {});
+execa('unicorns').kill('SIGKILL', {forceKill: true});
+execa('unicorns').kill('SIGKILL', {forceKill: false});
+execa('unicorns').kill('SIGKILL', {forceKillAfter: 42});
+execa('unicorns').kill('SIGKILL', {forceKillAfter: undefined});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa('unicorns'));

@@ -57,7 +57,7 @@ function handleArgs(file, args, options = {}) {
 		args.unshift('/q');
 	}
 
-	return {command: file, args, options, parsed};
+	return {file, args, options, parsed};
 }
 
 function handleInput(spawned, input) {
@@ -216,7 +216,7 @@ const execa = (file, args, options) => {
 
 	let spawned;
 	try {
-		spawned = childProcess.spawn(parsed.command, parsed.args, parsed.options);
+		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		return Promise.reject(error);
 	}
@@ -392,7 +392,7 @@ module.exports.sync = (file, args, options) => {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
+	const result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
 	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
 	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 

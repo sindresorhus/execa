@@ -97,50 +97,6 @@ test('pass `stderr` to a file descriptor', async t => {
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
-test('allow string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo bar');
-	t.is(stdout, 'foo\nbar');
-});
-
-test('allow string arguments in synchronous mode', t => {
-	const {stdout} = execa.sync('node fixtures/echo foo bar');
-	t.is(stdout, 'foo\nbar');
-});
-
-test('allow commands with spaces and array arguments', async t => {
-	const {stdout} = await execa('./fixtures/command with space', ['foo', 'bar']);
-	t.is(stdout, 'foo\nbar');
-});
-
-test('forbid commands with spaces and no array arguments', async t => {
-	await t.throwsAsync(execa('./fixtures/command with space'));
-});
-
-test('ignore consecutive spaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo    bar');
-	t.is(stdout, 'foo\nbar');
-});
-
-test('escape other whitespaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo\tbar');
-	t.is(stdout, 'foo\tbar');
-});
-
-test('allow escaping spaces in commands', async t => {
-	const {stdout} = await execa('./fixtures/command\\ with\\ space foo bar');
-	t.is(stdout, 'foo\nbar');
-});
-
-test('allow escaping spaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo\\ bar');
-	t.is(stdout, 'foo bar');
-});
-
-test('trim string arguments', async t => {
-	const {stdout} = await execa('  node fixtures/echo foo bar  ');
-	t.is(stdout, 'foo\nbar');
-});
-
 test('execa.sync()', t => {
 	const {stdout} = execa.sync('noop', ['foo']);
 	t.is(stdout, 'foo');
@@ -735,7 +691,12 @@ test('execa.command() ignores consecutive spaces', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.command() allows escaping spaces', async t => {
+test('execa.command() allows escaping spaces in commands', async t => {
+	const {stdout} = await execa.command('./fixtures/command\\ with\\ space foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command() allows escaping spaces in arguments', async t => {
 	const {stdout} = await execa.command('node fixtures/echo foo\\ bar');
 	t.is(stdout, 'foo bar');
 });

@@ -153,6 +153,7 @@ expectType<ExecaReturnValue<string>>(await execa.command('unicorns', {encoding: 
 expectType<ExecaReturnValue<Buffer>>(await execa.command('unicorns', {encoding: null}));
 expectType<ExecaReturnValue<string>>(await execa.command('unicorns foo', {encoding: 'utf8'}));
 expectType<ExecaReturnValue<Buffer>>(await execa.command('unicorns foo', {encoding: null}));
+
 expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns'));
 expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns', {encoding: 'utf8'}));
 expectType<ExecaSyncReturnValue<Buffer>>(execa.commandSync('unicorns', {encoding: null}));

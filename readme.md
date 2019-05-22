@@ -151,7 +151,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [`execa()`](https://github.com/sindresorhus/execa#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
 
-If the file or an argument contains spaces, they must be escaped with a backslash. Otherwise, no escaping/quoting is needed.
+If the file or an argument contains spaces, they must be escaped with a backslash. Otherwise no escaping/quoting is needed.
 
 The [`shell`](#shell) option cannot be used.
 

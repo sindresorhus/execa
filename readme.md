@@ -16,7 +16,7 @@
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
 - [Get interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
-- [Can specify command and arguments as a single string without a shell](#execafile-arguments-options)
+- [Can specify command and arguments as a single string without a shell](#execacommandcommand-options)
 - More descriptive errors.
 
 

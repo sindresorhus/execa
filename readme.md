@@ -339,7 +339,7 @@ Environment key-value pairs. Extends automatically from `process.env`. Set [`ext
 
 Type: `string`
 
-Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
+Explicitly set the value of `argv[0]` sent to the child process. This will be set to `file` if not specified.
 
 #### stdio
 
@@ -371,7 +371,7 @@ Sets the group identity of the process.
 Type: `boolean | string`<br>
 Default: `false`
 
-If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
+If `true`, runs `file` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
 We recommend against using this option since it is:
 - not cross-platform, encouraging shell-specific syntax.

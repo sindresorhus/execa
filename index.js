@@ -448,13 +448,6 @@ function parseCommand(command) {
 		.reduce(handleEscaping, []);
 }
 
-function parseCommand(command) {
-	return command
-		.trim()
-		.split(SPACES_REGEXP)
-		.reduce(handleEscaping, []);
-}
-
 module.exports.command = (command, options) => {
 	const [file, ...args] = parseCommand(command);
 	return execa(file, args, {...options, shell: false});

@@ -148,7 +148,7 @@ Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.ht
 
 ### execa.fork(file, [arguments], [options])
 
-Run a file through a forked process. The default sub-process is the current (node).
+Run a file through a forked process.
 
 Same as `execa('node', [file, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
   - the `execPath`, `execArgv` and `silent` options can be used

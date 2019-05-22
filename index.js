@@ -463,6 +463,11 @@ module.exports.sync = (command, args, options) => {
 };
 
 module.exports.fork = (filePath, args, options) => {
+	if (args && !Array.isArray(args) && typeof args === 'object') {
+		options = args;
+		args = []
+	}
+
 	const stdioOption = stdio.fork(options);
 	options = options || {};
 

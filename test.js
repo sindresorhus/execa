@@ -721,7 +721,7 @@ test('fork pipe stdout', async t => {
 });
 
 test('fork correctly use execPath', async t => {
-	const {stdout} = await execa.fork(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', [], {
+	const {stdout} = await execa.fork(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', {
 		stdout: 'pipe',
 		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
 		execArgv: process.platform === 'win32' ? ['/c'] : []
@@ -731,7 +731,7 @@ test('fork correctly use execPath', async t => {
 });
 
 test('fork pass on execArgv', async t => {
-	const {stdout} = await execa.fork('console.log("foo")', [], {
+	const {stdout} = await execa.fork('console.log("foo")', {
 		stdout: 'pipe',
 		execArgv: ['-e']
 	});

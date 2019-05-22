@@ -17,37 +17,7 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 const SPACES_REGEXP = / +/g;
 
-// Allow spaces to be escaped by a backslash if not meant as a delimiter
-function handleEscaping(tokens, token, index) {
-	if (index === 0) {
-		return [token];
-	}
-
-	const previousToken = tokens[tokens.length - 1];
-
-	if (previousToken.endsWith('\\')) {
-		return [...tokens.slice(0, -1), `${previousToken.slice(0, -1)} ${token}`];
-	}
-
-	return [...tokens, token];
-}
-
-function parseCommand(command) {
-	return command
-		.trim()
-		.split(SPACES_REGEXP)
-		.reduce(handleEscaping, []);
-}
-
 function handleArgs(command, args, options = {}) {
-	if (args && !Array.isArray(args) && typeof args === 'object') {
-		options = args;
-	}
-
-	if (!options.shell && command.includes(' ') && !Array.isArray(args)) {
-		[command, ...args] = parseCommand(command);
-	}
-
 	const parsed = crossSpawn._parse(command, args, options);
 	command = parsed.command;
 	args = parsed.args;
@@ -454,4 +424,43 @@ module.exports.sync = (command, args, options) => {
 		isCanceled: false,
 		killed: false
 	};
+};
+
+// Allow spaces to be escaped by a backslash if not meant as a delimiter
+function handleEscaping(tokens, token, index) {
+	if (index === 0) {
+		return [token];
+	}
+
+	const previousToken = tokens[tokens.length - 1];
+
+	if (previousToken.endsWith('\\')) {
+		return [...tokens.slice(0, -1), `${previousToken.slice(0, -1)} ${token}`];
+	}
+
+	return [...tokens, token];
+}
+
+function parseCommand(command) {
+	return command
+		.trim()
+		.split(SPACES_REGEXP)
+		.reduce(handleEscaping, []);
+}
+
+function parseCommand(command) {
+	return command
+		.trim()
+		.split(SPACES_REGEXP)
+		.reduce(handleEscaping, []);
+}
+
+module.exports.command = (command, options) => {
+	const [file, ...args] = parseCommand(command);
+	return execa(file, args, {...options, shell: false});
+};
+
+module.exports.command.sync = (command, options) => {
+	const [file, ...args] = parseCommand(command);
+	return execa.sync(file, args, {...options, shell: false});
 };

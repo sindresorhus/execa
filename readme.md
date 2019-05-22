@@ -55,7 +55,7 @@ const execa = require('execa');
 
 	// Catching an error
 	try {
-		await execa('wrong command');
+		await execa('wrong', ['command']);
 	} catch (error) {
 		console.log(error);
 		/*
@@ -94,7 +94,7 @@ const execa = require('execa');
 
 // Catching an error with a sync method
 try {
-	execa.sync('wrong command');
+	execa.sync('wrong', ['command']);
 } catch (error) {
 	console.log(error);
 	/*
@@ -122,13 +122,10 @@ try {
 ## API
 
 ### execa(file, arguments, [options])
-### execa(command, [options])
 
 Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
-Arguments can be specified in either:
-  - `arguments`: `execa('echo', ['unicorns'])`. No escaping/quoting is needed.
-  - `command`: `execa('echo unicorns')`. No escaping/quoting is needed, except significant spaces which must be escaped with a backslash.
+No escaping/quoting is needed.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
@@ -145,9 +142,22 @@ Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#chi
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 ### execa.sync(file, [arguments], [options])
-### execa.sync(command, [options])
 
 Execute a file synchronously.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### execa.command(command, [options])
+
+Same as [`execa()`](https://github.com/sindresorhus/execa#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa('echo unicorns')`.
+
+If the file or an argument contains spaces, they must be escaped with a backslash. Otherwise, no escaping/quoting is needed.
+
+The [`shell`](#shell) option cannot be used.
+
+### execa.command.sync(command, [options])
+
+Same as [`execa.command()`](https://github.com/sindresorhus/execa#execacommand-command-options) but synchronously.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 

@@ -714,3 +714,43 @@ test('calling cancel method on a process which has been killed does not make err
 	const {isCanceled} = await t.throwsAsync(subprocess);
 	t.false(isCanceled);
 });
+
+test('allow commands with spaces and no array arguments', async t => {
+	const {stdout} = await execa('./fixtures/command with space');
+	t.is(stdout, '');
+});
+
+test('allow commands with spaces and array arguments', async t => {
+	const {stdout} = await execa('./fixtures/command with space', ['foo', 'bar']);
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command()', async t => {
+	const {stdout} = await execa.command('node fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command() ignores consecutive spaces', async t => {
+	const {stdout} = await execa.command('node fixtures/echo foo    bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command() allows escaping spaces', async t => {
+	const {stdout} = await execa.command('node fixtures/echo foo\\ bar');
+	t.is(stdout, 'foo bar');
+});
+
+test('execa.command() escapes other whitespaces', async t => {
+	const {stdout} = await execa.command('node fixtures/echo foo\tbar');
+	t.is(stdout, 'foo\tbar');
+});
+
+test('execa.command() trims', async t => {
+	const {stdout} = await execa.command('  node fixtures/echo foo bar  ');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command.sync()', t => {
+	const {stdout} = execa.command.sync('node fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});

@@ -712,6 +712,6 @@ test('execa.command() trims', async t => {
 });
 
 test('execa.command.sync()', t => {
-	const {stdout} = execa.command.sync('node fixtures/echo foo bar');
+	const {stdout} = execa.commandSync('node fixtures/echo foo bar');
 	t.is(stdout, 'foo\nbar');
 });

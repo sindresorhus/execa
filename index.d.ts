@@ -368,6 +368,37 @@ declare const execa: {
 		file: string,
 		options?: execa.SyncOptions<null>
 	): execa.ExecaSyncReturnValue<Buffer>;
+
+	/**
+	Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
+
+	If the file or an argument contains spaces, they must be escaped with backslashes. Otherwise no escaping/quoting is needed.
+
+	@param command - The program/script to execute and its arguments.
+	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+
+	@example
+	```
+	import execa from 'execa';
+
+	(async () => {
+		const {stdout} = await execa.command('echo unicorns');
+		console.log(stdout);
+		//=> 'unicorns'
+	})();
+	```
+	*/
+	command(command: string, options?: execa.Options): execa.ExecaChildProcess;
+	command(command: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
+
+	/**
+	Same as `execa.command()` but synchronously.
+
+	@param command - The program/script to execute and its arguments.
+	@returns A result `Object` with `stdout` and `stderr` properties.
+	*/
+	commandSync(command: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;
+	commandSync(command: string, options?: execa.SyncOptions<null>): execa.ExecaSyncReturnValue<Buffer>;
 };
 
 export = execa;

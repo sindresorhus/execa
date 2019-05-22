@@ -450,10 +450,10 @@ function parseCommand(command) {
 
 module.exports.command = (command, options) => {
 	const [file, ...args] = parseCommand(command);
-	return execa(file, args, {...options, shell: false});
+	return execa(file, args, options);
 };
 
-module.exports.command.sync = (command, options) => {
+module.exports.commandSync = (command, options) => {
 	const [file, ...args] = parseCommand(command);
-	return execa.sync(file, args, {...options, shell: false});
+	return execa.sync(file, args, options);
 };

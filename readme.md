@@ -153,9 +153,7 @@ Same as [`execa()`](#execafile-arguments-options) except both file and arguments
 
 If the file or an argument contains spaces, they must be escaped with backslashes. Otherwise no escaping/quoting is needed.
 
-The [`shell`](#shell) option cannot be used.
-
-### execa.command.sync(command, [options])
+### execa.commandSync(command, [options])
 
 Same as [`execa.command()`](#execacommand-command-options) but synchronously.
 

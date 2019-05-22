@@ -149,7 +149,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### execa.command(command, [options])
 
-Same as [`execa()`](https://github.com/sindresorhus/execa#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
+Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
 
 If the file or an argument contains spaces, they must be escaped with a backslash. Otherwise no escaping/quoting is needed.
 
@@ -157,7 +157,7 @@ The [`shell`](#shell) option cannot be used.
 
 ### execa.command.sync(command, [options])
 
-Same as [`execa.command()`](https://github.com/sindresorhus/execa#execacommand-command-options) but synchronously.
+Same as [`execa.command()`](#execacommand-command-options) but synchronously.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 

@@ -151,7 +151,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
 
-If the file or an argument contains spaces, they must be escaped with backslashes. Otherwise no escaping/quoting is needed.
+If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 
 ### execa.commandSync(command, [options])
 

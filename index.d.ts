@@ -282,10 +282,14 @@ declare namespace execa {
 	interface killOptions {
 		/**
 		If the first signal does not terminate the child after a specified timeout, a `SIGKILL` signal will be sent to the process.
+
+		@default true
 		*/
 		forceKill?: boolean;
 		/**
 		Milliseconds to wait for the child process to terminate before sending a `SIGKILL` signal.
+
+		@default 5000
 		*/
 		forceKillAfter?: number;
 	}

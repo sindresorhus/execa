@@ -432,6 +432,7 @@ Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
+
 ## Tips
 
 ### Save and pipe output from a child process

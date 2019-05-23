@@ -155,7 +155,7 @@ If the file or an argument contains spaces, they must be escaped with backslashe
 
 ### execa.commandSync(command, [options])
 
-Same as [`execa.command()`](#execacommand-command-options) but synchronously.
+Same as [`execa.command()`](#execacommand-command-options) but synchronous.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 

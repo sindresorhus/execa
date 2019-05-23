@@ -392,7 +392,7 @@ declare const execa: {
 	command(command: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
 
 	/**
-	Same as `execa.command()` but synchronously.
+	Same as `execa.command()` but synchronous.
 
 	@param command - The program/script to execute and its arguments.
 	@returns A result `Object` with `stdout` and `stderr` properties.

@@ -189,14 +189,14 @@ test('stripFinalNewline: false', async t => {
 	t.is(stdout, 'foo\n');
 });
 
-test('stripFinalNewline in sync mode', t => {
-	const {stdout} = execa.sync('noop', ['foo'], {stripFinalNewline: true});
-	t.is(stdout, 'foo');
-});
-
 test('stripFinalNewline on failure', async t => {
 	const {stderr} = await t.throwsAsync(execa('noop-throw', ['foo'], {stripFinalNewline: true}));
 	t.is(stderr, 'foo');
+});
+
+test('stripFinalNewline in sync mode', t => {
+	const {stdout} = execa.sync('noop', ['foo'], {stripFinalNewline: true});
+	t.is(stdout, 'foo');
 });
 
 test('stripFinalNewline in sync mode on failure', t => {

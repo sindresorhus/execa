@@ -16,7 +16,7 @@
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
 - [Get interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
-- [Can specify command and arguments as a single string without a shell](#execafile-arguments-options)
+- [Can specify command and arguments as a single string without a shell](#execacommandcommand-options)
 - More descriptive errors.
 
 
@@ -51,7 +51,7 @@ const execa = require('execa');
 
 	// Catching an error
 	try {
-		await execa('wrong command');
+		await execa('wrong', ['command']);
 	} catch (error) {
 		console.log(error);
 		/*
@@ -90,7 +90,7 @@ const execa = require('execa');
 
 // Catching an error with a sync method
 try {
-	execa.sync('wrong command');
+	execa.sync('wrong', ['command']);
 } catch (error) {
 	console.log(error);
 	/*
@@ -117,16 +117,11 @@ try {
 
 ## API
 
-### execa(file, [arguments], [options])
-### execa(command, [options])
+### execa(file, arguments, [options])
 
 Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
-Arguments can be specified in either:
-  - `arguments`: `execa('echo', ['unicorns'])`.
-  - `command`: `execa('echo unicorns')`.
-
-Arguments should not be escaped nor quoted, except inside `command` where spaces can be escaped with a backslash.
+No escaping/quoting is needed.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
@@ -143,9 +138,20 @@ Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#chi
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 ### execa.sync(file, [arguments], [options])
-### execa.sync(command, [options])
 
 Execute a file synchronously.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### execa.command(command, [options])
+
+Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
+
+If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
+
+### execa.commandSync(command, [options])
+
+Same as [`execa.command()`](#execacommand-command-options) but synchronous.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -327,7 +333,7 @@ Environment key-value pairs. Extends automatically from `process.env`. Set [`ext
 
 Type: `string`
 
-Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
+Explicitly set the value of `argv[0]` sent to the child process. This will be set to `file` if not specified.
 
 #### stdio
 
@@ -359,7 +365,7 @@ Sets the group identity of the process.
 Type: `boolean | string`<br>
 Default: `false`
 
-If `true`, runs `command` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
+If `true`, runs `file` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
 We recommend against using this option since it is:
 - not cross-platform, encouraging shell-specific syntax.

@@ -17,45 +17,9 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 const SPACES_REGEXP = / +/g;
 
-// Allow spaces to be escaped by a backslash if not meant as a delimiter
-function handleEscaping(tokens, token, index) {
-	if (index === 0) {
-		return [token];
-	}
-
-	const previousToken = tokens[tokens.length - 1];
-
-	if (previousToken.endsWith('\\')) {
-		return [...tokens.slice(0, -1), `${previousToken.slice(0, -1)} ${token}`];
-	}
-
-	return [...tokens, token];
-}
-
-function parseCommand(command, args = []) {
-	if (args.length !== 0) {
-		throw new Error('Arguments cannot be inside `command` when also specified as an array of strings');
-	}
-
-	const [file, ...extraArgs] = command
-		.trim()
-		.split(SPACES_REGEXP)
-		.reduce(handleEscaping, []);
-	return [file, extraArgs];
-}
-
-function handleArgs(command, args, options = {}) {
-	if (args && !Array.isArray(args)) {
-		options = args;
-		args = [];
-	}
-
-	if (!options.shell && command.includes(' ')) {
-		[command, args] = parseCommand(command, args);
-	}
-
-	const parsed = crossSpawn._parse(command, args, options);
-	command = parsed.command;
+function handleArgs(file, args, options = {}) {
+	const parsed = crossSpawn._parse(file, args, options);
+	file = parsed.command;
 	args = parsed.args;
 	options = parsed.options;
 
@@ -88,12 +52,12 @@ function handleArgs(command, args, options = {}) {
 
 	options.stdio = stdio(options);
 
-	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
+	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
 		// #116
 		args.unshift('/q');
 	}
 
-	return {command, args, options, parsed};
+	return {file, args, options, parsed};
 }
 
 function handleInput(spawned, input) {
@@ -237,22 +201,22 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 	return `failed with exit code ${exitCode} (${exitCodeName})`;
 }
 
-function joinCommand(command, args = []) {
+function joinCommand(file, args = []) {
 	if (!Array.isArray(args)) {
-		return command;
+		return file;
 	}
 
-	return [command, ...args].join(' ');
+	return [file, ...args].join(' ');
 }
 
-const execa = (command, args, options) => {
-	const parsed = handleArgs(command, args, options);
+const execa = (file, args, options) => {
+	const parsed = handleArgs(file, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
-	const joinedCommand = joinCommand(command, args);
+	const joinedCommand = joinCommand(file, args);
 
 	let spawned;
 	try {
-		spawned = childProcess.spawn(parsed.command, parsed.args, parsed.options);
+		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		return Promise.reject(error);
 	}
@@ -420,15 +384,15 @@ const execa = (command, args, options) => {
 
 module.exports = execa;
 
-module.exports.sync = (command, args, options) => {
-	const parsed = handleArgs(command, args, options);
-	const joinedCommand = joinCommand(command, args);
+module.exports.sync = (file, args, options) => {
+	const parsed = handleArgs(file, args, options);
+	const joinedCommand = joinCommand(file, args);
 
 	if (isStream(parsed.options.input)) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
+	const result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
 	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
 	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 
@@ -460,4 +424,36 @@ module.exports.sync = (command, args, options) => {
 		isCanceled: false,
 		killed: false
 	};
+};
+
+// Allow spaces to be escaped by a backslash if not meant as a delimiter
+function handleEscaping(tokens, token, index) {
+	if (index === 0) {
+		return [token];
+	}
+
+	const previousToken = tokens[tokens.length - 1];
+
+	if (previousToken.endsWith('\\')) {
+		return [...tokens.slice(0, -1), `${previousToken.slice(0, -1)} ${token}`];
+	}
+
+	return [...tokens, token];
+}
+
+function parseCommand(command) {
+	return command
+		.trim()
+		.split(SPACES_REGEXP)
+		.reduce(handleEscaping, []);
+}
+
+module.exports.command = (command, options) => {
+	const [file, ...args] = parseCommand(command);
+	return execa(file, args, options);
+};
+
+module.exports.commandSync = (command, options) => {
+	const [file, ...args] = parseCommand(command);
+	return execa.sync(file, args, options);
 };

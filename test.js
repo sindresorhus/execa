@@ -65,11 +65,15 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
+const WRONG_COMMAND = process.platform === 'win32' ?
+	'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
+	'';
+
 test('stdout/stderr/all on process errors', async t => {
 	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
 	t.is(stdout, '');
-	t.is(stderr, '');
-	t.is(all, '');
+	t.is(stderr, WRONG_COMMAND);
+	t.is(all, WRONG_COMMAND);
 });
 
 test('stdout/stderr/all on process errors, in sync mode', t => {
@@ -77,9 +81,7 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 		execa.sync('wrong command');
 	});
 	t.is(stdout, '');
-	t.is(stderr, process.platform === 'win32' ?
-		'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
-		'');
+	t.is(stderr, WRONG_COMMAND);
 	t.is(all, undefined);
 });
 
@@ -258,10 +260,16 @@ test('input option can be a Buffer - sync', t => {
 	t.is(stdout, 'testing12');
 });
 
+test('stdin errors are handled', async t => {
+	const child = execa('noop');
+	child.stdin.emit('error', new Error('test'));
+	await t.throwsAsync(child, /test/);
+});
+
 test('child process errors are handled', async t => {
 	const child = execa('noop');
 	child.emit('error', new Error('test'));
-	await t.throwsAsync(child, /Command failed.*\ntest/);
+	await t.throwsAsync(child, /test/);
 });
 
 test('opts.stdout:ignore - stdout will not collect data', async t => {
@@ -306,13 +314,17 @@ test('child_process.spawnSync() errors are propagated with a correct shape', t =
 });
 
 test('maxBuffer affects stdout', async t => {
-	await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
 	await t.notThrowsAsync(execa('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
+	const {stdout, all} = await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /max-buffer stdout/);
+	t.is(stdout, '.'.repeat(10));
+	t.is(all, '.'.repeat(10));
 });
 
 test('maxBuffer affects stderr', async t => {
-	await t.throwsAsync(execa('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
-	await t.notThrowsAsync(execa('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
+	await t.notThrowsAsync(execa('max-buffer', ['stderr', '10'], {maxBuffer: 10}));
+	const {stderr, all} = await t.throwsAsync(execa('max-buffer', ['stderr', '11'], {maxBuffer: 10}), /max-buffer stderr/);
+	t.is(stderr, '.'.repeat(10));
+	t.is(all, '.'.repeat(10));
 });
 
 test('do not buffer stdout when `buffer` set to `false`', async t => {

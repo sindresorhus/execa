@@ -41,6 +41,8 @@ declare namespace execa {
 		/**
 		Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
 
+		If the spawned process fails, `error.stdout`, `error.stderr` and `error.all` will contain the buffered data.
+
 		@default true
 		*/
 		readonly buffer?: boolean;

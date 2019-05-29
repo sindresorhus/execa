@@ -217,6 +217,18 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof pid, 'number');
 });
 
+test('child_process.spawn() errors are propagated', async t => {
+	const {exitCodeName} = await t.throwsAsync(execa('noop', {uid: -1}));
+	t.is(exitCodeName, process.platform === 'win32' ? 'ENOTSUP' : 'EINVAL');
+});
+
+test('child_process.spawnSync() errors are propagated', t => {
+	const {exitCodeName} = t.throws(() => {
+		execa.sync('noop', {uid: -1});
+	});
+	t.is(exitCodeName, process.platform === 'win32' ? 'ENOTSUP' : 'EINVAL');
+});
+
 test('maxBuffer affects stdout', async t => {
 	await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
 	await t.notThrowsAsync(execa('max-buffer', ['stdout', '10'], {maxBuffer: 10}));

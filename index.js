@@ -218,7 +218,13 @@ const execa = (file, args, options) => {
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		return Promise.reject(error);
+		return Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
+			joinedCommand,
+			parsed,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		}));
 	}
 
 	// #115

@@ -65,11 +65,15 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
+const WRONG_COMMAND_STDERR = process.platform === 'win32' ?
+	'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
+	'';
+
 test('stdout/stderr/all on process errors', async t => {
 	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
 	t.is(stdout, '');
-	t.is(stderr, '');
-	t.is(all, '');
+	t.is(stderr, WRONG_COMMAND_STDERR);
+	t.is(all, WRONG_COMMAND_STDERR);
 });
 
 test('stdout/stderr/all on process errors, in sync mode', t => {
@@ -77,9 +81,7 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 		execa.sync('wrong command');
 	});
 	t.is(stdout, '');
-	t.is(stderr, process.platform === 'win32' ?
-		'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
-		'');
+	t.is(stderr, WRONG_COMMAND_STDERR);
 	t.is(all, undefined);
 });
 

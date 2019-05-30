@@ -267,6 +267,7 @@ const execa = (file, args, options) => {
 		return promise;
 	})();
 
+	// TODO: Use native "finally" syntax when targeting Node.js 10
 	const processDone = pFinally(new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
 			if (timedOut) {

@@ -65,15 +65,11 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
-const WRONG_COMMAND_STDERR = process.platform === 'win32' ?
-	'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
-	'';
-
 test('stdout/stderr/all on process errors', async t => {
 	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
 	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND_STDERR);
-	t.is(all, WRONG_COMMAND_STDERR);
+	t.is(stderr, '');
+	t.is(all, '');
 });
 
 test('stdout/stderr/all on process errors, in sync mode', t => {
@@ -81,7 +77,9 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 		execa.sync('wrong command');
 	});
 	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND_STDERR);
+	t.is(stderr, process.platform === 'win32' ?
+		'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
+		'');
 	t.is(all, undefined);
 });
 
@@ -215,6 +213,12 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 		},
 		/The `input` option cannot be a stream in sync mode/
 	);
+});
+
+test('child process errors rejects promise right away', async t => {
+	const child = execa('forever');
+	child.emit('error', new Error('test'));
+	await t.throwsAsync(child, /test/);
 });
 
 test('execa() returns a promise with kill() and pid', t => {

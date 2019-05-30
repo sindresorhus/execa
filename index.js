@@ -262,34 +262,23 @@ const execa = (file, args, options) => {
 		}, parsed.options.timeout);
 	}
 
-	const resolvable = (() => {
-		let extracted;
-		const promise = new Promise(resolve => {
-			extracted = resolve;
-		});
-		promise.resolve = extracted;
-		return promise;
-	})();
-
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(new Promise(resolve => {
+	const processDone = pFinally(new Promise((resolve, reject) => {
 		spawned.on('exit', (code, signal) => {
 			if (timedOut) {
-				resolvable.resolve([
-					{code, signal}, '', '', ''
-				]);
+				return reject(Object.assign(new Error('Timed out'), {code, signal}));
 			}
 
 			resolve({code, signal});
 		});
 
 		spawned.on('error', error => {
-			resolve({error});
+			reject(error);
 		});
 
 		if (spawned.stdin) {
 			spawned.stdin.on('error', error => {
-				resolve({error});
+				reject(error);
 			});
 		}
 	}), cleanup);
@@ -309,22 +298,21 @@ const execa = (file, args, options) => {
 	}
 
 	const handlePromise = () => {
-		let processComplete = Promise.all([
+		const processComplete = Promise.all([
 			processDone,
 			getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
 			getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
 			getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
 		]);
 
-		if (timeoutId) {
-			processComplete = Promise.race([
-				processComplete,
-				resolvable
-			]);
-		}
-
 		const finalize = async () => {
-			const results = await processComplete;
+			let results;
+			try {
+				results = await processComplete;
+			} catch (error) {
+				const {stream, code, signal} = error;
+				results = [{error, stream, code, signal}, '', '', ''];
+			}
 
 			const [result, stdout, stderr, all] = results;
 			result.stdout = handleOutput(parsed.options, stdout);

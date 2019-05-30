@@ -211,6 +211,12 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 	);
 });
 
+test('child process errors rejects promise right away', async t => {
+	const child = execa('forever');
+	child.emit('error', new Error('test'));
+	await t.throwsAsync(child, /test/);
+});
+
 test('execa() returns a promise with kill() and pid', t => {
 	const {kill, pid} = execa('noop', ['foo']);
 	t.is(typeof kill, 'function');

@@ -374,6 +374,7 @@ const execa = (file, args, options) => {
 	// eslint-disable-next-line promise/prefer-await-to-then
 	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
 	spawned.catch = onRejected => handlePromise().catch(onRejected);
+	// TODO: Use native "finally" syntax when targeting Node.js 10
 	spawned.finally = onFinally => pFinally(handlePromise(), onFinally);
 
 	spawned.cancel = () => {

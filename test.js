@@ -194,6 +194,12 @@ test('input option can be a Buffer - sync', t => {
 	t.is(stdout, 'testing12');
 });
 
+test('child process errors are handled', async t => {
+	const child = execa('noop');
+	child.emit('error', new Error('test'));
+	await t.throwsAsync(child, /Command failed.*\ntest/);
+});
+
 test('opts.stdout:ignore - stdout will not collect data', async t => {
 	const {stdout} = await execa('stdin', {
 		input: 'hello',

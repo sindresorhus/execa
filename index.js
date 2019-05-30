@@ -198,6 +198,10 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 		return `was killed with ${signal}`;
 	}
 
+	if (exitCode === undefined) {
+		return 'failed';
+	}
+
 	return `failed with exit code ${exitCode} (${exitCodeName})`;
 }
 

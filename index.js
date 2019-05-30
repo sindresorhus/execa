@@ -267,10 +267,8 @@ const execa = (file, args, options) => {
 		return promise;
 	})();
 
-	const processDone = new Promise(resolve => {
+	const processDone = pFinally(new Promise(resolve => {
 		spawned.on('exit', (code, signal) => {
-			cleanup();
-
 			if (timedOut) {
 				resolvable.resolve([
 					{code, signal}, '', '', ''
@@ -281,17 +279,15 @@ const execa = (file, args, options) => {
 		});
 
 		spawned.on('error', error => {
-			cleanup();
 			resolve({error});
 		});
 
 		if (spawned.stdin) {
 			spawned.stdin.on('error', error => {
-				cleanup();
 				resolve({error});
 			});
 		}
-	});
+	}), cleanup);
 
 	function destroy() {
 		if (spawned.stdout) {

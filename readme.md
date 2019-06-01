@@ -112,8 +112,15 @@ try {
 	}
 	*/
 }
-```
 
+// Kill a process with SIGTERM, and after 2 seconds, kill it with SIGKILL
+const subprocess = execa('node');
+setTimeout(() => {
+	subprocess.kill('SIGTERM', {
+		forceKillAfter: 2000
+	});
+}, 1000);
+```
 
 ## API
 
@@ -128,6 +135,24 @@ Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.ex
 Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which:
   - is also a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
   - exposes the following additional methods and properties.
+
+#### kill([signal], [options])
+
+Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
+
+##### options.forceKill
+
+Type: `boolean`<br>
+Default: `true`
+
+If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
+
+##### options.forceKillAfter
+
+Type: `string`<br>
+Default: `5000`
+
+Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
 
 #### cancel()
 

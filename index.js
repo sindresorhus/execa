@@ -213,6 +213,14 @@ function joinCommand(file, args = []) {
 	return [file, ...args].join(' ');
 }
 
+function shouldForceKill(signal, options, killResult) {
+	return ((typeof signal === 'string' &&
+		signal.toUpperCase() === 'SIGTERM') ||
+		signal === os.constants.signals.SIGTERM) &&
+		options.forceKill !== false &&
+		killResult;
+}
+
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
@@ -230,6 +238,23 @@ const execa = (file, args, options) => {
 			killed: false
 		}));
 	}
+
+	const originalKill = spawned.kill.bind(spawned);
+	spawned.kill = (signal = 'SIGTERM', options = {}) => {
+		const killResult = originalKill(signal);
+		if (shouldForceKill(signal, options, killResult)) {
+			const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
+				options.forceKillAfter :
+				5000;
+			setTimeout(() => {
+				try {
+					originalKill('SIGKILL');
+				} catch (_) {}
+			}, forceKillAfter).unref();
+		}
+
+		return killResult;
+	};
 
 	// #115
 	let removeExitHandler;

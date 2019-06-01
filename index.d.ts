@@ -279,10 +279,31 @@ declare namespace execa {
 		isCanceled: boolean;
 	}
 
+	interface KillOptions {
+		/**
+		If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
+
+		@default true
+		*/
+		forceKill?: boolean;
+
+		/**
+		Milliseconds to wait for the child process to terminate before sending a `SIGKILL` signal.
+
+		@default 5000
+		*/
+		forceKillAfter?: number;
+	}
+
 	interface ExecaChildPromise<StdoutErrorType> {
 		catch<ResultType = never>(
 			onRejected?: (reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>
 		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
+
+		/**
+		Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
+		*/
+		kill(signal?: string, options?: execa.KillOptions): void;
 
 		/**
 		Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.

@@ -119,6 +119,14 @@ execa('unicorns', {maxBuffer: 1000});
 execa('unicorns', {killSignal: 'SIGTERM'});
 execa('unicorns', {killSignal: 9});
 execa('unicorns', {windowsVerbatimArguments: true});
+execa('unicorns').kill();
+execa('unicorns').kill('SIGKILL');
+execa('unicorns').kill(undefined);
+execa('unicorns').kill('SIGKILL', {});
+execa('unicorns').kill('SIGKILL', {forceKill: true});
+execa('unicorns').kill('SIGKILL', {forceKill: false});
+execa('unicorns').kill('SIGKILL', {forceKillAfter: 42});
+execa('unicorns').kill('SIGKILL', {forceKillAfter: undefined});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa('unicorns'));

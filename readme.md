@@ -145,7 +145,7 @@ Same as the original [`child_process#kill()`](https://nodejs.org/api/child_proce
 Type: `boolean`<br>
 Default: `true`
 
-If the first signal does not terminate the child after a specified timeout, a `SIGKILL` signal will be sent to the process.
+If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
 
 ##### options.forceKillAfter
 

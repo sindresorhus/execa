@@ -247,9 +247,7 @@ const execa = (file, args, options) => {
 				options.forceKillAfter :
 				5000;
 			setTimeout(() => {
-				try {
-					originalKill('SIGKILL');
-				} catch (_) {}
+				originalKill('SIGKILL');
 			}, forceKillAfter).unref();
 		}
 

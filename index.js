@@ -213,13 +213,13 @@ function joinCommand(file, args = []) {
 	return [file, ...args].join(' ');
 }
 
-function kill(originalKill, signal = 'SIGTERM', options = {}) {
-	const killResult = originalKill(signal);
-	setKillTimeout(originalKill, signal, options, killResult);
+function spawnedKill(kill, signal = 'SIGTERM', options = {}) {
+	const killResult = kill(signal);
+	setKillTimeout(kill, signal, options, killResult);
 	return killResult;
 }
 
-function setKillTimeout(originalKill, signal, options, killResult) {
+function setKillTimeout(kill, signal, options, killResult) {
 	if (!shouldForceKill(signal, options, killResult)) {
 		return;
 	}
@@ -227,7 +227,7 @@ function setKillTimeout(originalKill, signal, options, killResult) {
 	const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
 		options.forceKillAfter :
 		5000;
-	setTimeout(() => originalKill('SIGKILL'), forceKillAfter).unref();
+	setTimeout(() => kill('SIGKILL'), forceKillAfter).unref();
 }
 
 function shouldForceKill(signal, options, killResult) {
@@ -256,8 +256,8 @@ const execa = (file, args, options) => {
 		}));
 	}
 
-	const originalKill = spawned.kill.bind(spawned);
-	spawned.kill = kill.bind(null, originalKill);
+	const kill = spawned.kill.bind(spawned);
+	spawned.kill = spawnedKill.bind(null, kill);
 
 	// #115
 	let removeExitHandler;

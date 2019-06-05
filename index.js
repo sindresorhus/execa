@@ -392,7 +392,7 @@ const execa = (file, args, options) => {
 		}
 	};
 
-	// TOOD: Remove the `if`-guard when targeting Node.js 10
+	// TODO: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {
 		spawned.finally = onFinally => handlePromise().finally(onFinally);
 	}

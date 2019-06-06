@@ -1,7 +1,7 @@
-import test from "ava";
+import test from 'ava';
 import pEvent from 'p-event';
-import execa from "..";
-import path from "path";
+import path from 'path';
+import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 
@@ -37,7 +37,7 @@ test('node pass on execArgv', async t => {
 	t.is(stdout, 'foo');
 });
 
-test.only('node\'s forked script has a communication channel', async t => {
+test('node\'s forked script has a communication channel', async t => {
 	const subprocess = execa.node('test/fixtures/send.js');
 	subprocess.send('ping');
 

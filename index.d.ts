@@ -294,10 +294,31 @@ declare namespace execa {
 		isCanceled: boolean;
 	}
 
+	interface KillOptions {
+		/**
+		If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
+
+		@default true
+		*/
+		forceKill?: boolean;
+
+		/**
+		Milliseconds to wait for the child process to terminate before sending a `SIGKILL` signal.
+
+		@default 5000
+		*/
+		forceKillAfter?: number;
+	}
+
 	interface ExecaChildPromise<StdoutErrorType> {
 		catch<ResultType = never>(
 			onRejected?: (reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>
 		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
+
+		/**
+		Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
+		*/
+		kill(signal?: string, options?: execa.KillOptions): void;
 
 		/**
 		Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
@@ -383,6 +404,37 @@ declare const execa: {
 		file: string,
 		options?: execa.SyncOptions<null>
 	): execa.ExecaSyncReturnValue<Buffer>;
+
+	/**
+	Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
+
+	If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
+
+	@param command - The program/script to execute and its arguments.
+	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+
+	@example
+	```
+	import execa from 'execa';
+
+	(async () => {
+		const {stdout} = await execa.command('echo unicorns');
+		console.log(stdout);
+		//=> 'unicorns'
+	})();
+	```
+	*/
+	command(command: string, options?: execa.Options): execa.ExecaChildProcess;
+	command(command: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
+
+	/**
+	Same as `execa.command()` but synchronous.
+
+	@param command - The program/script to execute and its arguments.
+	@returns A result `Object` with `stdout` and `stderr` properties.
+	*/
+	commandSync(command: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;
+	commandSync(command: string, options?: execa.SyncOptions<null>): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**
 	 Run a file through a forked process.

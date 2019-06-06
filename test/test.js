@@ -65,15 +65,11 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
-const WRONG_COMMAND_STDERR = process.platform === 'win32' ?
-	'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
-	'';
-
 test('stdout/stderr/all on process errors', async t => {
 	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
 	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND_STDERR);
-	t.is(all, WRONG_COMMAND_STDERR);
+	t.is(stderr, '');
+	t.is(all, '');
 });
 
 test('stdout/stderr/all on process errors, in sync mode', t => {
@@ -81,7 +77,9 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 		execa.sync('wrong command');
 	});
 	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND_STDERR);
+	t.is(stderr, process.platform === 'win32' ?
+		'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
+		'');
 	t.is(all, undefined);
 });
 
@@ -95,42 +93,6 @@ test('pass `stderr` to a file descriptor', async t => {
 	const file = tempfile('.txt');
 	await execa('test/fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
-});
-
-test('allow string arguments', async t => {
-	const {stdout} = await execa('node test/fixtures/echo foo bar');
-	t.is(stdout, 'foo\nbar');
-});
-
-test('allow string arguments in synchronous mode', t => {
-	const {stdout} = execa.sync('node test/fixtures/echo foo bar');
-	t.is(stdout, 'foo\nbar');
-});
-
-test('forbid string arguments together with array arguments', t => {
-	t.throws(() => {
-		execa('node test/fixtures/echo foo bar', ['foo', 'bar']);
-	}, /Arguments cannot be inside/);
-});
-
-test('ignore consecutive spaces in string arguments', async t => {
-	const {stdout} = await execa('node test/fixtures/echo foo    bar');
-	t.is(stdout, 'foo\nbar');
-});
-
-test('escape other whitespaces in string arguments', async t => {
-	const {stdout} = await execa('node test/fixtures/echo foo\tbar');
-	t.is(stdout, 'foo\tbar');
-});
-
-test('allow escaping spaces in string arguments', async t => {
-	const {stdout} = await execa('node test/fixtures/echo foo\\ bar');
-	t.is(stdout, 'foo bar');
-});
-
-test('trim string arguments', async t => {
-	const {stdout} = await execa('  node test/fixtures/echo foo bar  ');
-	t.is(stdout, 'foo\nbar');
 });
 
 test('execa.sync()', t => {
@@ -153,6 +115,67 @@ test('skip throwing when using reject option in sync mode', t => {
 	const {exitCode} = execa.sync('fail', {reject: false});
 	t.is(exitCode, 2);
 });
+
+test('execa() with .kill() after it with SIGKILL should kill cleanly', async t => {
+	const subprocess = execa('node', ['fixtures/no-killable'], {
+		stdio: ['ipc']
+	});
+
+	await pEvent(subprocess, 'message');
+
+	subprocess.kill('SIGKILL');
+
+	const {signal} = await t.throwsAsync(subprocess);
+	t.is(signal, 'SIGKILL');
+});
+
+// `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
+// Therefore, this feature and those tests do not make sense on Windows.
+if (process.platform !== 'win32') {
+	test('execa() with .kill() after it with SIGTERM should not kill (no retry)', async t => {
+		const subprocess = execa('node', ['fixtures/no-killable'], {
+			stdio: ['ipc']
+		});
+
+		await pEvent(subprocess, 'message');
+
+		subprocess.kill('SIGTERM', {
+			forceKill: false,
+			forceKillAfter: 50
+		});
+
+		t.true(isRunning(subprocess.pid));
+		subprocess.kill('SIGKILL');
+	});
+
+	test('execa() with .kill() after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
+		const subprocess = execa('node', ['fixtures/no-killable'], {
+			stdio: ['ipc']
+		});
+
+		await pEvent(subprocess, 'message');
+
+		subprocess.kill('SIGTERM', {
+			forceKillAfter: 50
+		});
+
+		const {signal} = await t.throwsAsync(subprocess);
+		t.is(signal, 'SIGKILL');
+	});
+
+	test('execa() with .kill() after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
+		const subprocess = execa('node', ['fixtures/no-killable'], {
+			stdio: ['ipc']
+		});
+
+		await pEvent(subprocess, 'message');
+
+		subprocess.kill();
+
+		const {signal} = await t.throwsAsync(subprocess);
+		t.is(signal, 'SIGKILL');
+	});
+}
 
 test('stripFinalNewline: true', async t => {
 	const {stdout} = await execa('noop', ['foo']);
@@ -230,6 +253,12 @@ test('input option can be a Buffer - sync', t => {
 	t.is(stdout, 'testing12');
 });
 
+test('child process errors are handled', async t => {
+	const child = execa('noop');
+	child.emit('error', new Error('test'));
+	await t.throwsAsync(child, /Command failed.*\ntest/);
+});
+
 test('opts.stdout:ignore - stdout will not collect data', async t => {
 	const {stdout} = await execa('stdin', {
 		input: 'hello',
@@ -247,10 +276,28 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 	);
 });
 
+test('child process errors rejects promise right away', async t => {
+	const child = execa('forever');
+	child.emit('error', new Error('test'));
+	await t.throwsAsync(child, /test/);
+});
+
 test('execa() returns a promise with kill() and pid', t => {
 	const {kill, pid} = execa('noop', ['foo']);
 	t.is(typeof kill, 'function');
 	t.is(typeof pid, 'number');
+});
+
+test('child_process.spawn() errors are propagated', async t => {
+	const {exitCodeName} = await t.throwsAsync(execa('noop', {uid: -1}));
+	t.is(exitCodeName, process.platform === 'win32' ? 'ENOTSUP' : 'EINVAL');
+});
+
+test('child_process.spawnSync() errors are propagated', t => {
+	const {exitCodeName} = t.throws(() => {
+		execa.sync('noop', {uid: -1});
+	});
+	t.is(exitCodeName, process.platform === 'win32' ? 'ENOTSUP' : 'EINVAL');
 });
 
 test('maxBuffer affects stdout', async t => {
@@ -309,7 +356,7 @@ test('execa() returns code and failed properties', async t => {
 });
 
 test('use relative path with \'..\' chars', async t => {
-	const pathViaParentDir = path.join('..', path.basename(__dirname), 'fixtures', 'noop');
+	const pathViaParentDir = path.join('..', path.basename(path.dirname(__dirname)), 'test', 'fixtures', 'noop');
 	const {stdout} = await execa(pathViaParentDir, ['foo']);
 	t.is(stdout, 'foo');
 });
@@ -705,4 +752,49 @@ test('calling cancel method on a process which has been killed does not make err
 	subprocess.kill();
 	const {isCanceled} = await t.throwsAsync(subprocess);
 	t.false(isCanceled);
+});
+
+test('allow commands with spaces and no array arguments', async t => {
+	const {stdout} = await execa('./fixtures/command with space');
+	t.is(stdout, '');
+});
+
+test('allow commands with spaces and array arguments', async t => {
+	const {stdout} = await execa('./fixtures/command with space', ['foo', 'bar']);
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command()', async t => {
+	const {stdout} = await execa.command('node test/fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command() ignores consecutive spaces', async t => {
+	const {stdout} = await execa.command('node test/fixtures/echo foo    bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command() allows escaping spaces in commands', async t => {
+	const {stdout} = await execa.command('./fixtures/command\\ with\\ space foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command() allows escaping spaces in arguments', async t => {
+	const {stdout} = await execa.command('node test/fixtures/echo foo\\ bar');
+	t.is(stdout, 'foo bar');
+});
+
+test('execa.command() escapes other whitespaces', async t => {
+	const {stdout} = await execa.command('node test/fixtures/echo foo\tbar');
+	t.is(stdout, 'foo\tbar');
+});
+
+test('execa.command() trims', async t => {
+	const {stdout} = await execa.command('  node test/fixtures/echo foo bar  ');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('execa.command.sync()', t => {
+	const {stdout} = execa.commandSync('node test/fixtures/echo foo bar');
+	t.is(stdout, 'foo\nbar');
 });

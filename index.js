@@ -17,45 +17,9 @@ const TEN_MEGABYTES = 1000 * 1000 * 10;
 
 const SPACES_REGEXP = / +/g;
 
-// Allow spaces to be escaped by a backslash if not meant as a delimiter
-function handleEscaping(tokens, token, index) {
-	if (index === 0) {
-		return [token];
-	}
-
-	const previousToken = tokens[index - 1];
-
-	if (!previousToken.endsWith('\\')) {
-		return [...tokens, token];
-	}
-
-	return [...tokens.slice(0, index - 1), `${previousToken.slice(0, -1)} ${token}`];
-}
-
-function parseCommand(command, args = []) {
-	if (args.length !== 0) {
-		throw new Error('Arguments cannot be inside `command` when also specified as an array of strings');
-	}
-
-	const [file, ...extraArgs] = command
-		.trim()
-		.split(SPACES_REGEXP)
-		.reduce(handleEscaping, []);
-	return [file, extraArgs];
-}
-
-function handleArgs(command, args, options = {}) {
-	if (args && !Array.isArray(args)) {
-		options = args;
-		args = [];
-	}
-
-	if (!options.shell && command.includes(' ')) {
-		[command, args] = parseCommand(command, args);
-	}
-
-	const parsed = crossSpawn._parse(command, args, options);
-	command = parsed.command;
+function handleArgs(file, args, options = {}) {
+	const parsed = crossSpawn._parse(file, args, options);
+	file = parsed.command;
 	args = parsed.args;
 	options = parsed.options;
 
@@ -88,12 +52,12 @@ function handleArgs(command, args, options = {}) {
 
 	options.stdio = stdio(options);
 
-	if (process.platform === 'win32' && path.basename(command, '.exe') === 'cmd') {
+	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
 		// #116
 		args.unshift('/q');
 	}
 
-	return {command, args, options, parsed};
+	return {file, args, options, parsed};
 }
 
 function handleInput(spawned, input) {
@@ -234,28 +198,61 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 		return `was killed with ${signal}`;
 	}
 
-	return `failed with exit code ${exitCode} (${exitCodeName})`;
-}
-
-function joinCommand(command, args = []) {
-	if (!Array.isArray(args)) {
-		return command;
+	if (exitCode !== undefined) {
+		return `failed with exit code ${exitCode} (${exitCodeName})`;
 	}
 
-	return [command, ...args].join(' ');
+	return 'failed';
 }
 
-const execa = (command, args, options) => {
-	const parsed = handleArgs(command, args, options);
+function joinCommand(file, args = []) {
+	if (!Array.isArray(args)) {
+		return file;
+	}
+
+	return [file, ...args].join(' ');
+}
+
+function shouldForceKill(signal, options, killResult) {
+	return ((typeof signal === 'string' &&
+		signal.toUpperCase() === 'SIGTERM') ||
+		signal === os.constants.signals.SIGTERM) &&
+		options.forceKill !== false &&
+		killResult;
+}
+
+const execa = (file, args, options) => {
+	const parsed = handleArgs(file, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
-	const joinedCommand = joinCommand(command, args);
+	const joinedCommand = joinCommand(file, args);
 
 	let spawned;
 	try {
-		spawned = childProcess.spawn(parsed.command, parsed.args, parsed.options);
+		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		return Promise.reject(error);
+		return Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
+			joinedCommand,
+			parsed,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		}));
 	}
+
+	const originalKill = spawned.kill.bind(spawned);
+	spawned.kill = (signal = 'SIGTERM', options = {}) => {
+		const killResult = originalKill(signal);
+		if (shouldForceKill(signal, options, killResult)) {
+			const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
+				options.forceKillAfter :
+				5000;
+			setTimeout(() => {
+				originalKill('SIGKILL');
+			}, forceKillAfter).unref();
+		}
+
+		return killResult;
+	};
 
 	// #115
 	let removeExitHandler;
@@ -288,40 +285,26 @@ const execa = (command, args, options) => {
 		}, parsed.options.timeout);
 	}
 
-	const resolvable = (() => {
-		let extracted;
-		const promise = new Promise(resolve => {
-			extracted = resolve;
-		});
-		promise.resolve = extracted;
-		return promise;
-	})();
-
-	const processDone = new Promise(resolve => {
+	// TODO: Use native "finally" syntax when targeting Node.js 10
+	const processDone = pFinally(new Promise((resolve, reject) => {
 		spawned.on('exit', (code, signal) => {
-			cleanup();
-
 			if (timedOut) {
-				resolvable.resolve([
-					{code, signal}, '', '', ''
-				]);
+				return reject(Object.assign(new Error('Timed out'), {code, signal}));
 			}
 
 			resolve({code, signal});
 		});
 
 		spawned.on('error', error => {
-			cleanup();
-			resolve({error});
+			reject(error);
 		});
 
 		if (spawned.stdin) {
 			spawned.stdin.on('error', error => {
-				cleanup();
-				resolve({error});
+				reject(error);
 			});
 		}
-	});
+	}), cleanup);
 
 	function destroy() {
 		if (spawned.stdout) {
@@ -338,22 +321,21 @@ const execa = (command, args, options) => {
 	}
 
 	const handlePromise = () => {
-		let processComplete = Promise.all([
+		const processComplete = Promise.all([
 			processDone,
 			getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
 			getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
 			getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
 		]);
 
-		if (timeoutId) {
-			processComplete = Promise.race([
-				processComplete,
-				resolvable
-			]);
-		}
-
 		const finalize = async () => {
-			const results = await processComplete;
+			let results;
+			try {
+				results = await processComplete;
+			} catch (error) {
+				const {stream, code, signal} = error;
+				results = [{error, stream, code, signal}, '', '', ''];
+			}
 
 			const [result, stdout, stderr, all] = results;
 			result.stdout = handleOutput(parsed.options, stdout);
@@ -410,7 +392,7 @@ const execa = (command, args, options) => {
 		}
 	};
 
-	// TOOD: Remove the `if`-guard when targeting Node.js 10
+	// TODO: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {
 		spawned.finally = onFinally => handlePromise().finally(onFinally);
 	}
@@ -420,15 +402,15 @@ const execa = (command, args, options) => {
 
 module.exports = execa;
 
-module.exports.sync = (command, args, options) => {
-	const parsed = handleArgs(command, args, options);
-	const joinedCommand = joinCommand(command, args);
+module.exports.sync = (file, args, options) => {
+	const parsed = handleArgs(file, args, options);
+	const joinedCommand = joinCommand(file, args);
 
 	if (isStream(parsed.options.input)) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	const result = childProcess.spawnSync(parsed.command, parsed.args, parsed.options);
+	const result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
 	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
 	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 
@@ -460,6 +442,38 @@ module.exports.sync = (command, args, options) => {
 		isCanceled: false,
 		killed: false
 	};
+};
+
+// Allow spaces to be escaped by a backslash if not meant as a delimiter
+function handleEscaping(tokens, token, index) {
+	if (index === 0) {
+		return [token];
+	}
+
+	const previousToken = tokens[tokens.length - 1];
+
+	if (previousToken.endsWith('\\')) {
+		return [...tokens.slice(0, -1), `${previousToken.slice(0, -1)} ${token}`];
+	}
+
+	return [...tokens, token];
+}
+
+function parseCommand(command) {
+	return command
+		.trim()
+		.split(SPACES_REGEXP)
+		.reduce(handleEscaping, []);
+}
+
+module.exports.command = (command, options) => {
+	const [file, ...args] = parseCommand(command);
+	return execa(file, args, options);
+};
+
+module.exports.commandSync = (command, options) => {
+	const [file, ...args] = parseCommand(command);
+	return execa.sync(file, args, options);
 };
 
 module.exports.node = (filePath, args, options) => {

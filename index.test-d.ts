@@ -119,6 +119,14 @@ execa('unicorns', {maxBuffer: 1000});
 execa('unicorns', {killSignal: 'SIGTERM'});
 execa('unicorns', {killSignal: 9});
 execa('unicorns', {windowsVerbatimArguments: true});
+execa('unicorns').kill();
+execa('unicorns').kill('SIGKILL');
+execa('unicorns').kill(undefined);
+execa('unicorns').kill('SIGKILL', {});
+execa('unicorns').kill('SIGKILL', {forceKill: true});
+execa('unicorns').kill('SIGKILL', {forceKill: false});
+execa('unicorns').kill('SIGKILL', {forceKillAfter: 42});
+execa('unicorns').kill('SIGKILL', {forceKillAfter: undefined});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa('unicorns'));
@@ -146,6 +154,19 @@ expectType<ExecaSyncReturnValue<string>>(
 expectType<ExecaSyncReturnValue<Buffer>>(
 	execa.sync('unicorns', ['foo'], {encoding: null})
 );
+
+expectType<ExecaChildProcess<string>>(execa.command('unicorns'));
+expectType<ExecaReturnValue<string>>(await execa.command('unicorns'));
+expectType<ExecaReturnValue<string>>(await execa.command('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await execa.command('unicorns', {encoding: null}));
+expectType<ExecaReturnValue<string>>(await execa.command('unicorns foo', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await execa.command('unicorns foo', {encoding: null}));
+
+expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns'));
+expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns', {encoding: 'utf8'}));
+expectType<ExecaSyncReturnValue<Buffer>>(execa.commandSync('unicorns', {encoding: null}));
+expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns foo', {encoding: 'utf8'}));
+expectType<ExecaSyncReturnValue<Buffer>>(execa.commandSync('unicorns foo', {encoding: null}));
 
 expectType<ExecaChildProcess<string>>(execa.node('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa.node('unicorns'));

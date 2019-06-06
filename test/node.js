@@ -6,12 +6,12 @@ import path from "path";
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 
 test('node()', async t => {
-	const {exitCode} = await execa.node('fixtures/noop');
+	const {exitCode} = await execa.node('test/fixtures/noop');
 	t.is(exitCode, 0);
 });
 
 test('node pipe stdout', async t => {
-	const {stdout} = await execa.node('fixtures/noop', ['foo'], {
+	const {stdout} = await execa.node('test/fixtures/noop', ['foo'], {
 		stdout: 'pipe'
 	});
 
@@ -37,11 +37,10 @@ test('node pass on execArgv', async t => {
 	t.is(stdout, 'foo');
 });
 
-test('node\'s forked script has a communication channel', async t => {
-	const subprocess = execa.node('fixtures/send.js');
+test.only('node\'s forked script has a communication channel', async t => {
+	const subprocess = execa.node('test/fixtures/send.js');
+	subprocess.send('ping');
 
 	const message = await pEvent(subprocess, 'message');
 	t.is(message, 'pong');
-
-	subprocess.send('ping');
 });

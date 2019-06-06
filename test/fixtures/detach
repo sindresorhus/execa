@@ -3,6 +3,6 @@
 
 const execa = require('../../');
 
-const subprocess = execa('node', ['./fixtures/forever'], {detached: true});
+const subprocess = execa('node', ['./test/fixtures/forever'], {detached: true});
 console.log(subprocess.pid);
 process.exit();

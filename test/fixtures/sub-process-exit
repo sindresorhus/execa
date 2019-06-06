@@ -4,4 +4,4 @@ const execa = require('../../');
 
 const cleanup = process.argv[2] === 'true';
 const detached = process.argv[3] === 'true';
-execa('node', ['./fixtures/noop'], {cleanup, detached});
+execa('node', ['./test/fixtures/noop'], {cleanup, detached});

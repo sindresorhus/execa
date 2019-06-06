@@ -462,13 +462,13 @@ module.exports.sync = (command, args, options) => {
 	};
 };
 
-module.exports.fork = (filePath, args, options) => {
+module.exports.node = (filePath, args, options) => {
 	if (args && !Array.isArray(args) && typeof args === 'object') {
 		options = args;
 		args = [];
 	}
 
-	const stdioOption = stdio.fork(options);
+	const stdioOption = stdio.node(options);
 	options = options || {};
 
 	return execa(

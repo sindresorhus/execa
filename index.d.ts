@@ -192,28 +192,20 @@ declare namespace execa {
 		readonly input?: string | Buffer;
 	}
 
-	interface ForkOptions<EncodingType = string> extends CommonOptions<EncodingType> {
-
+	interface NodeOptions<EncodingType = string> extends CommonOptions<EncodingType> {
 		/**
 		 Executable used to create the child process.
 
-		@default process.execPath
+		 @default process.execPath
 		 */
 		readonly execPath?: string;
 
 		/**
 		 List of string arguments passed to the executable.
 
-		@default process.execArgv
+		 @default process.execArgv
 		 */
 		readonly execArgv?: string[];
-
-		/**
-		 If `true`, set all stdio channels to `'pipe'`.
-
-		@default false
-		 */
-		readonly silent?: boolean;
 	}
 
 	interface ExecaReturnBase<StdoutStderrType> {
@@ -399,18 +391,18 @@ declare const execa: {
 	 @param arguments - Arguments to pass to `file` on execution.
 	 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 	 */
-	fork(
+	node(
 		file: string,
 		arguments?: readonly string[],
 		options?: execa.Options
 	): execa.ExecaChildProcess;
-	fork(
+	node(
 		file: string,
 		arguments?: readonly string[],
 		options?: execa.Options<null>
 	): execa.ExecaChildProcess<Buffer>;
-	fork(file: string, options?: execa.Options): execa.ExecaChildProcess;
-	fork(file: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
+	node(file: string, options?: execa.Options): execa.ExecaChildProcess;
+	node(file: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
 };
 
 export = execa;

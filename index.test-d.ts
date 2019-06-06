@@ -147,15 +147,15 @@ expectType<ExecaSyncReturnValue<Buffer>>(
 	execa.sync('unicorns', ['foo'], {encoding: null})
 );
 
-expectType<ExecaChildProcess<string>>(execa.fork('unicorns'));
-expectType<ExecaReturnValue<string>>(await execa.fork('unicorns'));
+expectType<ExecaChildProcess<string>>(execa.node('unicorns'));
+expectType<ExecaReturnValue<string>>(await execa.node('unicorns'));
 expectType<ExecaReturnValue<string>>(
-	await execa.fork('unicorns', {encoding: 'utf8'})
+	await execa.node('unicorns', {encoding: 'utf8'})
 );
-expectType<ExecaReturnValue<Buffer>>(await execa.fork('unicorns', {encoding: null}));
+expectType<ExecaReturnValue<Buffer>>(await execa.node('unicorns', {encoding: null}));
 expectType<ExecaReturnValue<string>>(
-	await execa.fork('unicorns', ['foo'], {encoding: 'utf8'})
+	await execa.node('unicorns', ['foo'], {encoding: 'utf8'})
 );
 expectType<ExecaReturnValue<Buffer>>(
-	await execa.fork('unicorns', ['foo'], {encoding: null})
+	await execa.node('unicorns', ['foo'], {encoding: null})
 );

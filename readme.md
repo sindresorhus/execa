@@ -146,12 +146,12 @@ Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#chi
 
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
-### execa.fork(file, [arguments], [options])
+### execa.node(file, [arguments], [options])
 
 Run a file through a forked process.
 
 Same as `execa('node', [file, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
-  - the `execPath`, `execArgv` and `silent` options can be used
+  - the `execPath` and `execArgv` options can be used
   - the [`shell`](#shell) option cannot be used 
   - the [`stdio`](#stdio)-related options defaults to `inherit` instead of `pipe`
   - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
@@ -415,26 +415,19 @@ Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
-#### execPath (for `fork` only)
+#### execPath *(for `.node()` only)*
 
 Type: `string`<br>
-Default: `process.execPath`
+Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
 
 Executable used to create the child process.
 
-#### execArgv (for `fork` only)
+#### execArgv *(for `.node()` only)*
 
 Type: `string[]`<br>
-Default: `process.execArgv`
+Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
 
 List of string arguments passed to the executable.
-
-#### silent (for `fork` only)
-
-Type: `boolean`<br>
-Default: `false`
-
-If `true`, set all stdio channels to `'pipe'`.
 
 ## Tips
 

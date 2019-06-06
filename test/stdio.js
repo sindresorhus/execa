@@ -55,21 +55,16 @@ test(stdioMacro, {stdin: 'inherit', stdio: 'pipe'}, new Error('It\'s not possibl
 test(stdioMacro, {stdin: 'inherit', stdio: ['pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 
-const forkMacro = createMacro(stdio.fork);
+const forkMacro = createMacro(stdio.node);
 
-test(forkMacro, undefined, ['inherit', 'inherit', 'inherit', 'ipc']);
+test(forkMacro, undefined, ['pipe', 'pipe', 'pipe', 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 3]}, [0, 1, 2, 3, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 'ipc']}, [0, 1, 2, 'ipc']);
 
-test(forkMacro, {stdout: 'ignore'}, ['inherit', 'ignore', 'inherit', 'ipc']);
-test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, ['inherit', 'ignore', 'ignore', 'ipc']);
-
-test(forkMacro, {silent: true}, ['pipe', 'pipe', 'pipe', 'ipc']);
-test(forkMacro, {silent: true, stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
-test(forkMacro, {silent: true, stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
-test(forkMacro, {silent: true, stdout: 'ignore'}, ['pipe', 'ignore', 'pipe', 'ipc']);
+test(forkMacro, {stdout: 'ignore'}, ['pipe', 'ignore', 'pipe', 'ipc']);
+test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, ['pipe', 'ignore', 'ignore', 'ipc']);
 
 test(forkMacro, {stdio: {foo: 'bar'}}, new TypeError('Expected `stdio` to be of type `string` or `Array`, got `object`'));
 test(forkMacro, {stdin: 'inherit', stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));

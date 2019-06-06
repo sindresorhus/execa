@@ -7,7 +7,7 @@ import getStream from 'get-stream';
 import isRunning from 'is-running';
 import tempfile from 'tempfile';
 import pEvent from 'p-event';
-import execa from '.';
+import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 process.env.FOO = 'foo';
@@ -87,49 +87,49 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
-	await execa('fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
+	await execa('test/fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
 test('pass `stderr` to a file descriptor', async t => {
 	const file = tempfile('.txt');
-	await execa('fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
+	await execa('test/fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
 test('allow string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo bar');
+	const {stdout} = await execa('node test/fixtures/echo foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('allow string arguments in synchronous mode', t => {
-	const {stdout} = execa.sync('node fixtures/echo foo bar');
+	const {stdout} = execa.sync('node test/fixtures/echo foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('forbid string arguments together with array arguments', t => {
 	t.throws(() => {
-		execa('node fixtures/echo foo bar', ['foo', 'bar']);
+		execa('node test/fixtures/echo foo bar', ['foo', 'bar']);
 	}, /Arguments cannot be inside/);
 });
 
 test('ignore consecutive spaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo    bar');
+	const {stdout} = await execa('node test/fixtures/echo foo    bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('escape other whitespaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo\tbar');
+	const {stdout} = await execa('node test/fixtures/echo foo\tbar');
 	t.is(stdout, 'foo\tbar');
 });
 
 test('allow escaping spaces in string arguments', async t => {
-	const {stdout} = await execa('node fixtures/echo foo\\ bar');
+	const {stdout} = await execa('node test/fixtures/echo foo\\ bar');
 	t.is(stdout, 'foo bar');
 });
 
 test('trim string arguments', async t => {
-	const {stdout} = await execa('  node fixtures/echo foo bar  ');
+	const {stdout} = await execa('  node test/fixtures/echo foo bar  ');
 	t.is(stdout, 'foo\nbar');
 });
 
@@ -550,13 +550,13 @@ test('do not extend environment with `extendEnv: false`', async t => {
 });
 
 test('can use `options.shell: true`', async t => {
-	const {stdout} = await execa('node fixtures/noop foo', {shell: true});
+	const {stdout} = await execa('node test/fixtures/noop foo', {shell: true});
 	t.is(stdout, 'foo');
 });
 
 test('can use `options.shell: string`', async t => {
 	const shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/bash';
-	const {stdout} = await execa('node fixtures/noop foo', {shell});
+	const {stdout} = await execa('node test/fixtures/noop foo', {shell});
 	t.is(stdout, 'foo');
 });
 
@@ -705,47 +705,4 @@ test('calling cancel method on a process which has been killed does not make err
 	subprocess.kill();
 	const {isCanceled} = await t.throwsAsync(subprocess);
 	t.false(isCanceled);
-});
-
-test('fork()', async t => {
-	const {exitCode} = await execa.fork('fixtures/noop');
-	t.is(exitCode, 0);
-});
-
-test('fork pipe stdout', async t => {
-	const {stdout} = await execa.fork('fixtures/noop', ['foo'], {
-		stdout: 'pipe'
-	});
-
-	t.is(stdout, 'foo');
-});
-
-test('fork correctly use execPath', async t => {
-	const {stdout} = await execa.fork(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', {
-		stdout: 'pipe',
-		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
-		execArgv: process.platform === 'win32' ? ['/c'] : []
-	});
-
-	t.is(stdout, 'Hello World');
-});
-
-test('fork pass on execArgv', async t => {
-	const {stdout} = await execa.fork('console.log("foo")', {
-		stdout: 'pipe',
-		execArgv: ['-e']
-	});
-
-	t.is(stdout, 'foo');
-});
-
-test.cb('forked script have a communication channel', t => {
-	const subprocess = execa.fork('fixtures/send.js');
-
-	subprocess.on('message', message => {
-		t.is(message, 'pong');
-		t.end();
-	});
-
-	subprocess.send('ping');
 });

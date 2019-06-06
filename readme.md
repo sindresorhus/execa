@@ -162,16 +162,6 @@ Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#chi
 
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
-### execa.node(file, [arguments], [options])
-
-Run a file through a forked process.
-
-Same as `execa('node', [file, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
-  - the `execPath` and `execArgv` options can be used
-  - the [`shell`](#shell) option cannot be used 
-  - the [`stdio`](#stdio)-related options defaults to `inherit` instead of `pipe`
-  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
-
 ### execa.sync(file, [arguments], [options])
 
 Execute a file synchronously.
@@ -189,6 +179,15 @@ If the file or an argument contains spaces, they must be escaped with backslashe
 Same as [`execa.command()`](#execacommand-command-options) but synchronous.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### execa.node(file, [arguments], [options])
+
+Run a file through a forked process.
+
+Same as `execa('node', [file, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
+  - the `execPath` and `execArgv` options can be used
+  - the [`shell`](#shell) option cannot be used 
+  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
 ### childProcessResult
 
@@ -447,14 +446,14 @@ If `true`, no quoting or escaping of arguments is done on Windows. Ignored on ot
 Type: `string`<br>
 Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
 
-Executable used to create the child process.
+Node.js executable used to create the child process.
 
 #### execArgv *(for `.node()` only)*
 
 Type: `string[]`<br>
 Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
 
-List of string arguments passed to the executable.
+List of string arguments passed to the node.js executable.
 
 ## Tips
 

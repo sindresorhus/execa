@@ -7,7 +7,9 @@ util.inspect.styles.name = 'magenta';
 function createMacro(func) {
 	const macro = (t, input, expected) => {
 		if (expected instanceof Error) {
-			t.throws(() => stdio(input), expected.message);
+			t.throws(() => {
+				stdio(input);
+			}, expected.message);
 			return;
 		}
 

@@ -117,7 +117,7 @@ test('skip throwing when using reject option in sync mode', t => {
 });
 
 test('execa() with .kill() after it with SIGKILL should kill cleanly', async t => {
-	const subprocess = execa('node', ['fixtures/no-killable'], {
+	const subprocess = execa('node', ['./test/fixtures/no-killable'], {
 		stdio: ['ipc']
 	});
 
@@ -133,7 +133,7 @@ test('execa() with .kill() after it with SIGKILL should kill cleanly', async t =
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
 	test('execa() with .kill() after it with SIGTERM should not kill (no retry)', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {
+		const subprocess = execa('node', ['./test/fixtures/no-killable'], {
 			stdio: ['ipc']
 		});
 
@@ -149,7 +149,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('execa() with .kill() after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {
+		const subprocess = execa('node', ['./test/fixtures/no-killable'], {
 			stdio: ['ipc']
 		});
 
@@ -164,7 +164,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('execa() with .kill() after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {
+		const subprocess = execa('node', ['./test/fixtures/no-killable'], {
 			stdio: ['ipc']
 		});
 
@@ -755,12 +755,12 @@ test('calling cancel method on a process which has been killed does not make err
 });
 
 test('allow commands with spaces and no array arguments', async t => {
-	const {stdout} = await execa('./fixtures/command with space');
+	const {stdout} = await execa('command with space');
 	t.is(stdout, '');
 });
 
 test('allow commands with spaces and array arguments', async t => {
-	const {stdout} = await execa('./fixtures/command with space', ['foo', 'bar']);
+	const {stdout} = await execa('command with space', ['foo', 'bar']);
 	t.is(stdout, 'foo\nbar');
 });
 
@@ -775,7 +775,7 @@ test('execa.command() ignores consecutive spaces', async t => {
 });
 
 test('execa.command() allows escaping spaces in commands', async t => {
-	const {stdout} = await execa.command('./fixtures/command\\ with\\ space foo bar');
+	const {stdout} = await execa.command('command\\ with\\ space foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 

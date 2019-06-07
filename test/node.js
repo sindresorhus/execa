@@ -38,7 +38,7 @@ test('node pass on execArgv', async t => {
 });
 
 test('node\'s forked script has a communication channel', async t => {
-	const subprocess = execa.node('test/fixtures/send.js');
+	const subprocess = execa.node('test/fixtures/send');
 	subprocess.send('ping');
 
 	const message = await pEvent(subprocess, 'message');

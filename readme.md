@@ -453,7 +453,7 @@ Node.js executable used to create the child process.
 Type: `string[]`<br>
 Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
 
-List of string arguments passed to the node.js executable.
+List of string arguments passed to the Node.js executable.
 
 ## Tips
 

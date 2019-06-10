@@ -138,12 +138,12 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 function makeError(result, options) {
 	const {stdout, stderr, signal} = result;
 	let {error} = result;
-	const {code, joinedCommand, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
+	const {code, command, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
 	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
-	const message = `Command ${prefix}: ${joinedCommand}`;
+	const message = `Command ${prefix}: ${command}`;
 
 	if (error instanceof Error) {
 		error.message = `${message}\n${error.message}`;
@@ -151,7 +151,7 @@ function makeError(result, options) {
 		error = new Error(message);
 	}
 
-	error.command = joinedCommand;
+	error.command = command;
 	delete error.code;
 	error.exitCode = exitCode;
 	error.exitCodeName = exitCodeName;
@@ -241,14 +241,14 @@ function shouldForceKill(signal, options, killResult) {
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
-	const joinedCommand = joinCommand(file, args);
+	const command = joinCommand(file, args);
 
 	let spawned;
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		return Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
-			joinedCommand,
+			command,
 			parsed,
 			timedOut: false,
 			isCanceled: false,
@@ -350,7 +350,7 @@ const execa = (file, args, options) => {
 			if (result.error || result.code !== 0 || result.signal !== null) {
 				const error = makeError(result, {
 					code: result.code,
-					joinedCommand,
+					command,
 					parsed,
 					timedOut,
 					isCanceled,
@@ -365,7 +365,7 @@ const execa = (file, args, options) => {
 			}
 
 			return {
-				command: joinedCommand,
+				command,
 				exitCode: 0,
 				exitCodeName: 'SUCCESS',
 				stdout: result.stdout,
@@ -409,7 +409,7 @@ module.exports = execa;
 
 module.exports.sync = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
-	const joinedCommand = joinCommand(file, args);
+	const command = joinCommand(file, args);
 
 	if (isStream(parsed.options.input)) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
@@ -422,7 +422,7 @@ module.exports.sync = (file, args, options) => {
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
 			code: result.status,
-			joinedCommand,
+			command,
 			parsed,
 			timedOut: result.error && result.error.errno === 'ETIMEDOUT',
 			isCanceled: false,
@@ -437,7 +437,7 @@ module.exports.sync = (file, args, options) => {
 	}
 
 	return {
-		command: joinedCommand,
+		command,
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
 		stdout: result.stdout,

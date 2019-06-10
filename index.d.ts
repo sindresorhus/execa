@@ -195,7 +195,7 @@ declare namespace execa {
 
 	interface ExecaReturnBase<StdoutStderrType> {
 		/**
-		The command that was run.
+		The file and arguments that were run.
 		*/
 		command: string;
 

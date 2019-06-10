@@ -12,6 +12,7 @@ const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const stdio = require('./lib/stdio');
+const mergePrototypes = require('./lib/merge');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
@@ -275,13 +276,16 @@ const execa = (file, args, options) => {
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		return Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
+		const promise = Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
 			command,
 			parsed,
 			timedOut: false,
 			isCanceled: false,
 			killed: false
 		}));
+		// We make sure `child_process` properties are present even though no child process was created.
+		// This is to ensure the return value always has the same shape.
+		return mergePrototypes(promise, new childProcess.ChildProcess());
 	}
 
 	const kill = spawned.kill.bind(spawned);

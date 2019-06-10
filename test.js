@@ -301,6 +301,15 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof pid, 'number');
 });
 
+test('child_process.spawn() propagated errors have correct shape', t => {
+	const cp = execa('noop', {uid: -1});
+	t.notThrows(() => {
+		cp.catch(() => {});
+		cp.unref();
+		cp.on('error', () => {});
+	});
+});
+
 test('child_process.spawn() errors are propagated', async t => {
 	const {failed} = await t.throwsAsync(execa('noop', {uid: -1}));
 	t.true(failed);

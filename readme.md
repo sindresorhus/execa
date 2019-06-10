@@ -117,7 +117,7 @@ try {
 const subprocess = execa('node');
 setTimeout(() => {
 	subprocess.kill('SIGTERM', {
-		forceKillAfter: 2000
+		forceKillAfterTimeout: 2000
 	});
 }, 1000);
 ```
@@ -140,19 +140,14 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
 
 Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
 
-##### options.forceKill
+##### options.forceKillAfterTimeout
 
-Type: `boolean`<br>
-Default: `true`
-
-If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
-
-##### options.forceKillAfter
-
-Type: `string`<br>
+Type: `boolean | number`<br>
 Default: `5000`
 
 Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
+
+Can be disabled with `false`.
 
 #### cancel()
 

@@ -281,18 +281,13 @@ declare namespace execa {
 
 	interface KillOptions {
 		/**
-		If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
-
-		@default true
-		*/
-		forceKill?: boolean;
-
-		/**
 		Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
+
+		Can be disabled with `false`.
 
 		@default 5000
 		*/
-		forceKillAfter?: number;
+		forceKillAfterTimeout?: boolean | number;
 	}
 
 	interface ExecaChildPromise<StdoutErrorType> {

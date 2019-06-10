@@ -224,19 +224,28 @@ function setKillTimeout(kill, signal, options, killResult) {
 		return;
 	}
 
-	const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
-		options.forceKillAfter :
-		5000;
-	setTimeout(() => kill('SIGKILL'), forceKillAfter).unref();
+	const timeout = getForceKillAfterTimeout(options);
+	setTimeout(() => kill('SIGKILL'), timeout).unref();
 }
 
-function shouldForceKill(signal, options, killResult) {
-	return ((typeof signal === 'string' &&
-		signal.toUpperCase() === 'SIGTERM') ||
-		signal === os.constants.signals.SIGTERM) &&
-		options.forceKill !== false &&
-		killResult;
+function shouldForceKill(signal, {forceKill}, killResult) {
+	return isSigterm(signal) && forceKill !== false && killResult;
 }
+
+function isSigterm(signal) {
+	return signal === os.constants.signals.SIGTERM ||
+		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
+}
+
+function getForceKillAfterTimeout({forceKillAfter}) {
+	if (Number.isInteger(forceKillAfter)) {
+		return forceKillAfter;
+	}
+
+	return DEFAULT_FORCE_KILL_TIMEOUT;
+}
+
+const DEFAULT_FORCE_KILL_TIMEOUT = 5000;
 
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);

@@ -294,10 +294,10 @@ test('child_process.spawn() errors are propagated', async t => {
 });
 
 test('child_process.spawnSync() errors are propagated with a correct shape', t => {
-	const {exitCodeName} = t.throws(() => {
+	const {failed} = t.throws(() => {
 		execa.sync('noop', {timeout: -1});
 	});
-	t.is(exitCodeName, 'ERR_OUT_OF_RANGE');
+	t.true(failed);
 });
 
 test('maxBuffer affects stdout', async t => {

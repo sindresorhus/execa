@@ -226,7 +226,9 @@ function setKillTimeout(kill, signal, options, killResult) {
 	}
 
 	const timeout = getForceKillAfterTimeout(options);
-	setTimeout(() => kill('SIGKILL'), timeout).unref();
+	setTimeout(() => {
+		kill('SIGKILL');
+	}, timeout).unref();
 }
 
 function shouldForceKill(signal, {forceKill}, killResult) {

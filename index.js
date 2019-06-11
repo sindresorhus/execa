@@ -242,7 +242,7 @@ function isSigterm(signal) {
 
 function getForceKillAfterTimeout({forceKillAfter = DEFAULT_FORCE_KILL_TIMEOUT}) {
 	if (!Number.isInteger(forceKillAfter) || forceKillAfter < 0) {
-		throw new TypeError(`Option 'forceKillAfter' ${forceKillAfter} should be a positive integer`);
+		throw new TypeError(`Expected the \`forceKillAfter\` option to be a non-negative integer, got \`${forceKillAfter}\` (${typeof forceKillAfter})`);
 	}
 
 	return forceKillAfter;

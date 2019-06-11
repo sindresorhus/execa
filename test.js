@@ -293,11 +293,11 @@ test('child_process.spawn() errors are propagated', async t => {
 	t.is(exitCodeName, process.platform === 'win32' ? 'ENOTSUP' : 'EINVAL');
 });
 
-test('child_process.spawnSync() errors are propagated', t => {
-	const {exitCodeName} = t.throws(() => {
-		execa.sync('noop', {uid: -1});
+test('child_process.spawnSync() errors are propagated with a correct shape', t => {
+	const {failed} = t.throws(() => {
+		execa.sync('noop', {timeout: -1});
 	});
-	t.is(exitCodeName, process.platform === 'win32' ? 'ENOTSUP' : 'EINVAL');
+	t.true(failed);
 });
 
 test('maxBuffer affects stdout', async t => {

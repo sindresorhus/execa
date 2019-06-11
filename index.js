@@ -415,7 +415,19 @@ module.exports.sync = (file, args, options) => {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	const result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
+	let result;
+	try {
+		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
+	} catch (error) {
+		throw makeError({error, stdout: '', stderr: '', all: ''}, {
+			joinedCommand,
+			parsed,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		});
+	}
+
 	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
 	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 

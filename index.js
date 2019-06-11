@@ -14,6 +14,7 @@ const onExit = require('signal-exit');
 const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
+const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 const SPACES_REGEXP = / +/g;
 
@@ -244,8 +245,6 @@ function getForceKillAfterTimeout({forceKillAfter}) {
 
 	return DEFAULT_FORCE_KILL_TIMEOUT;
 }
-
-const DEFAULT_FORCE_KILL_TIMEOUT = 5000;
 
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);

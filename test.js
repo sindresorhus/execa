@@ -289,8 +289,8 @@ test('execa() returns a promise with kill() and pid', t => {
 });
 
 test('child_process.spawn() errors are propagated', async t => {
-	const {exitCodeName} = await t.throwsAsync(execa('noop', {uid: -1}));
-	t.is(exitCodeName, process.platform === 'win32' ? 'ENOTSUP' : 'EINVAL');
+	const {failed} = await t.throwsAsync(execa('noop', {uid: -1}));
+	t.true(failed);
 });
 
 test('child_process.spawnSync() errors are propagated with a correct shape', t => {

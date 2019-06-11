@@ -420,7 +420,7 @@ module.exports.sync = (file, args, options) => {
 		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		throw makeError({error, stdout: '', stderr: '', all: ''}, {
-			joinedCommand,
+			command,
 			parsed,
 			timedOut: false,
 			isCanceled: false,

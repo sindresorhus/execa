@@ -177,7 +177,9 @@ if (process.platform !== 'win32') {
 	});
 
 	test('.kill() `forceKillAfter` should not be a float', t => {
-		t.throws(() => execa('noop').kill('SIGTERM', {forceKillAfter: 0.5}), TypeError);
+		t.throws(() => {
+			execa('noop').kill('SIGTERM', {forceKillAfter: 0.5});
+		}, TypeError);
 	});
 
 	test('.kill() `forceKillAfter` should not be negative', t => {

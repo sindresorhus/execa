@@ -240,12 +240,12 @@ function isSigterm(signal) {
 		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
 }
 
-function getForceKillAfterTimeout({forceKillAfter}) {
-	if (Number.isInteger(forceKillAfter)) {
-		return forceKillAfter;
+function getForceKillAfterTimeout({forceKillAfter = DEFAULT_FORCE_KILL_TIMEOUT}) {
+	if (!Number.isInteger(forceKillAfter) || forceKillAfter < 0) {
+		throw new TypeError(`Option 'forceKillAfter' ${forceKillAfter} should be a positive integer`);
 	}
 
-	return DEFAULT_FORCE_KILL_TIMEOUT;
+	return forceKillAfter;
 }
 
 const execa = (file, args, options) => {

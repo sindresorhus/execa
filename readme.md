@@ -152,7 +152,7 @@ If the first signal does not terminate the child process after a specified timeo
 Type: `string`<br>
 Default: `5000`
 
-Milliseconds to wait for the child process to terminate before sending a `SIGKILL` signal.
+Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
 
 #### cancel()
 

@@ -116,11 +116,8 @@ test('skip throwing when using reject option in sync mode', t => {
 	t.is(exitCode, 2);
 });
 
-test('execa() with .kill() after it with SIGKILL should kill cleanly', async t => {
-	const subprocess = execa('node', ['fixtures/no-killable'], {
-		stdio: ['ipc']
-	});
-
+test('kill("SIGKILL") should terminate cleanly', async t => {
+	const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
 	await pEvent(subprocess, 'message');
 
 	subprocess.kill('SIGKILL');
@@ -132,42 +129,38 @@ test('execa() with .kill() after it with SIGKILL should kill cleanly', async t =
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
-	test('execa() with .kill() after it with SIGTERM should not kill (no retry)', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {
-			stdio: ['ipc']
-		});
-
+	test('`forceKill: false` should not kill after a timeout', async t => {
+		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {
-			forceKill: false,
-			forceKillAfter: 50
-		});
+		subprocess.kill('SIGTERM', {forceKill: false, forceKillAfter: 50});
 
 		t.true(isRunning(subprocess.pid));
 		subprocess.kill('SIGKILL');
 	});
 
-	test('execa() with .kill() after it with SIGTERM should kill after 50 ms with SIGKILL', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {
-			stdio: ['ipc']
-		});
-
+	test('`forceKillAfter: number` should kill after a timeout', async t => {
+		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {
-			forceKillAfter: 50
-		});
+		subprocess.kill('SIGTERM', {forceKillAfter: 50});
 
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('execa() with .kill() after it with nothing (undefined) should kill after 50 ms with SIGKILL', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {
-			stdio: ['ipc']
-		});
+	test('`forceKill: true` should kill after a timeout', async t => {
+		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
+		await pEvent(subprocess, 'message');
 
+		subprocess.kill('SIGTERM', {forceKill: true});
+
+		const {signal} = await t.throwsAsync(subprocess);
+		t.is(signal, 'SIGKILL');
+	});
+
+	test('kill() with no arguments should kill after a timeout', async t => {
+		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill();
@@ -176,13 +169,13 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('.kill() `forceKillAfter` should not be a float', t => {
+	test('`forceKillAfter` should not be a float', t => {
 		t.throws(() => {
 			execa('noop').kill('SIGTERM', {forceKillAfter: 0.5});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
 
-	test('.kill() `forceKillAfter` should not be negative', t => {
+	test('`forceKillAfter` should not be negative', t => {
 		t.throws(() => {
 			execa('noop').kill('SIGTERM', {forceKillAfter: -1});
 		}, {instanceOf: TypeError, message: /non-negative integer/});

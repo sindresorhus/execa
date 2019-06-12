@@ -14,6 +14,7 @@ const onExit = require('signal-exit');
 const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
+const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 const SPACES_REGEXP = / +/g;
 
@@ -224,18 +225,27 @@ function setKillTimeout(kill, signal, options, killResult) {
 		return;
 	}
 
-	const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
-		options.forceKillAfter :
-		5000;
-	setTimeout(() => kill('SIGKILL'), forceKillAfter).unref();
+	const timeout = getForceKillAfterTimeout(options);
+	setTimeout(() => {
+		kill('SIGKILL');
+	}, timeout).unref();
 }
 
-function shouldForceKill(signal, options, killResult) {
-	return ((typeof signal === 'string' &&
-		signal.toUpperCase() === 'SIGTERM') ||
-		signal === os.constants.signals.SIGTERM) &&
-		options.forceKill !== false &&
-		killResult;
+function shouldForceKill(signal, {forceKill}, killResult) {
+	return isSigterm(signal) && forceKill !== false && killResult;
+}
+
+function isSigterm(signal) {
+	return signal === os.constants.signals.SIGTERM ||
+		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
+}
+
+function getForceKillAfterTimeout({forceKillAfter = DEFAULT_FORCE_KILL_TIMEOUT}) {
+	if (!Number.isInteger(forceKillAfter) || forceKillAfter < 0) {
+		throw new TypeError(`Expected the \`forceKillAfter\` option to be a non-negative integer, got \`${forceKillAfter}\` (${typeof forceKillAfter})`);
+	}
+
+	return forceKillAfter;
 }
 
 const execa = (file, args, options) => {

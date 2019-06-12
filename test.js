@@ -175,6 +175,18 @@ if (process.platform !== 'win32') {
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
 	});
+
+	test('.kill() `forceKillAfter` should not be a float', t => {
+		t.throws(() => {
+			execa('noop').kill('SIGTERM', {forceKillAfter: 0.5});
+		}, {instanceOf: TypeError, message: /non-negative integer/});
+	});
+
+	test('.kill() `forceKillAfter` should not be negative', t => {
+		t.throws(() => {
+			execa('noop').kill('SIGTERM', {forceKillAfter: -1});
+		}, {instanceOf: TypeError, message: /non-negative integer/});
+	});
 }
 
 test('stripFinalNewline: true', async t => {

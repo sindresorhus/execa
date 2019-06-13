@@ -194,14 +194,14 @@ declare namespace execa {
 
 	interface NodeOptions<EncodingType = string> extends CommonOptions<EncodingType> {
 		/**
-		 Executable used to create the child process.
+		The Node.js executable to use.
 
 		@default process.execPath
 		*/
 		readonly nodePath?: string;
 
 		/**
-		 List of string arguments passed to the executable.
+		List of string arguments passed to the Node.js executable.
 
 		@default process.execArgv
 		*/
@@ -437,12 +437,12 @@ declare const execa: {
 	commandSync(command: string, options?: execa.SyncOptions<null>): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**
-	 Run a file through a forked process.
+	Execute a Node.js file as a child process.
 
-	 @param scriptPath - Node.js script to execute.
-	 @param arguments - Arguments to pass to `file` on execution.
-	 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
-	 */
+	@param scriptPath - Node.js script to execute.
+	@param arguments - Arguments to pass to `file` on execution.
+	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+	*/
 	node(
 		scriptPath: string,
 		arguments?: readonly string[],

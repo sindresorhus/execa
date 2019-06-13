@@ -196,16 +196,16 @@ declare namespace execa {
 		/**
 		 Executable used to create the child process.
 
-		 @default process.execPath
-		 */
-		readonly execPath?: string;
+		@default process.execPath
+		*/
+		readonly nodePath?: string;
 
 		/**
 		 List of string arguments passed to the executable.
 
-		 @default process.execArgv
-		 */
-		readonly execArgv?: string[];
+		@default process.execArgv
+		*/
+		readonly nodeArguments?: string[];
 	}
 
 	interface ExecaReturnBase<StdoutStderrType> {
@@ -439,12 +439,12 @@ declare const execa: {
 	/**
 	 Run a file through a forked process.
 
-	 @param file - The program/script to execute.
+	 @param scriptPath - Node.js script to execute.
 	 @param arguments - Arguments to pass to `file` on execution.
 	 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 	 */
 	node(
-		file: string,
+		scriptPath: string,
 		arguments?: readonly string[],
 		options?: execa.Options
 	): execa.ExecaChildProcess;

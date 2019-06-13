@@ -476,7 +476,7 @@ module.exports.commandSync = (command, options) => {
 	return execa.sync(file, args, options);
 };
 
-module.exports.node = (filePath, args, options) => {
+module.exports.node = (scriptPath, args, options) => {
 	if (args && !Array.isArray(args) && typeof args === 'object') {
 		options = args;
 		args = [];
@@ -486,10 +486,10 @@ module.exports.node = (filePath, args, options) => {
 	options = options || {};
 
 	return execa(
-		options.execPath || process.execPath,
+		options.nodePath || process.execPath,
 		[
-			...(options.execArgv || process.execArgv),
-			filePath,
+			...(options.nodeArguments || process.execArgv),
+			scriptPath,
 			...(Array.isArray(args) ? args : [])
 		],
 		{

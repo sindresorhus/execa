@@ -18,20 +18,20 @@ test('node pipe stdout', async t => {
 	t.is(stdout, 'foo');
 });
 
-test('node correctly use execPath', async t => {
+test('node correctly use nodePath', async t => {
 	const {stdout} = await execa.node(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', {
 		stdout: 'pipe',
-		execPath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
-		execArgv: process.platform === 'win32' ? ['/c'] : []
+		nodePath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
+		nodeArguments: process.platform === 'win32' ? ['/c'] : []
 	});
 
 	t.is(stdout, 'Hello World');
 });
 
-test('node pass on execArgv', async t => {
+test('node pass on nodeArguments', async t => {
 	const {stdout} = await execa.node('console.log("foo")', {
 		stdout: 'pipe',
-		execArgv: ['-e']
+		nodeArguments: ['-e']
 	});
 
 	t.is(stdout, 'foo');

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const execa = require('../../');
+const execa = require('../..');
 
 const subprocess = execa('node', ['./test/fixtures/forever'], {detached: true});
 console.log(subprocess.pid);

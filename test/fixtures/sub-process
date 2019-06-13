@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-const execa = require('../../');
+const execa = require('../..');
 
 const cleanup = process.argv[2] === 'true';
 const detached = process.argv[3] === 'true';

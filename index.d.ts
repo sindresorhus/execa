@@ -192,7 +192,7 @@ declare namespace execa {
 		readonly input?: string | Buffer;
 	}
 
-	interface NodeOptions<EncodingType = string> extends CommonOptions<EncodingType> {
+	interface NodeOptions<EncodingType = string> extends Options<EncodingType> {
 		/**
 		The Node.js executable to use.
 
@@ -446,7 +446,7 @@ declare const execa: {
 	node(
 		scriptPath: string,
 		arguments?: readonly string[],
-		options?: execa.Options
+		options?: execa.NodeOptions
 	): execa.ExecaChildProcess;
 	node(
 		file: string,

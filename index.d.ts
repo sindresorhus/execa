@@ -287,7 +287,7 @@ declare namespace execa {
 
 		@default 5000
 		*/
-		forceKillAfterTimeout?: boolean | number;
+		forceKillAfterTimeout?: number | false;
 	}
 
 	interface ExecaChildPromise<StdoutErrorType> {

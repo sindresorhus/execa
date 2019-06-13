@@ -210,7 +210,7 @@ declare namespace execa {
 
 	interface ExecaReturnBase<StdoutStderrType> {
 		/**
-		The command that was run.
+		The file and arguments that were run.
 		*/
 		command: string;
 
@@ -303,7 +303,7 @@ declare namespace execa {
 		forceKill?: boolean;
 
 		/**
-		Milliseconds to wait for the child process to terminate before sending a `SIGKILL` signal.
+		Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
 
 		@default 5000
 		*/

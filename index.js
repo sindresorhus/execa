@@ -14,6 +14,7 @@ const onExit = require('signal-exit');
 const stdio = require('./lib/stdio');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
+const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 const SPACES_REGEXP = / +/g;
 
@@ -138,12 +139,12 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 function makeError(result, options) {
 	const {stdout, stderr, signal} = result;
 	let {error} = result;
-	const {code, joinedCommand, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
+	const {code, command, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
 
 	const [exitCodeName, exitCode] = getCode(result, code);
 
 	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
-	const message = `Command ${prefix}: ${joinedCommand}`;
+	const message = `Command ${prefix}: ${command}`;
 
 	if (error instanceof Error) {
 		error.message = `${message}\n${error.message}`;
@@ -151,7 +152,7 @@ function makeError(result, options) {
 		error = new Error(message);
 	}
 
-	error.command = joinedCommand;
+	error.command = command;
 	delete error.code;
 	error.exitCode = exitCode;
 	error.exitCodeName = exitCodeName;
@@ -213,25 +214,51 @@ function joinCommand(file, args = []) {
 	return [file, ...args].join(' ');
 }
 
-function shouldForceKill(signal, options, killResult) {
-	return ((typeof signal === 'string' &&
-		signal.toUpperCase() === 'SIGTERM') ||
-		signal === os.constants.signals.SIGTERM) &&
-		options.forceKill !== false &&
-		killResult;
+function spawnedKill(kill, signal = 'SIGTERM', options = {}) {
+	const killResult = kill(signal);
+	setKillTimeout(kill, signal, options, killResult);
+	return killResult;
+}
+
+function setKillTimeout(kill, signal, options, killResult) {
+	if (!shouldForceKill(signal, options, killResult)) {
+		return;
+	}
+
+	const timeout = getForceKillAfterTimeout(options);
+	setTimeout(() => {
+		kill('SIGKILL');
+	}, timeout).unref();
+}
+
+function shouldForceKill(signal, {forceKill}, killResult) {
+	return isSigterm(signal) && forceKill !== false && killResult;
+}
+
+function isSigterm(signal) {
+	return signal === os.constants.signals.SIGTERM ||
+		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
+}
+
+function getForceKillAfterTimeout({forceKillAfter = DEFAULT_FORCE_KILL_TIMEOUT}) {
+	if (!Number.isInteger(forceKillAfter) || forceKillAfter < 0) {
+		throw new TypeError(`Expected the \`forceKillAfter\` option to be a non-negative integer, got \`${forceKillAfter}\` (${typeof forceKillAfter})`);
+	}
+
+	return forceKillAfter;
 }
 
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
-	const joinedCommand = joinCommand(file, args);
+	const command = joinCommand(file, args);
 
 	let spawned;
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		return Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
-			joinedCommand,
+			command,
 			parsed,
 			timedOut: false,
 			isCanceled: false,
@@ -239,20 +266,8 @@ const execa = (file, args, options) => {
 		}));
 	}
 
-	const originalKill = spawned.kill.bind(spawned);
-	spawned.kill = (signal = 'SIGTERM', options = {}) => {
-		const killResult = originalKill(signal);
-		if (shouldForceKill(signal, options, killResult)) {
-			const forceKillAfter = Number.isInteger(options.forceKillAfter) ?
-				options.forceKillAfter :
-				5000;
-			setTimeout(() => {
-				originalKill('SIGKILL');
-			}, forceKillAfter).unref();
-		}
-
-		return killResult;
-	};
+	const kill = spawned.kill.bind(spawned);
+	spawned.kill = spawnedKill.bind(null, kill);
 
 	// #115
 	let removeExitHandler;
@@ -345,7 +360,7 @@ const execa = (file, args, options) => {
 			if (result.error || result.code !== 0 || result.signal !== null) {
 				const error = makeError(result, {
 					code: result.code,
-					joinedCommand,
+					command,
 					parsed,
 					timedOut,
 					isCanceled,
@@ -360,7 +375,7 @@ const execa = (file, args, options) => {
 			}
 
 			return {
-				command: joinedCommand,
+				command,
 				exitCode: 0,
 				exitCodeName: 'SUCCESS',
 				stdout: result.stdout,
@@ -404,20 +419,32 @@ module.exports = execa;
 
 module.exports.sync = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
-	const joinedCommand = joinCommand(file, args);
+	const command = joinCommand(file, args);
 
 	if (isStream(parsed.options.input)) {
 		throw new TypeError('The `input` option cannot be a stream in sync mode');
 	}
 
-	const result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
+	let result;
+	try {
+		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
+	} catch (error) {
+		throw makeError({error, stdout: '', stderr: '', all: ''}, {
+			command,
+			parsed,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		});
+	}
+
 	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
 	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError(result, {
 			code: result.status,
-			joinedCommand,
+			command,
 			parsed,
 			timedOut: result.error && result.error.errno === 'ETIMEDOUT',
 			isCanceled: false,
@@ -432,7 +459,7 @@ module.exports.sync = (file, args, options) => {
 	}
 
 	return {
-		command: joinedCommand,
+		command,
 		exitCode: 0,
 		exitCodeName: 'SUCCESS',
 		stdout: result.stdout,

@@ -142,7 +142,7 @@ Same as the original [`child_process#kill()`](https://nodejs.org/api/child_proce
 
 ##### options.forceKillAfterTimeout
 
-Type: `boolean | number`<br>
+Type: `number | false`<br>
 Default: `5000`
 
 Milliseconds to wait for the child process to terminate before sending `SIGKILL`.

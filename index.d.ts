@@ -161,7 +161,7 @@ declare namespace execa {
 		/**
 		Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 100 MB.
 
-		@default 10000000
+		@default 100_000_000
 		*/
 		readonly maxBuffer?: number;
 

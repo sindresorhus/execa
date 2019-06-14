@@ -411,7 +411,7 @@ If timeout is greater than `0`, the parent will send the signal identified by th
 #### maxBuffer
 
 Type: `number`<br>
-Default: `100000000` (100 MB)
+Default: `100_000_000` (100 MB)
 
 Largest amount of data in bytes allowed on `stdout` or `stderr`.
 

@@ -106,6 +106,20 @@ function makeAllStream(spawned) {
 	return mixed;
 }
 
+async function getBufferedData(stream, streamPromise) {
+	if (!stream) {
+		return;
+	}
+
+	stream.destroy();
+
+	try {
+		return await streamPromise;
+	} catch (error) {
+		return error.bufferedData;
+	}
+}
+
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 	if (!process[stream]) {
 		return;
@@ -129,11 +143,7 @@ function getStream(process, stream, {encoding, buffer, maxBuffer}) {
 		ret = _getStream.buffer(process[stream], {maxBuffer});
 	}
 
-	return ret.catch(error => {
-		error.stream = stream;
-		error.message = `${stream} ${error.message}`;
-		throw error;
-	});
+	return ret;
 }
 
 function makeError(result, options) {
@@ -161,6 +171,10 @@ function makeError(result, options) {
 
 	if ('all' in result) {
 		error.all = result.all;
+	}
+
+	if ('bufferedData' in error) {
+		delete error.bufferedData;
 	}
 
 	error.failed = true;
@@ -325,35 +339,23 @@ const execa = (file, args, options) => {
 		}
 	}), cleanup);
 
-	function destroy() {
-		if (spawned.stdout) {
-			spawned.stdout.destroy();
-		}
-
-		if (spawned.stderr) {
-			spawned.stderr.destroy();
-		}
-
-		if (spawned.all) {
-			spawned.all.destroy();
-		}
-	}
-
 	const handlePromise = () => {
-		const processComplete = Promise.all([
-			processDone,
-			getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-			getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
-			getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
-		]);
+		const stdoutPromise = getStream(spawned, 'stdout', {encoding, buffer, maxBuffer});
+		const stderrPromise = getStream(spawned, 'stderr', {encoding, buffer, maxBuffer});
+		const allPromise = getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2});
 
 		const finalize = async () => {
 			let results;
 			try {
-				results = await processComplete;
+				results = await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
 			} catch (error) {
-				const {stream, code, signal} = error;
-				results = [{error, stream, code, signal}, '', '', ''];
+				const {code, signal} = error;
+				results = await Promise.all([
+					{error, code, signal},
+					getBufferedData(spawned.stdout, stdoutPromise),
+					getBufferedData(spawned.stderr, stderrPromise),
+					getBufferedData(spawned.all, allPromise)
+				]);
 			}
 
 			const [result, stdout, stderr, all] = results;
@@ -392,8 +394,7 @@ const execa = (file, args, options) => {
 			};
 		};
 
-		// TODO: Use native "finally" syntax when targeting Node.js 10
-		return pFinally(finalize(), destroy);
+		return finalize();
 	};
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);

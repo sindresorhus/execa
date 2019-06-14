@@ -229,7 +229,14 @@ function joinCommand(file, args = []) {
 }
 
 function mergePromiseProperty(spawned, getPromise, property) {
-	spawned[property] = (...args) => getPromise()[property](...args);
+	Object.defineProperty(spawned, property, {
+		value(...args) {
+			return getPromise()[property](...args);
+		},
+		writable: true,
+		enumerable: false,
+		configurable: true
+	});
 }
 
 // The return value is a mixin of `childProcess` and `Promise`

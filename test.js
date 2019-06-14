@@ -673,6 +673,16 @@ test('removes exit handler on exit', async t => {
 	t.false(included);
 });
 
+test('promise methods are not enumerable', t => {
+	const promise = execa('noop');
+	t.false(Object.getOwnPropertyDescriptor(promise, 'then').enumerable);
+	t.false(Object.getOwnPropertyDescriptor(promise, 'catch').enumerable);
+	// TOOD: Remove the `if`-guard when targeting Node.js 10
+	if (Promise.prototype.finally) {
+		t.false(Object.getOwnPropertyDescriptor(promise, 'finally').enumerable);
+	}
+});
+
 // TOOD: Remove the `if`-guard when targeting Node.js 10
 if (Promise.prototype.finally) {
 	test('finally function is executed on success', async t => {

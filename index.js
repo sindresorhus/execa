@@ -13,7 +13,7 @@ const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const stdio = require('./lib/stdio');
 
-const TEN_MEGABYTES = 1000 * 1000 * 10;
+const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 const SPACES_REGEXP = / +/g;
@@ -25,7 +25,7 @@ function handleArgs(file, args, options = {}) {
 	options = parsed.options;
 
 	options = {
-		maxBuffer: TEN_MEGABYTES,
+		maxBuffer: DEFAULT_MAX_BUFFER,
 		buffer: true,
 		stripFinalNewline: true,
 		preferLocal: true,

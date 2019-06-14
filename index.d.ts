@@ -159,7 +159,7 @@ declare namespace execa {
 		readonly timeout?: number;
 
 		/**
-		Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 10MB.
+		Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 100 MB.
 
 		@default 10000000
 		*/

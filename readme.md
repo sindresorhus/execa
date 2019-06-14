@@ -12,7 +12,7 @@
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
 - Supports [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries cross-platform.
 - [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn#why)
-- Higher max buffer. 10 MB instead of 200 KB.
+- Higher max buffer. 100 MB instead of 200 KB.
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
 - [Get interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
@@ -411,7 +411,7 @@ If timeout is greater than `0`, the parent will send the signal identified by th
 #### maxBuffer
 
 Type: `number`<br>
-Default: `10000000` (10MB)
+Default: `100000000` (100 MB)
 
 Largest amount of data in bytes allowed on `stdout` or `stderr`.
 

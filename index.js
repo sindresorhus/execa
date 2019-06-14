@@ -228,15 +228,18 @@ function joinCommand(file, args = []) {
 	return [file, ...args].join(' ');
 }
 
+function mergePromiseProperty(spawned, getPromise, property) {
+	spawned[property] = (...args) => getPromise()[property](...args);
+}
+
 // The return value is a mixin of `childProcess` and `Promise`
 function mergePromise(spawned, getPromise) {
-	// eslint-disable-next-line promise/prefer-await-to-then
-	spawned.then = (onFulfilled, onRejected) => getPromise().then(onFulfilled, onRejected);
-	spawned.catch = onRejected => getPromise().catch(onRejected);
+	mergePromiseProperty(spawned, getPromise, 'then');
+	mergePromiseProperty(spawned, getPromise, 'catch');
 
 	// TODO: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {
-		spawned.finally = onFinally => getPromise().finally(onFinally);
+		mergePromiseProperty(spawned, getPromise, 'finally');
 	}
 
 	return spawned;

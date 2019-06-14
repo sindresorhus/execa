@@ -12,7 +12,6 @@ const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const stdio = require('./lib/stdio');
-const mergePrototypes = require('./lib/merge');
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
@@ -229,6 +228,20 @@ function joinCommand(file, args = []) {
 	return [file, ...args].join(' ');
 }
 
+// The return value is a mixin of `childProcess` and `Promise`
+function mergePromise(spawned, getPromise) {
+	// eslint-disable-next-line promise/prefer-await-to-then
+	spawned.then = (onFulfilled, onRejected) => getPromise().then(onFulfilled, onRejected);
+	spawned.catch = onRejected => getPromise().catch(onRejected);
+
+	// TODO: Remove the `if`-guard when targeting Node.js 10
+	if (Promise.prototype.finally) {
+		spawned.finally = onFinally => getPromise().finally(onFinally);
+	}
+
+	return spawned;
+}
+
 function spawnedKill(kill, signal = 'SIGTERM', options = {}) {
 	const killResult = kill(signal);
 	setKillTimeout(kill, signal, options, killResult);
@@ -276,16 +289,15 @@ const execa = (file, args, options) => {
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		const promise = Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
-			command,
-			parsed,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		}));
-		// We make sure `child_process` properties are present even though no child process was created.
-		// This is to ensure the return value always has the same shape.
-		return mergePrototypes(promise, new childProcess.ChildProcess());
+		return mergePromise(new childProcess.ChildProcess(), () =>
+			Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
+				command,
+				parsed,
+				timedOut: false,
+				isCanceled: false,
+				killed: false
+			}))
+		);
 	}
 
 	const kill = spawned.kill.bind(spawned);
@@ -407,21 +419,13 @@ const execa = (file, args, options) => {
 
 	spawned.all = makeAllStream(spawned);
 
-	// eslint-disable-next-line promise/prefer-await-to-then
-	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
-	spawned.catch = onRejected => handlePromise().catch(onRejected);
 	spawned.cancel = () => {
 		if (spawned.kill()) {
 			isCanceled = true;
 		}
 	};
 
-	// TODO: Remove the `if`-guard when targeting Node.js 10
-	if (Promise.prototype.finally) {
-		spawned.finally = onFinally => handlePromise().finally(onFinally);
-	}
-
-	return spawned;
+	return mergePromise(spawned, handlePromise);
 };
 
 module.exports = execa;

@@ -674,12 +674,13 @@ test('removes exit handler on exit', async t => {
 });
 
 test('promise methods are not enumerable', t => {
-	const promise = execa('noop');
-	t.false(Object.getOwnPropertyDescriptor(promise, 'then').enumerable);
-	t.false(Object.getOwnPropertyDescriptor(promise, 'catch').enumerable);
+	const descriptors = Object.getOwnPropertyDescriptors(execa('noop'));
+	// eslint-disable-next-line promise/prefer-await-to-then
+	t.false(descriptors.then.enumerable);
+	t.false(descriptors.catch.enumerable);
 	// TOOD: Remove the `if`-guard when targeting Node.js 10
 	if (Promise.prototype.finally) {
-		t.false(Object.getOwnPropertyDescriptor(promise, 'finally').enumerable);
+		t.false(descriptors.finally.enumerable);
 	}
 });
 

@@ -106,14 +106,18 @@ function makeAllStream(spawned) {
 	return mixed;
 }
 
-function getBufferedData(stream, streamPromise) {
+async function getBufferedData(stream, streamPromise) {
 	if (!stream) {
 		return;
 	}
 
 	stream.destroy();
 
-	return streamPromise.catch(error => error.bufferedData);
+	try {
+		return await streamPromise;
+	} catch (error) {
+		return error.bufferedData;
+	}
 }
 
 function getStream(process, stream, {encoding, buffer, maxBuffer}) {

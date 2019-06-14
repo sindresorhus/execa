@@ -123,10 +123,9 @@ execa('unicorns').kill();
 execa('unicorns').kill('SIGKILL');
 execa('unicorns').kill(undefined);
 execa('unicorns').kill('SIGKILL', {});
-execa('unicorns').kill('SIGKILL', {forceKill: true});
-execa('unicorns').kill('SIGKILL', {forceKill: false});
-execa('unicorns').kill('SIGKILL', {forceKillAfter: 42});
-execa('unicorns').kill('SIGKILL', {forceKillAfter: undefined});
+execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: false});
+execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: 42});
+execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: undefined});
 
 expectType<ExecaChildProcess<string>>(execa('unicorns'));
 expectType<ExecaReturnValue<string>>(await execa('unicorns'));

@@ -231,8 +231,8 @@ function setKillTimeout(kill, signal, options, killResult) {
 	}, timeout).unref();
 }
 
-function shouldForceKill(signal, {forceKill}, killResult) {
-	return isSigterm(signal) && forceKill !== false && killResult;
+function shouldForceKill(signal, {forceKillAfterTimeout}, killResult) {
+	return isSigterm(signal) && forceKillAfterTimeout !== false && killResult;
 }
 
 function isSigterm(signal) {
@@ -240,12 +240,16 @@ function isSigterm(signal) {
 		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
 }
 
-function getForceKillAfterTimeout({forceKillAfter = DEFAULT_FORCE_KILL_TIMEOUT}) {
-	if (!Number.isInteger(forceKillAfter) || forceKillAfter < 0) {
-		throw new TypeError(`Expected the \`forceKillAfter\` option to be a non-negative integer, got \`${forceKillAfter}\` (${typeof forceKillAfter})`);
+function getForceKillAfterTimeout({forceKillAfterTimeout = true}) {
+	if (forceKillAfterTimeout === true) {
+		return DEFAULT_FORCE_KILL_TIMEOUT;
 	}
 
-	return forceKillAfter;
+	if (!Number.isInteger(forceKillAfterTimeout) || forceKillAfterTimeout < 0) {
+		throw new TypeError(`Expected the \`forceKillAfterTimeout\` option to be a non-negative integer, got \`${forceKillAfterTimeout}\` (${typeof forceKillAfterTimeout})`);
+	}
+
+	return forceKillAfterTimeout;
 }
 
 const execa = (file, args, options) => {

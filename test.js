@@ -129,31 +129,31 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
-	test('`forceKill: false` should not kill after a timeout', async t => {
+	test('`forceKillAfterTimeout: false` should not kill after a timeout', async t => {
 		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {forceKill: false, forceKillAfter: 50});
+		subprocess.kill('SIGTERM', {forceKillAfterTimeout: false});
 
 		t.true(isRunning(subprocess.pid));
 		subprocess.kill('SIGKILL');
 	});
 
-	test('`forceKillAfter: number` should kill after a timeout', async t => {
+	test('`forceKillAfterTimeout: number` should kill after a timeout', async t => {
 		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {forceKillAfter: 50});
+		subprocess.kill('SIGTERM', {forceKillAfterTimeout: 50});
 
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('`forceKill: true` should kill after a timeout', async t => {
+	test('`forceKillAfterTimeout: true` should kill after a timeout', async t => {
 		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {forceKill: true});
+		subprocess.kill('SIGTERM', {forceKillAfterTimeout: true});
 
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
@@ -169,15 +169,15 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('`forceKillAfter` should not be a float', t => {
+	test('`forceKillAfterTimeout` should not be a float', t => {
 		t.throws(() => {
-			execa('noop').kill('SIGTERM', {forceKillAfter: 0.5});
+			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: 0.5});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
 
-	test('`forceKillAfter` should not be negative', t => {
+	test('`forceKillAfterTimeout` should not be negative', t => {
 		t.throws(() => {
-			execa('noop').kill('SIGTERM', {forceKillAfter: -1});
+			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: -1});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
 }

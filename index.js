@@ -360,62 +360,58 @@ const execa = (file, args, options) => {
 		}
 	}), cleanup);
 
-	const handlePromise = () => {
+	const handlePromise = async () => {
 		const stdoutPromise = getStreamPromise(spawned.stdout, {encoding, buffer, maxBuffer});
 		const stderrPromise = getStreamPromise(spawned.stderr, {encoding, buffer, maxBuffer});
 		const allPromise = getStreamPromise(spawned.all, {encoding, buffer, maxBuffer: maxBuffer * 2});
 
-		const finalize = async () => {
-			let results;
-			try {
-				results = await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
-			} catch (error) {
-				const {code, signal} = error;
-				results = await Promise.all([
-					{error, code, signal},
-					getBufferedData(spawned.stdout, stdoutPromise),
-					getBufferedData(spawned.stderr, stderrPromise),
-					getBufferedData(spawned.all, allPromise)
-				]);
-			}
+		let results;
+		try {
+			results = await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
+		} catch (error) {
+			const {code, signal} = error;
+			results = await Promise.all([
+				{error, code, signal},
+				getBufferedData(spawned.stdout, stdoutPromise),
+				getBufferedData(spawned.stderr, stderrPromise),
+				getBufferedData(spawned.all, allPromise)
+			]);
+		}
 
-			const [result, stdout, stderr, all] = results;
-			result.stdout = handleOutput(parsed.options, stdout);
-			result.stderr = handleOutput(parsed.options, stderr);
-			result.all = handleOutput(parsed.options, all);
+		const [result, stdout, stderr, all] = results;
+		result.stdout = handleOutput(parsed.options, stdout);
+		result.stderr = handleOutput(parsed.options, stderr);
+		result.all = handleOutput(parsed.options, all);
 
-			if (result.error || result.code !== 0 || result.signal !== null) {
-				const error = makeError(result, {
-					code: result.code,
-					command,
-					parsed,
-					timedOut,
-					isCanceled,
-					killed: spawned.killed
-				});
-
-				if (!parsed.options.reject) {
-					return error;
-				}
-
-				throw error;
-			}
-
-			return {
+		if (result.error || result.code !== 0 || result.signal !== null) {
+			const error = makeError(result, {
+				code: result.code,
 				command,
-				exitCode: 0,
-				exitCodeName: 'SUCCESS',
-				stdout: result.stdout,
-				stderr: result.stderr,
-				all: result.all,
-				failed: false,
-				timedOut: false,
-				isCanceled: false,
-				killed: false
-			};
-		};
+				parsed,
+				timedOut,
+				isCanceled,
+				killed: spawned.killed
+			});
 
-		return finalize();
+			if (!parsed.options.reject) {
+				return error;
+			}
+
+			throw error;
+		}
+
+		return {
+			command,
+			exitCode: 0,
+			exitCodeName: 'SUCCESS',
+			stdout: result.stdout,
+			stderr: result.stderr,
+			all: result.all,
+			failed: false,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		};
 	};
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);

@@ -7,7 +7,7 @@ const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
-const _getStream = require('get-stream');
+const getStream = require('get-stream');
 const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
@@ -120,30 +120,25 @@ async function getBufferedData(stream, streamPromise) {
 	}
 }
 
-function getStream(process, stream, {encoding, buffer, maxBuffer}) {
-	if (!process[stream]) {
+function getStreamPromise(stream, {encoding, buffer, maxBuffer}) {
+	if (!stream) {
 		return;
 	}
 
-	let ret;
-
 	if (!buffer) {
-		// TODO: Use `ret = util.promisify(stream.finished)(process[stream]);` when targeting Node.js 10
-		ret = new Promise((resolve, reject) => {
-			process[stream]
+		// TODO: Use `ret = util.promisify(stream.finished)(stream);` when targeting Node.js 10
+		return new Promise((resolve, reject) => {
+			stream
 				.once('end', resolve)
 				.once('error', reject);
 		});
-	} else if (encoding) {
-		ret = _getStream(process[stream], {
-			encoding,
-			maxBuffer
-		});
-	} else {
-		ret = _getStream.buffer(process[stream], {maxBuffer});
 	}
 
-	return ret;
+	if (encoding) {
+		return getStream(stream, {encoding, maxBuffer});
+	}
+
+	return getStream.buffer(stream, {maxBuffer});
 }
 
 function makeError(result, options) {
@@ -366,9 +361,9 @@ const execa = (file, args, options) => {
 	}), cleanup);
 
 	const handlePromise = () => {
-		const stdoutPromise = getStream(spawned, 'stdout', {encoding, buffer, maxBuffer});
-		const stderrPromise = getStream(spawned, 'stderr', {encoding, buffer, maxBuffer});
-		const allPromise = getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2});
+		const stdoutPromise = getStreamPromise(spawned.stdout, {encoding, buffer, maxBuffer});
+		const stderrPromise = getStreamPromise(spawned.stderr, {encoding, buffer, maxBuffer});
+		const allPromise = getStreamPromise(spawned.all, {encoding, buffer, maxBuffer: maxBuffer * 2});
 
 		const finalize = async () => {
 			let results;

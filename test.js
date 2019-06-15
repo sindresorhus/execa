@@ -301,6 +301,15 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof pid, 'number');
 });
 
+test('child_process.spawn() propagated errors have correct shape', t => {
+	const cp = execa('noop', {uid: -1});
+	t.notThrows(() => {
+		cp.catch(() => {});
+		cp.unref();
+		cp.on('error', () => {});
+	});
+});
+
 test('child_process.spawn() errors are propagated', async t => {
 	const {failed} = await t.throwsAsync(execa('noop', {uid: -1}));
 	t.true(failed);
@@ -662,6 +671,17 @@ test('removes exit handler on exit', async t => {
 
 	const included = ee.listeners('exit').includes(listener);
 	t.false(included);
+});
+
+test('promise methods are not enumerable', t => {
+	const descriptors = Object.getOwnPropertyDescriptors(execa('noop'));
+	// eslint-disable-next-line promise/prefer-await-to-then
+	t.false(descriptors.then.enumerable);
+	t.false(descriptors.catch.enumerable);
+	// TOOD: Remove the `if`-guard when targeting Node.js 10
+	if (Promise.prototype.finally) {
+		t.false(descriptors.finally.enumerable);
+	}
 });
 
 // TOOD: Remove the `if`-guard when targeting Node.js 10

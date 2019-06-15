@@ -228,6 +228,30 @@ function joinCommand(file, args = []) {
 	return [file, ...args].join(' ');
 }
 
+function mergePromiseProperty(spawned, getPromise, property) {
+	Object.defineProperty(spawned, property, {
+		value(...args) {
+			return getPromise()[property](...args);
+		},
+		writable: true,
+		enumerable: false,
+		configurable: true
+	});
+}
+
+// The return value is a mixin of `childProcess` and `Promise`
+function mergePromise(spawned, getPromise) {
+	mergePromiseProperty(spawned, getPromise, 'then');
+	mergePromiseProperty(spawned, getPromise, 'catch');
+
+	// TODO: Remove the `if`-guard when targeting Node.js 10
+	if (Promise.prototype.finally) {
+		mergePromiseProperty(spawned, getPromise, 'finally');
+	}
+
+	return spawned;
+}
+
 function spawnedKill(kill, signal = 'SIGTERM', options = {}) {
 	const killResult = kill(signal);
 	setKillTimeout(kill, signal, options, killResult);
@@ -275,13 +299,15 @@ const execa = (file, args, options) => {
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		return Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
-			command,
-			parsed,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		}));
+		return mergePromise(new childProcess.ChildProcess(), () =>
+			Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
+				command,
+				parsed,
+				timedOut: false,
+				isCanceled: false,
+				killed: false
+			}))
+		);
 	}
 
 	const kill = spawned.kill.bind(spawned);
@@ -403,21 +429,13 @@ const execa = (file, args, options) => {
 
 	spawned.all = makeAllStream(spawned);
 
-	// eslint-disable-next-line promise/prefer-await-to-then
-	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
-	spawned.catch = onRejected => handlePromise().catch(onRejected);
 	spawned.cancel = () => {
 		if (spawned.kill()) {
 			isCanceled = true;
 		}
 	};
 
-	// TODO: Remove the `if`-guard when targeting Node.js 10
-	if (Promise.prototype.finally) {
-		spawned.finally = onFinally => handlePromise().finally(onFinally);
-	}
-
-	return spawned;
+	return mergePromise(spawned, handlePromise);
 };
 
 module.exports = execa;

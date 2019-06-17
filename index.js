@@ -173,7 +173,7 @@ function makeError(result, options) {
 	}
 
 	error.failed = true;
-	error.timedOut = Boolean(timedOut);
+	error.timedOut = timedOut;
 	error.isCanceled = isCanceled;
 	error.killed = killed && !timedOut;
 	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
@@ -339,6 +339,7 @@ const execa = (file, args, options) => {
 	}
 
 	let timeoutId;
+	const context = {timedOut: false};
 	let isCanceled = false;
 
 	const cleanup = () => {
@@ -355,7 +356,7 @@ const execa = (file, args, options) => {
 	if (parsed.options.timeout > 0) {
 		timeoutId = setTimeout(() => {
 			timeoutId = undefined;
-			spawned.timedOut = true;
+			context.timedOut = true;
 			spawned.kill(parsed.options.killSignal);
 		}, parsed.options.timeout);
 	}
@@ -391,7 +392,7 @@ const execa = (file, args, options) => {
 				code: result.code,
 				command,
 				parsed,
-				timedOut: spawned.timedOut,
+				timedOut: context.timedOut,
 				isCanceled,
 				killed: spawned.killed
 			});

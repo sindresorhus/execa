@@ -289,7 +289,8 @@ function handleSpawned(spawned, context) {
 	return new Promise((resolve, reject) => {
 		spawned.on('exit', (code, signal) => {
 			if (context.timedOut) {
-				return reject(Object.assign(new Error('Timed out'), {code, signal}));
+				reject(Object.assign(new Error('Timed out'), {code, signal}));
+				return;
 			}
 
 			resolve({code, signal});

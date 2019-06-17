@@ -5,6 +5,7 @@
 
 > Process execution for humans
 
+One of the maintainers [@ehmicky](https://github.com/ehmicky) is looking for a remote full-time position as a back-end lead, feel free to [contact him](https://www.mickael-hebert.com/)!
 
 ## Why
 

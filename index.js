@@ -325,6 +325,15 @@ function handleSpawned(spawned, context) {
 	});
 }
 
+const setupTimeout = function (spawned, {timeout, killSignal}, context) {
+	if (timeout > 0) {
+		context.timeoutId = setTimeout(() => {
+			Object.assign(context, {timeoutId: undefined, timedOut: true});
+			spawned.kill(killSignal);
+		}, timeout);
+	}
+};
+
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const command = joinCommand(file, args);
@@ -355,14 +364,13 @@ const execa = (file, args, options) => {
 		});
 	}
 
-	let timeoutId;
 	const context = {timedOut: false};
 	let isCanceled = false;
 
 	const cleanup = () => {
-		if (timeoutId !== undefined) {
-			clearTimeout(timeoutId);
-			timeoutId = undefined;
+		if (context.timeoutId !== undefined) {
+			clearTimeout(context.timeoutId);
+			context.timeoutId = undefined;
 		}
 
 		if (removeExitHandler) {
@@ -370,13 +378,7 @@ const execa = (file, args, options) => {
 		}
 	};
 
-	if (parsed.options.timeout > 0) {
-		timeoutId = setTimeout(() => {
-			timeoutId = undefined;
-			context.timedOut = true;
-			spawned.kill(parsed.options.killSignal);
-		}, parsed.options.timeout);
-	}
+	setupTimeout(spawned, parsed.options, context);
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
 	const processDone = pFinally(handleSpawned(spawned, context), cleanup);

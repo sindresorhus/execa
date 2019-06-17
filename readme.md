@@ -442,13 +442,30 @@ Let's say you want to show the output of a child process in real-time while also
 const execa = require('execa');
 
 const subprocess = execa('echo', ['foo']);
-
 subprocess.stdout.pipe(process.stdout);
 
 (async () => {
 	const {stdout} = await subprocess;
 	console.log('child output:', stdout);
 })();
+```
+
+### Redirect output to a file
+
+```js
+const execa = require('execa');
+
+const subprocess = execa('echo', ['foo'])
+subprocess.stdout.pipe(fs.createWriteStream('stdout.txt'))
+```
+
+### Redirect input from a file
+
+```js
+const execa = require('execa');
+
+const subprocess = execa('cat')
+fs.createReadStream('stdin.txt').pipe(subprocess.stdin)
 ```
 
 

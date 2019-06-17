@@ -3,10 +3,12 @@
 
 [![Build Status](https://travis-ci.org/sindresorhus/execa.svg?branch=master)](https://travis-ci.org/sindresorhus/execa) [![Coverage Status](https://coveralls.io/repos/github/sindresorhus/execa/badge.svg?branch=master)](https://coveralls.io/github/sindresorhus/execa?branch=master)
 
-> A better [`child_process`](https://nodejs.org/api/child_process.html)
+> Process execution for humans
 
 
 ## Why
+
+This improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
 
 - Promise interface.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.

@@ -141,7 +141,7 @@ function getStreamPromise(stream, {encoding, buffer, maxBuffer}) {
 	return getStream.buffer(stream, {maxBuffer});
 }
 
-const getPromiseResult = async ({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) => {
+async function getPromiseResult({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) {
 	const stdoutPromise = getStreamPromise(stdout, {encoding, buffer, maxBuffer});
 	const stderrPromise = getStreamPromise(stderr, {encoding, buffer, maxBuffer});
 	const allPromise = getStreamPromise(all, {encoding, buffer, maxBuffer: maxBuffer * 2});
@@ -156,7 +156,7 @@ const getPromiseResult = async ({stdout, stderr, all}, {encoding, buffer, maxBuf
 			getBufferedData(all, allPromise)
 		]);
 	}
-};
+}
 
 function makeError(result, options) {
 	const {stdout, stderr, signal} = result;

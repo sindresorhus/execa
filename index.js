@@ -325,7 +325,7 @@ function handleSpawned(spawned, context) {
 	});
 }
 
-const setupTimeout = function (spawned, {timeout, killSignal}, context) {
+const setupTimeout = (spawned, {timeout, killSignal}, context) => {
 	if (timeout > 0) {
 		context.timeoutId = setTimeout(() => {
 			Object.assign(context, {timeoutId: undefined, timedOut: true});

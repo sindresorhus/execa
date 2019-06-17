@@ -285,10 +285,10 @@ function getForceKillAfterTimeout({forceKillAfterTimeout = true}) {
 	return forceKillAfterTimeout;
 }
 
-function handleSpawned(spawned) {
+function handleSpawned(spawned, context) {
 	return new Promise((resolve, reject) => {
 		spawned.on('exit', (code, signal) => {
-			if (spawned.timedOut) {
+			if (context.timedOut) {
 				return reject(Object.assign(new Error('Timed out'), {code, signal}));
 			}
 
@@ -362,7 +362,7 @@ const execa = (file, args, options) => {
 	}
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(handleSpawned(spawned), cleanup);
+	const processDone = pFinally(handleSpawned(spawned, context), cleanup);
 
 	const handlePromise = async () => {
 		const stdoutPromise = getStreamPromise(spawned.stdout, {encoding, buffer, maxBuffer});

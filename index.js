@@ -173,7 +173,7 @@ function makeError(result, options) {
 	}
 
 	error.failed = true;
-	error.timedOut = timedOut;
+	error.timedOut = Boolean(timedOut);
 	error.isCanceled = isCanceled;
 	error.killed = killed && !timedOut;
 	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
@@ -285,6 +285,28 @@ function getForceKillAfterTimeout({forceKillAfterTimeout = true}) {
 	return forceKillAfterTimeout;
 }
 
+function handleSpawned(spawned) {
+	return new Promise((resolve, reject) => {
+		spawned.on('exit', (code, signal) => {
+			if (spawned.timedOut) {
+				return reject(Object.assign(new Error('Timed out'), {code, signal}));
+			}
+
+			resolve({code, signal});
+		});
+
+		spawned.on('error', error => {
+			reject(error);
+		});
+
+		if (spawned.stdin) {
+			spawned.stdin.on('error', error => {
+				reject(error);
+			});
+		}
+	});
+}
+
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const {encoding, buffer, maxBuffer} = parsed.options;
@@ -317,7 +339,6 @@ const execa = (file, args, options) => {
 	}
 
 	let timeoutId;
-	let timedOut = false;
 	let isCanceled = false;
 
 	const cleanup = () => {
@@ -334,31 +355,13 @@ const execa = (file, args, options) => {
 	if (parsed.options.timeout > 0) {
 		timeoutId = setTimeout(() => {
 			timeoutId = undefined;
-			timedOut = true;
+			spawned.timedOut = true;
 			spawned.kill(parsed.options.killSignal);
 		}, parsed.options.timeout);
 	}
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(new Promise((resolve, reject) => {
-		spawned.on('exit', (code, signal) => {
-			if (timedOut) {
-				return reject(Object.assign(new Error('Timed out'), {code, signal}));
-			}
-
-			resolve({code, signal});
-		});
-
-		spawned.on('error', error => {
-			reject(error);
-		});
-
-		if (spawned.stdin) {
-			spawned.stdin.on('error', error => {
-				reject(error);
-			});
-		}
-	}), cleanup);
+	const processDone = pFinally(handleSpawned(spawned), cleanup);
 
 	const handlePromise = async () => {
 		const stdoutPromise = getStreamPromise(spawned.stdout, {encoding, buffer, maxBuffer});
@@ -388,7 +391,7 @@ const execa = (file, args, options) => {
 				code: result.code,
 				command,
 				parsed,
-				timedOut,
+				timedOut: spawned.timedOut,
 				isCanceled,
 				killed: spawned.killed
 			});

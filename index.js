@@ -141,6 +141,23 @@ function getStreamPromise(stream, {encoding, buffer, maxBuffer}) {
 	return getStream.buffer(stream, {maxBuffer});
 }
 
+async function getPromiseResult({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) {
+	const stdoutPromise = getStreamPromise(stdout, {encoding, buffer, maxBuffer});
+	const stderrPromise = getStreamPromise(stderr, {encoding, buffer, maxBuffer});
+	const allPromise = getStreamPromise(all, {encoding, buffer, maxBuffer: maxBuffer * 2});
+
+	try {
+		return await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
+	} catch (error) {
+		return Promise.all([
+			{error, code: error.code, signal: error.signal},
+			getBufferedData(stdout, stdoutPromise),
+			getBufferedData(stderr, stderrPromise),
+			getBufferedData(all, allPromise)
+		]);
+	}
+}
+
 function makeError(result, options) {
 	const {stdout, stderr, signal} = result;
 	let {error} = result;
@@ -287,7 +304,6 @@ function getForceKillAfterTimeout({forceKillAfterTimeout = true}) {
 
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
-	const {encoding, buffer, maxBuffer} = parsed.options;
 	const command = joinCommand(file, args);
 
 	let spawned;
@@ -361,24 +377,7 @@ const execa = (file, args, options) => {
 	}), cleanup);
 
 	const handlePromise = async () => {
-		const stdoutPromise = getStreamPromise(spawned.stdout, {encoding, buffer, maxBuffer});
-		const stderrPromise = getStreamPromise(spawned.stderr, {encoding, buffer, maxBuffer});
-		const allPromise = getStreamPromise(spawned.all, {encoding, buffer, maxBuffer: maxBuffer * 2});
-
-		let results;
-		try {
-			results = await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
-		} catch (error) {
-			const {code, signal} = error;
-			results = await Promise.all([
-				{error, code, signal},
-				getBufferedData(spawned.stdout, stdoutPromise),
-				getBufferedData(spawned.stderr, stderrPromise),
-				getBufferedData(spawned.all, allPromise)
-			]);
-		}
-
-		const [result, stdout, stderr, all] = results;
+		const [result, stdout, stderr, all] = await getPromiseResult(spawned, parsed.options, processDone);
 		result.stdout = handleOutput(parsed.options, stdout);
 		result.stderr = handleOutput(parsed.options, stderr);
 		result.all = handleOutput(parsed.options, all);

@@ -1,7 +1,7 @@
 {
 	"name": "execa",
 	"version": "1.0.0",
-	"description": "A better `child_process`",
+	"description": "Process execution for humans",
 	"license": "MIT",
 	"repository": "sindresorhus/execa",
 	"author": {

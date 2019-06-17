@@ -8,7 +8,7 @@
 
 ## Why
 
-This improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
+This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
 
 - Promise interface.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.

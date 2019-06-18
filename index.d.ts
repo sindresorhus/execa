@@ -434,10 +434,10 @@ declare const execa: {
 	commandSync(command: string, options?: execa.SyncOptions<null>): execa.ExecaSyncReturnValue<Buffer>;
 
 	/**
-	Execute a Node.js file as a child process.
+	Execute a Node.js script as a child process.
 
 	@param scriptPath - Node.js script to execute.
-	@param arguments - Arguments to pass to `file` on execution.
+	@param arguments - Arguments to pass to `scriptPath` on execution.
 	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 	*/
 	node(

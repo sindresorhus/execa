@@ -7,7 +7,7 @@ import getStream from 'get-stream';
 import isRunning from 'is-running';
 import tempfile from 'tempfile';
 import pEvent from 'p-event';
-import execa from '.';
+import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 process.env.FOO = 'foo';
@@ -87,13 +87,13 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
-	await execa('fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
+	await execa('test/fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
 test('pass `stderr` to a file descriptor', async t => {
 	const file = tempfile('.txt');
-	await execa('fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
+	await execa('test/fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
@@ -119,7 +119,7 @@ test('skip throwing when using reject option in sync mode', t => {
 });
 
 test('kill("SIGKILL") should terminate cleanly', async t => {
-	const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
+	const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 	await pEvent(subprocess, 'message');
 
 	subprocess.kill('SIGKILL');
@@ -132,7 +132,7 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
 	test('`forceKillAfterTimeout: false` should not kill after a timeout', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
+		const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {forceKillAfterTimeout: false});
@@ -142,7 +142,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterTimeout: number` should kill after a timeout', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
+		const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {forceKillAfterTimeout: 50});
@@ -152,7 +152,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterTimeout: true` should kill after a timeout', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
+		const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {forceKillAfterTimeout: true});
@@ -162,7 +162,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('kill() with no arguments should kill after a timeout', async t => {
-		const subprocess = execa('node', ['fixtures/no-killable'], {stdio: ['ipc']});
+		const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill();
@@ -382,7 +382,7 @@ test('execa() returns code and failed properties', async t => {
 });
 
 test('use relative path with \'..\' chars', async t => {
-	const pathViaParentDir = path.join('..', path.basename(__dirname), 'fixtures', 'noop');
+	const pathViaParentDir = path.join('..', path.basename(path.dirname(__dirname)), 'test', 'fixtures', 'noop');
 	const {stdout} = await execa(pathViaParentDir, ['foo']);
 	t.is(stdout, 'foo');
 });
@@ -623,13 +623,13 @@ test('do not extend environment with `extendEnv: false`', async t => {
 });
 
 test('can use `options.shell: true`', async t => {
-	const {stdout} = await execa('node fixtures/noop foo', {shell: true});
+	const {stdout} = await execa('node test/fixtures/noop foo', {shell: true});
 	t.is(stdout, 'foo');
 });
 
 test('can use `options.shell: string`', async t => {
 	const shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/bash';
-	const {stdout} = await execa('node fixtures/noop foo', {shell});
+	const {stdout} = await execa('node test/fixtures/noop foo', {shell});
 	t.is(stdout, 'foo');
 });
 
@@ -777,7 +777,7 @@ test('calling cancel method twice should show the same behaviour as calling it o
 	t.true(subprocess.killed);
 });
 
-test('calling cancel method on a successfuly completed process does not make result.isCanceled true', async t => {
+test('calling cancel method on a successfully completed process does not make result.isCanceled true', async t => {
 	const subprocess = execa('noop');
 	const {isCanceled} = await subprocess;
 	subprocess.cancel();
@@ -792,46 +792,46 @@ test('calling cancel method on a process which has been killed does not make err
 });
 
 test('allow commands with spaces and no array arguments', async t => {
-	const {stdout} = await execa('./fixtures/command with space');
+	const {stdout} = await execa('command with space');
 	t.is(stdout, '');
 });
 
 test('allow commands with spaces and array arguments', async t => {
-	const {stdout} = await execa('./fixtures/command with space', ['foo', 'bar']);
+	const {stdout} = await execa('command with space', ['foo', 'bar']);
 	t.is(stdout, 'foo\nbar');
 });
 
 test('execa.command()', async t => {
-	const {stdout} = await execa.command('node fixtures/echo foo bar');
+	const {stdout} = await execa.command('node test/fixtures/echo foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('execa.command() ignores consecutive spaces', async t => {
-	const {stdout} = await execa.command('node fixtures/echo foo    bar');
+	const {stdout} = await execa.command('node test/fixtures/echo foo    bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('execa.command() allows escaping spaces in commands', async t => {
-	const {stdout} = await execa.command('./fixtures/command\\ with\\ space foo bar');
+	const {stdout} = await execa.command('command\\ with\\ space foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('execa.command() allows escaping spaces in arguments', async t => {
-	const {stdout} = await execa.command('node fixtures/echo foo\\ bar');
+	const {stdout} = await execa.command('node test/fixtures/echo foo\\ bar');
 	t.is(stdout, 'foo bar');
 });
 
 test('execa.command() escapes other whitespaces', async t => {
-	const {stdout} = await execa.command('node fixtures/echo foo\tbar');
+	const {stdout} = await execa.command('node test/fixtures/echo foo\tbar');
 	t.is(stdout, 'foo\tbar');
 });
 
 test('execa.command() trims', async t => {
-	const {stdout} = await execa.command('  node fixtures/echo foo bar  ');
+	const {stdout} = await execa.command('  node test/fixtures/echo foo bar  ');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('execa.command.sync()', t => {
-	const {stdout} = execa.commandSync('node fixtures/echo foo bar');
+	const {stdout} = execa.commandSync('node test/fixtures/echo foo bar');
 	t.is(stdout, 'foo\nbar');
 });

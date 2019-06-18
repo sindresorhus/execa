@@ -184,6 +184,15 @@ Same as [`execa.command()`](#execacommand-command-options) but synchronous.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
+### execa.node(scriptPath, [arguments], [options])
+
+Execute a Node.js script as a child process.
+
+Same as `execa('node', [file, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
+  - the [`nodePath`](#nodepath-for-node-only) and [`nodeArguments`](#nodearguments-for-node-only) options can be used
+  - the [`shell`](#shell) option cannot be used 
+  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
+
 ### childProcessResult
 
 Type: `object`
@@ -438,6 +447,19 @@ Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
+#### nodePath *(for `.node()` only)*
+
+Type: `string`<br>
+Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
+
+Node.js executable used to create the child process.
+
+#### nodeArguments *(for `.node()` only)*
+
+Type: `string[]`<br>
+Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
+
+List of string arguments passed to the Node.js executable.
 
 ## Tips
 

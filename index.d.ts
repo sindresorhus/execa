@@ -187,12 +187,27 @@ declare namespace execa {
 		readonly input?: string | Buffer | ReadableStream;
 	}
 
-	interface SyncOptions<EncodingType = string>
-		extends CommonOptions<EncodingType> {
+	interface SyncOptions<EncodingType = string> extends CommonOptions<EncodingType> {
 		/**
 		Write some input to the `stdin` of your binary.
 		*/
 		readonly input?: string | Buffer;
+	}
+
+	interface NodeOptions<EncodingType = string> extends Options<EncodingType> {
+		/**
+		The Node.js executable to use.
+
+		@default process.execPath
+		*/
+		readonly nodePath?: string;
+
+		/**
+		List of string arguments passed to the Node.js executable.
+
+		@default process.execArgv
+		*/
+		readonly nodeArguments?: string[];
 	}
 
 	interface ExecaReturnBase<StdoutStderrType> {
@@ -417,6 +432,26 @@ declare const execa: {
 	*/
 	commandSync(command: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;
 	commandSync(command: string, options?: execa.SyncOptions<null>): execa.ExecaSyncReturnValue<Buffer>;
+
+	/**
+	Execute a Node.js script as a child process.
+
+	@param scriptPath - Node.js script to execute.
+	@param arguments - Arguments to pass to `scriptPath` on execution.
+	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+	*/
+	node(
+		scriptPath: string,
+		arguments?: readonly string[],
+		options?: execa.NodeOptions
+	): execa.ExecaChildProcess;
+	node(
+		file: string,
+		arguments?: readonly string[],
+		options?: execa.Options<null>
+	): execa.ExecaChildProcess<Buffer>;
+	node(file: string, options?: execa.Options): execa.ExecaChildProcess;
+	node(file: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
 };
 
 export = execa;

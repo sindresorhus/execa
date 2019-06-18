@@ -520,3 +520,30 @@ module.exports.commandSync = (command, options) => {
 	const [file, ...args] = parseCommand(command);
 	return execa.sync(file, args, options);
 };
+
+module.exports.node = (scriptPath, args, options) => {
+	if (args && !Array.isArray(args) && typeof args === 'object') {
+		options = args;
+		args = [];
+	}
+
+	const stdioOption = stdio.node(options);
+	options = options || {};
+
+	return execa(
+		options.nodePath || process.execPath,
+		[
+			...(options.nodeArguments || process.execArgv),
+			scriptPath,
+			...(Array.isArray(args) ? args : [])
+		],
+		{
+			...options,
+			stdin: undefined,
+			stdout: undefined,
+			stderr: undefined,
+			stdio: stdioOption,
+			shell: false
+		}
+	);
+};

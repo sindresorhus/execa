@@ -3,16 +3,25 @@
 
 [![Build Status](https://travis-ci.org/sindresorhus/execa.svg?branch=master)](https://travis-ci.org/sindresorhus/execa) [![Coverage Status](https://coveralls.io/repos/github/sindresorhus/execa/badge.svg?branch=master)](https://coveralls.io/github/sindresorhus/execa?branch=master)
 
-> A better [`child_process`](https://nodejs.org/api/child_process.html)
+> Process execution for humans
+
+
+---
+
+One of the maintainers [@ehmicky](https://github.com/ehmicky) is looking for a remote full-time position as a Node.js back-end lead. Feel free to [contact him](https://www.mickael-hebert.com)!
+
+---
 
 
 ## Why
+
+This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
 
 - Promise interface.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
 - Supports [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries cross-platform.
 - [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn#why)
-- Higher max buffer. 10 MB instead of 200 KB.
+- Higher max buffer. 100 MB instead of 200 KB.
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
 - [Get interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
@@ -117,7 +126,7 @@ try {
 const subprocess = execa('node');
 setTimeout(() => {
 	subprocess.kill('SIGTERM', {
-		forceKillAfter: 2000
+		forceKillAfterTimeout: 2000
 	});
 }, 1000);
 ```
@@ -140,19 +149,14 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
 
 Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
 
-##### options.forceKill
+##### options.forceKillAfterTimeout
 
-Type: `boolean`<br>
-Default: `true`
-
-If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
-
-##### options.forceKillAfter
-
-Type: `string`<br>
+Type: `number | false`<br>
 Default: `5000`
 
 Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
+
+Can be disabled with `false`.
 
 #### cancel()
 
@@ -296,6 +300,8 @@ Default: `true`
 
 Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
 
+If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stderr), and [`error.all`](#all) will contain the buffered data.
+
 #### input
 
 Type: `string | Buffer | stream.Readable`
@@ -423,7 +429,7 @@ If timeout is greater than `0`, the parent will send the signal identified by th
 #### maxBuffer
 
 Type: `number`<br>
-Default: `10000000` (10MB)
+Default: `100_000_000` (100 MB)
 
 Largest amount of data in bytes allowed on `stdout` or `stderr`.
 
@@ -465,13 +471,30 @@ Let's say you want to show the output of a child process in real-time while also
 const execa = require('execa');
 
 const subprocess = execa('echo', ['foo']);
-
 subprocess.stdout.pipe(process.stdout);
 
 (async () => {
 	const {stdout} = await subprocess;
 	console.log('child output:', stdout);
 })();
+```
+
+### Redirect output to a file
+
+```js
+const execa = require('execa');
+
+const subprocess = execa('echo', ['foo'])
+subprocess.stdout.pipe(fs.createWriteStream('stdout.txt'))
+```
+
+### Redirect input from a file
+
+```js
+const execa = require('execa');
+
+const subprocess = execa('cat')
+fs.createReadStream('stdin.txt').pipe(subprocess.stdin)
 ```
 
 

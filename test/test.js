@@ -65,11 +65,15 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
+const WRONG_COMMAND = process.platform === 'win32' ?
+	'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
+	'';
+
 test('stdout/stderr/all on process errors', async t => {
 	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
 	t.is(stdout, '');
-	t.is(stderr, '');
-	t.is(all, '');
+	t.is(stderr, WRONG_COMMAND);
+	t.is(all, WRONG_COMMAND);
 });
 
 test('stdout/stderr/all on process errors, in sync mode', t => {
@@ -77,9 +81,7 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 		execa.sync('wrong command');
 	});
 	t.is(stdout, '');
-	t.is(stderr, process.platform === 'win32' ?
-		'\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.' :
-		'');
+	t.is(stderr, WRONG_COMMAND);
 	t.is(all, undefined);
 });
 
@@ -129,31 +131,31 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
-	test('`forceKill: false` should not kill after a timeout', async t => {
+	test('`forceKillAfterTimeout: false` should not kill after a timeout', async t => {
 		const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {forceKill: false, forceKillAfter: 50});
+		subprocess.kill('SIGTERM', {forceKillAfterTimeout: false});
 
 		t.true(isRunning(subprocess.pid));
 		subprocess.kill('SIGKILL');
 	});
 
-	test('`forceKillAfter: number` should kill after a timeout', async t => {
+	test('`forceKillAfterTimeout: number` should kill after a timeout', async t => {
 		const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {forceKillAfter: 50});
+		subprocess.kill('SIGTERM', {forceKillAfterTimeout: 50});
 
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('`forceKill: true` should kill after a timeout', async t => {
+	test('`forceKillAfterTimeout: true` should kill after a timeout', async t => {
 		const subprocess = execa('node', ['./test/fixtures/no-killable'], {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {forceKill: true});
+		subprocess.kill('SIGTERM', {forceKillAfterTimeout: true});
 
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
@@ -169,15 +171,15 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('`forceKillAfter` should not be a float', t => {
+	test('`forceKillAfterTimeout` should not be a float', t => {
 		t.throws(() => {
-			execa('noop').kill('SIGTERM', {forceKillAfter: 0.5});
+			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: 0.5});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
 
-	test('`forceKillAfter` should not be negative', t => {
+	test('`forceKillAfterTimeout` should not be negative', t => {
 		t.throws(() => {
-			execa('noop').kill('SIGTERM', {forceKillAfter: -1});
+			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: -1});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
 }
@@ -258,10 +260,16 @@ test('input option can be a Buffer - sync', t => {
 	t.is(stdout, 'testing12');
 });
 
+test('stdin errors are handled', async t => {
+	const child = execa('noop');
+	child.stdin.emit('error', new Error('test'));
+	await t.throwsAsync(child, /test/);
+});
+
 test('child process errors are handled', async t => {
 	const child = execa('noop');
 	child.emit('error', new Error('test'));
-	await t.throwsAsync(child, /Command failed.*\ntest/);
+	await t.throwsAsync(child, /test/);
 });
 
 test('opts.stdout:ignore - stdout will not collect data', async t => {
@@ -293,6 +301,15 @@ test('execa() returns a promise with kill() and pid', t => {
 	t.is(typeof pid, 'number');
 });
 
+test('child_process.spawn() propagated errors have correct shape', t => {
+	const cp = execa('noop', {uid: -1});
+	t.notThrows(() => {
+		cp.catch(() => {});
+		cp.unref();
+		cp.on('error', () => {});
+	});
+});
+
 test('child_process.spawn() errors are propagated', async t => {
 	const {failed} = await t.throwsAsync(execa('noop', {uid: -1}));
 	t.true(failed);
@@ -306,13 +323,17 @@ test('child_process.spawnSync() errors are propagated with a correct shape', t =
 });
 
 test('maxBuffer affects stdout', async t => {
-	await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /stdout maxBuffer exceeded/);
 	await t.notThrowsAsync(execa('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
+	const {stdout, all} = await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /max-buffer stdout/);
+	t.is(stdout, '.'.repeat(10));
+	t.is(all, '.'.repeat(10));
 });
 
 test('maxBuffer affects stderr', async t => {
-	await t.throwsAsync(execa('max-buffer', ['stderr', '13'], {maxBuffer: 12}), /stderr maxBuffer exceeded/);
-	await t.notThrowsAsync(execa('max-buffer', ['stderr', '12'], {maxBuffer: 12}));
+	await t.notThrowsAsync(execa('max-buffer', ['stderr', '10'], {maxBuffer: 10}));
+	const {stderr, all} = await t.throwsAsync(execa('max-buffer', ['stderr', '11'], {maxBuffer: 10}), /max-buffer stderr/);
+	t.is(stderr, '.'.repeat(10));
+	t.is(all, '.'.repeat(10));
 });
 
 test('do not buffer stdout when `buffer` set to `false`', async t => {
@@ -650,6 +671,17 @@ test('removes exit handler on exit', async t => {
 
 	const included = ee.listeners('exit').includes(listener);
 	t.false(included);
+});
+
+test('promise methods are not enumerable', t => {
+	const descriptors = Object.getOwnPropertyDescriptors(execa('noop'));
+	// eslint-disable-next-line promise/prefer-await-to-then
+	t.false(descriptors.then.enumerable);
+	t.false(descriptors.catch.enumerable);
+	// TOOD: Remove the `if`-guard when targeting Node.js 10
+	if (Promise.prototype.finally) {
+		t.false(descriptors.finally.enumerable);
+	}
 });
 
 // TOOD: Remove the `if`-guard when targeting Node.js 10

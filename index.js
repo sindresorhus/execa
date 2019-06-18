@@ -7,13 +7,13 @@ const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const isStream = require('is-stream');
-const _getStream = require('get-stream');
+const getStream = require('get-stream');
 const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
 const stdio = require('./lib/stdio');
 
-const TEN_MEGABYTES = 1000 * 1000 * 10;
+const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 const SPACES_REGEXP = / +/g;
@@ -25,7 +25,7 @@ function handleArgs(file, args, options = {}) {
 	options = parsed.options;
 
 	options = {
-		maxBuffer: TEN_MEGABYTES,
+		maxBuffer: DEFAULT_MAX_BUFFER,
 		buffer: true,
 		stripFinalNewline: true,
 		preferLocal: true,
@@ -106,34 +106,56 @@ function makeAllStream(spawned) {
 	return mixed;
 }
 
-function getStream(process, stream, {encoding, buffer, maxBuffer}) {
-	if (!process[stream]) {
+async function getBufferedData(stream, streamPromise) {
+	if (!stream) {
 		return;
 	}
 
-	let ret;
+	stream.destroy();
+
+	try {
+		return await streamPromise;
+	} catch (error) {
+		return error.bufferedData;
+	}
+}
+
+function getStreamPromise(stream, {encoding, buffer, maxBuffer}) {
+	if (!stream) {
+		return;
+	}
 
 	if (!buffer) {
-		// TODO: Use `ret = util.promisify(stream.finished)(process[stream]);` when targeting Node.js 10
-		ret = new Promise((resolve, reject) => {
-			process[stream]
+		// TODO: Use `ret = util.promisify(stream.finished)(stream);` when targeting Node.js 10
+		return new Promise((resolve, reject) => {
+			stream
 				.once('end', resolve)
 				.once('error', reject);
 		});
-	} else if (encoding) {
-		ret = _getStream(process[stream], {
-			encoding,
-			maxBuffer
-		});
-	} else {
-		ret = _getStream.buffer(process[stream], {maxBuffer});
 	}
 
-	return ret.catch(error => {
-		error.stream = stream;
-		error.message = `${stream} ${error.message}`;
-		throw error;
-	});
+	if (encoding) {
+		return getStream(stream, {encoding, maxBuffer});
+	}
+
+	return getStream.buffer(stream, {maxBuffer});
+}
+
+async function getPromiseResult({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) {
+	const stdoutPromise = getStreamPromise(stdout, {encoding, buffer, maxBuffer});
+	const stderrPromise = getStreamPromise(stderr, {encoding, buffer, maxBuffer});
+	const allPromise = getStreamPromise(all, {encoding, buffer, maxBuffer: maxBuffer * 2});
+
+	try {
+		return await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
+	} catch (error) {
+		return Promise.all([
+			{error, code: error.code, signal: error.signal},
+			getBufferedData(stdout, stdoutPromise),
+			getBufferedData(stderr, stderrPromise),
+			getBufferedData(all, allPromise)
+		]);
+	}
 }
 
 function makeError(result, options) {
@@ -161,6 +183,10 @@ function makeError(result, options) {
 
 	if ('all' in result) {
 		error.all = result.all;
+	}
+
+	if ('bufferedData' in error) {
+		delete error.bufferedData;
 	}
 
 	error.failed = true;
@@ -214,6 +240,30 @@ function joinCommand(file, args = []) {
 	return [file, ...args].join(' ');
 }
 
+function mergePromiseProperty(spawned, getPromise, property) {
+	Object.defineProperty(spawned, property, {
+		value(...args) {
+			return getPromise()[property](...args);
+		},
+		writable: true,
+		enumerable: false,
+		configurable: true
+	});
+}
+
+// The return value is a mixin of `childProcess` and `Promise`
+function mergePromise(spawned, getPromise) {
+	mergePromiseProperty(spawned, getPromise, 'then');
+	mergePromiseProperty(spawned, getPromise, 'catch');
+
+	// TODO: Remove the `if`-guard when targeting Node.js 10
+	if (Promise.prototype.finally) {
+		mergePromiseProperty(spawned, getPromise, 'finally');
+	}
+
+	return spawned;
+}
+
 function spawnedKill(kill, signal = 'SIGTERM', options = {}) {
 	const killResult = kill(signal);
 	setKillTimeout(kill, signal, options, killResult);
@@ -231,8 +281,8 @@ function setKillTimeout(kill, signal, options, killResult) {
 	}, timeout).unref();
 }
 
-function shouldForceKill(signal, {forceKill}, killResult) {
-	return isSigterm(signal) && forceKill !== false && killResult;
+function shouldForceKill(signal, {forceKillAfterTimeout}, killResult) {
+	return isSigterm(signal) && forceKillAfterTimeout !== false && killResult;
 }
 
 function isSigterm(signal) {
@@ -240,30 +290,58 @@ function isSigterm(signal) {
 		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
 }
 
-function getForceKillAfterTimeout({forceKillAfter = DEFAULT_FORCE_KILL_TIMEOUT}) {
-	if (!Number.isInteger(forceKillAfter) || forceKillAfter < 0) {
-		throw new TypeError(`Expected the \`forceKillAfter\` option to be a non-negative integer, got \`${forceKillAfter}\` (${typeof forceKillAfter})`);
+function getForceKillAfterTimeout({forceKillAfterTimeout = true}) {
+	if (forceKillAfterTimeout === true) {
+		return DEFAULT_FORCE_KILL_TIMEOUT;
 	}
 
-	return forceKillAfter;
+	if (!Number.isInteger(forceKillAfterTimeout) || forceKillAfterTimeout < 0) {
+		throw new TypeError(`Expected the \`forceKillAfterTimeout\` option to be a non-negative integer, got \`${forceKillAfterTimeout}\` (${typeof forceKillAfterTimeout})`);
+	}
+
+	return forceKillAfterTimeout;
+}
+
+function handleSpawned(spawned, context) {
+	return new Promise((resolve, reject) => {
+		spawned.on('exit', (code, signal) => {
+			if (context.timedOut) {
+				reject(Object.assign(new Error('Timed out'), {code, signal}));
+				return;
+			}
+
+			resolve({code, signal});
+		});
+
+		spawned.on('error', error => {
+			reject(error);
+		});
+
+		if (spawned.stdin) {
+			spawned.stdin.on('error', error => {
+				reject(error);
+			});
+		}
+	});
 }
 
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
-	const {encoding, buffer, maxBuffer} = parsed.options;
 	const command = joinCommand(file, args);
 
 	let spawned;
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		return Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
-			command,
-			parsed,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		}));
+		return mergePromise(new childProcess.ChildProcess(), () =>
+			Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
+				command,
+				parsed,
+				timedOut: false,
+				isCanceled: false,
+				killed: false
+			}))
+		);
 	}
 
 	const kill = spawned.kill.bind(spawned);
@@ -278,7 +356,7 @@ const execa = (file, args, options) => {
 	}
 
 	let timeoutId;
-	let timedOut = false;
+	const context = {timedOut: false};
 	let isCanceled = false;
 
 	const cleanup = () => {
@@ -295,101 +373,49 @@ const execa = (file, args, options) => {
 	if (parsed.options.timeout > 0) {
 		timeoutId = setTimeout(() => {
 			timeoutId = undefined;
-			timedOut = true;
+			context.timedOut = true;
 			spawned.kill(parsed.options.killSignal);
 		}, parsed.options.timeout);
 	}
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(new Promise((resolve, reject) => {
-		spawned.on('exit', (code, signal) => {
-			if (timedOut) {
-				return reject(Object.assign(new Error('Timed out'), {code, signal}));
-			}
+	const processDone = pFinally(handleSpawned(spawned, context), cleanup);
 
-			resolve({code, signal});
-		});
+	const handlePromise = async () => {
+		const [result, stdout, stderr, all] = await getPromiseResult(spawned, parsed.options, processDone);
+		result.stdout = handleOutput(parsed.options, stdout);
+		result.stderr = handleOutput(parsed.options, stderr);
+		result.all = handleOutput(parsed.options, all);
 
-		spawned.on('error', error => {
-			reject(error);
-		});
-
-		if (spawned.stdin) {
-			spawned.stdin.on('error', error => {
-				reject(error);
-			});
-		}
-	}), cleanup);
-
-	function destroy() {
-		if (spawned.stdout) {
-			spawned.stdout.destroy();
-		}
-
-		if (spawned.stderr) {
-			spawned.stderr.destroy();
-		}
-
-		if (spawned.all) {
-			spawned.all.destroy();
-		}
-	}
-
-	const handlePromise = () => {
-		const processComplete = Promise.all([
-			processDone,
-			getStream(spawned, 'stdout', {encoding, buffer, maxBuffer}),
-			getStream(spawned, 'stderr', {encoding, buffer, maxBuffer}),
-			getStream(spawned, 'all', {encoding, buffer, maxBuffer: maxBuffer * 2})
-		]);
-
-		const finalize = async () => {
-			let results;
-			try {
-				results = await processComplete;
-			} catch (error) {
-				const {stream, code, signal} = error;
-				results = [{error, stream, code, signal}, '', '', ''];
-			}
-
-			const [result, stdout, stderr, all] = results;
-			result.stdout = handleOutput(parsed.options, stdout);
-			result.stderr = handleOutput(parsed.options, stderr);
-			result.all = handleOutput(parsed.options, all);
-
-			if (result.error || result.code !== 0 || result.signal !== null) {
-				const error = makeError(result, {
-					code: result.code,
-					command,
-					parsed,
-					timedOut,
-					isCanceled,
-					killed: spawned.killed
-				});
-
-				if (!parsed.options.reject) {
-					return error;
-				}
-
-				throw error;
-			}
-
-			return {
+		if (result.error || result.code !== 0 || result.signal !== null) {
+			const error = makeError(result, {
+				code: result.code,
 				command,
-				exitCode: 0,
-				exitCodeName: 'SUCCESS',
-				stdout: result.stdout,
-				stderr: result.stderr,
-				all: result.all,
-				failed: false,
-				timedOut: false,
-				isCanceled: false,
-				killed: false
-			};
-		};
+				parsed,
+				timedOut: context.timedOut,
+				isCanceled,
+				killed: spawned.killed
+			});
 
-		// TODO: Use native "finally" syntax when targeting Node.js 10
-		return pFinally(finalize(), destroy);
+			if (!parsed.options.reject) {
+				return error;
+			}
+
+			throw error;
+		}
+
+		return {
+			command,
+			exitCode: 0,
+			exitCodeName: 'SUCCESS',
+			stdout: result.stdout,
+			stderr: result.stderr,
+			all: result.all,
+			failed: false,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		};
 	};
 
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
@@ -398,21 +424,13 @@ const execa = (file, args, options) => {
 
 	spawned.all = makeAllStream(spawned);
 
-	// eslint-disable-next-line promise/prefer-await-to-then
-	spawned.then = (onFulfilled, onRejected) => handlePromise().then(onFulfilled, onRejected);
-	spawned.catch = onRejected => handlePromise().catch(onRejected);
 	spawned.cancel = () => {
 		if (spawned.kill()) {
 			isCanceled = true;
 		}
 	};
 
-	// TODO: Remove the `if`-guard when targeting Node.js 10
-	if (Promise.prototype.finally) {
-		spawned.finally = onFinally => handlePromise().finally(onFinally);
-	}
-
-	return spawned;
+	return mergePromise(spawned, handlePromise);
 };
 
 module.exports = execa;

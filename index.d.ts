@@ -41,6 +41,8 @@ declare namespace execa {
 		/**
 		Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
 
+		If the spawned process fails, `error.stdout`, `error.stderr`, and `error.all` will contain the buffered data.
+
 		@default true
 		*/
 		readonly buffer?: boolean;
@@ -157,9 +159,9 @@ declare namespace execa {
 		readonly timeout?: number;
 
 		/**
-		Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 10MB.
+		Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 100 MB.
 
-		@default 10000000
+		@default 100_000_000
 		*/
 		readonly maxBuffer?: number;
 
@@ -296,18 +298,13 @@ declare namespace execa {
 
 	interface KillOptions {
 		/**
-		If the first signal does not terminate the child process after a specified timeout, a `SIGKILL` signal will be sent to the process.
-
-		@default true
-		*/
-		forceKill?: boolean;
-
-		/**
 		Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
+
+		Can be disabled with `false`.
 
 		@default 5000
 		*/
-		forceKillAfter?: number;
+		forceKillAfterTimeout?: number | false;
 	}
 
 	interface ExecaChildPromise<StdoutErrorType> {

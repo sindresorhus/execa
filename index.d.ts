@@ -439,6 +439,7 @@ declare const execa: {
 	Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
 		- the current Node version and options are used. This can be overridden using the `nodePath` and `nodeArguments` options.
 		- the `shell` option cannot be used
+		- [`stdio`](#stdio) defaults to [`pipe`](https://nodejs.org/api/child_process.html#child_process_options_stdio) instead of [`inherit`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 		- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
 	@param scriptPath - Node.js script to execute.

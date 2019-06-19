@@ -2,32 +2,21 @@ import util from 'util';
 import test from 'ava';
 import stdio from '../lib/stdio';
 
-util.inspect.styles.name = 'magenta';
+const macro = (t, input, expected, func) => {
+	if (expected instanceof Error) {
+		t.throws(() => {
+			stdio(input);
+		}, expected.message);
+		return;
+	}
 
-function createMacro(func) {
-	const macro = (t, input, expected) => {
-		if (expected instanceof Error) {
-			t.throws(() => {
-				stdio(input);
-			}, expected.message);
-			return;
-		}
+	t.deepEqual(func(input), expected);
+};
 
-		const result = func(input);
+const macroTitle = name => (title, input) => `${name} ${(util.inspect(input))}`;
 
-		if (typeof expected === 'object' && expected !== null) {
-			t.deepEqual(result, expected);
-		} else {
-			t.is(result, expected);
-		}
-	};
-
-	macro.title = (providedTitle, input) => `${func.name} ${(providedTitle || util.inspect(input, {colors: true}))}`;
-
-	return macro;
-}
-
-const stdioMacro = createMacro(stdio);
+const stdioMacro = (...args) => macro(...args, stdio);
+stdioMacro.title = macroTitle('execa()');
 
 test(stdioMacro, undefined, undefined);
 test(stdioMacro, null, undefined);
@@ -57,7 +46,8 @@ test(stdioMacro, {stdin: 'inherit', stdio: 'pipe'}, new Error('It\'s not possibl
 test(stdioMacro, {stdin: 'inherit', stdio: ['pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 
-const forkMacro = createMacro(stdio.node);
+const forkMacro = (...args) => macro(...args, stdio.node);
+forkMacro.title = macroTitle('execa.fork()');
 
 test(forkMacro, undefined, ['pipe', 'pipe', 'pipe', 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);

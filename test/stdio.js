@@ -61,10 +61,12 @@ const forkMacro = createMacro(stdio.node);
 
 test(forkMacro, undefined, ['pipe', 'pipe', 'pipe', 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
+test(forkMacro, {stdio: 'ipc'}, 'ipc');
 test(forkMacro, {stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 3]}, [0, 1, 2, 3, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 'ipc']}, [0, 1, 2, 'ipc']);
 
+test(forkMacro, {stdio: [0, 1, undefined]}, [0, 1, 'pipe', 'ipc']);
 test(forkMacro, {stdout: 'ignore'}, ['pipe', 'ignore', 'pipe', 'ipc']);
 test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, ['pipe', 'ignore', 'ignore', 'ipc']);
 

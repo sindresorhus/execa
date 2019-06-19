@@ -203,11 +203,11 @@ declare namespace execa {
 		readonly nodePath?: string;
 
 		/**
-		List of string arguments passed to the Node.js executable.
+		List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
 
 		@default process.execArgv
 		*/
-		readonly nodeArguments?: string[];
+		readonly nodeOptions?: string[];
 	}
 
 	interface ExecaReturnBase<StdoutStderrType> {

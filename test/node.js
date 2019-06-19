@@ -22,16 +22,16 @@ test('node correctly use nodePath', async t => {
 	const {stdout} = await execa.node(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', {
 		stdout: 'pipe',
 		nodePath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
-		nodeArguments: process.platform === 'win32' ? ['/c'] : []
+		nodeOptions: process.platform === 'win32' ? ['/c'] : []
 	});
 
 	t.is(stdout, 'Hello World');
 });
 
-test('node pass on nodeArguments', async t => {
+test('node pass on nodeOptions', async t => {
 	const {stdout} = await execa.node('console.log("foo")', {
 		stdout: 'pipe',
-		nodeArguments: ['-e']
+		nodeOptions: ['-e']
 	});
 
 	t.is(stdout, 'foo');

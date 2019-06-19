@@ -531,12 +531,12 @@ module.exports.node = (scriptPath, args, options = {}) => {
 
 	const stdioOption = stdio.node(options);
 
-	const {nodePath = process.execPath, nodeArguments = process.execArgv} = options;
+	const {nodePath = process.execPath, nodeOptions = process.execArgv} = options;
 
 	return execa(
 		nodePath,
 		[
-			...nodeArguments,
+			...nodeOptions,
 			scriptPath,
 			...(Array.isArray(args) ? args : [])
 		],

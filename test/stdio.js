@@ -59,7 +59,7 @@ test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'
 
 const forkMacro = createMacro(stdio.node);
 
-test(forkMacro, undefined, ['pipe', 'pipe', 'pipe', 'ipc']);
+test(forkMacro, undefined, [undefined, undefined, undefined, 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
 test(forkMacro, {stdio: 'ipc'}, 'ipc');
 test(forkMacro, {stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);

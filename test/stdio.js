@@ -66,9 +66,9 @@ test(forkMacro, {stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 3]}, [0, 1, 2, 3, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 'ipc']}, [0, 1, 2, 'ipc']);
 
-test(forkMacro, {stdio: [0, 1, undefined]}, [0, 1, 'pipe', 'ipc']);
-test(forkMacro, {stdout: 'ignore'}, ['pipe', 'ignore', 'pipe', 'ipc']);
-test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, ['pipe', 'ignore', 'ignore', 'ipc']);
+test(forkMacro, {stdio: [0, 1, undefined]}, [0, 1, undefined, 'ipc']);
+test(forkMacro, {stdout: 'ignore'}, [undefined, 'ignore', undefined, 'ipc']);
+test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, [undefined, 'ignore', 'ignore', 'ipc']);
 
 test(forkMacro, {stdio: {foo: 'bar'}}, new TypeError('Expected `stdio` to be of type `string` or `Array`, got `object`'));
 test(forkMacro, {stdin: 'inherit', stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));

@@ -487,10 +487,10 @@ test('result.signal is undefined if process failed, but was not killed', async t
 	t.is(signal, undefined);
 });
 
-async function testExitCode(t, num) {
+const testExitCode = async (t, num) => {
 	const {exitCode} = await t.throwsAsync(execa('exit', [`${num}`]), {message: getExitRegExp(num)});
 	t.is(exitCode, num);
-}
+};
 
 test('error.exitCode is 2', testExitCode, 2);
 test('error.exitCode is 3', testExitCode, 3);
@@ -525,22 +525,22 @@ test('timedOut will be false if no timeout was set and zero exit code in sync mo
 	t.false(timedOut);
 });
 
-async function errorMessage(t, expected, ...args) {
+const errorMessage = async (t, expected, ...args) => {
 	await t.throwsAsync(execa('exit', args), {message: expected});
-}
+};
 
 errorMessage.title = (message, expected) => `error.message matches: ${expected}`;
 
 test(errorMessage, /Command failed with exit code 2.*: exit 2 foo bar/, 2, 'foo', 'bar');
 test(errorMessage, /Command failed with exit code 3.*: exit 3 baz quz/, 3, 'baz', 'quz');
 
-async function command(t, expected, ...args) {
+const command = async (t, expected, ...args) => {
 	const {command: failCommand} = await t.throwsAsync(execa('fail', args));
 	t.is(failCommand, `fail${expected}`);
 
 	const {command} = await execa('noop', args);
 	t.is(command, `noop${expected}`);
-}
+};
 
 command.title = (message, expected) => `command is: ${JSON.stringify(expected)}`;
 
@@ -549,9 +549,9 @@ test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
 // When child process exits before parent process
-async function spawnAndExit(t, cleanup, detached) {
+const spawnAndExit = async (t, cleanup, detached) => {
 	await t.notThrowsAsync(execa('sub-process-exit', [cleanup, detached]));
-}
+};
 
 test('spawnAndExit', spawnAndExit, false, false);
 test('spawnAndExit cleanup', spawnAndExit, true, false);
@@ -559,7 +559,7 @@ test('spawnAndExit detached', spawnAndExit, false, true);
 test('spawnAndExit cleanup detached', spawnAndExit, true, true);
 
 // When parent process exits before child process
-async function spawnAndKill(t, signal, cleanup, detached, isKilled) {
+const spawnAndKill = async (t, signal, cleanup, detached, isKilled) => {
 	const subprocess = execa('sub-process', [cleanup, detached], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
 
 	const pid = await pEvent(subprocess, 'message');
@@ -576,7 +576,7 @@ async function spawnAndKill(t, signal, cleanup, detached, isKilled) {
 	if (!isKilled) {
 		process.kill(pid, 'SIGKILL');
 	}
-}
+};
 
 // Without `options.cleanup`:
 //   - on Windows subprocesses are killed if `options.detached: false`, but not

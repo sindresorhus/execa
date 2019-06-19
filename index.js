@@ -18,7 +18,7 @@ const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 const SPACES_REGEXP = / +/g;
 
-function handleArgs(file, args, options = {}) {
+const handleArgs = (file, args, options = {}) => {
 	const parsed = crossSpawn._parse(file, args, options);
 	file = parsed.command;
 	args = parsed.args;
@@ -59,9 +59,9 @@ function handleArgs(file, args, options = {}) {
 	}
 
 	return {file, args, options, parsed};
-}
+};
 
-function handleInput(spawned, input) {
+const handleInput = (spawned, input) => {
 	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852
 	// TODO: Remove `|| spawned.stdin === undefined` once we drop support for Node.js <=12.2.0
 	if (input === undefined || spawned.stdin === undefined) {
@@ -73,9 +73,9 @@ function handleInput(spawned, input) {
 	} else {
 		spawned.stdin.end(input);
 	}
-}
+};
 
-function handleOutput(options, value, error) {
+const handleOutput = (options, value, error) => {
 	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
 		// When `execa.sync()` errors, we normalize it to '' to mimic `execa()`
 		return error === undefined ? undefined : '';
@@ -86,9 +86,9 @@ function handleOutput(options, value, error) {
 	}
 
 	return value;
-}
+};
 
-function makeAllStream(spawned) {
+const makeAllStream = spawned => {
 	if (!spawned.stdout && !spawned.stderr) {
 		return;
 	}
@@ -104,9 +104,9 @@ function makeAllStream(spawned) {
 	}
 
 	return mixed;
-}
+};
 
-async function getBufferedData(stream, streamPromise) {
+const getBufferedData = async (stream, streamPromise) => {
 	if (!stream) {
 		return;
 	}
@@ -118,9 +118,9 @@ async function getBufferedData(stream, streamPromise) {
 	} catch (error) {
 		return error.bufferedData;
 	}
-}
+};
 
-function getStreamPromise(stream, {encoding, buffer, maxBuffer}) {
+const getStreamPromise = (stream, {encoding, buffer, maxBuffer}) => {
 	if (!stream) {
 		return;
 	}
@@ -139,9 +139,9 @@ function getStreamPromise(stream, {encoding, buffer, maxBuffer}) {
 	}
 
 	return getStream.buffer(stream, {maxBuffer});
-}
+};
 
-async function getPromiseResult({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) {
+const getPromiseResult = async ({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) => {
 	const stdoutPromise = getStreamPromise(stdout, {encoding, buffer, maxBuffer});
 	const stderrPromise = getStreamPromise(stderr, {encoding, buffer, maxBuffer});
 	const allPromise = getStreamPromise(all, {encoding, buffer, maxBuffer: maxBuffer * 2});
@@ -156,9 +156,9 @@ async function getPromiseResult({stdout, stderr, all}, {encoding, buffer, maxBuf
 			getBufferedData(all, allPromise)
 		]);
 	}
-}
+};
 
-function makeError(result, options) {
+const makeError = (result, options) => {
 	const {stdout, stderr, signal} = result;
 	let {error} = result;
 	const {code, command, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
@@ -198,9 +198,9 @@ function makeError(result, options) {
 	error.signal = signal || undefined;
 
 	return error;
-}
+};
 
-function getCode({error = {}}, code) {
+const getCode = ({error = {}}, code) => {
 	if (error.code) {
 		return [error.code, os.constants.errno[error.code]];
 	}
@@ -210,9 +210,9 @@ function getCode({error = {}}, code) {
 	}
 
 	return [];
-}
+};
 
-function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled}) {
+const getErrorPrefix = ({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled}) => {
 	if (timedOut) {
 		return `timed out after ${timeout} milliseconds`;
 	}
@@ -230,17 +230,17 @@ function getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCa
 	}
 
 	return 'failed';
-}
+};
 
-function joinCommand(file, args = []) {
+const joinCommand = (file, args = []) => {
 	if (!Array.isArray(args)) {
 		return file;
 	}
 
 	return [file, ...args].join(' ');
-}
+};
 
-function mergePromiseProperty(spawned, getPromise, property) {
+const mergePromiseProperty = (spawned, getPromise, property) => {
 	Object.defineProperty(spawned, property, {
 		value(...args) {
 			return getPromise()[property](...args);
@@ -249,10 +249,10 @@ function mergePromiseProperty(spawned, getPromise, property) {
 		enumerable: false,
 		configurable: true
 	});
-}
+};
 
 // The return value is a mixin of `childProcess` and `Promise`
-function mergePromise(spawned, getPromise) {
+const mergePromise = (spawned, getPromise) => {
 	mergePromiseProperty(spawned, getPromise, 'then');
 	mergePromiseProperty(spawned, getPromise, 'catch');
 
@@ -262,15 +262,15 @@ function mergePromise(spawned, getPromise) {
 	}
 
 	return spawned;
-}
+};
 
-function spawnedKill(kill, signal = 'SIGTERM', options = {}) {
+const spawnedKill = (kill, signal = 'SIGTERM', options = {}) => {
 	const killResult = kill(signal);
 	setKillTimeout(kill, signal, options, killResult);
 	return killResult;
-}
+};
 
-function setKillTimeout(kill, signal, options, killResult) {
+const setKillTimeout = (kill, signal, options, killResult) => {
 	if (!shouldForceKill(signal, options, killResult)) {
 		return;
 	}
@@ -279,18 +279,18 @@ function setKillTimeout(kill, signal, options, killResult) {
 	setTimeout(() => {
 		kill('SIGKILL');
 	}, timeout).unref();
-}
+};
 
-function shouldForceKill(signal, {forceKillAfterTimeout}, killResult) {
+const shouldForceKill = (signal, {forceKillAfterTimeout}, killResult) => {
 	return isSigterm(signal) && forceKillAfterTimeout !== false && killResult;
-}
+};
 
-function isSigterm(signal) {
+const isSigterm = signal => {
 	return signal === os.constants.signals.SIGTERM ||
 		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
-}
+};
 
-function getForceKillAfterTimeout({forceKillAfterTimeout = true}) {
+const getForceKillAfterTimeout = ({forceKillAfterTimeout = true}) => {
 	if (forceKillAfterTimeout === true) {
 		return DEFAULT_FORCE_KILL_TIMEOUT;
 	}
@@ -300,9 +300,9 @@ function getForceKillAfterTimeout({forceKillAfterTimeout = true}) {
 	}
 
 	return forceKillAfterTimeout;
-}
+};
 
-function handleSpawned(spawned, context) {
+const handleSpawned = (spawned, context) => {
 	return new Promise((resolve, reject) => {
 		spawned.on('exit', (code, signal) => {
 			if (context.timedOut) {
@@ -323,7 +323,7 @@ function handleSpawned(spawned, context) {
 			});
 		}
 	});
-}
+};
 
 const setupTimeout = (spawned, {timeout, killSignal}, context) => {
 	if (timeout > 0) {
@@ -492,7 +492,7 @@ module.exports.sync = (file, args, options) => {
 };
 
 // Allow spaces to be escaped by a backslash if not meant as a delimiter
-function handleEscaping(tokens, token, index) {
+const handleEscaping = (tokens, token, index) => {
 	if (index === 0) {
 		return [token];
 	}
@@ -504,14 +504,14 @@ function handleEscaping(tokens, token, index) {
 	}
 
 	return [...tokens, token];
-}
+};
 
-function parseCommand(command) {
+const parseCommand = command => {
 	return command
 		.trim()
 		.split(SPACES_REGEXP)
 		.reduce(handleEscaping, []);
-}
+};
 
 module.exports.command = (command, options) => {
 	const [file, ...args] = parseCommand(command);

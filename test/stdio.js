@@ -67,6 +67,7 @@ test(forkMacro, {stdio: [0, 1, 2, 3]}, [0, 1, 2, 3, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 'ipc']}, [0, 1, 2, 'ipc']);
 
 test(forkMacro, {stdio: [0, 1, undefined]}, [0, 1, undefined, 'ipc']);
+test(forkMacro, {stdio: [0, 1, 2, undefined]}, [0, 1, 2, undefined, 'ipc']);
 test(forkMacro, {stdout: 'ignore'}, [undefined, 'ignore', undefined, 'ipc']);
 test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, [undefined, 'ignore', 'ignore', 'ipc']);
 

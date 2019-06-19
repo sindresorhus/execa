@@ -190,7 +190,6 @@ Execute a Node.js script as a child process.
 
 Same as `execa('node', [file, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
   - the [`nodePath`](#nodepath-for-node-only) and [`nodeArguments`](#nodearguments-for-node-only) options can be used
-  - the [`shell`](#shell) option cannot be used 
   - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
 ### childProcessResult

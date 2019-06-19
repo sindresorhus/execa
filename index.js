@@ -544,8 +544,7 @@ module.exports.node = (scriptPath, args, options) => {
 			stdin: undefined,
 			stdout: undefined,
 			stderr: undefined,
-			stdio: stdioOption,
-			shell: false
+			stdio: stdioOption
 		}
 	);
 };

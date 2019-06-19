@@ -523,19 +523,20 @@ module.exports.commandSync = (command, options) => {
 	return execa.sync(file, args, options);
 };
 
-module.exports.node = (scriptPath, args, options) => {
+module.exports.node = (scriptPath, args, options = {}) => {
 	if (args && !Array.isArray(args) && typeof args === 'object') {
 		options = args;
 		args = [];
 	}
 
 	const stdioOption = stdio.node(options);
-	options = options || {};
+
+	const {nodePath = process.execPath, nodeArguments = process.execArgv} = options;
 
 	return execa(
-		options.nodePath || process.execPath,
+		nodePath,
 		[
-			...(options.nodeArguments || process.execArgv),
+			...nodeArguments,
 			scriptPath,
 			...(Array.isArray(args) ? args : [])
 		],

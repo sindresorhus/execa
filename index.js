@@ -384,7 +384,9 @@ const execa = (file, args, options) => {
 	setupTimeout(spawned, parsed.options, context);
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(handleSpawned(spawned, context), () => cleanup(context));
+	const processDone = pFinally(handleSpawned(spawned, context), () => {
+		cleanup(context);
+	});
 
 	const handlePromise = async () => {
 		const [result, stdout, stderr, all] = await getPromiseResult(spawned, parsed.options, processDone);

@@ -334,6 +334,17 @@ const setupTimeout = (spawned, {timeout, killSignal}, context) => {
 	}
 };
 
+// #115
+const setExitHandler = (spawned, {cleanup, detached}, context) => {
+	if (!cleanup || detached) {
+		return;
+	}
+
+	context.removeExitHandler = onExit(() => {
+		spawned.kill();
+	});
+};
+
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const command = joinCommand(file, args);
@@ -356,14 +367,6 @@ const execa = (file, args, options) => {
 	const kill = spawned.kill.bind(spawned);
 	spawned.kill = spawnedKill.bind(null, kill);
 
-	// #115
-	let removeExitHandler;
-	if (parsed.options.cleanup && !parsed.options.detached) {
-		removeExitHandler = onExit(() => {
-			spawned.kill();
-		});
-	}
-
 	const context = {timedOut: false};
 	let isCanceled = false;
 
@@ -373,11 +376,12 @@ const execa = (file, args, options) => {
 			context.timeoutId = undefined;
 		}
 
-		if (removeExitHandler) {
-			removeExitHandler();
+		if (context.removeExitHandler) {
+			context.removeExitHandler();
 		}
 	};
 
+	setExitHandler(spawned, parsed.options, context);
 	setupTimeout(spawned, parsed.options, context);
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10

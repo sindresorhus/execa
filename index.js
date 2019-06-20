@@ -345,6 +345,16 @@ const setExitHandler = (spawned, {cleanup, detached}, context) => {
 	});
 };
 
+const cleanup = ({timeoutId, removeExitHandler}) => {
+	if (timeoutId !== undefined) {
+		clearTimeout(timeoutId);
+	}
+
+	if (removeExitHandler !== undefined) {
+		removeExitHandler();
+	}
+};
+
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const command = joinCommand(file, args);
@@ -370,22 +380,13 @@ const execa = (file, args, options) => {
 	const context = {timedOut: false};
 	let isCanceled = false;
 
-	const cleanup = () => {
-		if (context.timeoutId !== undefined) {
-			clearTimeout(context.timeoutId);
-			context.timeoutId = undefined;
-		}
-
-		if (context.removeExitHandler) {
-			context.removeExitHandler();
-		}
-	};
-
 	setExitHandler(spawned, parsed.options, context);
 	setupTimeout(spawned, parsed.options, context);
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(handleSpawned(spawned, context), cleanup);
+	const processDone = pFinally(handleSpawned(spawned, context), () => {
+		cleanup(context);
+	});
 
 	const handlePromise = async () => {
 		const [result, stdout, stderr, all] = await getPromiseResult(spawned, parsed.options, processDone);

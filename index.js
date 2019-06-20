@@ -308,8 +308,6 @@ const spawnedCancel = (spawned, context) => {
 	if (killResult) {
 		context.isCanceled = true;
 	}
-
-	return killResult;
 };
 
 const handleSpawned = (spawned, context) => {

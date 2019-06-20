@@ -303,8 +303,11 @@ const getForceKillAfterTimeout = ({forceKillAfterTimeout = true}) => {
 };
 
 const spawnedCancel = (spawned, context) => {
-	context.isCanceled = true;
-	spawned.kill();
+	const killResult = spawned.kill();
+
+	if (killResult) {
+		context.isCanceled = true;
+	}
 };
 
 const handleSpawned = (spawned, context) => {

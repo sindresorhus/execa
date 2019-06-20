@@ -302,6 +302,16 @@ const getForceKillAfterTimeout = ({forceKillAfterTimeout = true}) => {
 	return forceKillAfterTimeout;
 };
 
+const spawnedCancel = (spawned, context) => {
+	const killResult = spawned.kill();
+
+	if (killResult) {
+		context.isCanceled = true;
+	}
+
+	return killResult;
+};
+
 const handleSpawned = (spawned, context) => {
 	return new Promise((resolve, reject) => {
 		spawned.on('exit', (code, signal) => {
@@ -374,11 +384,10 @@ const execa = (file, args, options) => {
 		);
 	}
 
-	const kill = spawned.kill.bind(spawned);
-	spawned.kill = spawnedKill.bind(null, kill);
+	const context = {timedOut: false, isCanceled: false};
 
-	const context = {timedOut: false};
-	let isCanceled = false;
+	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
+	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
 	setExitHandler(spawned, parsed.options, context);
 	setupTimeout(spawned, parsed.options, context);
@@ -400,7 +409,7 @@ const execa = (file, args, options) => {
 				command,
 				parsed,
 				timedOut: context.timedOut,
-				isCanceled,
+				isCanceled: context.isCanceled,
 				killed: spawned.killed
 			});
 
@@ -430,12 +439,6 @@ const execa = (file, args, options) => {
 	handleInput(spawned, parsed.options.input);
 
 	spawned.all = makeAllStream(spawned);
-
-	spawned.cancel = () => {
-		if (spawned.kill()) {
-			isCanceled = true;
-		}
-	};
 
 	return mergePromise(spawned, handlePromise);
 };

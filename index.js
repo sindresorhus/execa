@@ -11,7 +11,7 @@ const getStream = require('get-stream');
 const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
-const stdio = require('./lib/stdio');
+const normalizeStdio = require('./lib/stdio');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
@@ -51,7 +51,7 @@ const handleArgs = (file, args, options = {}) => {
 		});
 	}
 
-	options.stdio = stdio(options);
+	options.stdio = normalizeStdio(options);
 
 	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
 		// #116
@@ -533,7 +533,7 @@ module.exports.node = (scriptPath, args, options = {}) => {
 		args = [];
 	}
 
-	const stdioOption = stdio.node(options);
+	const stdioOption = normalizeStdio.node(options);
 
 	const {nodePath = process.execPath, nodeOptions = process.execArgv} = options;
 

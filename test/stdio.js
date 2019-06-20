@@ -1,11 +1,11 @@
 import util from 'util';
 import test from 'ava';
-import stdio from '../lib/stdio';
+import normalizeStdio from '../lib/stdio';
 
 const macro = (t, input, expected, func) => {
 	if (expected instanceof Error) {
 		t.throws(() => {
-			stdio(input);
+			normalizeStdio(input);
 		}, expected.message);
 		return;
 	}
@@ -15,7 +15,7 @@ const macro = (t, input, expected, func) => {
 
 const macroTitle = name => (title, input) => `${name} ${(util.inspect(input))}`;
 
-const stdioMacro = (...args) => macro(...args, stdio);
+const stdioMacro = (...args) => macro(...args, normalizeStdio);
 stdioMacro.title = macroTitle('execa()');
 
 test(stdioMacro, undefined, undefined);
@@ -47,7 +47,7 @@ test(stdioMacro, {stdin: 'inherit', stdio: ['pipe']}, new Error('It\'s not possi
 test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 test(stdioMacro, {stdin: 0, stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 
-const forkMacro = (...args) => macro(...args, stdio.node);
+const forkMacro = (...args) => macro(...args, normalizeStdio.node);
 forkMacro.title = macroTitle('execa.fork()');
 
 test(forkMacro, undefined, [undefined, undefined, undefined, 'ipc']);

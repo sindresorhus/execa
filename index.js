@@ -1,6 +1,5 @@
 'use strict';
 const path = require('path');
-const os = require('os');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
@@ -9,12 +8,11 @@ const isStream = require('is-stream');
 const getStream = require('get-stream');
 const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
-const onExit = require('signal-exit');
 const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
+const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler, cleanup} = require('./lib/kill');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
-const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
 
 const SPACES_REGEXP = / +/g;
 
@@ -190,52 +188,6 @@ const mergePromise = (spawned, getPromise) => {
 	return spawned;
 };
 
-const spawnedKill = (kill, signal = 'SIGTERM', options = {}) => {
-	const killResult = kill(signal);
-	setKillTimeout(kill, signal, options, killResult);
-	return killResult;
-};
-
-const setKillTimeout = (kill, signal, options, killResult) => {
-	if (!shouldForceKill(signal, options, killResult)) {
-		return;
-	}
-
-	const timeout = getForceKillAfterTimeout(options);
-	setTimeout(() => {
-		kill('SIGKILL');
-	}, timeout).unref();
-};
-
-const shouldForceKill = (signal, {forceKillAfterTimeout}, killResult) => {
-	return isSigterm(signal) && forceKillAfterTimeout !== false && killResult;
-};
-
-const isSigterm = signal => {
-	return signal === os.constants.signals.SIGTERM ||
-		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
-};
-
-const getForceKillAfterTimeout = ({forceKillAfterTimeout = true}) => {
-	if (forceKillAfterTimeout === true) {
-		return DEFAULT_FORCE_KILL_TIMEOUT;
-	}
-
-	if (!Number.isInteger(forceKillAfterTimeout) || forceKillAfterTimeout < 0) {
-		throw new TypeError(`Expected the \`forceKillAfterTimeout\` option to be a non-negative integer, got \`${forceKillAfterTimeout}\` (${typeof forceKillAfterTimeout})`);
-	}
-
-	return forceKillAfterTimeout;
-};
-
-const spawnedCancel = (spawned, context) => {
-	const killResult = spawned.kill();
-
-	if (killResult) {
-		context.isCanceled = true;
-	}
-};
-
 const handleSpawned = (spawned, context) => {
 	return new Promise((resolve, reject) => {
 		spawned.on('exit', (code, signal) => {
@@ -257,36 +209,6 @@ const handleSpawned = (spawned, context) => {
 			});
 		}
 	});
-};
-
-const setupTimeout = (spawned, {timeout, killSignal}, context) => {
-	if (timeout > 0) {
-		return setTimeout(() => {
-			context.timedOut = true;
-			spawned.kill(killSignal);
-		}, timeout);
-	}
-};
-
-// #115
-const setExitHandler = (spawned, {cleanup, detached}) => {
-	if (!cleanup || detached) {
-		return;
-	}
-
-	return onExit(() => {
-		spawned.kill();
-	});
-};
-
-const cleanup = (timeoutId, removeExitHandler) => {
-	if (timeoutId !== undefined) {
-		clearTimeout(timeoutId);
-	}
-
-	if (removeExitHandler !== undefined) {
-		removeExitHandler();
-	}
 };
 
 const execa = (file, args, options) => {

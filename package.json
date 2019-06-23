@@ -38,6 +38,7 @@
 		"local"
 	],
 	"dependencies": {
+		"@types/node": "^12.0.7",
 		"cross-spawn": "^6.0.5",
 		"get-stream": "^5.0.0",
 		"is-stream": "^2.0.0",
@@ -48,7 +49,6 @@
 		"strip-final-newline": "^2.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "^12.0.7",
 		"ava": "^2.1.0",
 		"coveralls": "^3.0.4",
 		"is-running": "^2.1.0",

@@ -1,7 +1,6 @@
 'use strict';
 const path = require('path');
 const os = require('os');
-const util = require('util');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
@@ -11,6 +10,7 @@ const getStream = require('get-stream');
 const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const onExit = require('signal-exit');
+const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
@@ -158,80 +158,6 @@ const getPromiseResult = async ({stdout, stderr, all}, {encoding, buffer, maxBuf
 	}
 };
 
-const makeError = (result, options) => {
-	const {stdout, stderr, signal} = result;
-	let {error} = result;
-	const {code, command, timedOut, isCanceled, killed, parsed: {options: {timeout}}} = options;
-
-	const [exitCodeName, exitCode] = getCode(result, code);
-
-	const prefix = getErrorPrefix({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled});
-	const message = `Command ${prefix}: ${command}`;
-
-	if (error instanceof Error) {
-		error.message = `${message}\n${error.message}`;
-	} else {
-		error = new Error(message);
-	}
-
-	error.command = command;
-	delete error.code;
-	error.exitCode = exitCode;
-	error.exitCodeName = exitCodeName;
-	error.stdout = stdout;
-	error.stderr = stderr;
-
-	if ('all' in result) {
-		error.all = result.all;
-	}
-
-	if ('bufferedData' in error) {
-		delete error.bufferedData;
-	}
-
-	error.failed = true;
-	error.timedOut = timedOut;
-	error.isCanceled = isCanceled;
-	error.killed = killed && !timedOut;
-	// `signal` emitted on `spawned.on('exit')` event can be `null`. We normalize
-	// it to `undefined`
-	error.signal = signal || undefined;
-
-	return error;
-};
-
-const getCode = ({error = {}}, code) => {
-	if (error.code) {
-		return [error.code, os.constants.errno[error.code]];
-	}
-
-	if (Number.isInteger(code)) {
-		return [util.getSystemErrorName(-code), code];
-	}
-
-	return [];
-};
-
-const getErrorPrefix = ({timedOut, timeout, signal, exitCodeName, exitCode, isCanceled}) => {
-	if (timedOut) {
-		return `timed out after ${timeout} milliseconds`;
-	}
-
-	if (isCanceled) {
-		return 'was canceled';
-	}
-
-	if (signal) {
-		return `was killed with ${signal}`;
-	}
-
-	if (exitCode !== undefined) {
-		return `failed with exit code ${exitCode} (${exitCodeName})`;
-	}
-
-	return 'failed';
-};
-
 const joinCommand = (file, args = []) => {
 	if (!Array.isArray(args)) {
 		return file;
@@ -372,7 +298,11 @@ const execa = (file, args, options) => {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		return mergePromise(new childProcess.ChildProcess(), () =>
-			Promise.reject(makeError({error, stdout: '', stderr: '', all: ''}, {
+			Promise.reject(makeError({
+				error,
+				stdout: '',
+				stderr: '',
+				all: '',
 				command,
 				parsed,
 				timedOut: false,
@@ -402,8 +332,8 @@ const execa = (file, args, options) => {
 		result.all = handleOutput(parsed.options, all);
 
 		if (result.error || result.code !== 0 || result.signal !== null) {
-			const error = makeError(result, {
-				code: result.code,
+			const error = makeError({
+				...result,
 				command,
 				parsed,
 				timedOut: context.timedOut,
@@ -455,7 +385,11 @@ module.exports.sync = (file, args, options) => {
 	try {
 		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		throw makeError({error, stdout: '', stderr: '', all: ''}, {
+		throw makeError({
+			error,
+			stdout: '',
+			stderr: '',
+			all: '',
 			command,
 			parsed,
 			timedOut: false,
@@ -468,7 +402,8 @@ module.exports.sync = (file, args, options) => {
 	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
-		const error = makeError(result, {
+		const error = makeError({
+			...result,
 			code: result.status,
 			command,
 			parsed,

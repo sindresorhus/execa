@@ -281,7 +281,7 @@ Kill the spawned process when the parent process exits unless either:
 #### preferLocal
 
 Type: `boolean`<br>
-Default: `true`
+Default: `false`
 
 Prefer locally installed binaries when looking for a binary to execute.<br>
 If you `$ npm install foo`, you can then `execa('foo')`.

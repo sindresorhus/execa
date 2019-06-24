@@ -12,6 +12,7 @@ process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.e
 process.env.FOO = 'foo';
 
 const TIMEOUT_REGEXP = /timed out after/;
+const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;
 
 test('execa()', async t => {
 	const {stdout} = await execa('noop', ['foo']);
@@ -75,7 +76,7 @@ test('execa.sync()', t => {
 test('execa.sync() throws error if written to stderr', t => {
 	t.throws(() => {
 		execa.sync('foo');
-	}, process.platform === 'win32' ? /failed with exit code 1/ : /spawnSync foo ENOENT/);
+	}, ENOENT_REGEXP);
 });
 
 test('skip throwing when using reject option', async t => {
@@ -181,15 +182,21 @@ test('stripFinalNewline in sync mode on failure', t => {
 	t.is(stderr, 'foo');
 });
 
-test('preferLocal option', async t => {
-	await execa('ava', ['--version'], {env: {PATH: ''}});
-	const errorRegExp = process.platform === 'win32' ? /failed with exit code 1/ : /spawn ava ENOENT/;
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), errorRegExp);
+test('preferLocal: true', async t => {
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {PATH: ''}}));
+});
+
+test('preferLocal: false', async t => {
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), ENOENT_REGEXP);
+});
+
+test('preferLocal: undefined', async t => {
+	await t.throwsAsync(execa('ava', ['--version'], {env: {PATH: ''}}), ENOENT_REGEXP);
 });
 
 test('localDir option', async t => {
 	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
-	const {stdout} = await execa(command, {shell: true, localDir: '/test'});
+	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: '/test'});
 	const envPaths = stdout.split(path.delimiter).map(envPath =>
 		envPath.replace(/\\/g, '/').replace(/^[^/]+/, '')
 	);

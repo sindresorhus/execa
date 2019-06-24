@@ -27,7 +27,7 @@ declare namespace execa {
 
 		If you `$ npm install foo`, you can then `execa('foo')`.
 
-		@default true
+		@default false
 		*/
 		readonly preferLocal?: boolean;
 

@@ -28,7 +28,7 @@ const handleArgs = (file, args, options = {}) => {
 		maxBuffer: DEFAULT_MAX_BUFFER,
 		buffer: true,
 		stripFinalNewline: true,
-		preferLocal: true,
+		preferLocal: false,
 		localDir: options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,

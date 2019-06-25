@@ -1,6 +1,6 @@
+import path from 'path';
 import test from 'ava';
 import pEvent from 'p-event';
-import path from 'path';
 import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;

@@ -1,8 +1,6 @@
 import path from 'path';
-import fs from 'fs';
 import test from 'ava';
 import isRunning from 'is-running';
-import tempfile from 'tempfile';
 import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -26,18 +24,6 @@ if (process.platform === 'win32') {
 		t.is(stdout, 'Hello World');
 	});
 }
-
-test('pass `stdout` to a file descriptor', async t => {
-	const file = tempfile('.txt');
-	await execa('test/fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
-	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
-});
-
-test('pass `stderr` to a file descriptor', async t => {
-	const file = tempfile('.txt');
-	await execa('test/fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
-	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
-});
 
 test('execa.sync()', t => {
 	const {stdout} = execa.sync('noop', ['foo']);

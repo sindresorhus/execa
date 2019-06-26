@@ -1,7 +1,9 @@
 import path from 'path';
+import fs from 'fs';
 import stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
+import tempfile from 'tempfile';
 import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -10,6 +12,18 @@ test('buffer', async t => {
 	const {stdout} = await execa('noop', ['foo'], {encoding: null});
 	t.true(Buffer.isBuffer(stdout));
 	t.is(stdout.toString(), 'foo');
+});
+
+test('pass `stdout` to a file descriptor', async t => {
+	const file = tempfile('.txt');
+	await execa('test/fixtures/noop', ['foo bar'], {stdout: fs.openSync(file, 'w')});
+	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
+});
+
+test('pass `stderr` to a file descriptor', async t => {
+	const file = tempfile('.txt');
+	await execa('test/fixtures/noop-err', ['foo bar'], {stderr: fs.openSync(file, 'w')});
+	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {

@@ -10,10 +10,9 @@ const normalizeStdio = require('./lib/stdio');
 const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler, cleanup} = require('./lib/kill');
 const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream.js');
 const {mergePromise, getSpawnedPromise} = require('./lib/promise.js');
+const {joinCommand, parseCommand} = require('./lib/command.js');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
-
-const SPACES_REGEXP = / +/g;
 
 const handleArgs = (file, args, options = {}) => {
 	const parsed = crossSpawn._parse(file, args, options);
@@ -69,14 +68,6 @@ const handleOutput = (options, value, error) => {
 	}
 
 	return value;
-};
-
-const joinCommand = (file, args = []) => {
-	if (!Array.isArray(args)) {
-		return file;
-	}
-
-	return [file, ...args].join(' ');
 };
 
 const execa = (file, args, options) => {
@@ -218,28 +209,6 @@ module.exports.sync = (file, args, options) => {
 		isCanceled: false,
 		killed: false
 	};
-};
-
-// Allow spaces to be escaped by a backslash if not meant as a delimiter
-const handleEscaping = (tokens, token, index) => {
-	if (index === 0) {
-		return [token];
-	}
-
-	const previousToken = tokens[tokens.length - 1];
-
-	if (previousToken.endsWith('\\')) {
-		return [...tokens.slice(0, -1), `${previousToken.slice(0, -1)} ${token}`];
-	}
-
-	return [...tokens, token];
-};
-
-const parseCommand = command => {
-	return command
-		.trim()
-		.split(SPACES_REGEXP)
-		.reduce(handleEscaping, []);
 };
 
 module.exports.command = (command, options) => {

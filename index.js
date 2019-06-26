@@ -116,14 +116,19 @@ const execa = (file, args, options) => {
 	});
 
 	const handlePromise = async () => {
-		const [result, stdout, stderr, all] = await getSpawnedResult(spawned, parsed.options, processDone);
-		result.stdout = handleOutput(parsed.options, stdout);
-		result.stderr = handleOutput(parsed.options, stderr);
-		result.all = handleOutput(parsed.options, all);
+		const [{error, code, signal}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
+		const stdout = handleOutput(parsed.options, stdoutResult);
+		const stderr = handleOutput(parsed.options, stderrResult);
+		const all = handleOutput(parsed.options, allResult);
 
-		if (result.error || result.code !== 0 || result.signal !== null) {
-			const error = makeError({
-				...result,
+		if (error || code !== 0 || signal !== null) {
+			const returnedError = makeError({
+				error,
+				code,
+				signal,
+				stdout,
+				stderr,
+				all,
 				command,
 				parsed,
 				timedOut: context.timedOut,
@@ -132,19 +137,19 @@ const execa = (file, args, options) => {
 			});
 
 			if (!parsed.options.reject) {
-				return error;
+				return returnedError;
 			}
 
-			throw error;
+			throw returnedError;
 		}
 
 		return {
 			command,
 			exitCode: 0,
 			exitCodeName: 'SUCCESS',
-			stdout: result.stdout,
-			stderr: result.stderr,
-			all: result.all,
+			stdout,
+			stderr,
+			all,
 			failed: false,
 			timedOut: false,
 			isCanceled: false,

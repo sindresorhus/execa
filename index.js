@@ -9,6 +9,7 @@ const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
 const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler, cleanup} = require('./lib/kill');
 const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream.js');
+const {mergePromise, getSpawnedPromise} = require('./lib/promise.js');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
@@ -78,53 +79,6 @@ const joinCommand = (file, args = []) => {
 	return [file, ...args].join(' ');
 };
 
-const mergePromiseProperty = (spawned, getPromise, property) => {
-	Object.defineProperty(spawned, property, {
-		value(...args) {
-			return getPromise()[property](...args);
-		},
-		writable: true,
-		enumerable: false,
-		configurable: true
-	});
-};
-
-// The return value is a mixin of `childProcess` and `Promise`
-const mergePromise = (spawned, getPromise) => {
-	mergePromiseProperty(spawned, getPromise, 'then');
-	mergePromiseProperty(spawned, getPromise, 'catch');
-
-	// TODO: Remove the `if`-guard when targeting Node.js 10
-	if (Promise.prototype.finally) {
-		mergePromiseProperty(spawned, getPromise, 'finally');
-	}
-
-	return spawned;
-};
-
-const handleSpawned = (spawned, context) => {
-	return new Promise((resolve, reject) => {
-		spawned.on('exit', (code, signal) => {
-			if (context.timedOut) {
-				reject(Object.assign(new Error('Timed out'), {code, signal}));
-				return;
-			}
-
-			resolve({code, signal});
-		});
-
-		spawned.on('error', error => {
-			reject(error);
-		});
-
-		if (spawned.stdin) {
-			spawned.stdin.on('error', error => {
-				reject(error);
-			});
-		}
-	});
-};
-
 const execa = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const command = joinCommand(file, args);
@@ -157,7 +111,7 @@ const execa = (file, args, options) => {
 	const removeExitHandler = setExitHandler(spawned, parsed.options);
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(handleSpawned(spawned, context), () => {
+	const processDone = pFinally(getSpawnedPromise(spawned, context), () => {
 		cleanup(timeoutId, removeExitHandler);
 	});
 

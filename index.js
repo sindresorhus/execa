@@ -4,13 +4,11 @@ const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
-const isStream = require('is-stream');
-const getStream = require('get-stream');
-const mergeStream = require('merge-stream');
 const pFinally = require('p-finally');
 const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
 const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler, cleanup} = require('./lib/kill');
+const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream.js');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
@@ -59,20 +57,6 @@ const handleArgs = (file, args, options = {}) => {
 	return {file, args, options, parsed};
 };
 
-const handleInput = (spawned, input) => {
-	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852
-	// TODO: Remove `|| spawned.stdin === undefined` once we drop support for Node.js <=12.2.0
-	if (input === undefined || spawned.stdin === undefined) {
-		return;
-	}
-
-	if (isStream(input)) {
-		input.pipe(spawned.stdin);
-	} else {
-		spawned.stdin.end(input);
-	}
-};
-
 const handleOutput = (options, value, error) => {
 	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
 		// When `execa.sync()` errors, we normalize it to '' to mimic `execa()`
@@ -84,76 +68,6 @@ const handleOutput = (options, value, error) => {
 	}
 
 	return value;
-};
-
-const makeAllStream = spawned => {
-	if (!spawned.stdout && !spawned.stderr) {
-		return;
-	}
-
-	const mixed = mergeStream();
-
-	if (spawned.stdout) {
-		mixed.add(spawned.stdout);
-	}
-
-	if (spawned.stderr) {
-		mixed.add(spawned.stderr);
-	}
-
-	return mixed;
-};
-
-const getBufferedData = async (stream, streamPromise) => {
-	if (!stream) {
-		return;
-	}
-
-	stream.destroy();
-
-	try {
-		return await streamPromise;
-	} catch (error) {
-		return error.bufferedData;
-	}
-};
-
-const getStreamPromise = (stream, {encoding, buffer, maxBuffer}) => {
-	if (!stream) {
-		return;
-	}
-
-	if (!buffer) {
-		// TODO: Use `ret = util.promisify(stream.finished)(stream);` when targeting Node.js 10
-		return new Promise((resolve, reject) => {
-			stream
-				.once('end', resolve)
-				.once('error', reject);
-		});
-	}
-
-	if (encoding) {
-		return getStream(stream, {encoding, maxBuffer});
-	}
-
-	return getStream.buffer(stream, {maxBuffer});
-};
-
-const getPromiseResult = async ({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) => {
-	const stdoutPromise = getStreamPromise(stdout, {encoding, buffer, maxBuffer});
-	const stderrPromise = getStreamPromise(stderr, {encoding, buffer, maxBuffer});
-	const allPromise = getStreamPromise(all, {encoding, buffer, maxBuffer: maxBuffer * 2});
-
-	try {
-		return await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
-	} catch (error) {
-		return Promise.all([
-			{error, code: error.code, signal: error.signal},
-			getBufferedData(stdout, stdoutPromise),
-			getBufferedData(stderr, stderrPromise),
-			getBufferedData(all, allPromise)
-		]);
-	}
 };
 
 const joinCommand = (file, args = []) => {
@@ -248,7 +162,7 @@ const execa = (file, args, options) => {
 	});
 
 	const handlePromise = async () => {
-		const [result, stdout, stderr, all] = await getPromiseResult(spawned, parsed.options, processDone);
+		const [result, stdout, stderr, all] = await getSpawnedResult(spawned, parsed.options, processDone);
 		result.stdout = handleOutput(parsed.options, stdout);
 		result.stderr = handleOutput(parsed.options, stderr);
 		result.all = handleOutput(parsed.options, all);
@@ -299,9 +213,7 @@ module.exports.sync = (file, args, options) => {
 	const parsed = handleArgs(file, args, options);
 	const command = joinCommand(file, args);
 
-	if (isStream(parsed.options.input)) {
-		throw new TypeError('The `input` option cannot be a stream in sync mode');
-	}
+	validateInputSync(parsed.options);
 
 	let result;
 	try {

@@ -1,8 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import stream from 'stream';
 import test from 'ava';
-import getStream from 'get-stream';
 import isRunning from 'is-running';
 import tempfile from 'tempfile';
 import execa from '..';
@@ -28,31 +26,6 @@ if (process.platform === 'win32') {
 		t.is(stdout, 'Hello World');
 	});
 }
-
-test('buffer', async t => {
-	const {stdout} = await execa('noop', ['foo'], {encoding: null});
-	t.true(Buffer.isBuffer(stdout));
-	t.is(stdout.toString(), 'foo');
-});
-
-test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
-	const {all} = await execa('noop-132');
-	t.is(all, '132');
-});
-
-test('stdout/stderr/all are undefined if ignored', async t => {
-	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore'});
-	t.is(stdout, undefined);
-	t.is(stderr, undefined);
-	t.is(all, undefined);
-});
-
-test('stdout/stderr/all are undefined if ignored in sync mode', t => {
-	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore'});
-	t.is(stdout, undefined);
-	t.is(stderr, undefined);
-	t.is(all, undefined);
-});
 
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
@@ -135,40 +108,6 @@ test('localDir option', async t => {
 	t.true(envPaths.some(envPath => envPath === '/test/node_modules/.bin'));
 });
 
-test('input option can be a String', async t => {
-	const {stdout} = await execa('stdin', {input: 'foobar'});
-	t.is(stdout, 'foobar');
-});
-
-test('input option can be a Buffer', async t => {
-	const {stdout} = await execa('stdin', {input: 'testing12'});
-	t.is(stdout, 'testing12');
-});
-
-test('input can be a Stream', async t => {
-	const s = new stream.PassThrough();
-	s.write('howdy');
-	s.end();
-	const {stdout} = await execa('stdin', {input: s});
-	t.is(stdout, 'howdy');
-});
-
-test('you can write to child.stdin', async t => {
-	const child = execa('stdin');
-	child.stdin.end('unicorns');
-	t.is((await child).stdout, 'unicorns');
-});
-
-test('input option can be a String - sync', t => {
-	const {stdout} = execa.sync('stdin', {input: 'foobar'});
-	t.is(stdout, 'foobar');
-});
-
-test('input option can be a Buffer - sync', t => {
-	const {stdout} = execa.sync('stdin', {input: Buffer.from('testing12', 'utf8')});
-	t.is(stdout, 'testing12');
-});
-
 test('stdin errors are handled', async t => {
 	const child = execa('noop');
 	child.stdin.emit('error', new Error('test'));
@@ -179,23 +118,6 @@ test('child process errors are handled', async t => {
 	const child = execa('noop');
 	child.emit('error', new Error('test'));
 	await t.throwsAsync(child, /test/);
-});
-
-test('opts.stdout:ignore - stdout will not collect data', async t => {
-	const {stdout} = await execa('stdin', {
-		input: 'hello',
-		stdio: [undefined, 'ignore', undefined]
-	});
-	t.is(stdout, undefined);
-});
-
-test('helpful error trying to provide an input stream in sync mode', t => {
-	t.throws(
-		() => {
-			execa.sync('stdin', {input: new stream.PassThrough()});
-		},
-		/The `input` option cannot be a stream in sync mode/
-	);
 });
 
 test('child process errors rejects promise right away', async t => {
@@ -228,44 +150,6 @@ test('child_process.spawnSync() errors are propagated with a correct shape', t =
 		execa.sync('noop', {timeout: -1});
 	});
 	t.true(failed);
-});
-
-test('maxBuffer affects stdout', async t => {
-	await t.notThrowsAsync(execa('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
-	const {stdout, all} = await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /max-buffer stdout/);
-	t.is(stdout, '.'.repeat(10));
-	t.is(all, '.'.repeat(10));
-});
-
-test('maxBuffer affects stderr', async t => {
-	await t.notThrowsAsync(execa('max-buffer', ['stderr', '10'], {maxBuffer: 10}));
-	const {stderr, all} = await t.throwsAsync(execa('max-buffer', ['stderr', '11'], {maxBuffer: 10}), /max-buffer stderr/);
-	t.is(stderr, '.'.repeat(10));
-	t.is(all, '.'.repeat(10));
-});
-
-test('do not buffer stdout when `buffer` set to `false`', async t => {
-	const promise = execa('max-buffer', ['stdout', '10'], {buffer: false});
-	const [result, stdout] = await Promise.all([
-		promise,
-		getStream(promise.stdout),
-		getStream(promise.all)
-	]);
-
-	t.is(result.stdout, undefined);
-	t.is(stdout, '.........\n');
-});
-
-test('do not buffer stderr when `buffer` set to `false`', async t => {
-	const promise = execa('max-buffer', ['stderr', '10'], {buffer: false});
-	const [result, stderr] = await Promise.all([
-		promise,
-		getStream(promise.stderr),
-		getStream(promise.all)
-	]);
-
-	t.is(result.stderr, undefined);
-	t.is(stderr, '.........\n');
 });
 
 test('use relative path with \'..\' chars', async t => {
@@ -344,12 +228,6 @@ test('use extend environment with `extendEnv: true` and `shell: true`', async t 
 	const {stdout} = await execa(command, {shell: true, env: {}, extendEnv: true});
 	t.is(stdout, 'test');
 	delete process.env.TEST;
-});
-
-test('do not buffer when streaming', async t => {
-	const {stdout} = execa('max-buffer', ['stdout', '21'], {maxBuffer: 10});
-	const result = await getStream(stdout);
-	t.is(result, '....................\n');
 });
 
 test('detach child process', async t => {

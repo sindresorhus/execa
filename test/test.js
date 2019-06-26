@@ -138,6 +138,12 @@ test('child_process.spawnSync() errors are propagated with a correct shape', t =
 	t.true(failed);
 });
 
+test('do not try to consume streams twice', async t => {
+	const cp = execa('noop', ['foo']);
+	t.is((await cp).stdout, 'foo');
+	t.is((await cp).stdout, 'foo');
+});
+
 test('use relative path with \'..\' chars', async t => {
 	const pathViaParentDir = path.join('..', path.basename(path.dirname(__dirname)), 'test', 'fixtures', 'noop');
 	const {stdout} = await execa(pathViaParentDir, ['foo']);

@@ -4,6 +4,7 @@ const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
+const onetime = require('onetime');
 const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
 const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler} = require('./lib/kill');
@@ -144,13 +145,15 @@ const execa = (file, args, options) => {
 		};
 	};
 
+	const handlePromiseOnce = onetime(handlePromise);
+
 	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 
 	handleInput(spawned, parsed.options.input);
 
 	spawned.all = makeAllStream(spawned);
 
-	return mergePromise(spawned, handlePromise);
+	return mergePromise(spawned, handlePromiseOnce);
 };
 
 module.exports = execa;

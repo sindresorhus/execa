@@ -113,7 +113,7 @@ declare namespace execa {
 
 		@default 'pipe'
 		*/
-		readonly stdio?: 'pipe' | 'ignore' | 'inherit' | readonly StdioOption[];
+		readonly stdio?: 'pipe' | 'ignore' | 'inherit' | StdioOption[];
 
 		/**
 		Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
@@ -364,12 +364,12 @@ declare const execa: {
 	*/
 	(
 		file: string,
-		arguments?: readonly string[],
+		arguments?: string[],
 		options?: execa.Options
 	): execa.ExecaChildProcess;
 	(
 		file: string,
-		arguments?: readonly string[],
+		arguments?: string[],
 		options?: execa.Options<null>
 	): execa.ExecaChildProcess<Buffer>;
 	(file: string, options?: execa.Options): execa.ExecaChildProcess;
@@ -388,12 +388,12 @@ declare const execa: {
 	*/
 	sync(
 		file: string,
-		arguments?: readonly string[],
+		arguments?: string[],
 		options?: execa.SyncOptions
 	): execa.ExecaSyncReturnValue;
 	sync(
 		file: string,
-		arguments?: readonly string[],
+		arguments?: string[],
 		options?: execa.SyncOptions<null>
 	): execa.ExecaSyncReturnValue<Buffer>;
 	sync(file: string, options?: execa.SyncOptions): execa.ExecaSyncReturnValue;
@@ -449,12 +449,12 @@ declare const execa: {
 	*/
 	node(
 		scriptPath: string,
-		arguments?: readonly string[],
+		arguments?: string[],
 		options?: execa.NodeOptions
 	): execa.ExecaChildProcess;
 	node(
 		scriptPath: string,
-		arguments?: readonly string[],
+		arguments?: string[],
 		options?: execa.Options<null>
 	): execa.ExecaChildProcess<Buffer>;
 	node(scriptPath: string, options?: execa.Options): execa.ExecaChildProcess;

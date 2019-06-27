@@ -98,6 +98,20 @@ test('timeout does not kill the process if it does not time out', async t => {
 	t.false(timedOut);
 });
 
+const INVALID_TIMEOUT_REGEXP = /`timeout` option to be a non-negative integer/;
+
+test('timeout must not be negative', async t => {
+	await t.throws(() => {
+		execa('noop', {timeout: -1});
+	}, INVALID_TIMEOUT_REGEXP);
+});
+
+test('timeout must be an integer', async t => {
+	await t.throws(() => {
+		execa('noop', {timeout: false});
+	}, INVALID_TIMEOUT_REGEXP);
+});
+
 test('timedOut is false if no timeout was set', async t => {
 	const {timedOut} = await execa('noop');
 	t.false(timedOut);

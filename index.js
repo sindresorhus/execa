@@ -4,10 +4,9 @@ const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
 const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
-const pFinally = require('p-finally');
 const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
-const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler, cleanup} = require('./lib/kill');
+const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler} = require('./lib/kill');
 const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream.js');
 const {mergePromise, getSpawnedPromise} = require('./lib/promise.js');
 const {joinCommand, parseCommand} = require('./lib/command.js');
@@ -95,19 +94,13 @@ const execa = (file, args, options) => {
 	}
 
 	const spawnedPromise = getSpawnedPromise(spawned);
+	const timedPromise = setupTimeout(spawned, parsed.options, spawnedPromise);
+	const processDone = setExitHandler(spawned, parsed.options, timedPromise);
 
 	const context = {isCanceled: false};
 
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
-
-	const timedPromise = setupTimeout(spawned, parsed.options, spawnedPromise);
-	const removeExitHandler = setExitHandler(spawned, parsed.options);
-
-	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(timedPromise, () => {
-		cleanup(removeExitHandler);
-	});
 
 	const handlePromise = async () => {
 		const [{error, code, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);

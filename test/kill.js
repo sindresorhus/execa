@@ -80,7 +80,7 @@ test('execa() returns a promise with kill()', t => {
 });
 
 test('timeout kills the process if it times out', async t => {
-	const {killed, timedOut} = await t.throwsAsync(execa('forever', {timeout: 1, message: TIMEOUT_REGEXP}));
+	const {killed, timedOut} = await t.throwsAsync(execa('forever', {timeout: 1}), TIMEOUT_REGEXP);
 	t.false(killed);
 	t.true(timedOut);
 });
@@ -112,12 +112,17 @@ test('timeout must be an integer', async t => {
 	}, INVALID_TIMEOUT_REGEXP);
 });
 
-test('timedOut is false if no timeout was set', async t => {
+test('timedOut is false if timeout is undefined', async t => {
 	const {timedOut} = await execa('noop');
 	t.false(timedOut);
 });
 
-test('timedOut will be false if no timeout was set and zero exit code in sync mode', t => {
+test('timedOut is false if timeout is 0', async t => {
+	const {timedOut} = await execa('noop', {timeout: 0});
+	t.false(timedOut);
+});
+
+test('timedOut is false if timeout is undefined and exit code is 0 in sync mode', t => {
 	const {timedOut} = execa.sync('noop');
 	t.false(timedOut);
 });

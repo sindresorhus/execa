@@ -78,19 +78,20 @@ const execa = (file, args, options) => {
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
-		return mergePromise(new childProcess.ChildProcess(), () =>
-			Promise.reject(makeError({
-				error,
-				stdout: '',
-				stderr: '',
-				all: '',
-				command,
-				parsed,
-				timedOut: false,
-				isCanceled: false,
-				killed: false
-			}))
-		);
+		// Ensure the returned error is always both a promise and a child process
+		const dummySpawned = new childProcess.ChildProcess();
+		const errorPromise = Promise.reject(makeError({
+			error,
+			stdout: '',
+			stderr: '',
+			all: '',
+			command,
+			parsed,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		}));
+		return mergePromise(dummySpawned, errorPromise);
 	}
 
 	const context = {timedOut: false, isCanceled: false};

@@ -79,7 +79,7 @@ const execa = (file, args, options) => {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		// Ensure the returned error is always both a promise and a child process
-		const dummyChildProcess = new childProcess.ChildProcess();
+		const dummySpawned = new childProcess.ChildProcess();
 		const errorPromise = Promise.reject(makeError({
 			error,
 			stdout: '',
@@ -91,7 +91,7 @@ const execa = (file, args, options) => {
 			isCanceled: false,
 			killed: false
 		}));
-		return mergePromise(dummyChildProcess, errorPromise);
+		return mergePromise(dummySpawned, errorPromise);
 	}
 
 	const context = {timedOut: false, isCanceled: false};

@@ -233,7 +233,7 @@ module.exports.node = (scriptPath, args, options = {}) => {
 		args = [];
 	}
 
-	const stdioOption = normalizeStdio.node(options);
+	const stdio = normalizeStdio.node(options);
 
 	const {nodePath = process.execPath, nodeOptions = process.execArgv} = options;
 
@@ -249,7 +249,7 @@ module.exports.node = (scriptPath, args, options = {}) => {
 			stdin: undefined,
 			stdout: undefined,
 			stderr: undefined,
-			stdio: stdioOption,
+			stdio,
 			shell: false
 		}
 	);

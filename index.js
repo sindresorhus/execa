@@ -94,21 +94,23 @@ const execa = (file, args, options) => {
 		return mergePromise(dummySpawned, errorPromise);
 	}
 
-	const context = {timedOut: false, isCanceled: false};
+	const spawnedPromise = getSpawnedPromise(spawned);
+
+	const context = {isCanceled: false};
 
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
-	const timeoutId = setupTimeout(spawned, parsed.options, context);
+	const timedPromise = setupTimeout(spawned, parsed.options, spawnedPromise);
 	const removeExitHandler = setExitHandler(spawned, parsed.options);
 
 	// TODO: Use native "finally" syntax when targeting Node.js 10
-	const processDone = pFinally(getSpawnedPromise(spawned, context), () => {
-		cleanup(timeoutId, removeExitHandler);
+	const processDone = pFinally(timedPromise, () => {
+		cleanup(removeExitHandler);
 	});
 
 	const handlePromise = async () => {
-		const [{error, code, signal}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
+		const [{error, code, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
 		const stdout = handleOutput(parsed.options, stdoutResult);
 		const stderr = handleOutput(parsed.options, stderrResult);
 		const all = handleOutput(parsed.options, allResult);
@@ -123,7 +125,7 @@ const execa = (file, args, options) => {
 				all,
 				command,
 				parsed,
-				timedOut: context.timedOut,
+				timedOut,
 				isCanceled: context.isCanceled,
 				killed: spawned.killed
 			});

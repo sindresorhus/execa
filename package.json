@@ -43,6 +43,7 @@
 		"is-stream": "^2.0.0",
 		"merge-stream": "^2.0.0",
 		"npm-run-path": "^3.0.0",
+		"onetime": "^5.1.0",
 		"p-finally": "^2.0.0",
 		"signal-exit": "^3.0.2",
 		"strip-final-newline": "^2.0.0"

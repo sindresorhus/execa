@@ -14,13 +14,7 @@ const {joinCommand, parseCommand} = require('./lib/command.js');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
-const getEnv = ({
-	env: envOption,
-	extendEnv = true,
-	preferLocal = false,
-	cwd,
-	localDir = cwd || process.cwd()
-}) => {
+const getEnv = ({env: envOption, extendEnv, preferLocal, localDir}) => {
 	const env = extendEnv ? {...process.env, ...envOption} : envOption;
 
 	if (preferLocal) {
@@ -40,13 +34,17 @@ const handleArgs = (file, args, options = {}) => {
 		maxBuffer: DEFAULT_MAX_BUFFER,
 		buffer: true,
 		stripFinalNewline: true,
+		extendEnv: true,
+		preferLocal: false,
+		localDir: options.cwd || process.cwd(),
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true,
 		...options,
-		env: getEnv(options),
 		windowsHide: true
 	};
+
+	options.env = getEnv(options);
 
 	options.stdio = normalizeStdio(options);
 

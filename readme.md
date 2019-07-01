@@ -499,6 +499,17 @@ const subprocess = execa('cat')
 fs.createReadStream('stdin.txt').pipe(subprocess.stdin)
 ```
 
+### Execute the current package's binary
+
+```js
+const {getBinPathSync} = require('get-bin-path');
+
+const binPath = getBinPathSync();
+const subprocess = execa(binPath);
+```
+
+This is useful when testing the current package's binary. As opposed to hard-coding the path to the binary, this validates that the `package.json` `bin` field is correctly set up.
+
 
 ## Related
 

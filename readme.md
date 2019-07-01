@@ -508,7 +508,7 @@ const binPath = getBinPathSync();
 const subprocess = execa(binPath);
 ```
 
-This is useful when testing the current package's binary. As opposed to hard-coding the path to the binary, this validates that the `package.json` `bin` field is correctly set up.
+`execa` can be combined with [`get-bin-path`](https://github.com/ehmicky/get-bin-path) to test the current package's binary. As opposed to hard-coding the path to the binary, this validates that the `package.json` `bin` field is correctly set up.
 
 ## Related
 

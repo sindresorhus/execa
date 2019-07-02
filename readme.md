@@ -164,6 +164,8 @@ Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#chi
 
 #### all
 
+Type: `ReadableStream | undefined`
+
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 ### execa.sync(file, [arguments], [options])

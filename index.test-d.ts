@@ -1,4 +1,5 @@
 import {expectType, expectError} from 'tsd';
+import {Readable as ReadableStream} from 'stream'
 import execa = require('.');
 import {
 	ExecaReturnValue,
@@ -11,6 +12,7 @@ import {
 try {
 	const execaPromise = execa('unicorns');
 	execaPromise.cancel();
+	expectType<ReadableStream | undefined>(execaPromise.all)
 
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);

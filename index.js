@@ -14,6 +14,16 @@ const {joinCommand, parseCommand} = require('./lib/command.js');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
+const getEnv = ({env: envOption, extendEnv, preferLocal, localDir}) => {
+	const env = extendEnv ? {...process.env, ...envOption} : envOption;
+
+	if (preferLocal) {
+		return npmRunPath.env({env, cwd: localDir});
+	}
+
+	return env;
+};
+
 const handleArgs = (file, args, options = {}) => {
 	const parsed = crossSpawn._parse(file, args, options);
 	file = parsed.command;
@@ -24,6 +34,7 @@ const handleArgs = (file, args, options = {}) => {
 		maxBuffer: DEFAULT_MAX_BUFFER,
 		buffer: true,
 		stripFinalNewline: true,
+		extendEnv: true,
 		preferLocal: false,
 		localDir: options.cwd || process.cwd(),
 		encoding: 'utf8',
@@ -33,19 +44,7 @@ const handleArgs = (file, args, options = {}) => {
 		windowsHide: true
 	};
 
-	if (options.extendEnv !== false) {
-		options.env = {
-			...process.env,
-			...options.env
-		};
-	}
-
-	if (options.preferLocal) {
-		options.env = npmRunPath.env({
-			...options,
-			cwd: options.localDir
-		});
-	}
+	options.env = getEnv(options);
 
 	options.stdio = normalizeStdio(options);
 

@@ -168,6 +168,8 @@ Type: `ReadableStream | undefined`
 
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
+This is `undefined` when both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
 ### execa.sync(file, [arguments], [options])
 
 Execute a file synchronously.

@@ -324,6 +324,8 @@ declare namespace execa {
 
 		/**
 		Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
+
+		This is `undefined` when both `stdout` and `stderr` options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 		*/
 		all?: ReadableStream;
 	}

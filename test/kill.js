@@ -152,7 +152,7 @@ const spawnAndKill = async (t, signal, cleanup, detached, isKilled) => {
 	t.false(isRunning(subprocess.pid));
 	t.is(isRunning(pid), !isKilled);
 
-	if (!isKilled) {
+	if (isRunning(pid)) {
 		process.kill(pid, 'SIGKILL');
 	}
 };

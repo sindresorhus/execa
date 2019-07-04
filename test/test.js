@@ -157,7 +157,9 @@ if (process.platform !== 'win32') {
 	});
 
 	test('execa() rejects with correct error and doesn\'t throw if running non-executable with input', async t => {
-		await t.throwsAsync(execa('non-executable', {input: 'Hey!'}), /EACCES/);
+		// On Node <12.6.0, `EACCESS` is emitted on `childProcess`.
+		// On Node >=12.6.0, `EPIPE` is emitted on `childProcess.stdin`.
+		await t.throwsAsync(execa('non-executable', {input: 'Hey!'}), /EACCES|EPIPE/);
 	});
 }
 

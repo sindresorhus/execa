@@ -80,14 +80,14 @@ test('execa() returns a promise with kill()', t => {
 });
 
 test('timeout kills the process if it times out', async t => {
-	const {killed, timedOut} = await t.throwsAsync(execa('forever', {timeout: 1}), TIMEOUT_REGEXP);
+	const {killed, timedOut} = await t.throwsAsync(execa('noop', {timeout: 1}), TIMEOUT_REGEXP);
 	t.false(killed);
 	t.true(timedOut);
 });
 
 test('timeout kills the process if it times out, in sync mode', async t => {
 	const {killed, timedOut} = await t.throws(() => {
-		execa.sync('forever', {timeout: 1, message: TIMEOUT_REGEXP});
+		execa.sync('noop', {timeout: 1, message: TIMEOUT_REGEXP});
 	});
 	t.false(killed);
 	t.true(timedOut);

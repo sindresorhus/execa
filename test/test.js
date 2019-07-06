@@ -105,7 +105,7 @@ test('child process errors are handled', async t => {
 });
 
 test('child process errors rejects promise right away', async t => {
-	const child = execa('forever');
+	const child = execa('noop');
 	child.emit('error', new Error('test'));
 	await t.throwsAsync(child, /test/);
 });

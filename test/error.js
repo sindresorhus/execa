@@ -58,7 +58,7 @@ test('execa() returns code and failed properties', async t => {
 });
 
 test('error.killed is true if process was killed directly', async t => {
-	const cp = execa('forever');
+	const cp = execa('noop');
 
 	cp.kill();
 
@@ -67,7 +67,7 @@ test('error.killed is true if process was killed directly', async t => {
 });
 
 test('error.killed is false if process was killed indirectly', async t => {
-	const cp = execa('forever');
+	const cp = execa('noop');
 
 	process.kill(cp.pid, 'SIGINT');
 
@@ -101,7 +101,7 @@ test('result.killed is false on process error, in sync mode', t => {
 
 if (process.platform === 'darwin') {
 	test.cb('sanity check: child_process.exec also has killed.false if killed indirectly', t => {
-		const {pid} = childProcess.exec('forever', error => {
+		const {pid} = childProcess.exec('noop', error => {
 			t.truthy(error);
 			t.false(error.killed);
 			t.end();
@@ -113,7 +113,7 @@ if (process.platform === 'darwin') {
 
 if (process.platform !== 'win32') {
 	test('error.signal is SIGINT', async t => {
-		const cp = execa('forever');
+		const cp = execa('noop');
 
 		process.kill(cp.pid, 'SIGINT');
 
@@ -122,7 +122,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('error.signal is SIGTERM', async t => {
-		const cp = execa('forever');
+		const cp = execa('noop');
 
 		process.kill(cp.pid, 'SIGTERM');
 
@@ -131,7 +131,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('custom error.signal', async t => {
-		const {signal} = await t.throwsAsync(execa('forever', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
+		const {signal} = await t.throwsAsync(execa('noop', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
 		t.is(signal, 'SIGHUP');
 	});
 }

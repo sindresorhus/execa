@@ -170,7 +170,7 @@ Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.ht
 
 This is `undefined` if:
   - the [`all` option](#all-2) is `false` (the default value)
-  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 ### execa.sync(file, [arguments], [options])
 
@@ -241,7 +241,7 @@ The output of the process on stderr.
 
 Type: `string | Buffer | undefined`
 
-The output of the process on both stdout and stderr.
+The output of the process with stdout and stderr interleaved.
 
 This is `undefined` if:
   - the [`all` option](#all-2) is `false` (the default value).
@@ -347,7 +347,7 @@ Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_pro
 Type: `boolean`<br>
 Default: `false`
 
-Add `all` properties on the [promise](#all) and the [resolved value](#all-1). Those properties contain the output of the process on both `stdout` and `stderr`.
+Add `all` properties on the [promise](#all) and the [resolved value](#all-1). Those properties contain the output of the process with `stdout` and `stderr` interleaved.
 
 #### reject
 

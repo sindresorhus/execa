@@ -76,7 +76,7 @@ declare namespace execa {
 		readonly reject?: boolean;
 
 		/**
-		Add `all` properties on the promise and the resolved value. Those properties contain the output of the process on both `stdout` and `stderr`.
+		Add `all` properties on the promise and the resolved value. Those properties contain the output of the process with `stdout` and `stderr` interleaved.
 		@default false
 		*/
 		readonly all?: boolean;
@@ -270,7 +270,7 @@ declare namespace execa {
 	interface ExecaReturnValue<StdoutErrorType = string>
 		extends ExecaSyncReturnValue<StdoutErrorType> {
 		/**
-		The output of the process on both stdout and stderr.
+		The output of the process with stdout and stderr interleaved.
 
 		This is `undefined` if:
 		- the `all` option is `false` (default value).
@@ -296,7 +296,7 @@ declare namespace execa {
 	interface ExecaError<StdoutErrorType = string>
 		extends ExecaSyncError<StdoutErrorType> {
 		/**
-		The output of the process on both stdout and stderr.
+		The output of the process with stdout and stderr interleaved.
 
 		This is `undefined` if:
 		- the `all` option is `false` (default value).
@@ -341,7 +341,7 @@ declare namespace execa {
 
 		This is `undefined` if:
 			- the `all` option is `false` (the default value)
-			- both `stdout` and `stderr` options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+			- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 		*/
 		all?: ReadableStream;
 	}

@@ -147,26 +147,11 @@ test('buffer: false > promise resolves', async t => {
 	await t.notThrowsAsync(execa('noop', {buffer: false}));
 });
 
-const BUFFER_TIMEOUT = 1e3;
-
-test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
-	const {timedOut} = await t.throwsAsync(execa('max-buffer', {buffer: false, timeout: BUFFER_TIMEOUT}));
-	t.true(timedOut);
-});
-
 test('buffer: false > promise resolves when output is big and is read', async t => {
 	const cp = execa('max-buffer', {buffer: false});
 	cp.stdout.resume();
 	cp.stderr.resume();
 	await t.notThrowsAsync(cp);
-});
-
-test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
-	const cp = execa('max-buffer', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
-	cp.stdout.resume();
-	cp.stderr.resume();
-	const {timedOut} = await t.throwsAsync(cp);
-	t.true(timedOut);
 });
 
 test('buffer: false > promise resolves when output is big and "all" is used and is read', async t => {
@@ -179,4 +164,19 @@ test('buffer: false > promise resolves when output is big and "all" is used and 
 
 test('buffer: false > promise resolves when output is big but is not pipable', async t => {
 	await t.notThrowsAsync(execa('max-buffer', {buffer: false, stdout: 'ignore'}));
+});
+
+const BUFFER_TIMEOUT = 1e3;
+
+test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
+	const {timedOut} = await t.throwsAsync(execa('max-buffer', {buffer: false, timeout: BUFFER_TIMEOUT}));
+	t.true(timedOut);
+});
+
+test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
+	const cp = execa('max-buffer', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
+	cp.stdout.resume();
+	cp.stderr.resume();
+	const {timedOut} = await t.throwsAsync(cp);
+	t.true(timedOut);
 });

@@ -4,6 +4,7 @@ import stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
 import tempfile from 'tempfile';
+import pEvent from 'p-event';
 import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -138,7 +139,7 @@ test('do not buffer stderr when `buffer` set to `false`', async t => {
 });
 
 test('do not buffer when streaming', async t => {
-	const {stdout} = execa('max-buffer', ['stdout', '21'], {maxBuffer: 10});
+	const {stdout} = execa('max-buffer', ['stdout', '21'], {maxBuffer: 10, buffer: false});
 	const result = await getStream(stdout);
 	t.is(result, '....................\n');
 });
@@ -183,4 +184,12 @@ test.serial('buffer: false > promise does not resolve when output is big and "al
 	cp.stderr.resume();
 	const {timedOut} = await t.throwsAsync(cp);
 	t.true(timedOut);
+});
+
+test('can mix promise and streams', async t => {
+	const promise = execa('noop', ['test']);
+	await pEvent(promise, 'exit');
+	const {stdout, all} = await promise;
+	t.is(stdout, 'test');
+	t.is(all, 'test');
 });

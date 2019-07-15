@@ -273,8 +273,8 @@ declare namespace execa {
 		The output of the process with `stdout` and `stderr` interleaved.
 
 		This is `undefined` if either:
-		- the `all` option is `false` (default value).
-		- `execa.sync()` was used.
+		- the `all` option is `false` (default value)
+		- `execa.sync()` was used
 		*/
 		all?: StdoutErrorType;
 
@@ -299,8 +299,8 @@ declare namespace execa {
 		The output of the process with `stdout` and `stderr` interleaved.
 
 		This is `undefined` if either:
-		- the `all` option is `false` (default value).
-		- `execa.sync()` was used.
+		- the `all` option is `false` (default value)
+		- `execa.sync()` was used
 		*/
 		all?: StdoutErrorType;
 
@@ -341,7 +341,7 @@ declare namespace execa {
 
 		This is `undefined` if either:
 			- the `all` option is `false` (the default value)
-			- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+			- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 		*/
 		all?: ReadableStream;
 	}

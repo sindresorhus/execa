@@ -270,7 +270,7 @@ declare namespace execa {
 	interface ExecaReturnValue<StdoutErrorType = string>
 		extends ExecaSyncReturnValue<StdoutErrorType> {
 		/**
-		The output of the process with stdout and stderr interleaved.
+		The output of the process with `stdout` and `stderr` interleaved.
 
 		This is `undefined` if:
 		- the `all` option is `false` (default value).
@@ -296,7 +296,7 @@ declare namespace execa {
 	interface ExecaError<StdoutErrorType = string>
 		extends ExecaSyncError<StdoutErrorType> {
 		/**
-		The output of the process with stdout and stderr interleaved.
+		The output of the process with `stdout` and `stderr` interleaved.
 
 		This is `undefined` if:
 		- the `all` option is `false` (default value).

@@ -241,7 +241,7 @@ The output of the process on stderr.
 
 Type: `string | Buffer | undefined`
 
-The output of the process with stdout and stderr interleaved.
+The output of the process with `stdout` and `stderr` interleaved.
 
 This is `undefined` if:
   - the [`all` option](#all-2) is `false` (the default value).

@@ -144,7 +144,7 @@ test('do not buffer when streaming', async t => {
 });
 
 test('buffer: false > promise resolves', async t => {
-	await t.notThrowsAsync(execa('echo', ['hello'], {buffer: false}));
+	await t.notThrowsAsync(execa('noop', {buffer: false}));
 });
 
 test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {

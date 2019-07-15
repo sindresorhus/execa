@@ -76,6 +76,12 @@ declare namespace execa {
 		readonly reject?: boolean;
 
 		/**
+		Add `all` properties on the promise and the resolved value containing the output of the process on both `stdout` and `stderr`.
+		@default false
+		*/
+		readonly all?: boolean;
+
+		/**
 		Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
 
 		@default true
@@ -264,9 +270,13 @@ declare namespace execa {
 	interface ExecaReturnValue<StdoutErrorType = string>
 		extends ExecaSyncReturnValue<StdoutErrorType> {
 		/**
-		The output of the process with `stdout` and `stderr` interleaved.
+		The output of the process on both stdout and stderr.
+
+		This is `undefined`:
+		- unless the `all` option is `true`.
+		- if `execa.sync()` was used.
 		*/
-		all: StdoutErrorType;
+		all?: StdoutErrorType;
 
 		/**
 		Whether the process was canceled.
@@ -286,9 +296,13 @@ declare namespace execa {
 	interface ExecaError<StdoutErrorType = string>
 		extends ExecaSyncError<StdoutErrorType> {
 		/**
-		The output of the process with `stdout` and `stderr` interleaved.
+		The output of the process on both stdout and stderr.
+
+		This is `undefined`:
+		- unless the `all` option is `true`.
+		- if `execa.sync()` was used.
 		*/
-		all: StdoutErrorType;
+		all?: StdoutErrorType;
 
 		/**
 		Whether the process was canceled.
@@ -325,7 +339,9 @@ declare namespace execa {
 		/**
 		Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
-		This is `undefined` when both `stdout` and `stderr` options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+		This is `undefined`:
+			- unless the `all` option is `true`
+			- when both `stdout` and `stderr` options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 		*/
 		all?: ReadableStream;
 	}

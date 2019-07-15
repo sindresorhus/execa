@@ -168,7 +168,9 @@ Type: `ReadableStream | undefined`
 
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
-This is `undefined` when both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+This is `undefined`:
+  - unless the [`all` option](#all-2) is `true`
+  - when both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 ### execa.sync(file, [arguments], [options])
 
@@ -237,9 +239,13 @@ The output of the process on stderr.
 
 #### all
 
-Type: `string | Buffer`
+Type: `string | Buffer | undefined`
 
-The output of the process on both stdout and stderr. `undefined` if `execa.sync()` was used.
+The output of the process on both stdout and stderr.
+
+This is `undefined`:
+  - unless the [`all` option](#all-2) is `true`.
+  - if `execa.sync()` was used.
 
 #### failed
 
@@ -335,6 +341,13 @@ Type: `string | number | Stream | undefined`<br>
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### all
+
+Type: `boolean`<br>
+Default: `false`
+
+Add `all` properties on the [promise](#all) and the [resolved value](#all-1) containing the output of the process on both `stdout` and `stderr`.
 
 #### reject
 

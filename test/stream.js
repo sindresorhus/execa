@@ -31,6 +31,11 @@ test.serial('result.all shows both `stdout` and `stderr` intermixed', async t =>
 	t.is(all, '132');
 });
 
+test('result.all is undefined unless opts.all is true', async t => {
+	const {all} = await execa('noop');
+	t.is(all, undefined);
+});
+
 test('stdout/stderr/all are undefined if ignored', async t => {
 	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore'});
 	t.is(stdout, undefined);
@@ -142,7 +147,7 @@ test('buffer: false > promise resolves', async t => {
 	await t.notThrowsAsync(execa('echo', ['hello'], {buffer: false}));
 });
 
-test('buffer: false > promise does not resolve when output is big and is not read', async t => {
+test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
 	const {timedOut} = await t.throwsAsync(execa('max-buffer', ['stdout', '3000000'], {buffer: false, timeout: 1e3}));
 	t.true(timedOut);
 });
@@ -154,7 +159,7 @@ test('buffer: false > promise resolves when output is big and is read', async t 
 	await t.notThrowsAsync(cp);
 });
 
-test('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
+test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
 	const cp = execa('max-buffer', ['stdout', '3000000'], {buffer: false, all: true, timeout: 1e3});
 	cp.stdout.resume();
 	cp.stderr.resume();

@@ -37,14 +37,14 @@ test('result.all is undefined unless opts.all is true', async t => {
 });
 
 test('stdout/stderr/all are undefined if ignored', async t => {
-	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore'});
+	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore', all: true});
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
 	t.is(all, undefined);
 });
 
 test('stdout/stderr/all are undefined if ignored in sync mode', t => {
-	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore'});
+	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore', all: true});
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
 	t.is(all, undefined);

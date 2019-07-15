@@ -76,7 +76,7 @@ declare namespace execa {
 		readonly reject?: boolean;
 
 		/**
-		Add `all` properties on the promise and the resolved value containing the output of the process on both `stdout` and `stderr`.
+		Add `all` properties on the promise and the resolved value. Those properties contain the output of the process on both `stdout` and `stderr`.
 		@default false
 		*/
 		readonly all?: boolean;
@@ -272,9 +272,9 @@ declare namespace execa {
 		/**
 		The output of the process on both stdout and stderr.
 
-		This is `undefined`:
-		- unless the `all` option is `true`.
-		- if `execa.sync()` was used.
+		This is `undefined` if:
+		- the `all` option is `false` (default value).
+		- `execa.sync()` was used.
 		*/
 		all?: StdoutErrorType;
 
@@ -298,9 +298,9 @@ declare namespace execa {
 		/**
 		The output of the process on both stdout and stderr.
 
-		This is `undefined`:
-		- unless the `all` option is `true`.
-		- if `execa.sync()` was used.
+		This is `undefined` if:
+		- the `all` option is `false` (default value).
+		- `execa.sync()` was used.
 		*/
 		all?: StdoutErrorType;
 
@@ -339,9 +339,9 @@ declare namespace execa {
 		/**
 		Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
-		This is `undefined`:
-			- unless the `all` option is `true`
-			- when both `stdout` and `stderr` options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+		This is `undefined` if:
+			- the `all` option is `false` (the default value)
+			- both `stdout` and `stderr` options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 		*/
 		all?: ReadableStream;
 	}

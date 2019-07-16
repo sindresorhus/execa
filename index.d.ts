@@ -41,6 +41,8 @@ declare namespace execa {
 		/**
 		Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.
 
+		Should be set to `false` when the returned promise is not used.
+
 		If the spawned process fails, `error.stdout`, `error.stderr`, and `error.all` will contain the buffered data.
 
 		@default true

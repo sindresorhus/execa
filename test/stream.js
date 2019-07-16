@@ -164,6 +164,12 @@ test('buffer: false > promise resolves when output is big and "all" is used and 
 	await t.notThrowsAsync(cp);
 });
 
+test('buffer: false > promise rejects when process returns non-zero', async t => {
+	const cp = execa('fail', {buffer: false});
+	const {exitCode} = await t.throwsAsync(cp);
+	t.is(exitCode, 2);
+});
+
 const BUFFER_TIMEOUT = 1e3;
 
 test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {

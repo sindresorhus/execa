@@ -147,6 +147,10 @@ test('buffer: false > promise resolves', async t => {
 	await t.notThrowsAsync(execa('noop', {buffer: false}));
 });
 
+test('buffer: false > promise resolves when output is big but is not pipable', async t => {
+	await t.notThrowsAsync(execa('max-buffer', {buffer: false, stdout: 'ignore'}));
+});
+
 test('buffer: false > promise resolves when output is big and is read', async t => {
 	const cp = execa('max-buffer', {buffer: false});
 	cp.stdout.resume();
@@ -158,10 +162,6 @@ test('buffer: false > promise resolves when output is big and "all" is used and 
 	const cp = execa('max-buffer', {buffer: false, all: true});
 	cp.all.resume();
 	await t.notThrowsAsync(cp);
-});
-
-test('buffer: false > promise resolves when output is big but is not pipable', async t => {
-	await t.notThrowsAsync(execa('max-buffer', {buffer: false, stdout: 'ignore'}));
 });
 
 const BUFFER_TIMEOUT = 1e3;

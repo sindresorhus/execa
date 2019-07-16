@@ -156,8 +156,6 @@ test('buffer: false > promise resolves when output is big and is read', async t 
 
 test('buffer: false > promise resolves when output is big and "all" is used and is read', async t => {
 	const cp = execa('max-buffer', {buffer: false, all: true});
-	cp.stdout.resume();
-	cp.stderr.resume();
 	cp.all.resume();
 	await t.notThrowsAsync(cp);
 });

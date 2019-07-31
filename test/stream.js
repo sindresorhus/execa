@@ -27,19 +27,24 @@ test('pass `stderr` to a file descriptor', async t => {
 });
 
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
-	const {all} = await execa('noop-132');
+	const {all} = await execa('noop-132', {all: true});
 	t.is(all, '132');
 });
 
+test('result.all is undefined unless opts.all is true', async t => {
+	const {all} = await execa('noop');
+	t.is(all, undefined);
+});
+
 test('stdout/stderr/all are undefined if ignored', async t => {
-	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore'});
+	const {stdout, stderr, all} = await execa('noop', {stdio: 'ignore', all: true});
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
 	t.is(all, undefined);
 });
 
 test('stdout/stderr/all are undefined if ignored in sync mode', t => {
-	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore'});
+	const {stdout, stderr, all} = execa.sync('noop', {stdio: 'ignore', all: true});
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
 	t.is(all, undefined);
@@ -98,14 +103,14 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 
 test('maxBuffer affects stdout', async t => {
 	await t.notThrowsAsync(execa('max-buffer', ['stdout', '10'], {maxBuffer: 10}));
-	const {stdout, all} = await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10}), /max-buffer stdout/);
+	const {stdout, all} = await t.throwsAsync(execa('max-buffer', ['stdout', '11'], {maxBuffer: 10, all: true}), /max-buffer stdout/);
 	t.is(stdout, '.'.repeat(10));
 	t.is(all, '.'.repeat(10));
 });
 
 test('maxBuffer affects stderr', async t => {
 	await t.notThrowsAsync(execa('max-buffer', ['stderr', '10'], {maxBuffer: 10}));
-	const {stderr, all} = await t.throwsAsync(execa('max-buffer', ['stderr', '11'], {maxBuffer: 10}), /max-buffer stderr/);
+	const {stderr, all} = await t.throwsAsync(execa('max-buffer', ['stderr', '11'], {maxBuffer: 10, all: true}), /max-buffer stderr/);
 	t.is(stderr, '.'.repeat(10));
 	t.is(all, '.'.repeat(10));
 });
@@ -114,8 +119,7 @@ test('do not buffer stdout when `buffer` set to `false`', async t => {
 	const promise = execa('max-buffer', ['stdout', '10'], {buffer: false});
 	const [result, stdout] = await Promise.all([
 		promise,
-		getStream(promise.stdout),
-		getStream(promise.all)
+		getStream(promise.stdout)
 	]);
 
 	t.is(result.stdout, undefined);
@@ -126,8 +130,7 @@ test('do not buffer stderr when `buffer` set to `false`', async t => {
 	const promise = execa('max-buffer', ['stderr', '10'], {buffer: false});
 	const [result, stderr] = await Promise.all([
 		promise,
-		getStream(promise.stderr),
-		getStream(promise.all)
+		getStream(promise.stderr)
 	]);
 
 	t.is(result.stderr, undefined);
@@ -138,4 +141,46 @@ test('do not buffer when streaming', async t => {
 	const {stdout} = execa('max-buffer', ['stdout', '21'], {maxBuffer: 10});
 	const result = await getStream(stdout);
 	t.is(result, '....................\n');
+});
+
+test('buffer: false > promise resolves', async t => {
+	await t.notThrowsAsync(execa('noop', {buffer: false}));
+});
+
+test('buffer: false > promise resolves when output is big but is not pipable', async t => {
+	await t.notThrowsAsync(execa('max-buffer', {buffer: false, stdout: 'ignore'}));
+});
+
+test('buffer: false > promise resolves when output is big and is read', async t => {
+	const cp = execa('max-buffer', {buffer: false});
+	cp.stdout.resume();
+	cp.stderr.resume();
+	await t.notThrowsAsync(cp);
+});
+
+test('buffer: false > promise resolves when output is big and "all" is used and is read', async t => {
+	const cp = execa('max-buffer', {buffer: false, all: true});
+	cp.all.resume();
+	await t.notThrowsAsync(cp);
+});
+
+test('buffer: false > promise rejects when process returns non-zero', async t => {
+	const cp = execa('fail', {buffer: false});
+	const {exitCode} = await t.throwsAsync(cp);
+	t.is(exitCode, 2);
+});
+
+const BUFFER_TIMEOUT = 1e3;
+
+test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
+	const {timedOut} = await t.throwsAsync(execa('max-buffer', {buffer: false, timeout: BUFFER_TIMEOUT}));
+	t.true(timedOut);
+});
+
+test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
+	const cp = execa('max-buffer', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
+	cp.stdout.resume();
+	cp.stderr.resume();
+	const {timedOut} = await t.throwsAsync(cp);
+	t.true(timedOut);
 });

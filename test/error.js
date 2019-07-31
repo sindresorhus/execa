@@ -10,7 +10,7 @@ const TIMEOUT_REGEXP = /timed out after/;
 const getExitRegExp = exitMessage => new RegExp(`failed with exit code ${exitMessage}`);
 
 test('stdout/stderr/all available on errors', async t => {
-	const {stdout, stderr, all} = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
+	const {stdout, stderr, all} = await t.throwsAsync(execa('exit', ['2'], {all: true}), {message: getExitRegExp('2')});
 	t.is(typeof stdout, 'string');
 	t.is(typeof stderr, 'string');
 	t.is(typeof all, 'string');
@@ -21,7 +21,7 @@ const WRONG_COMMAND = process.platform === 'win32' ?
 	'';
 
 test('stdout/stderr/all on process errors', async t => {
-	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command'));
+	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command', {all: true}));
 	t.is(stdout, '');
 	t.is(stderr, WRONG_COMMAND);
 	t.is(all, WRONG_COMMAND);

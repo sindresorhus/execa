@@ -161,7 +161,9 @@ Type: `ReadableStream | undefined`
 
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
-This is `undefined` when both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+This is `undefined` if either:
+  - the [`all` option](#all-2) is `false` (the default value)
+  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 
 ### execa.sync(file, [arguments], [options])
 
@@ -230,9 +232,13 @@ The output of the process on stderr.
 
 #### all
 
-Type: `string | Buffer`
+Type: `string | Buffer | undefined`
 
-The output of the process on both stdout and stderr. `undefined` if `execa.sync()` was used.
+The output of the process with `stdout` and `stderr` interleaved.
+
+This is `undefined` if either:
+  - the [`all` option](#all-2) is `false` (the default value)
+  - `execa.sync()` was used
 
 #### failed
 
@@ -297,7 +303,7 @@ Preferred path to find locally installed binaries in (use with `preferLocal`).
 Type: `boolean`<br>
 Default: `true`
 
-Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
+Buffer the output from the spawned process. When set to `false`, you must read the output of [`stdout`](#stdout-1) and [`stderr`](#stderr-1) (or [`all`](#all) if the [`all`](#all-2) option is `true`). Otherwise the returned promise will not be resolved/rejected.
 
 If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stderr), and [`error.all`](#all) will contain the buffered data.
 
@@ -328,6 +334,13 @@ Type: `string | number | Stream | undefined`<br>
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+#### all
+
+Type: `boolean`<br>
+Default: `false`
+
+Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the process with `stdout` and `stderr` interleaved.
 
 #### reject
 

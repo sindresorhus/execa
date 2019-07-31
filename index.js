@@ -40,6 +40,7 @@ const handleArgs = (file, args, options = {}) => {
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true,
+		all: false,
 		...options,
 		windowsHide: true
 	};
@@ -150,7 +151,7 @@ const execa = (file, args, options) => {
 
 	handleInput(spawned, parsed.options.input);
 
-	spawned.all = makeAllStream(spawned);
+	spawned.all = makeAllStream(spawned, parsed.options);
 
 	return mergePromise(spawned, handlePromiseOnce);
 };

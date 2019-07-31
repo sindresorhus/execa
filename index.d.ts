@@ -39,7 +39,7 @@ declare namespace execa {
 		readonly localDir?: string;
 
 		/**
-		Buffer the output from the spawned process. When buffering is disabled you must consume the output of the `stdout` and `stderr` streams because the promise will not be resolved/rejected until they have completed.
+		Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.
 
 		If the spawned process fails, `error.stdout`, `error.stderr`, and `error.all` will contain the buffered data.
 
@@ -74,6 +74,13 @@ declare namespace execa {
 		@default true
 		*/
 		readonly reject?: boolean;
+
+		/**
+		Add an `.all` property on the promise and the resolved value. The property contains the output of the process with `stdout` and `stderr` interleaved.
+
+		@default false
+		*/
+		readonly all?: boolean;
 
 		/**
 		Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
@@ -265,8 +272,12 @@ declare namespace execa {
 		extends ExecaSyncReturnValue<StdoutErrorType> {
 		/**
 		The output of the process with `stdout` and `stderr` interleaved.
+
+		This is `undefined` if either:
+		- the `all` option is `false` (default value)
+		- `execa.sync()` was used
 		*/
-		all: StdoutErrorType;
+		all?: StdoutErrorType;
 
 		/**
 		Whether the process was canceled.
@@ -287,8 +298,12 @@ declare namespace execa {
 		extends ExecaSyncError<StdoutErrorType> {
 		/**
 		The output of the process with `stdout` and `stderr` interleaved.
+
+		This is `undefined` if either:
+		- the `all` option is `false` (default value)
+		- `execa.sync()` was used
 		*/
-		all: StdoutErrorType;
+		all?: StdoutErrorType;
 
 		/**
 		Whether the process was canceled.
@@ -325,7 +340,9 @@ declare namespace execa {
 		/**
 		Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
-		This is `undefined` when both `stdout` and `stderr` options are set to [`'pipe'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+		This is `undefined` if either:
+			- the `all` option is `false` (the default value)
+			- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 		*/
 		all?: ReadableStream;
 	}

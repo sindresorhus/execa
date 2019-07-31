@@ -20,7 +20,7 @@ try {
 	expectType<string>(unicornsResult.exitCodeName);
 	expectType<string>(unicornsResult.stdout);
 	expectType<string>(unicornsResult.stderr);
-	expectType<string>(unicornsResult.all);
+	expectType<string | undefined>(unicornsResult.all);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
 	expectType<boolean>(unicornsResult.isCanceled);
@@ -34,7 +34,7 @@ try {
 	expectType<string>(execaError.exitCodeName);
 	expectType<string>(execaError.stdout);
 	expectType<string>(execaError.stderr);
-	expectType<string>(execaError.all);
+	expectType<string | undefined>(execaError.all);
 	expectType<boolean>(execaError.failed);
 	expectType<boolean>(execaError.timedOut);
 	expectType<boolean>(execaError.isCanceled);
@@ -99,6 +99,7 @@ execa('unicorns', {stderr: 'inherit'});
 execa('unicorns', {stderr: process.stderr});
 execa('unicorns', {stderr: 1});
 execa('unicorns', {stderr: undefined});
+execa('unicorns', {all: true});
 execa('unicorns', {reject: false});
 execa('unicorns', {stripFinalNewline: false});
 execa('unicorns', {extendEnv: false});

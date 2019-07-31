@@ -347,7 +347,7 @@ Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_pro
 Type: `boolean`<br>
 Default: `false`
 
-Add `all` properties on the [promise](#all) and the [resolved value](#all-1). Those properties contain the output of the process with `stdout` and `stderr` interleaved.
+Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the process with `stdout` and `stderr` interleaved.
 
 #### reject
 

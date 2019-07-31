@@ -76,7 +76,8 @@ declare namespace execa {
 		readonly reject?: boolean;
 
 		/**
-		Add `all` properties on the promise and the resolved value. Those properties contain the output of the process with `stdout` and `stderr` interleaved.
+		Add an `.all` property on the promise and the resolved value. The property contains the output of the process with `stdout` and `stderr` interleaved.
+
 		@default false
 		*/
 		readonly all?: boolean;

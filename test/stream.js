@@ -187,7 +187,7 @@ test.serial('buffer: false > promise does not resolve when output is big and "al
 });
 
 test('can mix promise and streams', async t => {
-	const promise = execa('noop', ['test']);
+	const promise = execa('noop', ['test'], {all: true});
 	await pEvent(promise, 'exit');
 	const {stdout, all} = await promise;
 	t.is(stdout, 'test');

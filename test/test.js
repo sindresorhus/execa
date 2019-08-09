@@ -74,15 +74,15 @@ test('stripFinalNewline in sync mode on failure', t => {
 });
 
 test('preferLocal: true', async t => {
-	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {PATH: ''}}));
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {Path: '', PATH: ''}}));
 });
 
 test('preferLocal: false', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), ENOENT_REGEXP);
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {Path: '', PATH: ''}}), ENOENT_REGEXP);
 });
 
 test('preferLocal: undefined', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {env: {PATH: ''}}), ENOENT_REGEXP);
+	await t.throwsAsync(execa('ava', ['--version'], {env: {Path: '', PATH: ''}}), ENOENT_REGEXP);
 });
 
 test('localDir option', async t => {

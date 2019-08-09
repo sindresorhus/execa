@@ -172,8 +172,7 @@ test('buffer: false > promise rejects when process returns non-zero', async t =>
 
 const BUFFER_TIMEOUT = 1e3;
 
-// On Unix, a process won't exit if one of its stdout has not been read.
-// On Windows, it exits anyway.
+// On Unix (not Windows), a process won't exit if stdout has not been read.
 if (process.platform !== 'win32') {
 	test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
 		const {timedOut} = await t.throwsAsync(execa('max-buffer', {buffer: false, timeout: BUFFER_TIMEOUT}));

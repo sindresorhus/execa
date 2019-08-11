@@ -200,6 +200,13 @@ Type: `object`
 
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
 
+The child process [fails](#failed) when:
+  - its [exit code](#exitcode) is not `0`
+	- it was [killed](#killed) with a [signal](#signal)
+	- [timing out](#timedout)
+	- [being canceled](#iscanceled)
+  - there's not enough memory or there are already too many child processes
+
 #### command
 
 Type: `string`

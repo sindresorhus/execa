@@ -202,9 +202,9 @@ Result of a child process execution. On success this is a plain object. On failu
 
 The child process [fails](#failed) when:
   - its [exit code](#exitcode) is not `0`
-	- it was [killed](#killed) with a [signal](#signal)
-	- [timing out](#timedout)
-	- [being canceled](#iscanceled)
+  - it was [killed](#killed) with a [signal](#signal)
+  - [timing out](#timedout)
+  - [being canceled](#iscanceled)
   - there's not enough memory or there are already too many child processes
 
 #### command

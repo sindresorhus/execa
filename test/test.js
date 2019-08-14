@@ -74,24 +74,22 @@ test('stripFinalNewline in sync mode on failure', t => {
 });
 
 test('preferLocal: true', async t => {
-	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {PATH: ''}}));
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {Path: '', PATH: ''}}));
 });
 
 test('preferLocal: false', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {PATH: ''}}), ENOENT_REGEXP);
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {Path: '', PATH: ''}}), ENOENT_REGEXP);
 });
 
 test('preferLocal: undefined', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {env: {PATH: ''}}), ENOENT_REGEXP);
+	await t.throwsAsync(execa('ava', ['--version'], {env: {Path: '', PATH: ''}}), ENOENT_REGEXP);
 });
 
 test('localDir option', async t => {
 	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
 	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: '/test'});
-	const envPaths = stdout.split(path.delimiter).map(envPath =>
-		envPath.replace(/\\/g, '/').replace(/^[^/]+/, '')
-	);
-	t.true(envPaths.some(envPath => envPath === '/test/node_modules/.bin'));
+	const envPaths = stdout.split(path.delimiter);
+	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });
 
 test('stdin errors are handled', async t => {

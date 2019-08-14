@@ -172,15 +172,18 @@ test('buffer: false > promise rejects when process returns non-zero', async t =>
 
 const BUFFER_TIMEOUT = 1e3;
 
-test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
-	const {timedOut} = await t.throwsAsync(execa('max-buffer', {buffer: false, timeout: BUFFER_TIMEOUT}));
-	t.true(timedOut);
-});
+// On Unix (not Windows), a process won't exit if stdout has not been read.
+if (process.platform !== 'win32') {
+	test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
+		const {timedOut} = await t.throwsAsync(execa('max-buffer', {buffer: false, timeout: BUFFER_TIMEOUT}));
+		t.true(timedOut);
+	});
 
-test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
-	const cp = execa('max-buffer', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
-	cp.stdout.resume();
-	cp.stderr.resume();
-	const {timedOut} = await t.throwsAsync(cp);
-	t.true(timedOut);
-});
+	test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
+		const cp = execa('max-buffer', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
+		cp.stdout.resume();
+		cp.stderr.resume();
+		const {timedOut} = await t.throwsAsync(cp);
+		t.true(timedOut);
+	});
+}

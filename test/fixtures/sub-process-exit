@@ -4,4 +4,14 @@ const execa = require('../..');
 
 const cleanup = process.argv[2] === 'true';
 const detached = process.argv[3] === 'true';
-execa('node', ['./test/fixtures/noop'], {cleanup, detached});
+
+const runChild = async () => {
+	try {
+		await execa('node', ['./test/fixtures/noop'], {cleanup, detached});
+	} catch (error) {
+		console.error(error);
+		process.exit(1);
+	}
+};
+
+runChild();

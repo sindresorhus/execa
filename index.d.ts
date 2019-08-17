@@ -261,6 +261,16 @@ declare namespace execa {
 		extends ExecaReturnBase<StdoutErrorType> {
 	}
 
+	/**
+	Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
+
+	The child process fails when:
+	- its exit code is not `0`
+	- it was killed with a signal
+	- timing out
+	- being canceled
+	- there's not enough memory or there are already too many child processes
+	*/
 	interface ExecaReturnValue<StdoutErrorType = string>
 		extends ExecaSyncReturnValue<StdoutErrorType> {
 		/**

@@ -38,7 +38,7 @@
 		"local"
 	],
 	"dependencies": {
-		"cross-spawn": "^6.0.5",
+		"cross-spawn": "^7.0.0",
 		"get-stream": "^5.0.0",
 		"is-stream": "^2.0.0",
 		"merge-stream": "^2.0.0",

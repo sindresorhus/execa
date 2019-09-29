@@ -277,6 +277,12 @@ Type: `string | undefined`
 
 The signal that was used to terminate the process.
 
+#### originalMessage
+
+Type: `string | undefined`
+
+Original error message when the child process exits due to an error or a timeout.
+
 ### options
 
 Type: `object`

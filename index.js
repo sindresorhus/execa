@@ -190,7 +190,7 @@ module.exports.sync = (file, args, options) => {
 			code: result.status,
 			command,
 			parsed,
-			timedOut: result.error && result.error.errno === 'ETIMEDOUT',
+			timedOut: result.error && result.error.code === 'ETIMEDOUT',
 			isCanceled: false,
 			killed: result.signal !== null
 		});

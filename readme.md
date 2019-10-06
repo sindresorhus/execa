@@ -281,7 +281,9 @@ The signal that was used to terminate the process.
 
 Type: `string | undefined`
 
-Original error message when the child process exits due to an error or a timeout.
+Original error message. This is `undefined` unless the child process exited due to an `error` event or a timeout.
+
+The `message` property contains both the `originalMessage` and some additional information added by Execa.
 
 ### options
 

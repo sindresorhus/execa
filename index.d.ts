@@ -304,7 +304,9 @@ declare namespace execa {
 		message: string;
 
 		/**
-		Original error message when the child process exits due to an error or a timeout.
+		Original error message. This is `undefined` unless the child process exited due to an `error` event or a timeout.
+
+		The `message` property contains both the `originalMessage` and some additional information added by Execa.
 		*/
 		originalMessage?: string;
 	}

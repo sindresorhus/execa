@@ -262,11 +262,6 @@ declare namespace execa {
 		The signal that was used to terminate the process.
 		*/
 		signal?: string;
-
-		/**
-		Original error message when the child process exits due to an error or a timeout.
-		*/
-		originalMessage?: string;
 	}
 
 	interface ExecaSyncReturnValue<StdoutErrorType = string>
@@ -307,6 +302,11 @@ declare namespace execa {
 		The error message.
 		*/
 		message: string;
+
+		/**
+		Original error message when the child process exits due to an error or a timeout.
+		*/
+		originalMessage?: string;
 	}
 
 	interface ExecaError<StdoutErrorType = string>

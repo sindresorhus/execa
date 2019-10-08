@@ -163,3 +163,8 @@ errorMessage.title = (message, expected) => `error.message matches: ${expected}`
 
 test(errorMessage, /Command failed with exit code 2.*: exit 2 foo bar/, 2, 'foo', 'bar');
 test(errorMessage, /Command failed with exit code 3.*: exit 3 baz quz/, 3, 'baz', 'quz');
+
+test('Original error message is kept', async t => {
+	const {originalMessage} = await t.throwsAsync(execa('wrong command'));
+	t.is(originalMessage, 'spawn wrong command ENOENT');
+});

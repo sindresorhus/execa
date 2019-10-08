@@ -40,6 +40,7 @@ try {
 	expectType<boolean>(execaError.isCanceled);
 	expectType<boolean>(execaError.killed);
 	expectType<string | undefined>(execaError.signal);
+	expectType<string | undefined>(execaError.originalMessage);
 }
 
 try {
@@ -69,6 +70,7 @@ try {
 	expectError(execaError.isCanceled);
 	expectType<boolean>(execaError.killed);
 	expectType<string | undefined>(execaError.signal);
+	expectType<string | undefined>(execaError.originalMessage);
 }
 
 execa('unicorns', {cleanup: false});

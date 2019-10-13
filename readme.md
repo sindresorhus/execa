@@ -280,7 +280,7 @@ Type: `string | undefined`
 
 A human-friendly description of the signal that was used to terminate the process. For example, `Floating point arithmetic error`.
 
-If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
+If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 
 #### originalMessage
 

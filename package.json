@@ -40,7 +40,7 @@
 	"dependencies": {
 		"cross-spawn": "^7.0.0",
 		"get-stream": "^5.0.0",
-		"human-signals": "^1.1.0",
+		"human-signals": "^1.1.1",
 		"is-stream": "^2.0.0",
 		"merge-stream": "^2.0.0",
 		"npm-run-path": "^4.0.0",

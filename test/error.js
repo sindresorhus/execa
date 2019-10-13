@@ -134,11 +134,11 @@ if (process.platform !== 'win32') {
 	});
 
 	test('error.signalDescription is defined', async t => {
-		const cp = execa('noop');
+		const subprocess = execa('noop');
 
-		process.kill(cp.pid, 'SIGINT');
+		process.kill(subprocess.pid, 'SIGINT');
 
-		const {signalDescription} = await t.throwsAsync(cp, {message: /User interruption with CTRL-C/});
+		const {signalDescription} = await t.throwsAsync(subprocess, {message: /User interruption with CTRL-C/});
 		t.is(signalDescription, 'User interruption with CTRL-C');
 	});
 

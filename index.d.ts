@@ -39,6 +39,17 @@ declare namespace execa {
 		readonly localDir?: string;
 
 		/**
+		Path to the Node.js executable to use in child processes.
+
+		This can be either an absolute path or a path relative to the `cwd` option.
+
+		Requires `preferLocal` to be `true`.
+
+		@default process.execPath
+		*/
+		readonly execPath?: string;
+
+		/**
 		Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.
 
 		If the spawned process fails, `error.stdout`, `error.stderr`, and `error.all` will contain the buffered data.

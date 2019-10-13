@@ -72,6 +72,7 @@ try {
 execa('unicorns', {cleanup: false});
 execa('unicorns', {preferLocal: false});
 execa('unicorns', {localDir: '.'});
+execa('unicorns', {execPath: '/path'});
 execa('unicorns', {buffer: false});
 execa('unicorns', {input: ''});
 execa('unicorns', {input: Buffer.from('')});

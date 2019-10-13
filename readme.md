@@ -270,7 +270,13 @@ Whether the process was killed.
 
 Type: `string | undefined`
 
-The signal that was used to terminate the process.
+The name of the signal that was used to terminate the process.
+
+#### signalDescription
+
+Type: `string | undefined`
+
+A human-friendly description of the signal that was used to terminate the process.
 
 #### originalMessage
 

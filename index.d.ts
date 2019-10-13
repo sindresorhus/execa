@@ -267,9 +267,14 @@ declare namespace execa {
 		killed: boolean;
 
 		/**
-		The signal that was used to terminate the process.
+		The name of the signal that was used to terminate the process.
 		*/
 		signal?: string;
+
+		/**
+		A human-friendly description of the signal that was used to terminate the process.
+		*/
+		signalDescription?: string;
 	}
 
 	interface ExecaSyncReturnValue<StdoutErrorType = string>

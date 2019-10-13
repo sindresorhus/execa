@@ -133,6 +133,15 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGINT');
 	});
 
+	test('error.signalDescription is defined', async t => {
+		const cp = execa('noop');
+
+		process.kill(cp.pid, 'SIGINT');
+
+		const {signalDescription} = await t.throwsAsync(cp, {message: /User interruption with CTRL-C/});
+		t.is(signalDescription, 'User interruption with CTRL-C');
+	});
+
 	test('error.signal is SIGTERM', async t => {
 		const subprocess = execa('noop');
 
@@ -165,6 +174,11 @@ test('result.signal is undefined for successful execution', async t => {
 test('result.signal is undefined if process failed, but was not killed', async t => {
 	const {signal} = await t.throwsAsync(execa('exit', [2]), {message: getExitRegExp('2')});
 	t.is(signal, undefined);
+});
+
+test('result.signalDescription is undefined for successful execution', async t => {
+	const {signalDescription} = await execa('noop');
+	t.is(signalDescription, undefined);
 });
 
 test('error.code is undefined on success', async t => {

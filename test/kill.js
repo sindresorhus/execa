@@ -176,17 +176,17 @@ test('spawnAndKill cleanup detached SIGKILL', spawnAndKill, 'SIGKILL', true, tru
 // See #128
 test('removes exit handler on exit', async t => {
 	// FIXME: This relies on `signal-exit` internals
-	const ee = process.__signal_exit_emitter__;
+	const emitter = process.__signal_exit_emitter__;
 
-	const child = execa('noop');
-	const listener = ee.listeners('exit').pop();
+	const subprocess = execa('noop');
+	const listener = emitter.listeners('exit').pop();
 
 	await new Promise((resolve, reject) => {
-		child.on('error', reject);
-		child.on('exit', resolve);
+		subprocess.on('error', reject);
+		subprocess.on('exit', resolve);
 	});
 
-	const included = ee.listeners('exit').includes(listener);
+	const included = emitter.listeners('exit').includes(listener);
 	t.false(included);
 });
 

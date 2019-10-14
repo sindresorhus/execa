@@ -229,11 +229,6 @@ declare namespace execa {
 		exitCode: number;
 
 		/**
-		The textual exit code of the process that was run.
-		*/
-		exitCodeName: string;
-
-		/**
 		The output of the process on stdout.
 		*/
 		stdout: StdoutStderrType;

@@ -53,19 +53,19 @@ const execa = require('execa');
 
 	// Catching an error
 	try {
-		await execa('wrong', ['command']);
+		await execa('unknown', ['command']);
 	} catch (error) {
 		console.log(error);
 		/*
 		{
-			message: 'Command failed with exit code 2 (ENOENT): wrong command spawn wrong ENOENT',
-			errno: -2,
-			syscall: 'spawn wrong',
-			path: 'wrong',
+			message: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
+			errno: 'ENOENT',
+			code: 'ENOENT',
+			syscall: 'spawn unknown',
+			path: 'unknown',
 			spawnargs: ['command'],
-			command: 'wrong command',
-			exitCode: 2,
-			exitCodeName: 'ENOENT',
+			originalMessage: 'spawn unknown ENOENT',
+			command: 'unknown command',
 			stdout: '',
 			stderr: '',
 			all: '',
@@ -92,21 +92,22 @@ const execa = require('execa');
 
 // Catching an error with a sync method
 try {
-	execa.sync('wrong', ['command']);
+	execa.sync('unknown', ['command']);
 } catch (error) {
 	console.log(error);
 	/*
 	{
-		message: 'Command failed with exit code 2 (ENOENT): wrong command spawnSync wrong ENOENT',
-		errno: -2,
-		syscall: 'spawnSync wrong',
-		path: 'wrong',
+		message: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
+		errno: 'ENOENT',
+		code: 'ENOENT',
+		syscall: 'spawnSync unknown',
+		path: 'unknown',
 		spawnargs: ['command'],
-		command: 'wrong command',
-		exitCode: 2,
-		exitCodeName: 'ENOENT',
+		originalMessage: 'spawnSync unknown ENOENT',
+		command: 'unknown command',
 		stdout: '',
 		stderr: '',
+		all: '',
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
@@ -218,12 +219,6 @@ The file and arguments that were run.
 Type: `number`
 
 The numeric exit code of the process that was run.
-
-#### exitCodeName
-
-Type: `string`
-
-The textual exit code of the process that was run.
 
 #### stdout
 

@@ -104,15 +104,15 @@ const execa = (file, args, options) => {
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
 	const handlePromise = async () => {
-		const [{error, code, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
+		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
 		const stdout = handleOutput(parsed.options, stdoutResult);
 		const stderr = handleOutput(parsed.options, stderrResult);
 		const all = handleOutput(parsed.options, allResult);
 
-		if (error || code !== 0 || signal !== null) {
+		if (error || exitCode !== 0 || signal !== null) {
 			const returnedError = makeError({
 				error,
-				code,
+				exitCode,
 				signal,
 				stdout,
 				stderr,
@@ -134,7 +134,6 @@ const execa = (file, args, options) => {
 		return {
 			command,
 			exitCode: 0,
-			exitCodeName: 'SUCCESS',
 			stdout,
 			stderr,
 			all,
@@ -181,13 +180,16 @@ module.exports.sync = (file, args, options) => {
 		});
 	}
 
-	result.stdout = handleOutput(parsed.options, result.stdout, result.error);
-	result.stderr = handleOutput(parsed.options, result.stderr, result.error);
+	const stdout = handleOutput(parsed.options, result.stdout, result.error);
+	const stderr = handleOutput(parsed.options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError({
-			...result,
-			code: result.status,
+			stdout,
+			stderr,
+			error: result.error,
+			signal: result.signal,
+			exitCode: result.status,
 			command,
 			parsed,
 			timedOut: result.error && result.error.code === 'ETIMEDOUT',
@@ -205,9 +207,8 @@ module.exports.sync = (file, args, options) => {
 	return {
 		command,
 		exitCode: 0,
-		exitCodeName: 'SUCCESS',
-		stdout: result.stdout,
-		stderr: result.stderr,
+		stdout,
+		stderr,
 		failed: false,
 		timedOut: false,
 		isCanceled: false,

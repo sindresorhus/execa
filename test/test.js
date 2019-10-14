@@ -169,7 +169,7 @@ if (process.platform !== 'win32') {
 			await execa(`fast-exit-${process.platform}`, [], {input: 'data'});
 			t.pass();
 		} catch (error) {
-			t.is(error.exitCode, 32);
+			t.is(error.code, 'EPIPE');
 		}
 	});
 }

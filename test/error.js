@@ -36,24 +36,36 @@ test('stdout/stderr/all on process errors, in sync mode', t => {
 	t.is(all, undefined);
 });
 
-test('allow unknown exit code', async t => {
-	const {exitCode, exitCodeName} = await t.throwsAsync(execa('exit', ['255']), {message: /exit code 255 \(Unknown system error -255\)/});
-	t.is(exitCode, 255);
-	t.is(exitCodeName, 'Unknown system error -255');
+test('exitCode is 0 on success', async t => {
+	const {exitCode} = await execa('noop', ['foo']);
+	t.is(exitCode, 0);
 });
 
-test('execa() does not return code and failed properties on success', async t => {
-	const {exitCode, exitCodeName, failed} = await execa('noop', ['foo']);
-	t.is(exitCode, 0);
-	t.is(exitCodeName, 'SUCCESS');
+const testExitCode = async (t, num) => {
+	const {exitCode} = await t.throwsAsync(execa('exit', [`${num}`]), {message: getExitRegExp(num)});
+	t.is(exitCode, num);
+};
+
+test('exitCode is 2', testExitCode, 2);
+test('exitCode is 3', testExitCode, 3);
+test('exitCode is 4', testExitCode, 4);
+
+test('error.message contains the command', async t => {
+	await t.throwsAsync(execa('exit', ['2', 'foo', 'bar'], {message: /exit 2 foo bar/}));
+});
+
+test('Original error.message is kept', async t => {
+	const {originalMessage} = await t.throwsAsync(execa('wrong command'));
+	t.is(originalMessage, 'spawn wrong command ENOENT');
+});
+
+test('failed is false on success', async t => {
+	const {failed} = await execa('noop', ['foo']);
 	t.false(failed);
 });
 
-test('execa() returns code and failed properties', async t => {
-	const {exitCode, exitCodeName, failed} = await t.throwsAsync(execa('exit', ['2']), {message: getExitRegExp('2')});
-	t.is(exitCode, 2);
-	const expectedName = process.platform === 'win32' ? 'Unknown system error -2' : 'ENOENT';
-	t.is(exitCodeName, expectedName);
+test('failed is true on failure', async t => {
+	const {failed} = await t.throwsAsync(execa('exit', ['2']));
 	t.true(failed);
 });
 
@@ -134,6 +146,15 @@ if (process.platform !== 'win32') {
 		const {signal} = await t.throwsAsync(execa('noop', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
 		t.is(signal, 'SIGHUP');
 	});
+
+	test('exitCode is undefined on signal termination', async t => {
+		const cp = execa('noop');
+
+		process.kill(cp.pid);
+
+		const {exitCode} = await t.throwsAsync(cp);
+		t.is(exitCode, undefined);
+	});
 }
 
 test('result.signal is undefined for successful execution', async t => {
@@ -146,25 +167,12 @@ test('result.signal is undefined if process failed, but was not killed', async t
 	t.is(signal, undefined);
 });
 
-const testExitCode = async (t, num) => {
-	const {exitCode} = await t.throwsAsync(execa('exit', [`${num}`]), {message: getExitRegExp(num)});
-	t.is(exitCode, num);
-};
+test('error.code is undefined on success', async t => {
+	const {code} = await execa('noop');
+	t.is(code, undefined);
+});
 
-test('error.exitCode is 2', testExitCode, 2);
-test('error.exitCode is 3', testExitCode, 3);
-test('error.exitCode is 4', testExitCode, 4);
-
-const errorMessage = async (t, expected, ...args) => {
-	await t.throwsAsync(execa('exit', args), {message: expected});
-};
-
-errorMessage.title = (message, expected) => `error.message matches: ${expected}`;
-
-test(errorMessage, /Command failed with exit code 2.*: exit 2 foo bar/, 2, 'foo', 'bar');
-test(errorMessage, /Command failed with exit code 3.*: exit 3 baz quz/, 3, 'baz', 'quz');
-
-test('Original error message is kept', async t => {
-	const {originalMessage} = await t.throwsAsync(execa('wrong command'));
-	t.is(originalMessage, 'spawn wrong command ENOENT');
+test('error.code is defined on failure if applicable', async t => {
+	const {code} = await t.throwsAsync(execa('invalid'));
+	t.is(code, 'ENOENT');
 });

@@ -41,11 +41,11 @@ declare namespace execa {
 		/**
 		Path to the Node.js executable to use in child processes.
 
-		For example this can be used together with `get-node` to run a specific Node.js version in a child process.
-
 		This can be either an absolute path or a path relative to the `cwd` option.
 
 		Requires `preferLocal` to be `true`.
+		
+		For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
 
 		@default process.execPath
 		*/

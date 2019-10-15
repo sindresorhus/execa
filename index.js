@@ -14,11 +14,11 @@ const {joinCommand, parseCommand} = require('./lib/command.js');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
-const getEnv = ({env: envOption, extendEnv, preferLocal, localDir}) => {
+const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) => {
 	const env = extendEnv ? {...process.env, ...envOption} : envOption;
 
 	if (preferLocal) {
-		return npmRunPath.env({env, cwd: localDir});
+		return npmRunPath.env({env, cwd: localDir, execPath});
 	}
 
 	return env;
@@ -37,6 +37,7 @@ const handleArgs = (file, args, options = {}) => {
 		extendEnv: true,
 		preferLocal: false,
 		localDir: options.cwd || process.cwd(),
+		execPath: process.execPath,
 		encoding: 'utf8',
 		reject: true,
 		cleanup: true,

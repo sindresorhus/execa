@@ -1,6 +1,7 @@
 import path from 'path';
 import test from 'ava';
 import isRunning from 'is-running';
+import getNode from 'get-node';
 import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
@@ -90,6 +91,12 @@ test('localDir option', async t => {
 	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: '/test'});
 	const envPaths = stdout.split(path.delimiter);
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
+});
+
+test('execPath option', async t => {
+	const {path: execPath} = await getNode('6.0.0');
+	const {stdout} = await execa('node', ['-p', 'process.env.Path || process.env.PATH'], {preferLocal: true, execPath});
+	t.true(stdout.includes('6.0.0'));
 });
 
 test('stdin errors are handled', async t => {

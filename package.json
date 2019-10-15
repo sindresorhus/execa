@@ -52,6 +52,7 @@
 		"@types/node": "^12.0.7",
 		"ava": "^2.1.0",
 		"coveralls": "^3.0.4",
+		"get-node": "^5.0.0",
 		"is-running": "^2.1.0",
 		"nyc": "^14.1.1",
 		"p-event": "^4.1.0",

@@ -308,6 +308,19 @@ Default: `process.cwd()`
 
 Preferred path to find locally installed binaries in (use with `preferLocal`).
 
+#### execPath
+
+Type: `string`<br>
+Default: `process.execPath` (current Node.js executable)
+
+Path to the Node.js executable to use in child processes.
+
+This can be either an absolute path or a path relative to the [`cwd` option](#cwd).
+
+Requires [`preferLocal`](#preferlocal) to be `true`.
+
+For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
+
 #### buffer
 
 Type: `boolean`<br>

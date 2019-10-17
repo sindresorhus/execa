@@ -270,7 +270,7 @@ Whether the process was killed.
 
 Type: `string | undefined`
 
-The name of the signal that was used to terminate the process. For example `"SIGFPE"`.
+The name of the signal that was used to terminate the process. For example, `SIGFPE`.
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
 
@@ -278,7 +278,7 @@ If a signal terminated the process, this property is defined and included in the
 
 Type: `string | undefined`
 
-A human-friendly description of the signal that was used to terminate the process. For example `"Floating point arithmetic error"`.
+A human-friendly description of the signal that was used to terminate the process. For example, `Floating point arithmetic error`.
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
 

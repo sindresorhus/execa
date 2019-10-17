@@ -70,22 +70,22 @@ test('failed is true on failure', async t => {
 });
 
 test('error.killed is true if process was killed directly', async t => {
-	const cp = execa('noop');
+	const subprocess = execa('noop');
 
-	cp.kill();
+	subprocess.kill();
 
-	const {killed} = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
+	const {killed} = await t.throwsAsync(subprocess, {message: /was killed with SIGTERM/});
 	t.true(killed);
 });
 
 test('error.killed is false if process was killed indirectly', async t => {
-	const cp = execa('noop');
+	const subprocess = execa('noop');
 
-	process.kill(cp.pid, 'SIGINT');
+	process.kill(subprocess.pid, 'SIGINT');
 
 	// `process.kill()` is emulated by Node.js on Windows
 	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
-	const {killed} = await t.throwsAsync(cp, {message});
+	const {killed} = await t.throwsAsync(subprocess, {message});
 	t.false(killed);
 });
 
@@ -125,20 +125,20 @@ if (process.platform === 'darwin') {
 
 if (process.platform !== 'win32') {
 	test('error.signal is SIGINT', async t => {
-		const cp = execa('noop');
+		const subprocess = execa('noop');
 
-		process.kill(cp.pid, 'SIGINT');
+		process.kill(subprocess.pid, 'SIGINT');
 
-		const {signal} = await t.throwsAsync(cp, {message: /was killed with SIGINT/});
+		const {signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGINT/});
 		t.is(signal, 'SIGINT');
 	});
 
 	test('error.signal is SIGTERM', async t => {
-		const cp = execa('noop');
+		const subprocess = execa('noop');
 
-		process.kill(cp.pid, 'SIGTERM');
+		process.kill(subprocess.pid, 'SIGTERM');
 
-		const {signal} = await t.throwsAsync(cp, {message: /was killed with SIGTERM/});
+		const {signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGTERM/});
 		t.is(signal, 'SIGTERM');
 	});
 
@@ -148,11 +148,11 @@ if (process.platform !== 'win32') {
 	});
 
 	test('exitCode is undefined on signal termination', async t => {
-		const cp = execa('noop');
+		const subprocess = execa('noop');
 
-		process.kill(cp.pid);
+		process.kill(subprocess.pid);
 
-		const {exitCode} = await t.throwsAsync(cp);
+		const {exitCode} = await t.throwsAsync(subprocess);
 		t.is(exitCode, undefined);
 	});
 }

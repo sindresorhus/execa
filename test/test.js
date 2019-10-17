@@ -100,21 +100,21 @@ test('execPath option', async t => {
 });
 
 test('stdin errors are handled', async t => {
-	const child = execa('noop');
-	child.stdin.emit('error', new Error('test'));
-	await t.throwsAsync(child, /test/);
+	const subprocess = execa('noop');
+	subprocess.stdin.emit('error', new Error('test'));
+	await t.throwsAsync(subprocess, /test/);
 });
 
 test('child process errors are handled', async t => {
-	const child = execa('noop');
-	child.emit('error', new Error('test'));
-	await t.throwsAsync(child, /test/);
+	const subprocess = execa('noop');
+	subprocess.emit('error', new Error('test'));
+	await t.throwsAsync(subprocess, /test/);
 });
 
 test('child process errors rejects promise right away', async t => {
-	const child = execa('noop');
-	child.emit('error', new Error('test'));
-	await t.throwsAsync(child, /test/);
+	const subprocess = execa('noop');
+	subprocess.emit('error', new Error('test'));
+	await t.throwsAsync(subprocess, /test/);
 });
 
 test('execa() returns a promise with pid', t => {
@@ -123,11 +123,11 @@ test('execa() returns a promise with pid', t => {
 });
 
 test('child_process.spawn() propagated errors have correct shape', t => {
-	const cp = execa('noop', {uid: -1});
+	const subprocess = execa('noop', {uid: -1});
 	t.notThrows(() => {
-		cp.catch(() => {});
-		cp.unref();
-		cp.on('error', () => {});
+		subprocess.catch(() => {});
+		subprocess.unref();
+		subprocess.on('error', () => {});
 	});
 });
 
@@ -144,9 +144,9 @@ test('child_process.spawnSync() errors are propagated with a correct shape', t =
 });
 
 test('do not try to consume streams twice', async t => {
-	const cp = execa('noop', ['foo']);
-	t.is((await cp).stdout, 'foo');
-	t.is((await cp).stdout, 'foo');
+	const subprocess = execa('noop', ['foo']);
+	t.is((await subprocess).stdout, 'foo');
+	t.is((await subprocess).stdout, 'foo');
 });
 
 test('use relative path with \'..\' chars', async t => {
@@ -157,8 +157,8 @@ test('use relative path with \'..\' chars', async t => {
 
 if (process.platform !== 'win32') {
 	test('execa() rejects if running non-executable', async t => {
-		const cp = execa('non-executable');
-		await t.throwsAsync(cp);
+		const subprocess = execa('non-executable');
+		await t.throwsAsync(subprocess);
 	});
 
 	test('execa() rejects with correct error and doesn\'t throw if running non-executable with input', async t => {

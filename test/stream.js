@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import stream from 'stream';
+import Stream from 'stream';
 import test from 'ava';
 import getStream from 'get-stream';
 import tempfile from 'tempfile';
@@ -61,17 +61,17 @@ test('input option can be a Buffer', async t => {
 });
 
 test('input can be a Stream', async t => {
-	const s = new stream.PassThrough();
-	s.write('howdy');
-	s.end();
-	const {stdout} = await execa('stdin', {input: s});
+	const stream = new Stream.PassThrough();
+	stream.write('howdy');
+	stream.end();
+	const {stdout} = await execa('stdin', {input: stream});
 	t.is(stdout, 'howdy');
 });
 
 test('you can write to child.stdin', async t => {
-	const child = execa('stdin');
-	child.stdin.end('unicorns');
-	t.is((await child).stdout, 'unicorns');
+	const subprocess = execa('stdin');
+	subprocess.stdin.end('unicorns');
+	t.is((await subprocess).stdout, 'unicorns');
 });
 
 test('input option can be a String - sync', t => {
@@ -95,7 +95,7 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 test('helpful error trying to provide an input stream in sync mode', t => {
 	t.throws(
 		() => {
-			execa.sync('stdin', {input: new stream.PassThrough()});
+			execa.sync('stdin', {input: new Stream.PassThrough()});
 		},
 		/The `input` option cannot be a stream in sync mode/
 	);
@@ -152,21 +152,21 @@ test('buffer: false > promise resolves when output is big but is not pipable', a
 });
 
 test('buffer: false > promise resolves when output is big and is read', async t => {
-	const cp = execa('max-buffer', {buffer: false});
-	cp.stdout.resume();
-	cp.stderr.resume();
-	await t.notThrowsAsync(cp);
+	const subprocess = execa('max-buffer', {buffer: false});
+	subprocess.stdout.resume();
+	subprocess.stderr.resume();
+	await t.notThrowsAsync(subprocess);
 });
 
 test('buffer: false > promise resolves when output is big and "all" is used and is read', async t => {
-	const cp = execa('max-buffer', {buffer: false, all: true});
-	cp.all.resume();
-	await t.notThrowsAsync(cp);
+	const subprocess = execa('max-buffer', {buffer: false, all: true});
+	subprocess.all.resume();
+	await t.notThrowsAsync(subprocess);
 });
 
 test('buffer: false > promise rejects when process returns non-zero', async t => {
-	const cp = execa('fail', {buffer: false});
-	const {exitCode} = await t.throwsAsync(cp);
+	const subprocess = execa('fail', {buffer: false});
+	const {exitCode} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 2);
 });
 
@@ -180,10 +180,10 @@ if (process.platform !== 'win32') {
 	});
 
 	test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
-		const cp = execa('max-buffer', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
-		cp.stdout.resume();
-		cp.stderr.resume();
-		const {timedOut} = await t.throwsAsync(cp);
+		const subprocess = execa('max-buffer', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
+		subprocess.stdout.resume();
+		subprocess.stderr.resume();
+		const {timedOut} = await t.throwsAsync(subprocess);
 		t.true(timedOut);
 	});
 }

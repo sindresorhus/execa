@@ -25,6 +25,7 @@ try {
 	expectType<boolean>(unicornsResult.isCanceled);
 	expectType<boolean>(unicornsResult.killed);
 	expectType<string | undefined>(unicornsResult.signal);
+	expectType<string | undefined>(unicornsResult.signalDescription);
 } catch (error) {
 	const execaError: ExecaError = error;
 
@@ -38,6 +39,7 @@ try {
 	expectType<boolean>(execaError.isCanceled);
 	expectType<boolean>(execaError.killed);
 	expectType<string | undefined>(execaError.signal);
+	expectType<string | undefined>(execaError.signalDescription);
 	expectType<string | undefined>(execaError.originalMessage);
 }
 
@@ -53,6 +55,7 @@ try {
 	expectError(unicornsResult.isCanceled);
 	expectType<boolean>(unicornsResult.killed);
 	expectType<string | undefined>(unicornsResult.signal);
+	expectType<string | undefined>(unicornsResult.signalDescription);
 } catch (error) {
 	const execaError: ExecaSyncError = error;
 
@@ -66,6 +69,7 @@ try {
 	expectError(execaError.isCanceled);
 	expectType<boolean>(execaError.killed);
 	expectType<string | undefined>(execaError.signal);
+	expectType<string | undefined>(execaError.signalDescription);
 	expectType<string | undefined>(execaError.originalMessage);
 }
 

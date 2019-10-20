@@ -170,6 +170,14 @@ test('buffer: false > promise rejects when process returns non-zero', async t =>
 	t.is(exitCode, 2);
 });
 
+test('can use all: true with stdout: ignore', async t => {
+	await t.notThrowsAsync(execa('max-buffer', {buffer: false, stdout: 'ignore', all: true}));
+});
+
+test('can use all: true with stderr: ignore', async t => {
+	await t.notThrowsAsync(execa('max-buffer', ['stderr'], {buffer: false, stderr: 'ignore', all: true}));
+});
+
 const BUFFER_TIMEOUT = 1e3;
 
 // On Unix (not Windows), a process won't exit if stdout has not been read.

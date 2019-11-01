@@ -83,7 +83,6 @@ const execa = require('execa');
 	}
 
 })();
-
 ```
 
 ### Cancelling a spawned process
@@ -93,9 +92,11 @@ const execa = require('execa');
 
 (async () => {
 	const subprocess = execa('node');
+
 	setTimeout(() => {
 		subprocess.cancel();
 	}, 1000);
+
 	try {
 		await subprocess;
 	} catch (error) {
@@ -134,30 +135,20 @@ try {
 }
 ```
 
-### Catching an error with `.catch`
-
-```js
-execa('unknown', ['command'])
-	.then(result => console.log(result))
-	.catch(error => {
-		console.log(error);
-		// spawn unknown ENOENT
-		// ...
-	});
-```
-
 ### Kill a process
 
 Using SIGTERM, and after 2 seconds, kill it with SIGKILL.
 
 ```js
 const subprocess = execa('node');
+
 setTimeout(() => {
 	subprocess.kill('SIGTERM', {
 		forceKillAfterTimeout: 2000
 	});
 }, 1000);
 ```
+
 
 ## API
 

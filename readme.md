@@ -55,7 +55,6 @@ execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 const execa = require('execa');
 
 (async () => {
-	// Pipe the child process stdout to the current stdout
 	// Catching an error
 	try {
 		await execa('unknown', ['command']);

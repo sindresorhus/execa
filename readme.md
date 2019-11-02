@@ -508,6 +508,29 @@ List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the
 
 ## Tips
 
+### Retry on Error
+
+Retry on system errors `EAGAIN` or `ETIMEDOUT`.
+
+```js
+const promiseRetry = require('promise-retry');
+ 
+(async () => {
+	const results = await promiseRetry(function (retry, number) {
+
+		try {
+			await execa('node', ['--version']);
+		} catch (error) {
+			if (number > 10) throw new Error('Execution retry limit of 10 exceeded.');
+
+			if (error.code === 'EAGAIN' || error.code === 'ETIMEDOUT') {
+				retry(err);
+			}
+		}
+	});
+});
+```
+
 ### Save and pipe output from a child process
 
 Let's say you want to show the output of a child process in real-time while also saving it to a variable.

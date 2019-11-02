@@ -516,7 +516,7 @@ Retry on system errors `EAGAIN` or `ETIMEDOUT`.
 const promiseRetry = require('promise-retry');
  
 (async () => {
-	const results = await promiseRetry(function (retry, number) {
+	const results = await promiseRetry(async (retry, number) => {
 
 		try {
 			await execa('node', ['--version']);

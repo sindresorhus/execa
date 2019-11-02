@@ -41,6 +41,28 @@ const execa = require('execa');
 })();
 ```
 
+### Running test with custom environment variable
+
+Given the following shell command:
+
+```sh
+npm test -- --json
+```
+
+Let's take a look at how we can accomplish the same using `execa`:
+
+```js
+const execa = require('execa');
+
+(async () => {
+	const options = {env: {NODE_ENV: 'production'}};
+	const {stdout, stderr} = await execa('npm', ['test', '--', '--json'], options);
+	console.log({stdout, stderr});
+})();
+```
+Notice how the arguments are specified as array elements: `['test', '--', '--json']`.
+
+
 Additional examples:
 
 ```js

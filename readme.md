@@ -41,16 +41,20 @@ const execa = require('execa');
 })();
 ```
 
-Additional examples:
+### Pipe the child process stdout to the parent
+
+```js
+const execa = require('execa');
+
+execa('echo', ['unicorns']).stdout.pipe(process.stdout);
+```
+
+### Handling Errors
 
 ```js
 const execa = require('execa');
 
 (async () => {
-	// Pipe the child process stdout to the current stdout
-	execa('echo', ['unicorns']).stdout.pipe(process.stdout);
-
-
 	// Catching an error
 	try {
 		await execa('unknown', ['command']);
@@ -77,20 +81,33 @@ const execa = require('execa');
 		*/
 	}
 
-	// Cancelling a spawned process
+})();
+```
+
+### Cancelling a spawned process
+
+```js
+const execa = require('execa');
+
+(async () => {
 	const subprocess = execa('node');
+
 	setTimeout(() => {
 		subprocess.cancel();
 	}, 1000);
+
 	try {
 		await subprocess;
 	} catch (error) {
 		console.log(subprocess.killed); // true
 		console.log(error.isCanceled); // true
 	}
-})();
+})()
+```
 
-// Catching an error with a sync method
+### Catching an error with the sync method
+
+```js
 try {
 	execa.sync('unknown', ['command']);
 } catch (error) {
@@ -115,15 +132,22 @@ try {
 	}
 	*/
 }
+```
 
-// Kill a process with SIGTERM, and after 2 seconds, kill it with SIGKILL
+### Kill a process
+
+Using SIGTERM, and after 2 seconds, kill it with SIGKILL.
+
+```js
 const subprocess = execa('node');
+
 setTimeout(() => {
 	subprocess.kill('SIGTERM', {
 		forceKillAfterTimeout: 2000
 	});
 }, 1000);
 ```
+
 
 ## API
 

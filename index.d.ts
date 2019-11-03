@@ -198,6 +198,13 @@ declare namespace execa {
 		@default false
 		*/
 		readonly windowsVerbatimArguments?: boolean;
+
+		/**
+		On Windows, do not create a new console window. However this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
+
+		@default true
+		*/
+		readonly windowsHide?: boolean;
 	}
 
 	interface Options<EncodingType = string> extends CommonOptions<EncodingType> {

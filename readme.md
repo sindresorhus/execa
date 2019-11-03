@@ -60,6 +60,7 @@ const execa = require('execa');
 	console.log({stdout, stderr});
 })();
 ```
+
 Notice how the arguments are specified as array elements: `['test', '--', '--json']`.
 
 

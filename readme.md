@@ -510,25 +510,19 @@ List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the
 
 ### Retry on Error
 
-Retry on system errors `EAGAIN` or `ETIMEDOUT`.
+Handle failures with automatic retries & exponential backoff using the [`p-retry`](https://github.com/sindresorhus/p-retry) library.
 
 ```js
-const promiseRetry = require('promise-retry');
- 
+const pRetry = require('p-retry');
+
+const run = async () => {
+	const results = await execa('curl', ['-sSL', 'https://sindresorhus.com/unicorn']);
+	return results;
+};
+
 (async () => {
-	const results = await promiseRetry(async (retry, number) => {
-
-		try {
-			await execa('node', ['--version']);
-		} catch (error) {
-			if (number > 10) throw new Error('Execution retry limit of 10 exceeded.');
-
-			if (error.code === 'EAGAIN' || error.code === 'ETIMEDOUT') {
-				retry(err);
-			}
-		}
-	});
-});
+	console.log(await pRetry(run, {retries: 5}));
+})();
 ```
 
 ### Save and pipe output from a child process

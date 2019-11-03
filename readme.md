@@ -497,7 +497,7 @@ If `true`, no quoting or escaping of arguments is done on Windows. Ignored on ot
 Type: `boolean`<br>
 Default: `true`
 
-On Windows, do not create a new console window. However this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
+On Windows, do not create a new console window. Please note this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
 
 #### nodePath *(for `.node()` only)*
 

@@ -508,7 +508,7 @@ List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the
 
 ## Tips
 
-### Retry on Error
+### Retry on error
 
 Handle failures with automatic retries & exponential backoff using the [`p-retry`](https://github.com/sindresorhus/p-retry) library.
 

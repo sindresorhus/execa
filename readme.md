@@ -510,7 +510,7 @@ List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the
 
 ### Retry on error
 
-Gracefully handle failures with automatic retries and exponential backoff using the [`p-retry`](https://github.com/sindresorhus/p-retry) package:
+Gracefully handle failures by using automatic retries and exponential backoff with the [`p-retry`](https://github.com/sindresorhus/p-retry) package:
 
 ```js
 const pRetry = require('p-retry');

@@ -532,6 +532,23 @@ List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the
 
 ## Tips
 
+### Retry on error
+
+Gracefully handle failures by using automatic retries and exponential backoff with the [`p-retry`](https://github.com/sindresorhus/p-retry) package:
+
+```js
+const pRetry = require('p-retry');
+
+const run = async () => {
+	const results = await execa('curl', ['-sSL', 'https://sindresorhus.com/unicorn']);
+	return results;
+};
+
+(async () => {
+	console.log(await pRetry(run, {retries: 5}));
+})();
+```
+
 ### Save and pipe output from a child process
 
 Let's say you want to show the output of a child process in real-time while also saving it to a variable.

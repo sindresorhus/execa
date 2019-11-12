@@ -516,6 +516,13 @@ Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
+#### windowsHide
+
+Type: `boolean`<br>
+Default: `true`
+
+On Windows, do not create a new console window. Please note this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
+
 #### nodePath *(for `.node()` only)*
 
 Type: `string`<br>

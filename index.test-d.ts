@@ -125,6 +125,7 @@ execa('unicorns', {maxBuffer: 1000});
 execa('unicorns', {killSignal: 'SIGTERM'});
 execa('unicorns', {killSignal: 9});
 execa('unicorns', {windowsVerbatimArguments: true});
+execa('unicorns', {windowsHide: false});
 execa('unicorns').kill();
 execa('unicorns').kill('SIGKILL');
 execa('unicorns').kill(undefined);

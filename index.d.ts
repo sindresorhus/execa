@@ -136,6 +136,17 @@ declare namespace execa {
 		readonly stdio?: 'pipe' | 'ignore' | 'inherit' | readonly StdioOption[];
 
 		/**
+		When using the `stdio: 'ipc'` option or `execa.node()`, how messages passed to [`childProcess.send()`](https://nodejs.org/api/child_process.html#child_process_subprocess_send_message_sendhandle_options_callback) are serialized:
+			- `json`: uses `JSON.serialize()`
+			- `advanced`: uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
+
+		See more information [here](https://nodejs.org/api/child_process.html#child_process_advanced_serialization).
+
+		@default 'json'
+		*/
+		readonly serialization?: 'json' | 'advanced';
+
+		/**
 		Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
 		@default false

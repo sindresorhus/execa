@@ -115,6 +115,7 @@ execa('unicorns', {stdio: 'inherit'});
 execa('unicorns', {
 	stdio: ['pipe', 'ipc', 'ignore', 'inherit', process.stdin, 1, undefined]
 });
+execa('unicorns', {serialization: 'advanced'});
 execa('unicorns', {detached: true});
 execa('unicorns', {uid: 0});
 execa('unicorns', {gid: 0});

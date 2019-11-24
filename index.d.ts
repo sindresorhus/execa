@@ -140,7 +140,7 @@ declare namespace execa {
 			- `json`: uses `JSON.serialize()`
 			- `advanced`: uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 
-		See more information [here](https://nodejs.org/api/child_process.html#child_process_advanced_serialization).
+		[More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization).
 
 		@default 'json'
 		*/

@@ -137,7 +137,7 @@ declare namespace execa {
 
 		/**
 		When using the `stdio: 'ipc'` option or `execa.node()`, how messages passed to [`childProcess.send()`](https://nodejs.org/api/child_process.html#child_process_subprocess_send_message_sendhandle_options_callback) are serialized:
-			- `json`: uses `JSON.serialize()`
+			- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 			- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 
 		[More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization).

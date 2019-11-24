@@ -454,7 +454,7 @@ Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_
 #### serialization
 
 Type: `string`<br>
-Default: `json`
+Default: `'json'`
 
 When using the [`stdio: 'ipc'`](#stdio) option or [`execa.node()`](#execanodescriptpath-arguments-options), how messages passed to [`childProcess.send()`](https://nodejs.org/api/child_process.html#child_process_subprocess_send_message_sendhandle_options_callback) are serialized:
   - `json`: uses `JSON.serialize()`

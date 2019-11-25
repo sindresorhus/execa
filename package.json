@@ -1,6 +1,6 @@
 {
 	"name": "execa",
-	"version": "3.3.0",
+	"version": "3.4.0",
 	"description": "Process execution for humans",
 	"license": "MIT",
 	"repository": "sindresorhus/execa",

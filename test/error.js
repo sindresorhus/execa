@@ -51,7 +51,25 @@ test('exitCode is 3', testExitCode, 3);
 test('exitCode is 4', testExitCode, 4);
 
 test('error.message contains the command', async t => {
-	await t.throwsAsync(execa('exit', ['2', 'foo', 'bar'], {message: /exit 2 foo bar/}));
+	await t.throwsAsync(execa('exit', ['2', 'foo', 'bar']), {message: /exit 2 foo bar/});
+});
+
+test('error.message contains stdout/stderr if available', async t => {
+	const {message} = await t.throwsAsync(execa('echo-fail'));
+	t.true(message.includes('stderr'));
+	t.true(message.includes('stdout'));
+});
+
+test('error.message does not contain stdout/stderr if not available', async t => {
+	const {message} = await t.throwsAsync(execa('echo-fail', {stdio: 'ignore'}));
+	t.false(message.includes('stderr'));
+	t.false(message.includes('stdout'));
+});
+
+test('error.shortMessage does not contain stdout/stderr', async t => {
+	const {shortMessage} = await t.throwsAsync(execa('echo-fail'));
+	t.false(shortMessage.includes('stderr'));
+	t.false(shortMessage.includes('stdout'));
 });
 
 test('Original error.message is kept', async t => {

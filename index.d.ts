@@ -44,7 +44,7 @@ declare namespace execa {
 		This can be either an absolute path or a path relative to the `cwd` option.
 
 		Requires `preferLocal` to be `true`.
-		
+
 		For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
 
 		@default process.execPath
@@ -341,9 +341,14 @@ declare namespace execa {
 		message: string;
 
 		/**
-		Original error message. This is `undefined` unless the child process exited due to an `error` event or a timeout.
+		This is the same as the `message` property except it does not include the child process stdout/stderr.
+		*/
+		shortMessage: string;
 
-		The `message` property contains both the `originalMessage` and some additional information added by Execa.
+		/**
+		Original error message. This is the same as the `message` property except it includes neither the child process stdout/stderr nor some additional information added by Execa.
+
+		This is `undefined` unless the child process exited due to an `error` event or a timeout.
 		*/
 		originalMessage?: string;
 	}

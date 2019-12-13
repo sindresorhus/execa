@@ -4,6 +4,7 @@
 	"description": "Process execution for humans",
 	"license": "MIT",
 	"repository": "sindresorhus/execa",
+	"funding": "https://github.com/sindresorhus/execa?sponsor=1",
 	"author": {
 		"name": "Sindre Sorhus",
 		"email": "sindresorhus@gmail.com",
@@ -53,13 +54,13 @@
 		"@types/node": "^12.0.7",
 		"ava": "^2.1.0",
 		"coveralls": "^3.0.4",
-		"get-node": "^5.0.0",
+		"get-node": "^6.6.0",
 		"is-running": "^2.1.0",
 		"nyc": "^14.1.1",
 		"p-event": "^4.1.0",
 		"tempfile": "^3.0.0",
 		"tsd": "^0.7.3",
-		"xo": "^0.24.0"
+		"xo": "^0.25.3"
 	},
 	"nyc": {
 		"exclude": [

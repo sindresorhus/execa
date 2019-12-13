@@ -5,7 +5,6 @@
 
 > Process execution for humans
 
-
 ## Why
 
 This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
@@ -21,13 +20,11 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - [Can specify file and arguments as a single string without a shell](#execacommandcommand-options)
 - More descriptive errors.
 
-
 ## Install
 
 ```
 $ npm install execa
 ```
-
 
 ## Usage
 
@@ -148,10 +145,9 @@ setTimeout(() => {
 }, 1000);
 ```
 
-
 ## API
 
-### execa(file, arguments, [options])
+### execa(file, arguments, options?)
 
 Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
@@ -163,13 +159,13 @@ Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#c
   - is also a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
   - exposes the following additional methods and properties.
 
-#### kill([signal], [options])
+#### kill(signal?, options?)
 
 Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
 
 ##### options.forceKillAfterTimeout
 
-Type: `number | false`<br>
+Type: `number | false`\
 Default: `5000`
 
 Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
@@ -190,13 +186,13 @@ This is `undefined` if either:
   - the [`all` option](#all-2) is `false` (the default value)
   - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 
-### execa.sync(file, [arguments], [options])
+### execa.sync(file, arguments?, options?)
 
 Execute a file synchronously.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
-### execa.command(command, [options])
+### execa.command(command, options?)
 
 Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
 
@@ -204,13 +200,13 @@ If the file or an argument contains spaces, they must be escaped with backslashe
 
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features, as opposed to being a simple `file` followed by its `arguments`.
 
-### execa.commandSync(command, [options])
+### execa.commandSync(command, options?)
 
 Same as [`execa.command()`](#execacommand-command-options) but synchronous.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
-### execa.node(scriptPath, [arguments], [options])
+### execa.node(scriptPath, arguments?, options?)
 
 Execute a Node.js script as a child process.
 
@@ -320,7 +316,7 @@ Type: `object`
 
 #### cleanup
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `true`
 
 Kill the spawned process when the parent process exits unless either:
@@ -329,23 +325,23 @@ Kill the spawned process when the parent process exits unless either:
 
 #### preferLocal
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `false`
 
-Prefer locally installed binaries when looking for a binary to execute.<br>
+Prefer locally installed binaries when looking for a binary to execute.\
 If you `$ npm install foo`, you can then `execa('foo')`.
 
 #### localDir
 
-Type: `string`<br>
+Type: `string`\
 Default: `process.cwd()`
 
 Preferred path to find locally installed binaries in (use with `preferLocal`).
 
 #### execPath
 
-Type: `string`<br>
-Default: `process.execPath` (current Node.js executable)
+Type: `string`\
+Default: `process.execPath` (Current Node.js executable)
 
 Path to the Node.js executable to use in child processes.
 
@@ -357,7 +353,7 @@ For example, this can be used together with [`get-node`](https://github.com/ehmi
 
 #### buffer
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `true`
 
 Buffer the output from the spawned process. When set to `false`, you must read the output of [`stdout`](#stdout-1) and [`stderr`](#stderr-1) (or [`all`](#all) if the [`all`](#all-2) option is `true`). Otherwise the returned promise will not be resolved/rejected.
@@ -368,54 +364,54 @@ If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stder
 
 Type: `string | Buffer | stream.Readable`
 
-Write some input to the `stdin` of your binary.<br>
+Write some input to the `stdin` of your binary.\
 Streams are not allowed when using the synchronous methods.
 
 #### stdin
 
-Type: `string | number | Stream | undefined`<br>
+Type: `string | number | Stream | undefined`\
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 #### stdout
 
-Type: `string | number | Stream | undefined`<br>
+Type: `string | number | Stream | undefined`\
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 #### stderr
 
-Type: `string | number | Stream | undefined`<br>
+Type: `string | number | Stream | undefined`\
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
 #### all
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `false`
 
 Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the process with `stdout` and `stderr` interleaved.
 
 #### reject
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `true`
 
 Setting this to `false` resolves the promise with the error instead of rejecting it.
 
 #### stripFinalNewline
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `true`
 
 Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
 
 #### extendEnv
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `true`
 
 Set to `false` if you don't want to extend the environment variables when providing the `env` property.
@@ -426,14 +422,14 @@ Execa also accepts the below options which are the same as the options for [`chi
 
 #### cwd
 
-Type: `string`<br>
+Type: `string`\
 Default: `process.cwd()`
 
 Current working directory of the child process.
 
 #### env
 
-Type: `object`<br>
+Type: `object`\
 Default: `process.env`
 
 Environment key-value pairs. Extends automatically from `process.env`. Set [`extendEnv`](#extendenv) to `false` if you don't want this.
@@ -446,14 +442,14 @@ Explicitly set the value of `argv[0]` sent to the child process. This will be se
 
 #### stdio
 
-Type: `string | string[]`<br>
+Type: `string | string[]`\
 Default: `pipe`
 
 Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.
 
 #### serialization
 
-Type: `string`<br>
+Type: `string`\
 Default: `'json'`
 
 Specify the kind of serialization used for sending messages between processes when using the [`stdio: 'ipc'`](#stdio) option or [`execa.node()`](#execanodescriptpath-arguments-options):
@@ -484,7 +480,7 @@ Sets the group identity of the process.
 
 #### shell
 
-Type: `boolean | string`<br>
+Type: `boolean | string`\
 Default: `false`
 
 If `true`, runs `file` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
@@ -496,56 +492,56 @@ We recommend against using this option since it is:
 
 #### encoding
 
-Type: `string | null`<br>
+Type: `string | null`\
 Default: `utf8`
 
 Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
 
 #### timeout
 
-Type: `number`<br>
+Type: `number`\
 Default: `0`
 
 If timeout is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than timeout milliseconds.
 
 #### maxBuffer
 
-Type: `number`<br>
+Type: `number`\
 Default: `100_000_000` (100 MB)
 
 Largest amount of data in bytes allowed on `stdout` or `stderr`.
 
 #### killSignal
 
-Type: `string | number`<br>
+Type: `string | number`\
 Default: `SIGTERM`
 
 Signal value to be used when the spawned process will be killed.
 
 #### windowsVerbatimArguments
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `false`
 
 If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
 #### windowsHide
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `true`
 
 On Windows, do not create a new console window. Please note this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
 
-#### nodePath *(for `.node()` only)*
+#### nodePath *(For `.node()` only)*
 
-Type: `string`<br>
+Type: `string`\
 Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
 
 Node.js executable used to create the child process.
 
-#### nodeOptions *(for `.node()` only)*
+#### nodeOptions *(For `.node()` only)*
 
-Type: `string[]`<br>
+Type: `string[]`\
 Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
 
 List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
@@ -619,12 +615,10 @@ const subprocess = execa(binPath);
 - [gulp-execa](https://github.com/ehmicky/gulp-execa) - Gulp plugin for `execa`
 - [nvexeca](https://github.com/ehmicky/nvexeca) - Run `execa` using any Node.js version
 
-
 ## Maintainers
 
 - [Sindre Sorhus](https://github.com/sindresorhus)
 - [@ehmicky](https://github.com/ehmicky)
-
 
 ---
 

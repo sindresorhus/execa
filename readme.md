@@ -617,6 +617,7 @@ const subprocess = execa(binPath);
 ## Related
 
 - [gulp-execa](https://github.com/ehmicky/gulp-execa) - Gulp plugin for `execa`
+- [nvexeca](https://github.com/ehmicky/nvexeca) - Run `execa` using any Node.js version
 
 
 ## Maintainers

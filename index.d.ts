@@ -336,7 +336,9 @@ declare namespace execa {
 		extends Error,
 			ExecaReturnBase<StdoutErrorType> {
 		/**
-		The error message.
+		Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
+
+		The child process stderr then stdout are appended to the end, separated with newlines and not interleaved.
 		*/
 		message: string;
 

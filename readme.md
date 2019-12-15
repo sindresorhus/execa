@@ -304,11 +304,19 @@ A human-friendly description of the signal that was used to terminate the proces
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 
+#### message
+
+Type: `string`
+
+Error message when the child process failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the child process errored.
+
+The child process [stderr](#stderr) then [stdout](#stdout) are appended to the end, separated with newlines and not interleaved.
+
 #### shortMessage
 
 Type: `string`
 
-This is the same as the `message` property except it does not include the child process stdout/stderr.
+This is the same as the [`message` property](#message) except it does not include the child process stdout/stderr.
 
 #### originalMessage
 

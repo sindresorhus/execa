@@ -60,12 +60,13 @@ const execa = require('execa');
 		/*
 		{
 			message: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
-			errno: 'ENOENT',
+			errno: -2,
 			code: 'ENOENT',
 			syscall: 'spawn unknown',
 			path: 'unknown',
 			spawnargs: ['command'],
 			originalMessage: 'spawn unknown ENOENT',
+			shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
 			command: 'unknown command',
 			stdout: '',
 			stderr: '',
@@ -112,12 +113,13 @@ try {
 	/*
 	{
 		message: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
-		errno: 'ENOENT',
+		errno: -2,
 		code: 'ENOENT',
 		syscall: 'spawnSync unknown',
 		path: 'unknown',
 		spawnargs: ['command'],
 		originalMessage: 'spawnSync unknown ENOENT',
+		shortMessage: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
 		command: 'unknown command',
 		stdout: '',
 		stderr: '',
@@ -302,13 +304,27 @@ A human-friendly description of the signal that was used to terminate the proces
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 
+#### message
+
+Type: `string`
+
+Error message when the child process failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the child process errored.
+
+The child process [stderr](#stderr) then [stdout](#stdout) are appended to the end, separated with newlines and not interleaved.
+
+#### shortMessage
+
+Type: `string`
+
+This is the same as the [`message` property](#message) except it does not include the child process stdout/stderr.
+
 #### originalMessage
 
 Type: `string | undefined`
 
-Original error message. This is `undefined` unless the child process exited due to an `error` event or a timeout.
+Original error message. This is the same as the `message` property except it includes neither the child process stdout/stderr nor some additional information added by Execa.
 
-The `message` property contains both the `originalMessage` and some additional information added by Execa.
+This is `undefined` unless the child process exited due to an `error` event or a timeout.
 
 ### options
 

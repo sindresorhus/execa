@@ -40,6 +40,7 @@ try {
 	expectType<boolean>(execaError.killed);
 	expectType<string | undefined>(execaError.signal);
 	expectType<string | undefined>(execaError.signalDescription);
+	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
 }
 
@@ -70,6 +71,7 @@ try {
 	expectType<boolean>(execaError.killed);
 	expectType<string | undefined>(execaError.signal);
 	expectType<string | undefined>(execaError.signalDescription);
+	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
 }
 

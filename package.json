@@ -51,15 +51,15 @@
 		"strip-final-newline": "^2.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "^12.0.7",
+		"@types/node": "^12.12.18",
 		"ava": "^2.1.0",
-		"coveralls": "^3.0.4",
+		"coveralls": "^3.0.9",
 		"get-node": "^6.6.0",
 		"is-running": "^2.1.0",
 		"nyc": "^14.1.1",
 		"p-event": "^4.1.0",
 		"tempfile": "^3.0.0",
-		"tsd": "^0.7.3",
+		"tsd": "^0.11.0",
 		"xo": "^0.25.3"
 	},
 	"nyc": {

@@ -16,6 +16,7 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 
 	const {signal} = await t.throwsAsync(subprocess);
 	t.is(signal, 'SIGKILL');
+	t.false(isRunning(subprocess.pid));
 });
 
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).

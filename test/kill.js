@@ -19,6 +19,27 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 	t.false(isRunning(subprocess.pid));
 });
 
+// `sleep` is a Linux command so these tests do not make sense on Windows.
+if (process.platform !== 'win32') {
+	test('`kill` should kill a process cleanly', async t => {
+		const subprocess = execa('sleep', ['200'], { stdio: ['ipc'] });
+
+		subprocess.kill('SIGTERM', { forceKillAfterTimeout: 2000 });
+
+		await t.throwsAsync(subprocess);
+		t.false(isRunning(subprocess.pid));
+	});
+
+	test('`kill` should kill a shell process cleanly', async t => {
+		const subprocess = execa('sleep', ['200'], { shell: true, stdio: ['ipc'] });
+
+		subprocess.kill('SIGTERM', { forceKillAfterTimeout: 2000 });
+
+		await t.throwsAsync(subprocess);
+		t.false(isRunning(subprocess.pid));
+	})
+}
+
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {

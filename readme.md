@@ -217,6 +217,21 @@ Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`chil
   - the [`shell`](#shell) option cannot be used
   - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
+### execa.duplexStream(file, arguments?, options?)
+
+Execute a file, returning a [`Duplex`](https://nodejs.org/api/stream.html#stream_duplex_and_transform_streams) stream, suitable to be used in a [pipeline](https://nodejs.org/api/stream.html#stream_stream_pipeline_streams_callback).
+
+The writable end of the stream is connected to the spawned process standard input ; the readable end of the stream is connected to the spawned process standard output (or to the combination of standard output and standard error if `all: true` is specified in the options).
+
+The `error` event is triggered on a non-zero exit code, or if the spawned process is terminated by a signal.
+
+Calling `destroy()` on the stream will kill the spawned process.
+
+It accepts the same options as `execa()`, with the following differences :
+
+ - `reject` and `buffer` have no effect
+ - `stripFinalNewline` has no effect: the final newline is never stripped
+
 ### childProcessResult
 
 Type: `object`

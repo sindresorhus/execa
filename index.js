@@ -2,6 +2,7 @@
 const path = require('path');
 const childProcess = require('child_process');
 const crossSpawn = require('cross-spawn');
+const stream = require('stream');
 const stripFinalNewline = require('strip-final-newline');
 const npmRunPath = require('npm-run-path');
 const onetime = require('onetime');
@@ -255,4 +256,136 @@ module.exports.node = (scriptPath, args, options = {}) => {
 			shell: false
 		}
 	);
+};
+
+module.exports.duplexStream = (file, args, options) => {
+	const parsed = handleArguments(file, args, options);
+	const command = joinCommand(file, args);
+
+	let spawned;
+	try {
+		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
+	} catch (error) {
+		const fullError = makeError({
+			error,
+			stdout: undefined,
+			stderr: undefined,
+			all: undefined,
+			command,
+			parsed,
+			timedOut: false,
+			isCanceled: false,
+			killed: false
+		});
+
+		// Dummy duplex that immediately returns an error
+		return new stream.Duplex({
+			read() {
+				this.destroy(fullError);
+			},
+			write(chunk, encoding, callback) {
+				callback(fullError);
+			}
+		});
+	}
+
+	const spawnedPromise = getSpawnedPromise(spawned);
+	const timedPromise = setupTimeout(spawned, parsed.options, spawnedPromise);
+	const processDone = setExitHandler(spawned, parsed.options, timedPromise);
+
+	const context = {isCanceled: false};
+
+	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
+	spawned.cancel = spawnedCancel.bind(null, spawned, context);
+
+	const all = makeAllStream(spawned, parsed.options);
+	const {stdin} = spawned;
+	const output = all ? all : spawned.stdout;
+
+	const duplex = new stream.Duplex({
+		autoDestroy: false,
+		write(chunk, encoding, callback) {
+			stdin.write(chunk, encoding, callback);
+		},
+		final(callback) {
+			stdin.end(async error => {
+				// Wait for the reader to be closed before closing the finalizing the write end
+				//
+				// The order usually doesn't matter, except when only the writer end is given to a pipeline
+				// (for example pipeline(getArchive(), duplexStream("tar", ["-x]))) : then the stream
+				// may end up closed before the process finishes (because getArchive() writer end is done and
+				// duplexStream() reader end is done, the pipeline is done even though tar may still be
+				// writing stuff to the disk) whereas the caller expects the process to be one by the time
+				// the pipeline is done
+				await readerClosed;
+				callback(error);
+			});
+		},
+		read() {
+			output.resume();
+		},
+		destroy(error, callback) {
+			if (spawned.exitCode === null && spawned.signalCode === null) {
+				spawned.once('exit', () => {
+					callback(error);
+				});
+
+				spawned.once('error', () => {
+					callback(error);
+				});
+
+				spawned.cancel();
+			} else {
+				callback(error);
+			}
+		}
+	});
+
+	if (output !== null) {
+		output.on('data', chunk => {
+			if (!duplex.push(chunk)) {
+				output.pause();
+			}
+		});
+	}
+
+	const stdinClosePromise = new Promise(resolve => {
+		if (stdin === null) {
+			resolve();
+		} else {
+			stdin.once('close', resolve);
+		}
+	});
+
+	const outputClosePromise = new Promise(resolve => {
+		if (output === null) {
+			resolve();
+		} else {
+			output.once('close', resolve);
+		}
+	});
+
+	const readerClosed = (async () => {
+		const [{error, exitCode, signal, timedOut}] = await getSpawnedResult({}, {}, processDone);
+		await Promise.all([stdinClosePromise, outputClosePromise]);
+		if (error || exitCode !== 0 || signal !== null) {
+			duplex.destroy(makeError({
+				error,
+				exitCode,
+				signal,
+				stdout: undefined,
+				stderr: undefined,
+				all: undefined,
+				command,
+				parsed,
+				timedOut,
+				isCanceled: context.isCanceled,
+				killed: spawned.killed
+			}));
+		} else {
+			duplex.push(null);
+		}
+	})();
+
+	return duplex;
 };

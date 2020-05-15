@@ -549,6 +549,31 @@ declare const execa: {
 	): execa.ExecaChildProcess<Buffer>;
 	node(scriptPath: string, options?: execa.Options): execa.ExecaChildProcess;
 	node(scriptPath: string, options?: execa.Options<null>): execa.ExecaChildProcess<Buffer>;
+
+	/**
+	Execute a file, returning a [`Duplex`](https://nodejs.org/api/stream.html#stream_duplex_and_transform_streams) stream, suitable to be used in a [pipeline](https://nodejs.org/api/stream.html#stream_stream_pipeline_streams_callback).
+
+	The writable end of the stream is connected to the spawned process standard input ; the readable end of the stream is connected to the spawned process standard output (or to the combination of standard output and standard error if `all: true` is specified in the options).
+
+	The `error` event is triggered on a non-zero exit code, or if the spawned process is terminated by a signal.
+
+	Calling `destroy()` on the stream will kill the spawned process.
+
+	It accepts the same options as `execa()`, with the following differences :
+
+	 - `reject` and `buffer` have no effect
+	 - `stripFinalNewline` has no effect: the final newline is never stripped
+
+	@param file - The program/script to execute.
+	@param arguments - Arguments to pass to `file` on execution.
+	@returns A [`Duplex` instance](https://nodejs.org/api/stream.html#stream_duplex_and_transform_streams).
+	*/
+	duplexStream(
+		file: string,
+		arguments?: readonly string[],
+		options?: execa.Options<any>
+	): NodeJS.ReadWriteStream;
+	duplexStream(file: string, options?: execa.Options<any>): NodeJS.ReadWriteStream;
 };
 
 export = execa;

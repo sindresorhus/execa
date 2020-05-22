@@ -4,7 +4,7 @@ import test from 'ava';
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 
 // Can't use `test.before`, maybe because `ava` need `Promise`
-// Can't use `import('..')` too, unknown reason
+// Can't use `import('..')` too, because `execa` is not ES Module
 const nativePromise = Promise;
 global.Promise = class BrokenPromise {
 	then() {

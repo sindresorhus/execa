@@ -24,7 +24,7 @@ const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) =>
 	return env;
 };
 
-const handleArgs = (file, args, options = {}) => {
+const handleArguments = (file, args, options = {}) => {
 	const parsed = crossSpawn._parse(file, args, options);
 	file = parsed.command;
 	args = parsed.args;
@@ -72,7 +72,7 @@ const handleOutput = (options, value, error) => {
 };
 
 const execa = (file, args, options) => {
-	const parsed = handleArgs(file, args, options);
+	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
 
 	let spawned;
@@ -159,7 +159,7 @@ const execa = (file, args, options) => {
 module.exports = execa;
 
 module.exports.sync = (file, args, options) => {
-	const parsed = handleArgs(file, args, options);
+	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
 
 	validateInputSync(parsed.options);

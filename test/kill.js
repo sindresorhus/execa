@@ -66,6 +66,12 @@ if (process.platform !== 'win32') {
 			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: NaN});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
+
+	test('`forceKillAfterTimeout` should not be negative', t => {
+		t.throws(() => {
+			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: -1});
+		}, {instanceOf: TypeError, message: /non-negative integer/});
+	});
 }
 
 test('execa() returns a promise with kill()', t => {

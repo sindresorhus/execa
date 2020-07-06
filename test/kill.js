@@ -61,9 +61,9 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('`forceKillAfterTimeout` should not be a float', t => {
+	test('`forceKillAfterTimeout` should not be NaN', t => {
 		t.throws(() => {
-			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: 0.5});
+			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: NaN});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
 

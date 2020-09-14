@@ -234,8 +234,24 @@ module.exports.node = (scriptPath, args, options = {}) => {
 	}
 
 	const stdio = normalizeStdio.node(options);
+	// Filter out --inspect & --inspect-brk from default execArgv
+	const defaultExecArgv = process.execArgv.filter(arg => {
+		if (
+			arg === '--inspect' ||
+			arg.startsWith('--inspect=') ||
+			arg === '--inspect-brk' ||
+			arg.startsWith('--inspect-brk=')
+		) {
+			return false;
+		}
 
-	const {nodePath = process.execPath, nodeOptions = process.execArgv} = options;
+		return true;
+	});
+
+	const {
+		nodePath = process.execPath,
+		nodeOptions = defaultExecArgv
+	} = options;
 
 	return execa(
 		nodePath,

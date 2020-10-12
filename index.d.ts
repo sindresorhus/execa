@@ -425,7 +425,7 @@ declare const execa: {
 
 	@example
 	```
-	const execa = require('execa');
+	import execa = require('execa');
 
 	(async () => {
 		const {stdout} = await execa('echo', ['unicorns']);
@@ -499,7 +499,7 @@ declare const execa: {
 
 	@example
 	```
-	const execa = require('execa');
+	import execa = require('execa');
 
 	(async () => {
 		const {stdout} = await execa.command('echo unicorns');

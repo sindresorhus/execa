@@ -5,6 +5,12 @@
 
 > Process execution for humans
 
+---
+
+Netlify is looking for a senior/expert Node.js backend engineer to join a fully remote, international, diverse (44% women and non-binary) and friendly team. This is for the team where one of the co-maintainers [@ehmicky](https://github.com/ehmicky) is working. The job description is [here](https://boards.greenhouse.io/netlify/jobs/4832483002).
+
+---
+
 ## Why
 
 This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:

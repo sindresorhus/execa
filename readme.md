@@ -7,7 +7,7 @@
 
 ---
 
-Netlify is looking for a senior/expert Node.js backend engineer to join a fully remote, international, diverse (44% women and non-binary) and friendly team. This is for the team where one of the co-maintainers @ehmicky is working. The job description is [here](https://boards.greenhouse.io/netlify/jobs/4832483002).
+Netlify is looking for a senior/expert Node.js backend engineer to join a fully remote, international, diverse (44% women and non-binary) and friendly team. This is for the team where one of the co-maintainers [@ehmicky](https://github.com/ehmicky) is working. The job description is [here](https://boards.greenhouse.io/netlify/jobs/4832483002).
 
 ---
 

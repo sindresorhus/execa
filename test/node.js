@@ -13,7 +13,7 @@ async function inspectMacro(t, input) {
 			reject: false
 		});
 
-		const {stdout, stderr} = await subprocess
+		const {stdout, stderr} = await subprocess;
 
 		t.is(stdout, 'foo');
 		t.is(stderr, '');
@@ -57,7 +57,7 @@ test('node pass on nodeOptions', async t => {
 test.serial(
 	'node removes --inspect from nodeOptions when defined by parent process',
 	inspectMacro,
-  `--inspect`
+	'--inspect'
 );
 
 test.serial(

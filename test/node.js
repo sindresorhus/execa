@@ -5,13 +5,23 @@ import execa from '..';
 
 process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
 
-test.beforeEach(t => {
-	t.context.originalArgv = process.execArgv;
-});
+async function inspectMacro(t, input) {
+	const originalArgv = process.execArgv;
+	process.execArgv = [input, '-e'];
+	try {
+		const subprocess = execa.node('console.log("foo")', {
+			reject: false
+		});
 
-test.afterEach(t => {
-	process.execArgv = t.context.originalArgv;
-});
+		const {stdout, stderr} = await subprocess
+
+		t.is(stdout, 'foo');
+		t.is(stderr, '');
+	} finally {
+		process.execArgv = originalArgv;
+	}
+}
+
 test('node()', async t => {
 	const {exitCode} = await execa.node('test/fixtures/noop');
 	t.is(exitCode, 0);
@@ -46,58 +56,26 @@ test('node pass on nodeOptions', async t => {
 
 test.serial(
 	'node removes --inspect from nodeOptions when defined by parent process',
-	async t => {
-		process.execArgv = ['--inspect', '-e'];
-		const {stdout, stderr} = await execa.node('console.log("foo")', {
-			reject: false
-		});
-
-		t.is(stdout, 'foo');
-		t.is(stderr, '');
-	}
+	inspectMacro,
+  `--inspect`
 );
 
 test.serial(
 	'node removes --inspect=9222 from nodeOptions when defined by parent process',
-	async t => {
-		process.execArgv = ['--inspect=9222', '-e'];
-		const {stdout, stderr} = await execa.node('console.log("foo")', {
-			reject: false
-		});
-
-		t.is(stdout, 'foo');
-		t.is(stderr, '');
-	}
+	inspectMacro,
+	'--inspect=9222'
 );
 
 test.serial(
 	'node removes --inspect-brk from nodeOptions when defined by parent process',
-	async t => {
-		process.execArgv = ['--inspect-brk', '-e'];
-		const subprocess = execa.node('console.log("foo")', {
-			reject: false
-		});
-
-		const {stdout, stderr} = await subprocess.catch(error => error);
-
-		t.is(stdout, 'foo');
-		t.is(stderr, '');
-	}
+	inspectMacro,
+	'--inspect-brk'
 );
 
 test.serial(
 	'node removes --inspect-brk=9222 from nodeOptions when defined by parent process',
-	async t => {
-		process.execArgv = ['--inspect-brk=9222', '-e'];
-		const subprocess = execa.node('console.log("foo")', {
-			reject: false
-		});
-
-		const {stdout, stderr} = await subprocess.catch(error => error);
-
-		t.is(stdout, 'foo');
-		t.is(stderr, '');
-	}
+	inspectMacro,
+	'--inspect-brk=9222'
 );
 
 test.serial(

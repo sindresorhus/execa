@@ -434,7 +434,7 @@ declare const execa: {
 
 		// Cancelling a spawned process
 		const subprocess = execa('node');
-		setTimeout(() => { spawned.cancel() }, 1000);
+		setTimeout(() => { subprocess.cancel() }, 1000);
 		try {
 			await subprocess;
 		} catch (error) {

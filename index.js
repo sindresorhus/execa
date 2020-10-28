@@ -234,8 +234,12 @@ module.exports.node = (scriptPath, args, options = {}) => {
 	}
 
 	const stdio = normalizeStdio.node(options);
+	const defaultExecArgv = process.execArgv.filter(arg => !arg.startsWith('--inspect'));
 
-	const {nodePath = process.execPath, nodeOptions = process.execArgv} = options;
+	const {
+		nodePath = process.execPath,
+		nodeOptions = defaultExecArgv
+	} = options;
 
 	return execa(
 		nodePath,

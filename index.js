@@ -147,8 +147,6 @@ const execa = (file, args, options) => {
 
 	const handlePromiseOnce = onetime(handlePromise);
 
-	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
-
 	handleInput(spawned, parsed.options.input);
 
 	spawned.all = makeAllStream(spawned, parsed.options);

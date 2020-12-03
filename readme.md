@@ -1,7 +1,7 @@
 <img src="media/logo.svg" width="400">
 <br>
 
-[![Build Status](https://travis-ci.com/sindresorhus/execa.svg?branch=master)](https://travis-ci.com/github/sindresorhus/execa) [![Coverage Status](https://coveralls.io/repos/github/sindresorhus/execa/badge.svg?branch=master)](https://coveralls.io/github/sindresorhus/execa?branch=master)
+[![Coverage Status](https://codecov.io/gh/sindresorhus/execa/branch/master/graph/badge.svg)](https://codecov.io/gh/sindresorhus/execa)
 
 > Process execution for humans
 

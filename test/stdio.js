@@ -1,4 +1,4 @@
-import util from 'util';
+import {inspect} from 'util';
 import test from 'ava';
 import normalizeStdio from '../lib/stdio';
 
@@ -13,7 +13,7 @@ const macro = (t, input, expected, func) => {
 	t.deepEqual(func(input), expected);
 };
 
-const macroTitle = name => (title, input) => `${name} ${(util.inspect(input))}`;
+const macroTitle = name => (title, input) => `${name} ${(inspect(input))}`;
 
 const stdioMacro = (...args) => macro(...args, normalizeStdio);
 stdioMacro.title = macroTitle('execa()');

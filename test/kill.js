@@ -63,7 +63,7 @@ if (process.platform !== 'win32') {
 
 	test('`forceKillAfterTimeout` should not be NaN', t => {
 		t.throws(() => {
-			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: NaN});
+			execa('noop').kill('SIGTERM', {forceKillAfterTimeout: Number.NaN});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	});
 

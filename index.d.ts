@@ -334,7 +334,7 @@ declare namespace execa {
 
 	interface ExecaSyncError<StdoutErrorType = string>
 		extends Error,
-			ExecaReturnBase<StdoutErrorType> {
+		ExecaReturnBase<StdoutErrorType> {
 		/**
 		Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -384,20 +384,6 @@ declare namespace execa {
 	}
 
 	interface ExecaChildPromise<StdoutErrorType> {
-		catch<ResultType = never>(
-			onRejected?: (reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>
-		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
-
-		/**
-		Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
-		*/
-		kill(signal?: string, options?: execa.KillOptions): void;
-
-		/**
-		Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
-		*/
-		cancel(): void;
-
 		/**
 		Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
@@ -406,11 +392,25 @@ declare namespace execa {
 			- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 		*/
 		all?: ReadableStream;
+
+		catch<ResultType = never>(
+			onRejected?: (reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>
+		): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
+
+		/**
+		Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
+		*/
+		kill(signal?: string, options?: KillOptions): void;
+
+		/**
+		Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
+		*/
+		cancel(): void;
 	}
 
 	type ExecaChildProcess<StdoutErrorType = string> = ChildProcess &
-		ExecaChildPromise<StdoutErrorType> &
-		Promise<ExecaReturnValue<StdoutErrorType>>;
+	ExecaChildPromise<StdoutErrorType> &
+	Promise<ExecaReturnValue<StdoutErrorType>>;
 }
 
 declare const execa: {
@@ -431,7 +431,6 @@ declare const execa: {
 		const {stdout} = await execa('echo', ['unicorns']);
 		console.log(stdout);
 		//=> 'unicorns'
-
 
 		// Cancelling a spawned process
 
@@ -465,7 +464,7 @@ declare const execa: {
 	): execa.ExecaChildProcess<Buffer>;
 	(file: string, options?: execa.Options): execa.ExecaChildProcess;
 	(file: string, options?: execa.Options<null>): execa.ExecaChildProcess<
-		Buffer
+	Buffer
 	>;
 
 	/**

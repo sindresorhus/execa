@@ -1,5 +1,5 @@
 import {expectType, expectError} from 'tsd';
-import {Readable as ReadableStream} from 'stream'
+import {Readable as ReadableStream} from 'stream';
 import execa = require('.');
 import {
 	ExecaReturnValue,
@@ -12,7 +12,7 @@ import {
 try {
 	const execaPromise = execa('unicorns');
 	execaPromise.cancel();
-	expectType<ReadableStream | undefined>(execaPromise.all)
+	expectType<ReadableStream | undefined>(execaPromise.all);
 
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
@@ -26,7 +26,7 @@ try {
 	expectType<boolean>(unicornsResult.killed);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
-} catch (error) {
+} catch (error) { // eslint-disable-line @typescript-eslint/no-implicit-any-catch
 	const execaError: ExecaError = error;
 
 	expectType<string>(execaError.message);
@@ -57,7 +57,7 @@ try {
 	expectType<boolean>(unicornsResult.killed);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
-} catch (error) {
+} catch (error) { // eslint-disable-line @typescript-eslint/no-implicit-any-catch
 	const execaError: ExecaSyncError = error;
 
 	expectType<string>(execaError.message);

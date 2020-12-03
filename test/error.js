@@ -41,9 +41,9 @@ test('exitCode is 0 on success', async t => {
 	t.is(exitCode, 0);
 });
 
-const testExitCode = async (t, num) => {
-	const {exitCode} = await t.throwsAsync(execa('exit', [`${num}`]), {message: getExitRegExp(num)});
-	t.is(exitCode, num);
+const testExitCode = async (t, number) => {
+	const {exitCode} = await t.throwsAsync(execa('exit', [`${number}`]), {message: getExitRegExp(number)});
+	t.is(exitCode, number);
 };
 
 test('exitCode is 2', testExitCode, 2);

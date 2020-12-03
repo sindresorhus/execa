@@ -73,8 +73,8 @@ test('error.shortMessage does not contain stdout/stderr', async t => {
 });
 
 test('Original error.message is kept', async t => {
-	const {originalMessage} = await t.throwsAsync(execa('wrong command'));
-	t.is(originalMessage, 'spawn wrong command ENOENT');
+	const {originalMessage} = await t.throwsAsync(execa('noop', {cwd: 1}));
+	t.true(originalMessage.startsWith('The "options.cwd" property must be of type string. Received type number'));
 });
 
 test('failed is false on success', async t => {
@@ -205,6 +205,6 @@ test('error.code is undefined on success', async t => {
 });
 
 test('error.code is defined on failure if applicable', async t => {
-	const {code} = await t.throwsAsync(execa('invalid'));
-	t.is(code, 'ENOENT');
+	const {code} = await t.throwsAsync(execa('noop', {cwd: 1}));
+	t.is(code, 'ERR_INVALID_ARG_TYPE');
 });

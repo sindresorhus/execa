@@ -1,7 +1,7 @@
 <img src="media/logo.svg" width="400">
 <br>
 
-[![Coverage Status](https://codecov.io/gh/sindresorhus/execa/branch/master/graph/badge.svg)](https://codecov.io/gh/sindresorhus/execa)
+[![Coverage Status](https://codecov.io/gh/sindresorhus/execa/branch/main/graph/badge.svg)](https://codecov.io/gh/sindresorhus/execa)
 
 > Process execution for humans
 

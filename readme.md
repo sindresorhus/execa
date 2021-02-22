@@ -200,7 +200,7 @@ Same as [`execa()`](#execafile-arguments-options) except both file and arguments
 
 If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 
-The [`shell` option](#shell) must be used if the `command` uses shell-specific features, as opposed to being a simple `file` followed by its `arguments`.
+The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
 ### execa.commandSync(command, options?)
 

@@ -7,7 +7,7 @@ const npmRunPath = require('npm-run-path');
 const onetime = require('onetime');
 const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
-const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler} = require('./lib/kill');
+const {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} = require('./lib/kill');
 const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream');
 const {mergePromise, getSpawnedPromise} = require('./lib/promise');
 const {joinCommand, parseCommand} = require('./lib/command');
@@ -74,6 +74,8 @@ const handleOutput = (options, value, error) => {
 const execa = (file, args, options) => {
 	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
+
+	validateTimeout(parsed.options);
 
 	let spawned;
 	try {

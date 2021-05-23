@@ -138,7 +138,7 @@ test('spawnAndExit detached', spawnAndExit, false, true);
 test('spawnAndExit cleanup detached', spawnAndExit, true, true);
 
 // When parent process exits before child process
-const spawnAndKill = async (t, signal, cleanup, detached, isKilled) => {
+const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 	const subprocess = execa('sub-process', [cleanup, detached], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
 
 	const pid = await pEvent(subprocess, 'message');
@@ -164,18 +164,18 @@ const spawnAndKill = async (t, signal, cleanup, detached, isKilled) => {
 // With `options.cleanup`, subprocesses are always killed
 //   - `options.cleanup` with SIGKILL is a noop, since it cannot be handled
 const exitIfWindows = process.platform === 'win32';
-test('spawnAndKill SIGTERM', spawnAndKill, 'SIGTERM', false, false, exitIfWindows);
-test('spawnAndKill SIGKILL', spawnAndKill, 'SIGKILL', false, false, exitIfWindows);
-test('spawnAndKill cleanup SIGTERM', spawnAndKill, 'SIGTERM', true, false, true);
-test('spawnAndKill cleanup SIGKILL', spawnAndKill, 'SIGKILL', true, false, exitIfWindows);
-test('spawnAndKill detached SIGTERM', spawnAndKill, 'SIGTERM', false, true, false);
-test('spawnAndKill detached SIGKILL', spawnAndKill, 'SIGKILL', false, true, false);
-test('spawnAndKill cleanup detached SIGTERM', spawnAndKill, 'SIGTERM', true, true, false);
-test('spawnAndKill cleanup detached SIGKILL', spawnAndKill, 'SIGKILL', true, true, false);
+test('spawnAndKill SIGTERM', spawnAndKill, ['SIGTERM', false, false, exitIfWindows]);
+test('spawnAndKill SIGKILL', spawnAndKill, ['SIGKILL', false, false, exitIfWindows]);
+test('spawnAndKill cleanup SIGTERM', spawnAndKill, ['SIGTERM', true, false, true]);
+test('spawnAndKill cleanup SIGKILL', spawnAndKill, ['SIGKILL', true, false, exitIfWindows]);
+test('spawnAndKill detached SIGTERM', spawnAndKill, ['SIGTERM', false, true, false]);
+test('spawnAndKill detached SIGKILL', spawnAndKill, ['SIGKILL', false, true, false]);
+test('spawnAndKill cleanup detached SIGTERM', spawnAndKill, ['SIGTERM', true, true, false]);
+test('spawnAndKill cleanup detached SIGKILL', spawnAndKill, ['SIGKILL', true, true, false]);
 
 // See #128
 test('removes exit handler on exit', async t => {
-	// FIXME: This relies on `signal-exit` internals
+	// @todo this relies on `signal-exit` internals
 	const emitter = process.__signal_exit_emitter__;
 
 	const subprocess = execa('noop');

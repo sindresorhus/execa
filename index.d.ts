@@ -252,12 +252,17 @@ declare namespace execa {
 
 	interface ExecaReturnBase<StdoutStderrType> {
 		/**
-		The file and arguments that were run.
+		The file and arguments that were run, for logging purpose.
+
+		This is not escaped and should be passed to neither `execa()` nor `execa.command()`
 		*/
 		command: string;
 
 		/**
-		Same as `command` but quoted so it can be run in most shells.
+		Same as `command` but escaped.
+
+		This is meant to be copy/pasted in a shell, for debugging purpose.
+		Since the escaping is fairly basic, this should be passed to neither `execa()` nor `execa.command()`
 		*/
 		escapedCommand: string;
 

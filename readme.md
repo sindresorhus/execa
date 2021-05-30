@@ -236,13 +236,18 @@ The child process [fails](#failed) when:
 
 Type: `string`
 
-The file and arguments that were run.
+The file and arguments that were run, for logging purpose.
+
+This is not escaped and should be passed to neither [`execa()`](#execafile-arguments-options) nor [`execa.command()`](#execacommandcommand-options).
 
 #### escapedCommand
 
 Type: `string`
 
-Same as [`command`](#command) but quoted so it can be run in most shells.
+Same as [`command`](#command) but escaped.
+
+This is meant to be copy/pasted in a shell, for debugging purpose.
+Since the escaping is fairly basic, this should be passed to neither [`execa()`](#execafile-arguments-options) nor [`execa.command()`](#execacommandcommand-options).
 
 #### exitCode
 

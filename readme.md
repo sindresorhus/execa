@@ -68,7 +68,7 @@ const execa = require('execa');
 			originalMessage: 'spawn unknown ENOENT',
 			shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
 			command: 'unknown command',
-			debugString: 'unknown command',
+			escapedCommand: 'unknown command',
 			stdout: '',
 			stderr: '',
 			all: '',
@@ -122,7 +122,7 @@ try {
 		originalMessage: 'spawnSync unknown ENOENT',
 		shortMessage: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
 		command: 'unknown command',
-		debugString: 'unknown command',
+		escapedCommand: 'unknown command',
 		stdout: '',
 		stderr: '',
 		all: '',
@@ -238,7 +238,7 @@ Type: `string`
 
 The file and arguments that were run.
 
-#### debugString
+#### escapedCommand
 
 Type: `string`
 

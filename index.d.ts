@@ -259,7 +259,7 @@ declare namespace execa {
 		/**
 		Same as `command` but quoted so it can be run in most shells.
 		*/
-		debugString: string;
+		escapedCommand: string;
 
 		/**
 		The numeric exit code of the process that was run.

@@ -18,28 +18,28 @@ test(command, ' foo bar', 'foo', 'bar');
 test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
-const testDebugString = async (t, expected, args) => {
-	const {debugString: failDebugString} = await t.throwsAsync(execa('fail', args));
-	t.is(failDebugString, `fail ${expected}`);
+const testEscapedCommand = async (t, expected, args) => {
+	const {escapedCommand: failEscapedCommand} = await t.throwsAsync(execa('fail', args));
+	t.is(failEscapedCommand, `fail ${expected}`);
 
-	const {debugString: failDebugStringSync} = t.throws(() => {
+	const {escapedCommand: failEscapedCommandSync} = t.throws(() => {
 		execa.sync('fail', args);
 	});
-	t.is(failDebugStringSync, `fail ${expected}`);
+	t.is(failEscapedCommandSync, `fail ${expected}`);
 
-	const {debugString} = await execa('noop', args);
-	t.is(debugString, `noop ${expected}`);
+	const {escapedCommand} = await execa('noop', args);
+	t.is(escapedCommand, `noop ${expected}`);
 
-	const {debugString: debugStringSync} = execa.sync('noop', args);
-	t.is(debugStringSync, `noop ${expected}`);
+	const {escapedCommand: escapedCommandSync} = execa.sync('noop', args);
+	t.is(escapedCommandSync, `noop ${expected}`);
 };
 
-testDebugString.title = (message, expected) => `debugString is: ${JSON.stringify(expected)}`;
+testEscapedCommand.title = (message, expected) => `escapedCommand is: ${JSON.stringify(expected)}`;
 
-test(testDebugString, 'foo bar', ['foo', 'bar']);
-test(testDebugString, '"foo bar"', ['foo bar']);
-test(testDebugString, '"\\"foo\\""', ['"foo"']);
-test(testDebugString, '"*"', ['*']);
+test(testEscapedCommand, 'foo bar', ['foo', 'bar']);
+test(testEscapedCommand, '"foo bar"', ['foo bar']);
+test(testEscapedCommand, '"\\"foo\\""', ['"foo"']);
+test(testEscapedCommand, '"*"', ['*']);
 
 test('allow commands with spaces and no array arguments', async t => {
 	const {stdout} = await execa('command with space');

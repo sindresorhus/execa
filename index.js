@@ -10,7 +10,7 @@ const normalizeStdio = require('./lib/stdio');
 const {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} = require('./lib/kill');
 const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream');
 const {mergePromise, getSpawnedPromise} = require('./lib/promise');
-const {joinCommand, parseCommand, getDebugString} = require('./lib/command');
+const {joinCommand, parseCommand, getEscapedCommand} = require('./lib/command');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
@@ -74,7 +74,7 @@ const handleOutput = (options, value, error) => {
 const execa = (file, args, options) => {
 	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
-	const debugString = getDebugString(file, args);
+	const escapedCommand = getEscapedCommand(file, args);
 
 	validateTimeout(parsed.options);
 
@@ -90,7 +90,7 @@ const execa = (file, args, options) => {
 			stderr: '',
 			all: '',
 			command,
-			debugString,
+			escapedCommand,
 			parsed,
 			timedOut: false,
 			isCanceled: false,
@@ -123,7 +123,7 @@ const execa = (file, args, options) => {
 				stderr,
 				all,
 				command,
-				debugString,
+				escapedCommand,
 				parsed,
 				timedOut,
 				isCanceled: context.isCanceled,
@@ -139,7 +139,7 @@ const execa = (file, args, options) => {
 
 		return {
 			command,
-			debugString,
+			escapedCommand,
 			exitCode: 0,
 			stdout,
 			stderr,
@@ -165,7 +165,7 @@ module.exports = execa;
 module.exports.sync = (file, args, options) => {
 	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
-	const debugString = getDebugString(file, args);
+	const escapedCommand = getEscapedCommand(file, args);
 
 	validateInputSync(parsed.options);
 
@@ -179,7 +179,7 @@ module.exports.sync = (file, args, options) => {
 			stderr: '',
 			all: '',
 			command,
-			debugString,
+			escapedCommand,
 			parsed,
 			timedOut: false,
 			isCanceled: false,
@@ -198,7 +198,7 @@ module.exports.sync = (file, args, options) => {
 			signal: result.signal,
 			exitCode: result.status,
 			command,
-			debugString,
+			escapedCommand,
 			parsed,
 			timedOut: result.error && result.error.code === 'ETIMEDOUT',
 			isCanceled: false,
@@ -214,7 +214,7 @@ module.exports.sync = (file, args, options) => {
 
 	return {
 		command,
-		debugString,
+		escapedCommand,
 		exitCode: 0,
 		stdout,
 		stderr,

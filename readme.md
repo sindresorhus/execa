@@ -236,7 +236,7 @@ The child process [fails](#failed) when:
 
 Type: `string`
 
-The file and arguments that were run, for logging purpose.
+The file and arguments that were run, for logging purposes.
 
 This is not escaped and should be passed to neither [`execa()`](#execafile-arguments-options) nor [`execa.command()`](#execacommandcommand-options).
 
@@ -246,7 +246,7 @@ Type: `string`
 
 Same as [`command`](#command) but escaped.
 
-This is meant to be copy/pasted in a shell, for debugging purpose.
+This is meant to be copy and pasted into a shell, for debugging purposes.
 Since the escaping is fairly basic, this should be passed to neither [`execa()`](#execafile-arguments-options) nor [`execa.command()`](#execacommandcommand-options).
 
 #### exitCode

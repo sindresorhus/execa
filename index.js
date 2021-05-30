@@ -8,9 +8,9 @@ const onetime = require('onetime');
 const makeError = require('./lib/error');
 const normalizeStdio = require('./lib/stdio');
 const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler} = require('./lib/kill');
-const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream.js');
-const {mergePromise, getSpawnedPromise} = require('./lib/promise.js');
-const {joinCommand, parseCommand} = require('./lib/command.js');
+const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = require('./lib/stream');
+const {mergePromise, getSpawnedPromise} = require('./lib/promise');
+const {joinCommand, parseCommand} = require('./lib/command');
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 

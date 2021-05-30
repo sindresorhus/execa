@@ -254,7 +254,7 @@ declare namespace execa {
 		/**
 		The file and arguments that were run, for logging purposes.
 
-		This is not escaped and should be passed to neither `execa()` nor `execa.command()`
+		This is not escaped and should not be executed directly as a process, including using `execa()` or `execa.command()`.
 		*/
 		command: string;
 
@@ -262,7 +262,7 @@ declare namespace execa {
 		Same as `command` but escaped.
 
 		This is meant to be copy and pasted into a shell, for debugging purposes.
-		Since the escaping is fairly basic, this should be passed to neither `execa()` nor `execa.command()`
+		Since the escaping is fairly basic, this should not be executed directly as a process, including using `execa()` or `execa.command()`.
 		*/
 		escapedCommand: string;
 

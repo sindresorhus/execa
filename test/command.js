@@ -18,6 +18,29 @@ test(command, ' foo bar', 'foo', 'bar');
 test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
+const testEscapedCommand = async (t, expected, args) => {
+	const {escapedCommand: failEscapedCommand} = await t.throwsAsync(execa('fail', args));
+	t.is(failEscapedCommand, `fail ${expected}`);
+
+	const {escapedCommand: failEscapedCommandSync} = t.throws(() => {
+		execa.sync('fail', args);
+	});
+	t.is(failEscapedCommandSync, `fail ${expected}`);
+
+	const {escapedCommand} = await execa('noop', args);
+	t.is(escapedCommand, `noop ${expected}`);
+
+	const {escapedCommand: escapedCommandSync} = execa.sync('noop', args);
+	t.is(escapedCommandSync, `noop ${expected}`);
+};
+
+testEscapedCommand.title = (message, expected) => `escapedCommand is: ${JSON.stringify(expected)}`;
+
+test(testEscapedCommand, 'foo bar', ['foo', 'bar']);
+test(testEscapedCommand, '"foo bar"', ['foo bar']);
+test(testEscapedCommand, '"\\"foo\\""', ['"foo"']);
+test(testEscapedCommand, '"*"', ['*']);
+
 test('allow commands with spaces and no array arguments', async t => {
 	const {stdout} = await execa('command with space');
 	t.is(stdout, '');

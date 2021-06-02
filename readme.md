@@ -68,6 +68,7 @@ const execa = require('execa');
 			originalMessage: 'spawn unknown ENOENT',
 			shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
 			command: 'unknown command',
+			escapedCommand: 'unknown command',
 			stdout: '',
 			stderr: '',
 			all: '',
@@ -121,6 +122,7 @@ try {
 		originalMessage: 'spawnSync unknown ENOENT',
 		shortMessage: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
 		command: 'unknown command',
+		escapedCommand: 'unknown command',
 		stdout: '',
 		stderr: '',
 		all: '',
@@ -234,7 +236,18 @@ The child process [fails](#failed) when:
 
 Type: `string`
 
-The file and arguments that were run.
+The file and arguments that were run, for logging purposes.
+
+This is not escaped and should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execa.command()`](#execacommandcommand-options).
+
+#### escapedCommand
+
+Type: `string`
+
+Same as [`command`](#command) but escaped.
+
+This is meant to be copy and pasted into a shell, for debugging purposes.
+Since the escaping is fairly basic, this should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execa.command()`](#execacommandcommand-options).
 
 #### exitCode
 

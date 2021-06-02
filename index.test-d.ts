@@ -16,6 +16,7 @@ try {
 
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
+	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number>(unicornsResult.exitCode);
 	expectType<string>(unicornsResult.stdout);
 	expectType<string>(unicornsResult.stderr);
@@ -47,6 +48,7 @@ try {
 try {
 	const unicornsResult = execa.sync('unicorns');
 	expectType<string>(unicornsResult.command);
+	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number>(unicornsResult.exitCode);
 	expectType<string>(unicornsResult.stdout);
 	expectType<string>(unicornsResult.stderr);

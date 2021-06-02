@@ -252,9 +252,19 @@ declare namespace execa {
 
 	interface ExecaReturnBase<StdoutStderrType> {
 		/**
-		The file and arguments that were run.
+		The file and arguments that were run, for logging purposes.
+
+		This is not escaped and should not be executed directly as a process, including using `execa()` or `execa.command()`.
 		*/
 		command: string;
+
+		/**
+		Same as `command` but escaped.
+
+		This is meant to be copy and pasted into a shell, for debugging purposes.
+		Since the escaping is fairly basic, this should not be executed directly as a process, including using `execa()` or `execa.command()`.
+		*/
+		escapedCommand: string;
 
 		/**
 		The numeric exit code of the process that was run.

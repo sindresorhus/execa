@@ -252,7 +252,7 @@ declare namespace execa {
 
 	interface ExecaReturnBase<StdoutStderrType> {
 		/**
-		The file and arguments that were run, for logging purpose.
+		The file and arguments that were run, for logging purposes.
 
 		This is not escaped and should be passed to neither `execa()` nor `execa.command()`
 		*/

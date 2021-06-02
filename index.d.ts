@@ -261,7 +261,7 @@ declare namespace execa {
 		/**
 		Same as `command` but escaped.
 
-		This is meant to be copy/pasted in a shell, for debugging purpose.
+		This is meant to be copy and pasted into a shell, for debugging purposes.
 		Since the escaping is fairly basic, this should be passed to neither `execa()` nor `execa.command()`
 		*/
 		escapedCommand: string;

@@ -81,6 +81,9 @@ const execa = (file, args, options) => {
 	let spawned;
 	try {
 		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
+		// Hook into child process "exit" event to emit an error if the command
+		// does not exists, see: https://github.com/IndigoUnited/node-cross-spawn/issues/16
+		crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
 	} catch (error) {
 		// Ensure the returned error is always both a promise and a child process
 		const dummySpawned = new childProcess.ChildProcess();
@@ -172,6 +175,8 @@ module.exports.sync = (file, args, options) => {
 	let result;
 	try {
 		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
+		// Analyze if the command does not exist, see: https://github.com/IndigoUnited/node-cross-spawn/issues/16
+		result.error = result.error || crossSpawn._enoent.verifyENOENTSync(result.status, parsed.parsed) || undefined;
 	} catch (error) {
 		throw makeError({
 			error,

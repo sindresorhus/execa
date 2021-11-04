@@ -29,7 +29,7 @@ $ npm install execa
 ## Usage
 
 ```js
-const execa = require('execa');
+import {execa} from 'execa';
 
 (async () => {
 	const {stdout} = await execa('echo', ['unicorns']);
@@ -41,7 +41,7 @@ const execa = require('execa');
 ### Pipe the child process stdout to the parent
 
 ```js
-const execa = require('execa');
+import {execa} from 'execa';
 
 execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 ```
@@ -49,7 +49,7 @@ execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 ### Handling Errors
 
 ```js
-const execa = require('execa');
+import {execa} from 'execa';
 
 (async () => {
 	// Catching an error
@@ -86,7 +86,7 @@ const execa = require('execa');
 ### Cancelling a spawned process
 
 ```js
-const execa = require('execa');
+import {execa} from 'execa';
 
 (async () => {
 	const subprocess = execa('node');
@@ -108,7 +108,7 @@ const execa = require('execa');
 
 ```js
 try {
-	execa.sync('unknown', ['command']);
+	execaSync('unknown', ['command']);
 } catch (error) {
 	console.log(error);
 	/*
@@ -190,7 +190,7 @@ This is `undefined` if either:
   - the [`all` option](#all-2) is `false` (the default value)
   - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 
-### execa.sync(file, arguments?, options?)
+### execaSync(file, arguments?, options?)
 
 Execute a file synchronously.
 
@@ -275,7 +275,7 @@ The output of the process with `stdout` and `stderr` interleaved.
 
 This is `undefined` if either:
   - the [`all` option](#all-2) is `false` (the default value)
-  - `execa.sync()` was used
+  - `execaSync()` was used
 
 #### failed
 
@@ -582,7 +582,7 @@ List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the
 Gracefully handle failures by using automatic retries and exponential backoff with the [`p-retry`](https://github.com/sindresorhus/p-retry) package:
 
 ```js
-const pRetry = require('p-retry');
+import pRetry from 'p-retry';
 
 const run = async () => {
 	const results = await execa('curl', ['-sSL', 'https://sindresorhus.com/unicorn']);
@@ -599,7 +599,7 @@ const run = async () => {
 Let's say you want to show the output of a child process in real-time while also saving it to a variable.
 
 ```js
-const execa = require('execa');
+import {execa} from 'execa';
 
 const subprocess = execa('echo', ['foo']);
 subprocess.stdout.pipe(process.stdout);
@@ -613,7 +613,7 @@ subprocess.stdout.pipe(process.stdout);
 ### Redirect output to a file
 
 ```js
-const execa = require('execa');
+import {execa} from 'execa';
 
 const subprocess = execa('echo', ['foo'])
 subprocess.stdout.pipe(fs.createWriteStream('stdout.txt'))
@@ -622,7 +622,7 @@ subprocess.stdout.pipe(fs.createWriteStream('stdout.txt'))
 ### Redirect input from a file
 
 ```js
-const execa = require('execa');
+import {execa} from 'execa';
 
 const subprocess = execa('cat')
 fs.createReadStream('stdin.txt').pipe(subprocess.stdin)
@@ -631,7 +631,7 @@ fs.createReadStream('stdin.txt').pipe(subprocess.stdin)
 ### Execute the current package's binary
 
 ```js
-const {getBinPathSync} = require('get-bin-path');
+import {getBinPathSync} from 'get-bin-path';
 
 const binPath = getBinPathSync();
 const subprocess = execa(binPath);

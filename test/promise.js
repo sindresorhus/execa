@@ -1,12 +1,13 @@
-import path from 'path';
+import path from 'node:path';
+import process from 'node:process';
+import {fileURLToPath} from 'node:url';
 import test from 'ava';
-import execa from '..';
+import {execa} from '../index.js';
 
-process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 test('promise methods are not enumerable', t => {
-	const descriptors = Object.getOwnPropertyDescriptors(execa('noop'));
-	// eslint-disable-next-line promise/prefer-await-to-then
+	const descriptors = Object.getOwnPropertyDescriptors(execa('noop.js'));
 	t.false(descriptors.then.enumerable);
 	t.false(descriptors.catch.enumerable);
 	t.false(descriptors.finally.enumerable);
@@ -14,7 +15,7 @@ test('promise methods are not enumerable', t => {
 
 test('finally function is executed on success', async t => {
 	let isCalled = false;
-	const {stdout} = await execa('noop', ['foo']).finally(() => {
+	const {stdout} = await execa('noop.js', ['foo']).finally(() => {
 		isCalled = true;
 	});
 	t.is(isCalled, true);
@@ -23,7 +24,7 @@ test('finally function is executed on success', async t => {
 
 test('finally function is executed on failure', async t => {
 	let isError = false;
-	const {stdout, stderr} = await t.throwsAsync(execa('exit', ['2']).finally(() => {
+	const {stdout, stderr} = await t.throwsAsync(execa('exit.js', ['2']).finally(() => {
 		isError = true;
 	}));
 	t.is(isError, true);
@@ -32,14 +33,14 @@ test('finally function is executed on failure', async t => {
 });
 
 test('throw in finally function bubbles up on success', async t => {
-	const {message} = await t.throwsAsync(execa('noop', ['foo']).finally(() => {
+	const {message} = await t.throwsAsync(execa('noop.js', ['foo']).finally(() => {
 		throw new Error('called');
 	}));
 	t.is(message, 'called');
 });
 
 test('throw in finally bubbles up on error', async t => {
-	const {message} = await t.throwsAsync(execa('exit', ['2']).finally(() => {
+	const {message} = await t.throwsAsync(execa('exit.js', ['2']).finally(() => {
 		throw new Error('called');
 	}));
 	t.is(message, 'called');

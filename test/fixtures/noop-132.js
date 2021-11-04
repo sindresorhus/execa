@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-'use strict';
+import process from 'node:process';
 
 process.stdout.write('1');
 process.stderr.write('3');

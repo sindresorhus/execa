@@ -1,20 +1,23 @@
-import path from 'path';
+import path from 'node:path';
+import process from 'node:process';
+import {fileURLToPath} from 'node:url';
 import test from 'ava';
 
-process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 // Can't use `test.before`, because `ava` needs `Promise`.
-// Can't use `import(…)` either, because `execa` is not an ES Module.
 const nativePromise = Promise;
 global.Promise = class BrokenPromise {
 	then() {
 		throw new Error('error');
 	}
 };
-const execa = require('..');
+// eslint-disable-next-line node/no-unsupported-features/es-syntax
+const {execa} = await import('../index.js');
+
 global.Promise = nativePromise;
 
 test('should work with third-party Promise', async t => {
-	const {stdout} = await execa('noop', ['foo']);
+	const {stdout} = await execa('noop.js', ['foo']);
 	t.is(stdout, 'foo');
 });

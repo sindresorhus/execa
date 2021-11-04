@@ -1,13 +1,22 @@
+import {Buffer} from 'node:buffer';
+// For some reason a default import of `process` causes
+// `process.stdin`, `process.stderr`, and `process.stdout`
+// to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
+import * as process from 'node:process';
+import {Readable as ReadableStream} from 'node:stream';
 import {expectType, expectError} from 'tsd';
-import {Readable as ReadableStream} from 'stream';
-import execa = require('.');
 import {
+	execa,
+	execaSync,
+	command,
+	commandSync,
+	node,
 	ExecaReturnValue,
 	ExecaChildProcess,
 	ExecaError,
 	ExecaSyncReturnValue,
-	ExecaSyncError
-} from '.';
+	ExecaSyncError,
+} from './index.js';
 
 try {
 	const execaPromise = execa('unicorns');
@@ -46,7 +55,7 @@ try {
 }
 
 try {
-	const unicornsResult = execa.sync('unicorns');
+	const unicornsResult = execaSync('unicorns');
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number>(unicornsResult.exitCode);
@@ -77,6 +86,7 @@ try {
 	expectType<string | undefined>(execaError.originalMessage);
 }
 
+/* eslint-disable @typescript-eslint/no-floating-promises */
 execa('unicorns', {cleanup: false});
 execa('unicorns', {preferLocal: false});
 execa('unicorns', {localDir: '.'});
@@ -111,13 +121,14 @@ execa('unicorns', {reject: false});
 execa('unicorns', {stripFinalNewline: false});
 execa('unicorns', {extendEnv: false});
 execa('unicorns', {cwd: '.'});
+// eslint-disable-next-line @typescript-eslint/naming-convention
 execa('unicorns', {env: {PATH: ''}});
 execa('unicorns', {argv0: ''});
 execa('unicorns', {stdio: 'pipe'});
 execa('unicorns', {stdio: 'ignore'});
 execa('unicorns', {stdio: 'inherit'});
 execa('unicorns', {
-	stdio: ['pipe', 'ipc', 'ignore', 'inherit', process.stdin, 1, undefined]
+	stdio: ['pipe', 'ipc', 'ignore', 'inherit', process.stdin, 1, undefined],
 });
 execa('unicorns', {serialization: 'advanced'});
 execa('unicorns', {detached: true});
@@ -131,6 +142,7 @@ execa('unicorns', {killSignal: 'SIGTERM'});
 execa('unicorns', {killSignal: 9});
 execa('unicorns', {windowsVerbatimArguments: true});
 execa('unicorns', {windowsHide: false});
+/* eslint-enable @typescript-eslint/no-floating-promises */
 execa('unicorns').kill();
 execa('unicorns').kill('SIGKILL');
 execa('unicorns').kill(undefined);
@@ -139,55 +151,55 @@ execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: false});
 execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: 42});
 execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: undefined});
 
-expectType<ExecaChildProcess<string>>(execa('unicorns'));
-expectType<ExecaReturnValue<string>>(await execa('unicorns'));
-expectType<ExecaReturnValue<string>>(
-	await execa('unicorns', {encoding: 'utf8'})
+expectType<ExecaChildProcess>(execa('unicorns'));
+expectType<ExecaReturnValue>(await execa('unicorns'));
+expectType<ExecaReturnValue>(
+	await execa('unicorns', {encoding: 'utf8'}),
 );
 expectType<ExecaReturnValue<Buffer>>(await execa('unicorns', {encoding: null}));
-expectType<ExecaReturnValue<string>>(
-	await execa('unicorns', ['foo'], {encoding: 'utf8'})
+expectType<ExecaReturnValue>(
+	await execa('unicorns', ['foo'], {encoding: 'utf8'}),
 );
 expectType<ExecaReturnValue<Buffer>>(
-	await execa('unicorns', ['foo'], {encoding: null})
+	await execa('unicorns', ['foo'], {encoding: null}),
 );
 
-expectType<ExecaSyncReturnValue<string>>(execa.sync('unicorns'));
-expectType<ExecaSyncReturnValue<string>>(
-	execa.sync('unicorns', {encoding: 'utf8'})
+expectType<ExecaSyncReturnValue>(execaSync('unicorns'));
+expectType<ExecaSyncReturnValue>(
+	execaSync('unicorns', {encoding: 'utf8'}),
 );
 expectType<ExecaSyncReturnValue<Buffer>>(
-	execa.sync('unicorns', {encoding: null})
+	execaSync('unicorns', {encoding: null}),
 );
-expectType<ExecaSyncReturnValue<string>>(
-	execa.sync('unicorns', ['foo'], {encoding: 'utf8'})
+expectType<ExecaSyncReturnValue>(
+	execaSync('unicorns', ['foo'], {encoding: 'utf8'}),
 );
 expectType<ExecaSyncReturnValue<Buffer>>(
-	execa.sync('unicorns', ['foo'], {encoding: null})
+	execaSync('unicorns', ['foo'], {encoding: null}),
 );
 
-expectType<ExecaChildProcess<string>>(execa.command('unicorns'));
-expectType<ExecaReturnValue<string>>(await execa.command('unicorns'));
-expectType<ExecaReturnValue<string>>(await execa.command('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(await execa.command('unicorns', {encoding: null}));
-expectType<ExecaReturnValue<string>>(await execa.command('unicorns foo', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(await execa.command('unicorns foo', {encoding: null}));
+expectType<ExecaChildProcess>(command('unicorns'));
+expectType<ExecaReturnValue>(await command('unicorns'));
+expectType<ExecaReturnValue>(await command('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await command('unicorns', {encoding: null}));
+expectType<ExecaReturnValue>(await command('unicorns foo', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await command('unicorns foo', {encoding: null}));
 
-expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns'));
-expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns', {encoding: 'utf8'}));
-expectType<ExecaSyncReturnValue<Buffer>>(execa.commandSync('unicorns', {encoding: null}));
-expectType<ExecaSyncReturnValue<string>>(execa.commandSync('unicorns foo', {encoding: 'utf8'}));
-expectType<ExecaSyncReturnValue<Buffer>>(execa.commandSync('unicorns foo', {encoding: null}));
+expectType<ExecaSyncReturnValue>(commandSync('unicorns'));
+expectType<ExecaSyncReturnValue>(commandSync('unicorns', {encoding: 'utf8'}));
+expectType<ExecaSyncReturnValue<Buffer>>(commandSync('unicorns', {encoding: null}));
+expectType<ExecaSyncReturnValue>(commandSync('unicorns foo', {encoding: 'utf8'}));
+expectType<ExecaSyncReturnValue<Buffer>>(commandSync('unicorns foo', {encoding: null}));
 
-expectType<ExecaChildProcess<string>>(execa.node('unicorns'));
-expectType<ExecaReturnValue<string>>(await execa.node('unicorns'));
-expectType<ExecaReturnValue<string>>(
-	await execa.node('unicorns', {encoding: 'utf8'})
+expectType<ExecaChildProcess>(node('unicorns'));
+expectType<ExecaReturnValue>(await node('unicorns'));
+expectType<ExecaReturnValue>(
+	await node('unicorns', {encoding: 'utf8'}),
 );
-expectType<ExecaReturnValue<Buffer>>(await execa.node('unicorns', {encoding: null}));
-expectType<ExecaReturnValue<string>>(
-	await execa.node('unicorns', ['foo'], {encoding: 'utf8'})
+expectType<ExecaReturnValue<Buffer>>(await node('unicorns', {encoding: null}));
+expectType<ExecaReturnValue>(
+	await node('unicorns', ['foo'], {encoding: 'utf8'}),
 );
 expectType<ExecaReturnValue<Buffer>>(
-	await execa.node('unicorns', ['foo'], {encoding: null})
+	await node('unicorns', ['foo'], {encoding: null}),
 );

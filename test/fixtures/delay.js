@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-'use strict';
+import process from 'node:process';
 
 setTimeout(() => {}, Number(process.argv[2]));

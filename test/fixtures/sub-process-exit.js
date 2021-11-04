@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-'use strict';
-const execa = require('../..');
+import process from 'node:process';
+import {execa} from '../../index.js';
 
 const cleanup = process.argv[2] === 'true';
 const detached = process.argv[3] === 'true';
 
 const runChild = async () => {
 	try {
-		await execa('node', ['./test/fixtures/noop'], {cleanup, detached});
+		await execa('node', ['./test/fixtures/noop.js'], {cleanup, detached});
 	} catch (error) {
 		console.error(error);
 		process.exit(1);

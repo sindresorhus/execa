@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-'use strict';
+import process from 'node:process';
+
 const output = process.argv[2] || 'stdout';
 const bytes = Number(process.argv[3] || 1e7);
 

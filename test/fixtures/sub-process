@@ -1,8 +1,0 @@
-#!/usr/bin/env node
-'use strict';
-const execa = require('../..');
-
-const cleanup = process.argv[2] === 'true';
-const detached = process.argv[3] === 'true';
-const subprocess = execa('node', ['./test/fixtures/forever'], {cleanup, detached});
-process.send(subprocess.pid);

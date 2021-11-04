@@ -1,4 +1,5 @@
 #!/usr/bin/env node
-'use strict';
+import process from 'node:process';
+
 console.error(process.argv[2]);
 process.exit(2);

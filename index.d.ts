@@ -572,7 +572,4 @@ export function node(
 	options?: Options<null>
 ): ExecaChildProcess<Buffer>;
 export function node(scriptPath: string, options?: Options): ExecaChildProcess;
-export function node(
-	scriptPath: string,
-	options?: Options<null>
-): ExecaChildProcess<Buffer>;
+export function node(scriptPath: string, options?: Options<null>): ExecaChildProcess<Buffer>;

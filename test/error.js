@@ -2,6 +2,7 @@ import path from 'node:path';
 import process from 'node:process';
 import childProcess from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {promisify} from 'node:util';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
 
@@ -134,17 +135,10 @@ test('result.killed is false on process error, in sync mode', t => {
 
 if (process.platform === 'darwin') {
 	test('sanity check: child_process.exec also has killed.false if killed indirectly', async t => {
-		const promise = new Promise((resolve, reject) => {
-			const {pid} = childProcess.exec('noop', error => {
-				if (error) {
-					reject(error);
-				} else {
-					resolve();
-				}
-			});
+		const pExec = promisify(childProcess.exec);
+		const promise = pExec('noop.js');
 
-			process.kill(pid, 'SIGINT');
-		});
+		process.kill(promise.child.pid, 'SIGINT');
 
 		const error = await t.throwsAsync(promise);
 		t.truthy(error);

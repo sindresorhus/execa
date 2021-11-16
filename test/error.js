@@ -77,6 +77,8 @@ test('error.shortMessage does not contain stdout/stderr', async t => {
 
 test('Original error.message is kept', async t => {
 	const {originalMessage} = await t.throwsAsync(execa('noop.js', {cwd: 1}));
+	// On Node >=14.18.0, the error message is
+	// `The "options.cwd" property must be of type string or an instance of Buffer or URL. Received type number (1)`
 	t.true(originalMessage.startsWith('The "options.cwd" property must be of type string'));
 	t.true(originalMessage.includes('. Received type number'));
 });

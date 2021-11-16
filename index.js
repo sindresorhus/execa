@@ -61,7 +61,7 @@ const handleArguments = (file, args, options = {}) => {
 
 const handleOutput = (options, value, error) => {
 	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
-		// When `execa.sync()` errors, we normalize it to '' to mimic `execa()`
+		// When `execaSync()` errors, we normalize it to '' to mimic `execa()`
 		return error === undefined ? undefined : '';
 	}
 

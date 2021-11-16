@@ -333,7 +333,7 @@ export interface ExecaReturnValue<StdoutErrorType = string>
 
 		This is `undefined` if either:
 		- the `all` option is `false` (default value)
-		- `execa.sync()` was used
+		- `execaSync()` was used
 		*/
 	all?: StdoutErrorType;
 
@@ -373,7 +373,7 @@ export interface ExecaError<StdoutErrorType = string>
 
 		This is `undefined` if either:
 		- the `all` option is `false` (default value)
-		- `execa.sync()` was used
+		- `execaSync()` was used
 		*/
 	all?: StdoutErrorType;
 

@@ -198,21 +198,21 @@ Execute a file synchronously.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
-### execa.command(command, options?)
+### execaCommand(command, options?)
 
-Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
+Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
 
 If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
-### execa.commandSync(command, options?)
+### execaCommandSync(command, options?)
 
-Same as [`execa.command()`](#execacommand-command-options) but synchronous.
+Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
-### execa.node(scriptPath, arguments?, options?)
+### execaNode(scriptPath, arguments?, options?)
 
 Execute a Node.js script as a child process.
 
@@ -240,7 +240,7 @@ Type: `string`
 
 The file and arguments that were run, for logging purposes.
 
-This is not escaped and should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execa.command()`](#execacommandcommand-options).
+This is not escaped and should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
 
 #### escapedCommand
 
@@ -249,7 +249,7 @@ Type: `string`
 Same as [`command`](#command) but escaped.
 
 This is meant to be copy and pasted into a shell, for debugging purposes.
-Since the escaping is fairly basic, this should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execa.command()`](#execacommandcommand-options).
+Since the escaping is fairly basic, this should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
 
 #### exitCode
 
@@ -483,7 +483,7 @@ Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_
 Type: `string`\
 Default: `'json'`
 
-Specify the kind of serialization used for sending messages between processes when using the [`stdio: 'ipc'`](#stdio) option or [`execa.node()`](#execanodescriptpath-arguments-options):
+Specify the kind of serialization used for sending messages between processes when using the [`stdio: 'ipc'`](#stdio) option or [`execaNode()`](#execanodescriptpath-arguments-options):
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 

@@ -224,17 +224,17 @@ export const execaSync = (file, args, options) => {
 	};
 };
 
-export const command = (command, options) => {
+export const execaCommand = (command, options) => {
 	const [file, ...args] = parseCommand(command);
 	return execa(file, args, options);
 };
 
-export const commandSync = (command, options) => {
+export const execaCommandSync = (command, options) => {
 	const [file, ...args] = parseCommand(command);
 	return execaSync(file, args, options);
 };
 
-export const node = (scriptPath, args, options = {}) => {
+export const execaNode = (scriptPath, args, options = {}) => {
 	if (args && !Array.isArray(args) && typeof args === 'object') {
 		options = args;
 		args = [];

@@ -2,7 +2,7 @@ import path from 'node:path';
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import test from 'ava';
-import {execa, execaSync, command as execaCommand, commandSync as execaCommandSync} from '../index.js';
+import {execa, execaSync, execaCommand, execaCommandSync} from '../index.js';
 
 process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 

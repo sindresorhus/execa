@@ -3,7 +3,7 @@ import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import test from 'ava';
 import pEvent from 'p-event';
-import {node as execaNode} from '../index.js';
+import {execaNode} from '../index.js';
 
 process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 

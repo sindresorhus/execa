@@ -135,7 +135,7 @@ export interface CommonOptions<EncodingType> {
 	readonly stdio?: 'pipe' | 'ignore' | 'inherit' | readonly StdioOption[];
 
 	/**
-	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execa.node()`:
+	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:
 		- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 		- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 
@@ -253,7 +253,7 @@ export interface ExecaReturnBase<StdoutStderrType> {
 	/**
 	The file and arguments that were run, for logging purposes.
 
-	This is not escaped and should not be executed directly as a process, including using `execa()` or `execa.command()`.
+	This is not escaped and should not be executed directly as a process, including using `execa()` or `execaCommand()`.
 	*/
 	command: string;
 
@@ -261,7 +261,7 @@ export interface ExecaReturnBase<StdoutStderrType> {
 	Same as `command` but escaped.
 
 	This is meant to be copy and pasted into a shell, for debugging purposes.
-	Since the escaping is fairly basic, this should not be executed directly as a process, including using `execa()` or `execa.command()`.
+	Since the escaping is fairly basic, this should not be executed directly as a process, including using `execa()` or `execaCommand()`.
 	*/
 	escapedCommand: string;
 
@@ -432,7 +432,7 @@ Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
 @example
 ```
-import execa = require('execa');
+import {execa} from 'execa';
 
 (async () => {
 	const {stdout} = await execa('echo', ['unicorns']);
@@ -498,7 +498,7 @@ export function execaSync(
 ): ExecaSyncReturnValue<Buffer>;
 
 /**
-Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execa.command('echo unicorns')`.
+Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
 
 If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 
@@ -509,26 +509,26 @@ The `shell` option must be used if the `command` uses shell-specific features (f
 
 @example
 ```
-import execa = require('execa');
+import {execaCommand} from 'execa';
 
 (async () => {
-	const {stdout} = await execa.command('echo unicorns');
+	const {stdout} = await execaCommand('echo unicorns');
 	console.log(stdout);
 	//=> 'unicorns'
 })();
 ```
 */
-export function command(command: string, options?: Options): ExecaChildProcess;
-export function command(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+export function execaCommand(command: string, options?: Options): ExecaChildProcess;
+export function execaCommand(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
 /**
-Same as `execa.command()` but synchronous.
+Same as `execaCommand()` but synchronous.
 
 @param command - The program/script to execute and its arguments.
 @returns A result `Object` with `stdout` and `stderr` properties.
 */
-export function commandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
-export function commandSync(command: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
+export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
+export function execaCommandSync(command: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
 
 /**
 Execute a Node.js script as a child process.
@@ -542,15 +542,15 @@ Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`chil
 @param arguments - Arguments to pass to `scriptPath` on execution.
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 */
-export function node(
+export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
 	options?: NodeOptions
 ): ExecaChildProcess;
-export function node(
+export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
 	options?: Options<null>
 ): ExecaChildProcess<Buffer>;
-export function node(scriptPath: string, options?: Options): ExecaChildProcess;
-export function node(scriptPath: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+export function execaNode(scriptPath: string, options?: Options): ExecaChildProcess;
+export function execaNode(scriptPath: string, options?: Options<null>): ExecaChildProcess<Buffer>;

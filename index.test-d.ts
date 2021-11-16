@@ -8,9 +8,9 @@ import {expectType, expectError} from 'tsd';
 import {
 	execa,
 	execaSync,
-	command,
-	commandSync,
-	node,
+	execaCommand,
+	execaCommandSync,
+	execaNode,
 	ExecaReturnValue,
 	ExecaChildProcess,
 	ExecaError,
@@ -178,28 +178,28 @@ expectType<ExecaSyncReturnValue<Buffer>>(
 	execaSync('unicorns', ['foo'], {encoding: null}),
 );
 
-expectType<ExecaChildProcess>(command('unicorns'));
-expectType<ExecaReturnValue>(await command('unicorns'));
-expectType<ExecaReturnValue>(await command('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(await command('unicorns', {encoding: null}));
-expectType<ExecaReturnValue>(await command('unicorns foo', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<Buffer>>(await command('unicorns foo', {encoding: null}));
+expectType<ExecaChildProcess>(execaCommand('unicorns'));
+expectType<ExecaReturnValue>(await execaCommand('unicorns'));
+expectType<ExecaReturnValue>(await execaCommand('unicorns', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await execaCommand('unicorns', {encoding: null}));
+expectType<ExecaReturnValue>(await execaCommand('unicorns foo', {encoding: 'utf8'}));
+expectType<ExecaReturnValue<Buffer>>(await execaCommand('unicorns foo', {encoding: null}));
 
-expectType<ExecaSyncReturnValue>(commandSync('unicorns'));
-expectType<ExecaSyncReturnValue>(commandSync('unicorns', {encoding: 'utf8'}));
-expectType<ExecaSyncReturnValue<Buffer>>(commandSync('unicorns', {encoding: null}));
-expectType<ExecaSyncReturnValue>(commandSync('unicorns foo', {encoding: 'utf8'}));
-expectType<ExecaSyncReturnValue<Buffer>>(commandSync('unicorns foo', {encoding: null}));
+expectType<ExecaSyncReturnValue>(execaCommandSync('unicorns'));
+expectType<ExecaSyncReturnValue>(execaCommandSync('unicorns', {encoding: 'utf8'}));
+expectType<ExecaSyncReturnValue<Buffer>>(execaCommandSync('unicorns', {encoding: null}));
+expectType<ExecaSyncReturnValue>(execaCommandSync('unicorns foo', {encoding: 'utf8'}));
+expectType<ExecaSyncReturnValue<Buffer>>(execaCommandSync('unicorns foo', {encoding: null}));
 
-expectType<ExecaChildProcess>(node('unicorns'));
-expectType<ExecaReturnValue>(await node('unicorns'));
+expectType<ExecaChildProcess>(execaNode('unicorns'));
+expectType<ExecaReturnValue>(await execaNode('unicorns'));
 expectType<ExecaReturnValue>(
-	await node('unicorns', {encoding: 'utf8'}),
+	await execaNode('unicorns', {encoding: 'utf8'}),
 );
-expectType<ExecaReturnValue<Buffer>>(await node('unicorns', {encoding: null}));
+expectType<ExecaReturnValue<Buffer>>(await execaNode('unicorns', {encoding: null}));
 expectType<ExecaReturnValue>(
-	await node('unicorns', ['foo'], {encoding: 'utf8'}),
+	await execaNode('unicorns', ['foo'], {encoding: 'utf8'}),
 );
 expectType<ExecaReturnValue<Buffer>>(
-	await node('unicorns', ['foo'], {encoding: null}),
+	await execaNode('unicorns', ['foo'], {encoding: null}),
 );

@@ -3,7 +3,7 @@ import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import test from 'ava';
 import pEvent from 'p-event';
-import * as execa from '../index.js';
+import {node as execaNode} from '../index.js';
 
 process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
@@ -11,7 +11,7 @@ async function inspectMacro(t, input) {
 	const originalArgv = process.execArgv;
 	process.execArgv = [input, '-e'];
 	try {
-		const subprocess = execa.node('console.log("foo")', {
+		const subprocess = execaNode('console.log("foo")', {
 			reject: false,
 		});
 
@@ -25,12 +25,12 @@ async function inspectMacro(t, input) {
 }
 
 test('node()', async t => {
-	const {exitCode} = await execa.node('test/fixtures/noop.js');
+	const {exitCode} = await execaNode('test/fixtures/noop.js');
 	t.is(exitCode, 0);
 });
 
 test('node pipe stdout', async t => {
-	const {stdout} = await execa.node('test/fixtures/noop.js', ['foo'], {
+	const {stdout} = await execaNode('test/fixtures/noop.js', ['foo'], {
 		stdout: 'pipe',
 	});
 
@@ -38,7 +38,7 @@ test('node pipe stdout', async t => {
 });
 
 test('node correctly use nodePath', async t => {
-	const {stdout} = await execa.node(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', {
+	const {stdout} = await execaNode(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', {
 		stdout: 'pipe',
 		nodePath: process.platform === 'win32' ? 'cmd.exe' : 'bash',
 		nodeOptions: process.platform === 'win32' ? ['/c'] : [],
@@ -48,7 +48,7 @@ test('node correctly use nodePath', async t => {
 });
 
 test('node pass on nodeOptions', async t => {
-	const {stdout} = await execa.node('console.log("foo")', {
+	const {stdout} = await execaNode('console.log("foo")', {
 		stdout: 'pipe',
 		nodeOptions: ['-e'],
 	});
@@ -83,7 +83,7 @@ test.serial(
 test.serial(
 	'node should not remove --inspect when passed through nodeOptions',
 	async t => {
-		const {stdout, stderr} = await execa.node('console.log("foo")', {
+		const {stdout, stderr} = await execaNode('console.log("foo")', {
 			reject: false,
 			nodeOptions: ['--inspect', '-e'],
 		});
@@ -94,7 +94,7 @@ test.serial(
 );
 
 test('node\'s forked script has a communication channel', async t => {
-	const subprocess = execa.node('test/fixtures/send.js');
+	const subprocess = execaNode('test/fixtures/send.js');
 	await pEvent(subprocess, 'message');
 
 	subprocess.send('ping');

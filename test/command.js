@@ -2,15 +2,15 @@ import path from 'node:path';
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import test from 'ava';
-import * as execa from '../index.js';
+import {execa, execaSync, command as execaCommand, commandSync as execaCommandSync} from '../index.js';
 
 process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 const command = async (t, expected, ...args) => {
-	const {command: failCommand} = await t.throwsAsync(execa.execa('fail.js', args));
+	const {command: failCommand} = await t.throwsAsync(execa('fail.js', args));
 	t.is(failCommand, `fail.js${expected}`);
 
-	const {command} = await execa.execa('noop.js', args);
+	const {command} = await execa('noop.js', args);
 	t.is(command, `noop.js${expected}`);
 };
 
@@ -21,18 +21,18 @@ test(command, ' baz quz', 'baz', 'quz');
 test(command, '');
 
 const testEscapedCommand = async (t, expected, args) => {
-	const {escapedCommand: failEscapedCommand} = await t.throwsAsync(execa.execa('fail.js', args));
+	const {escapedCommand: failEscapedCommand} = await t.throwsAsync(execa('fail.js', args));
 	t.is(failEscapedCommand, `fail.js ${expected}`);
 
 	const {escapedCommand: failEscapedCommandSync} = t.throws(() => {
-		execa.execaSync('fail.js', args);
+		execaSync('fail.js', args);
 	});
 	t.is(failEscapedCommandSync, `fail.js ${expected}`);
 
-	const {escapedCommand} = await execa.execa('noop.js', args);
+	const {escapedCommand} = await execa('noop.js', args);
 	t.is(escapedCommand, `noop.js ${expected}`);
 
-	const {escapedCommand: escapedCommandSync} = execa.execaSync('noop.js', args);
+	const {escapedCommand: escapedCommandSync} = execaSync('noop.js', args);
 	t.is(escapedCommandSync, `noop.js ${expected}`);
 };
 
@@ -44,46 +44,46 @@ test(testEscapedCommand, '"\\"foo\\""', ['"foo"']);
 test(testEscapedCommand, '"*"', ['*']);
 
 test('allow commands with spaces and no array arguments', async t => {
-	const {stdout} = await execa.execa('command with space.js');
+	const {stdout} = await execa('command with space.js');
 	t.is(stdout, '');
 });
 
 test('allow commands with spaces and array arguments', async t => {
-	const {stdout} = await execa.execa('command with space.js', ['foo', 'bar']);
+	const {stdout} = await execa('command with space.js', ['foo', 'bar']);
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.command()', async t => {
-	const {stdout} = await execa.command('node test/fixtures/echo.js foo bar');
+test('execaCommand()', async t => {
+	const {stdout} = await execaCommand('node test/fixtures/echo.js foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.command() ignores consecutive spaces', async t => {
-	const {stdout} = await execa.command('node test/fixtures/echo.js foo    bar');
+test('execaCommand() ignores consecutive spaces', async t => {
+	const {stdout} = await execaCommand('node test/fixtures/echo.js foo    bar');
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.command() allows escaping spaces in commands', async t => {
-	const {stdout} = await execa.command('command\\ with\\ space.js foo bar');
+test('execaCommand() allows escaping spaces in commands', async t => {
+	const {stdout} = await execaCommand('command\\ with\\ space.js foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.command() allows escaping spaces in arguments', async t => {
-	const {stdout} = await execa.command('node test/fixtures/echo.js foo\\ bar');
+test('execaCommand() allows escaping spaces in arguments', async t => {
+	const {stdout} = await execaCommand('node test/fixtures/echo.js foo\\ bar');
 	t.is(stdout, 'foo bar');
 });
 
-test('execa.command() escapes other whitespaces', async t => {
-	const {stdout} = await execa.command('node test/fixtures/echo.js foo\tbar');
+test('execaCommand() escapes other whitespaces', async t => {
+	const {stdout} = await execaCommand('node test/fixtures/echo.js foo\tbar');
 	t.is(stdout, 'foo\tbar');
 });
 
-test('execa.command() trims', async t => {
-	const {stdout} = await execa.command('  node test/fixtures/echo.js foo bar  ');
+test('execaCommand() trims', async t => {
+	const {stdout} = await execaCommand('  node test/fixtures/echo.js foo bar  ');
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execa.commandSync()', t => {
-	const {stdout} = execa.commandSync('node test/fixtures/echo.js foo bar');
+test('execaCommandSync()', t => {
+	const {stdout} = execaCommandSync('node test/fixtures/echo.js foo bar');
 	t.is(stdout, 'foo\nbar');
 });

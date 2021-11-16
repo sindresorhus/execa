@@ -107,6 +107,8 @@ import {execa} from 'execa';
 ### Catching an error with the sync method
 
 ```js
+import {execaSync} from 'execa';
+
 try {
 	execaSync('unknown', ['command']);
 } catch (error) {

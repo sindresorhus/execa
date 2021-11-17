@@ -48,7 +48,7 @@ test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'
 test(stdioMacro, {stdin: 0, stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 
 const forkMacro = (...args) => macro(...args, normalizeStdioNode);
-forkMacro.title = macroTitle('execa.fork()');
+forkMacro.title = macroTitle('execaNode()');
 
 test(forkMacro, undefined, [undefined, undefined, undefined, 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);

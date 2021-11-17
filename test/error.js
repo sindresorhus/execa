@@ -6,6 +6,8 @@ import {promisify} from 'node:util';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
 
+const pExec = promisify(childProcess.exec);
+
 process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 const TIMEOUT_REGEXP = /timed out after/;
@@ -137,7 +139,6 @@ test('result.killed is false on process error, in sync mode', t => {
 
 if (process.platform === 'darwin') {
 	test('sanity check: child_process.exec also has killed.false if killed indirectly', async t => {
-		const pExec = promisify(childProcess.exec);
 		const promise = pExec('noop.js');
 
 		process.kill(promise.child.pid, 'SIGINT');

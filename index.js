@@ -72,7 +72,7 @@ const handleOutput = (options, value, error) => {
 	return value;
 };
 
-export const execa = (file, args, options) => {
+export function execa(file, args, options) {
 	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
 	const escapedCommand = getEscapedCommand(file, args);
@@ -159,9 +159,9 @@ export const execa = (file, args, options) => {
 	spawned.all = makeAllStream(spawned, parsed.options);
 
 	return mergePromise(spawned, handlePromiseOnce);
-};
+}
 
-export const execaSync = (file, args, options) => {
+export function execaSync(file, args, options) {
 	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
 	const escapedCommand = getEscapedCommand(file, args);
@@ -222,19 +222,19 @@ export const execaSync = (file, args, options) => {
 		isCanceled: false,
 		killed: false,
 	};
-};
+}
 
-export const execaCommand = (command, options) => {
+export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);
 	return execa(file, args, options);
-};
+}
 
-export const execaCommandSync = (command, options) => {
+export function execaCommandSync(command, options) {
 	const [file, ...args] = parseCommand(command);
 	return execaSync(file, args, options);
-};
+}
 
-export const execaNode = (scriptPath, args, options = {}) => {
+export function execaNode(scriptPath, args, options = {}) {
 	if (args && !Array.isArray(args) && typeof args === 'object') {
 		options = args;
 		args = [];
@@ -264,4 +264,4 @@ export const execaNode = (scriptPath, args, options = {}) => {
 			shell: false,
 		},
 	);
-};
+}

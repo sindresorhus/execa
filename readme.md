@@ -22,8 +22,8 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 
 ## Install
 
-```
-$ npm install execa
+```sh
+npm install execa
 ```
 
 ## Usage

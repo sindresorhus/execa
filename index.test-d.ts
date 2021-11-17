@@ -36,8 +36,8 @@ try {
 	expectType<boolean>(unicornsResult.killed);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
-} catch (error) { // eslint-disable-line @typescript-eslint/no-implicit-any-catch
-	const execaError: ExecaError = error;
+} catch (error: unknown) {
+	const execaError = error as ExecaError;
 
 	expectType<string>(execaError.message);
 	expectType<number>(execaError.exitCode);
@@ -68,8 +68,8 @@ try {
 	expectType<boolean>(unicornsResult.killed);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
-} catch (error) { // eslint-disable-line @typescript-eslint/no-implicit-any-catch
-	const execaError: ExecaSyncError = error;
+} catch (error: unknown) {
+	const execaError = error as ExecaSyncError;
 
 	expectType<string>(execaError.message);
 	expectType<number>(execaError.exitCode);

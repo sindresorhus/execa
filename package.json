@@ -10,11 +10,11 @@
 		"email": "sindresorhus@gmail.com",
 		"url": "https://sindresorhus.com"
 	},
+	"type": "module",
+	"exports": "./index.js",
 	"engines": {
 		"node": "^12.20.0 || ^14.13.1 || >=16.0.0"
 	},
-	"type": "module",
-	"exports": "./index.js",
 	"scripts": {
 		"test": "xo && c8 ava && tsd"
 	},
@@ -42,24 +42,24 @@
 	],
 	"dependencies": {
 		"cross-spawn": "^7.0.3",
-		"get-stream": "^6.0.0",
+		"get-stream": "^6.0.1",
 		"human-signals": "^3.0.1",
 		"is-stream": "^3.0.0",
 		"merge-stream": "^2.0.0",
 		"npm-run-path": "^5.0.1",
 		"onetime": "^6.0.0",
-		"signal-exit": "^3.0.3",
+		"signal-exit": "^3.0.5",
 		"strip-final-newline": "^3.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^16.11.7",
 		"ava": "^3.15.0",
 		"c8": "^7.10.0",
-		"get-node": "^11.0.1",
+		"get-node": "^12.0.0",
 		"is-running": "^2.1.0",
-		"p-event": "^4.2.0",
-		"tempfile": "^3.0.0",
-		"tsd": "^0.13.1",
+		"p-event": "^5.0.1",
+		"tempfile": "^4.0.0",
+		"tsd": "^0.18.0",
 		"xo": "^0.46.4"
 	},
 	"c8": {

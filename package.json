@@ -11,10 +11,12 @@
 		"url": "https://sindresorhus.com"
 	},
 	"engines": {
-		"node": ">=10"
+		"node": "^12.20.0 || ^14.13.1 || >=16.0.0"
 	},
+	"type": "module",
+	"exports": "./index.js",
 	"scripts": {
-		"test": "xo && nyc ava && tsd"
+		"test": "xo && c8 ava && tsd"
 	},
 	"files": [
 		"index.js",
@@ -41,26 +43,26 @@
 	"dependencies": {
 		"cross-spawn": "^7.0.3",
 		"get-stream": "^6.0.0",
-		"human-signals": "^2.1.0",
-		"is-stream": "^2.0.0",
+		"human-signals": "^3.0.1",
+		"is-stream": "^3.0.0",
 		"merge-stream": "^2.0.0",
-		"npm-run-path": "^4.0.1",
-		"onetime": "^5.1.2",
+		"npm-run-path": "^5.0.1",
+		"onetime": "^6.0.0",
 		"signal-exit": "^3.0.3",
-		"strip-final-newline": "^2.0.0"
+		"strip-final-newline": "^3.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "^14.14.10",
-		"ava": "^2.4.0",
+		"@types/node": "^16.11.7",
+		"ava": "^3.15.0",
+		"c8": "^7.10.0",
 		"get-node": "^11.0.1",
 		"is-running": "^2.1.0",
-		"nyc": "^15.1.0",
 		"p-event": "^4.2.0",
 		"tempfile": "^3.0.0",
 		"tsd": "^0.13.1",
-		"xo": "^0.35.0"
+		"xo": "^0.46.4"
 	},
-	"nyc": {
+	"c8": {
 		"reporter": [
 			"text",
 			"lcov"

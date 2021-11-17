@@ -1,4 +1,2 @@
 #!/usr/bin/env node
-'use strict';
-
 setTimeout(() => {}, 1e8);

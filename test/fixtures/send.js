@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-'use strict';
+import process from 'node:process';
+
 process.on('message', message => {
 	if (message === 'ping') {
 		process.send('pong');
@@ -7,3 +8,5 @@ process.on('message', message => {
 		throw new Error('Receive wrong message');
 	}
 });
+
+process.send('');

@@ -1,20 +1,18 @@
-import path from 'path';
+import path from 'node:path';
+import process from 'node:process';
+import {fileURLToPath} from 'node:url';
 import test from 'ava';
+// The helper module overrides Promise on import so has to be imported before `execa`.
+// Can't use top-level await (TLA) + `import(…)` since Node.js 12 doesn't support TLA.
+import {restorePromise} from './helpers/override-promise.js';
+// eslint-disable-next-line import/order
+import {execa} from '../index.js';
 
-process.env.PATH = path.join(__dirname, 'fixtures') + path.delimiter + process.env.PATH;
+restorePromise();
 
-// Can't use `test.before`, because `ava` needs `Promise`.
-// Can't use `import(…)` either, because `execa` is not an ES Module.
-const nativePromise = Promise;
-global.Promise = class BrokenPromise {
-	then() {
-		throw new Error('error');
-	}
-};
-const execa = require('..');
-global.Promise = nativePromise;
+process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 test('should work with third-party Promise', async t => {
-	const {stdout} = await execa('noop', ['foo']);
+	const {stdout} = await execa('noop.js', ['foo']);
 	t.is(stdout, 'foo');
 });

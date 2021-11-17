@@ -1,3 +1,4 @@
 #!/usr/bin/env node
-'use strict';
+import process from 'node:process';
+
 process.stdin.pipe(process.stdout);

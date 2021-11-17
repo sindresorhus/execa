@@ -1,4 +1,5 @@
 #!/usr/bin/env node
-'use strict';
+import process from 'node:process';
+
 console.log(process.env.FOO);
 console.log(process.env.BAR);

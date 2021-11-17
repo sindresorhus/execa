@@ -1,12 +1,12 @@
-import {inspect} from 'util';
+import {inspect} from 'node:util';
 import test from 'ava';
-import normalizeStdio from '../lib/stdio';
+import {normalizeStdio, normalizeStdioNode} from '../lib/stdio.js';
 
 const macro = (t, input, expected, func) => {
 	if (expected instanceof Error) {
 		t.throws(() => {
 			normalizeStdio(input);
-		}, expected.message);
+		}, {message: expected.message});
 		return;
 	}
 
@@ -47,8 +47,8 @@ test(stdioMacro, {stdin: 'inherit', stdio: ['pipe']}, new Error('It\'s not possi
 test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 test(stdioMacro, {stdin: 0, stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 
-const forkMacro = (...args) => macro(...args, normalizeStdio.node);
-forkMacro.title = macroTitle('execa.fork()');
+const forkMacro = (...args) => macro(...args, normalizeStdioNode);
+forkMacro.title = macroTitle('execaNode()');
 
 test(forkMacro, undefined, [undefined, undefined, undefined, 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);

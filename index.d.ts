@@ -434,26 +434,24 @@ Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 ```
 import {execa} from 'execa';
 
-(async () => {
-	const {stdout} = await execa('echo', ['unicorns']);
-	console.log(stdout);
-	//=> 'unicorns'
+const {stdout} = await execa('echo', ['unicorns']);
+console.log(stdout);
+//=> 'unicorns'
 
-	// Cancelling a spawned process
+// Cancelling a spawned process
 
-	const subprocess = execa('node');
+const subprocess = execa('node');
 
-	setTimeout(() => {
-		subprocess.cancel()
-	}, 1000);
+setTimeout(() => {
+	subprocess.cancel()
+}, 1000);
 
-	try {
-		await subprocess;
-	} catch (error) {
-		console.log(subprocess.killed); // true
-		console.log(error.isCanceled); // true
-	}
-})();
+try {
+	await subprocess;
+} catch (error) {
+	console.log(subprocess.killed); // true
+	console.log(error.isCanceled); // true
+}
 
 // Pipe the child process stdout to the current stdout
 execa('echo', ['unicorns']).stdout.pipe(process.stdout);
@@ -511,11 +509,9 @@ The `shell` option must be used if the `command` uses shell-specific features (f
 ```
 import {execaCommand} from 'execa';
 
-(async () => {
-	const {stdout} = await execaCommand('echo unicorns');
-	console.log(stdout);
-	//=> 'unicorns'
-})();
+const {stdout} = await execaCommand('echo unicorns');
+console.log(stdout);
+//=> 'unicorns'
 ```
 */
 export function execaCommand(command: string, options?: Options): ExecaChildProcess;

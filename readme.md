@@ -31,11 +31,9 @@ $ npm install execa
 ```js
 import {execa} from 'execa';
 
-(async () => {
-	const {stdout} = await execa('echo', ['unicorns']);
-	console.log(stdout);
-	//=> 'unicorns'
-})();
+const {stdout} = await execa('echo', ['unicorns']);
+console.log(stdout);
+//=> 'unicorns'
 ```
 
 ### Pipe the child process stdout to the parent
@@ -51,36 +49,33 @@ execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 ```js
 import {execa} from 'execa';
 
-(async () => {
-	// Catching an error
-	try {
-		await execa('unknown', ['command']);
-	} catch (error) {
-		console.log(error);
-		/*
-		{
-			message: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
-			errno: -2,
-			code: 'ENOENT',
-			syscall: 'spawn unknown',
-			path: 'unknown',
-			spawnargs: ['command'],
-			originalMessage: 'spawn unknown ENOENT',
-			shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
-			command: 'unknown command',
-			escapedCommand: 'unknown command',
-			stdout: '',
-			stderr: '',
-			all: '',
-			failed: true,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		}
-		*/
+// Catching an error
+try {
+	await execa('unknown', ['command']);
+} catch (error) {
+	console.log(error);
+	/*
+	{
+		message: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
+		errno: -2,
+		code: 'ENOENT',
+		syscall: 'spawn unknown',
+		path: 'unknown',
+		spawnargs: ['command'],
+		originalMessage: 'spawn unknown ENOENT',
+		shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
+		command: 'unknown command',
+		escapedCommand: 'unknown command',
+		stdout: '',
+		stderr: '',
+		all: '',
+		failed: true,
+		timedOut: false,
+		isCanceled: false,
+		killed: false
 	}
-
-})();
+	*/
+}
 ```
 
 ### Cancelling a spawned process
@@ -88,20 +83,18 @@ import {execa} from 'execa';
 ```js
 import {execa} from 'execa';
 
-(async () => {
-	const subprocess = execa('node');
+const subprocess = execa('node');
 
-	setTimeout(() => {
-		subprocess.cancel();
-	}, 1000);
+setTimeout(() => {
+	subprocess.cancel();
+}, 1000);
 
-	try {
-		await subprocess;
-	} catch (error) {
-		console.log(subprocess.killed); // true
-		console.log(error.isCanceled); // true
-	}
-})()
+try {
+	await subprocess;
+} catch (error) {
+	console.log(subprocess.killed); // true
+	console.log(error.isCanceled); // true
+}
 ```
 
 ### Catching an error with the sync method
@@ -591,9 +584,7 @@ const run = async () => {
 	return results;
 };
 
-(async () => {
-	console.log(await pRetry(run, {retries: 5}));
-})();
+console.log(await pRetry(run, {retries: 5}));
 ```
 
 ### Save and pipe output from a child process
@@ -606,10 +597,8 @@ import {execa} from 'execa';
 const subprocess = execa('echo', ['foo']);
 subprocess.stdout.pipe(process.stdout);
 
-(async () => {
-	const {stdout} = await subprocess;
-	console.log('child output:', stdout);
-})();
+const {stdout} = await subprocess;
+console.log('child output:', stdout);
 ```
 
 ### Redirect output to a file

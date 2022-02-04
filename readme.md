@@ -80,6 +80,8 @@ try {
 
 ### Cancelling a spawned process
 
+#### Use `cancel` method
+
 ```js
 import {execa} from 'execa';
 
@@ -95,6 +97,19 @@ try {
 	console.log(subprocess.killed); // true
 	console.log(error.isCanceled); // true
 }
+```
+
+#### Use `AbortController`
+
+```js
+import {execa} from 'execa';
+
+const abortController = new AbortController();
+const subprocess = execa('node', [], { abortSignal: abortController.signal });
+
+abortController.abort();
+
+console.log(subprocess.killed); // true
 ```
 
 ### Catching an error with the sync method

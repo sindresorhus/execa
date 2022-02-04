@@ -205,6 +205,24 @@ export interface CommonOptions<EncodingType> {
 	readonly killSignal?: string | number;
 
 	/**
+	You can abort the spawned process by the [AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+	It works on Node 16 and higher versions.
+
+	@example
+	```
+	import {execa} from 'execa';
+
+	const abortController = new AbortController();
+	const subprocess = execa('node', [], { abortSignal: abortController.signal });
+
+	abortController.abort();
+
+	console.log(subprocess.killed); // true
+	```
+	*/
+	readonly abortSignal?: AbortSignal;
+
+	/**
 	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
 	@default false

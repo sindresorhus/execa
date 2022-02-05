@@ -213,14 +213,14 @@ export interface CommonOptions<EncodingType> {
 	import {execa} from 'execa';
 
 	const abortController = new AbortController();
-	const subprocess = execa('node', [], { abortSignal: abortController.signal });
+	const subprocess = execa('node', [], { signal: abortController.signal });
 
 	abortController.abort();
 
 	console.log(subprocess.killed); // true
 	```
 	*/
-	readonly abortSignal?: AbortSignal;
+	readonly signal?: AbortSignal;
 
 	/**
 	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.

@@ -109,8 +109,8 @@ export function execa(file, args, options) {
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
-	if (parsed.options.abortSignal) {
-		parsed.options.abortSignal.addEventListener('abort', () => {
+	if (parsed.options.signal) {
+		parsed.options.signal.addEventListener('abort', () => {
 			spawned.cancel();
 		}, {once: true});
 	}

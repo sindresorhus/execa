@@ -265,14 +265,14 @@ test('calling cancel method on a process which has been killed does not make err
 
 test('calling abort throws an error with message "Command was canceled"', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', [], {abortSignal: abortController.signal});
+	const subprocess = execa('noop.js', [], {signal: abortController.signal});
 	abortController.abort();
 	await t.throwsAsync(subprocess, {message: /Command was canceled/});
 });
 
 test('calling abort twice should show the same behaviour as calling it once', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', [], {abortSignal: abortController.signal});
+	const subprocess = execa('noop.js', [], {signal: abortController.signal});
 	abortController.abort();
 	abortController.abort();
 	const {isCanceled} = await t.throwsAsync(subprocess);
@@ -282,7 +282,7 @@ test('calling abort twice should show the same behaviour as calling it once', as
 
 test('calling abort on a successfully completed process does not make result.isCanceled true', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', [], {abortSignal: abortController.signal});
+	const subprocess = execa('noop.js', [], {signal: abortController.signal});
 	const {isCanceled} = await subprocess;
 	abortController.abort();
 	t.false(isCanceled);
@@ -290,7 +290,7 @@ test('calling abort on a successfully completed process does not make result.isC
 
 test('calling cancel after abort should show the same behaviour as only calling cancel', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', [], {abortSignal: abortController.signal});
+	const subprocess = execa('noop.js', [], {signal: abortController.signal});
 	abortController.abort();
 	subprocess.cancel();
 	const {isCanceled} = await t.throwsAsync(subprocess);
@@ -300,7 +300,7 @@ test('calling cancel after abort should show the same behaviour as only calling 
 
 test('calling abort after cancel should show the same behaviour as only calling cancel', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', [], {abortSignal: abortController.signal});
+	const subprocess = execa('noop.js', [], {signal: abortController.signal});
 	subprocess.cancel();
 	abortController.abort();
 	const {isCanceled} = await t.throwsAsync(subprocess);

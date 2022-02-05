@@ -558,6 +558,16 @@ Default: `SIGTERM`
 
 Signal value to be used when the spawned process will be killed.
 
+#### signal
+
+Type: `object (AbortSignal)`
+
+You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+
+See [this Example](#use-abortcontroller).
+
+*Requires Node.js 16 or later.*
+
 #### windowsVerbatimArguments
 
 Type: `boolean`\

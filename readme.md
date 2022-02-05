@@ -105,11 +105,12 @@ try {
 import {execa} from 'execa';
 
 const abortController = new AbortController();
-const subprocess = execa('node', [], { signal: abortController.signal });
+const subprocess = execa('node', [], {signal: abortController.signal});
 
 abortController.abort();
 
-console.log(subprocess.killed); // true
+console.log(subprocess.killed);
+//=> true
 ```
 
 ### Catching an error with the sync method

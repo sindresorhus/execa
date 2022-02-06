@@ -4,6 +4,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
+import semver from 'semver';
 import {execa, execaSync} from '../index.js';
 
 process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
@@ -91,13 +92,6 @@ test('preferLocal: undefined', async t => {
 test('localDir option', async t => {
 	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
 	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: '/test'});
-	const envPaths = stdout.split(path.delimiter);
-	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
-});
-
-test('localDir option can be a URL', async t => {
-	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
-	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: pathToFileURL('/test')});
 	const envPaths = stdout.split(path.delimiter);
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });
@@ -211,12 +205,21 @@ test('can use `options.cwd` as a string', async t => {
 	t.is(stdout, cwd);
 });
 
-test('can use `options.cwd` as a URL', async t => {
-	const cwd = '/';
-	const cwdUrl = pathToFileURL(cwd);
-	const {stdout} = await execa('node', ['-p', 'process.cwd()'], {cwd: cwdUrl});
-	t.is(stdout, cwd);
-});
+if (semver.satisfies(process.version, '^14.18.0 || >=16.4.0')) {
+	test('localDir option can be a URL', async t => {
+		const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
+		const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: pathToFileURL('/test')});
+		const envPaths = stdout.split(path.delimiter);
+		t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
+	});
+
+	test('can use `options.cwd` as a URL', async t => {
+		const cwd = '/';
+		const cwdUrl = pathToFileURL(cwd);
+		const {stdout} = await execa('node', ['-p', 'process.cwd()'], {cwd: cwdUrl});
+		t.is(stdout, cwd);
+	});
+}
 
 test('can use `options.shell: true`', async t => {
 	const {stdout} = await execa('node test/fixtures/noop.js foo', {shell: true});

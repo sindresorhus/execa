@@ -362,6 +362,8 @@ Default: `process.cwd()`
 
 Preferred path to find locally installed binaries in (use with `preferLocal`).
 
+Using a `URL` is only supported in Node.js `14.18.0`, `16.14.0` or above.
+
 #### execPath
 
 Type: `string`\
@@ -450,6 +452,8 @@ Type: `string | URL`\
 Default: `process.cwd()`
 
 Current working directory of the child process.
+
+Using a `URL` is only supported in Node.js `14.18.0`, `16.14.0` or above.
 
 #### env
 

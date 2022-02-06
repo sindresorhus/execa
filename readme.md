@@ -446,7 +446,7 @@ Execa also accepts the below options which are the same as the options for [`chi
 
 #### cwd
 
-Type: `string`\
+Type: `string | URL`\
 Default: `process.cwd()`
 
 Current working directory of the child process.

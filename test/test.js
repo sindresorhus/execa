@@ -1,6 +1,6 @@
 import path from 'node:path';
 import process from 'node:process';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
@@ -196,6 +196,19 @@ test('extend environment variables by default', async t => {
 test('do not extend environment with `extendEnv: false`', async t => {
 	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
 	t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
+});
+
+test('can use `options.cwd` as a string', async t => {
+	const cwd = '/';
+	const {stdout} = await execa('node', ['-p', 'process.cwd()'], {cwd});
+	t.is(stdout, cwd);
+});
+
+test('can use `options.cwd` as a URL', async t => {
+	const cwd = '/';
+	const cwdUrl = pathToFileURL(cwd);
+	const {stdout} = await execa('node', ['-p', 'process.cwd()'], {cwd: cwdUrl});
+	t.is(stdout, cwd);
 });
 
 test('can use `options.shell: true`', async t => {

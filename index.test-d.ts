@@ -121,6 +121,7 @@ execa('unicorns', {reject: false});
 execa('unicorns', {stripFinalNewline: false});
 execa('unicorns', {extendEnv: false});
 execa('unicorns', {cwd: '.'});
+execa('unicorns', {cwd: new URL('.')});
 // eslint-disable-next-line @typescript-eslint/naming-convention
 execa('unicorns', {env: {PATH: ''}});
 execa('unicorns', {argv0: ''});

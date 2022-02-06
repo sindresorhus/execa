@@ -113,7 +113,7 @@ export interface CommonOptions<EncodingType> {
 
 	@default process.cwd()
 	*/
-	readonly cwd?: string;
+	readonly cwd?: string | URL;
 
 	/**
 	Environment key-value pairs. Extends automatically from `process.env`. Set `extendEnv` to `false` if you don't want this.

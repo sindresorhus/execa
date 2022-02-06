@@ -202,7 +202,7 @@ test('do not extend environment with `extendEnv: false`', async t => {
 test('can use `options.cwd` as a string', async t => {
 	const cwd = '/';
 	const {stdout} = await execa('node', ['-p', 'process.cwd()'], {cwd});
-	t.is(stdout, cwd);
+	t.is(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
 });
 
 if (semver.satisfies(process.version, '^14.18.0 || >=16.4.0')) {
@@ -217,7 +217,7 @@ if (semver.satisfies(process.version, '^14.18.0 || >=16.4.0')) {
 		const cwd = '/';
 		const cwdUrl = pathToFileURL(cwd);
 		const {stdout} = await execa('node', ['-p', 'process.cwd()'], {cwd: cwdUrl});
-		t.is(stdout, cwd);
+		t.is(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
 	});
 }
 

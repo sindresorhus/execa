@@ -95,6 +95,13 @@ test('localDir option', async t => {
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });
 
+test('localDir option can be a URL', async t => {
+	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
+	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: pathToFileURL('/test')});
+	const envPaths = stdout.split(path.delimiter);
+	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
+});
+
 test('execPath option', async t => {
 	const {path: execPath} = await getNode('6.0.0');
 	const {stdout} = await execa('node', ['-p', 'process.env.Path || process.env.PATH'], {preferLocal: true, execPath});

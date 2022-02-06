@@ -357,7 +357,7 @@ If you `$ npm install foo`, you can then `execa('foo')`.
 
 #### localDir
 
-Type: `string`\
+Type: `string | URL`\
 Default: `process.cwd()`
 
 Preferred path to find locally installed binaries in (use with `preferLocal`).

@@ -35,7 +35,7 @@ export interface CommonOptions<EncodingType> {
 
 	@default process.cwd()
 	*/
-	readonly localDir?: string;
+	readonly localDir?: string | URL;
 
 	/**
 	Path to the Node.js executable to use in child processes.

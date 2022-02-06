@@ -90,6 +90,7 @@ try {
 execa('unicorns', {cleanup: false});
 execa('unicorns', {preferLocal: false});
 execa('unicorns', {localDir: '.'});
+execa('unicorns', {localDir: new URL('file:///test')});
 execa('unicorns', {execPath: '/path'});
 execa('unicorns', {buffer: false});
 execa('unicorns', {input: ''});
@@ -121,7 +122,7 @@ execa('unicorns', {reject: false});
 execa('unicorns', {stripFinalNewline: false});
 execa('unicorns', {extendEnv: false});
 execa('unicorns', {cwd: '.'});
-execa('unicorns', {cwd: new URL('.')});
+execa('unicorns', {cwd: new URL('file:///test')});
 // eslint-disable-next-line @typescript-eslint/naming-convention
 execa('unicorns', {env: {PATH: ''}});
 execa('unicorns', {argv0: ''});

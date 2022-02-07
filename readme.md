@@ -78,6 +78,20 @@ try {
 }
 ```
 
+### Cancelling a spawned process
+
+```js
+import {execa} from 'execa';
+
+const abortController = new AbortController();
+const subprocess = execa('node', [], {signal: abortController.signal});
+
+abortController.abort();
+
+console.log(subprocess.killed);
+//=> true
+```
+
 ### Catching an error with the sync method
 
 ```js
@@ -528,18 +542,6 @@ Signal value to be used when the spawned process will be killed.
 Type: `object (AbortSignal)`
 
 You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
-
-```js
-import {execa} from 'execa';
-
-const abortController = new AbortController();
-const subprocess = execa('node', [], {signal: abortController.signal});
-
-abortController.abort();
-
-console.log(subprocess.killed);
-//=> true
-```
 
 *Requires Node.js 16 or later.*
 

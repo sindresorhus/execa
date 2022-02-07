@@ -166,10 +166,6 @@ Milliseconds to wait for the child process to terminate before sending `SIGKILL`
 
 Can be disabled with `false`.
 
-#### cancel()
-
-Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
-
 #### all
 
 Type: `ReadableStream | undefined`

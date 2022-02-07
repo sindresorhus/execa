@@ -210,16 +210,22 @@ export interface CommonOptions<EncodingType> {
 	*Requires Node.js 16 or later.*
 
 	@example
-	```
+	```js
 	import {execa} from 'execa';
 
 	const abortController = new AbortController();
 	const subprocess = execa('node', [], {signal: abortController.signal});
 
-	abortController.abort();
+	setTimeout(() => {
+		abortController.abort();
+	}, 1000);
 
-	console.log(subprocess.killed);
-	//=> true
+	try {
+		await subprocess;
+	} catch (error) {
+		console.log(subprocess.killed); // true
+		console.log(error.isCanceled); // true
+	}
 	```
 	*/
 	readonly signal?: AbortSignal;

@@ -109,11 +109,7 @@ export function execa(file, args, options) {
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
-	if (parsed.options.signal) {
-		parsed.options.signal.addEventListener('abort', () => {
-			spawned.cancel();
-		}, {once: true});
-	}
+	const isCanceled = () => context.isCanceled || (parsed.options.signal ? parsed.options.signal.aborted : false);
 
 	const handlePromise = async () => {
 		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
@@ -133,7 +129,7 @@ export function execa(file, args, options) {
 				escapedCommand,
 				parsed,
 				timedOut,
-				isCanceled: context.isCanceled,
+				isCanceled: isCanceled(),
 				killed: spawned.killed,
 			});
 
@@ -153,7 +149,7 @@ export function execa(file, args, options) {
 			all,
 			failed: false,
 			timedOut: false,
-			isCanceled: false,
+			isCanceled: isCanceled(),
 			killed: false,
 		};
 	};

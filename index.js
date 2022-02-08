@@ -149,7 +149,7 @@ export function execa(file, args, options) {
 			all,
 			failed: false,
 			timedOut: false,
-			isCanceled: isCanceled(),
+			isCanceled: false,
 			killed: false,
 		};
 	};

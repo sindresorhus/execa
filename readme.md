@@ -547,7 +547,7 @@ Type: `object (AbortSignal)`
 
 You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-When the `abort` is called, [isCancel](#iscanceled) becomes false.
+When `AbortController.abort()` is called, [isCanceled](#iscanceled) becomes `false`.
 
 *Requires Node.js 16 or later.*
 

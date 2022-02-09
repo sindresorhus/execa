@@ -109,8 +109,6 @@ export function execa(file, args, options) {
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
-	const isCanceled = () => context.isCanceled || (parsed.options.signal ? parsed.options.signal.aborted : false);
-
 	const handlePromise = async () => {
 		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
 		const stdout = handleOutput(parsed.options, stdoutResult);
@@ -129,7 +127,7 @@ export function execa(file, args, options) {
 				escapedCommand,
 				parsed,
 				timedOut,
-				isCanceled: isCanceled(),
+				isCanceled: context.isCanceled || (parsed.options.signal ? parsed.options.signal.aborted : false),
 				killed: spawned.killed,
 			});
 

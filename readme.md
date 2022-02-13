@@ -83,10 +83,11 @@ try {
 ```js
 import {execa} from 'execa';
 
-const subprocess = execa('node');
+const abortController = new AbortController();
+const subprocess = execa('node', [], {signal: abortController.signal});
 
 setTimeout(() => {
-	subprocess.cancel();
+	abortController.abort();
 }, 1000);
 
 try {
@@ -170,10 +171,6 @@ Default: `5000`
 Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
 
 Can be disabled with `false`.
-
-#### cancel()
-
-Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This is preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`.
 
 #### all
 
@@ -289,6 +286,8 @@ Whether the process timed out.
 Type: `boolean`
 
 Whether the process was canceled.
+
+You can cancel the spawned process using the [`signal`](#signal-1) option.
 
 #### killed
 
@@ -545,6 +544,16 @@ Type: `string | number`\
 Default: `SIGTERM`
 
 Signal value to be used when the spawned process will be killed.
+
+#### signal
+
+Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
+
+You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+
+When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `false`.
+
+*Requires Node.js 16 or later.*
 
 #### windowsVerbatimArguments
 

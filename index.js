@@ -127,7 +127,7 @@ export function execa(file, args, options) {
 				escapedCommand,
 				parsed,
 				timedOut,
-				isCanceled: context.isCanceled,
+				isCanceled: context.isCanceled || (parsed.options.signal ? parsed.options.signal.aborted : false),
 				killed: spawned.killed,
 			});
 

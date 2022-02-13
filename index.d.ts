@@ -207,6 +207,8 @@ export interface CommonOptions<EncodingType> {
 	/**
 	You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
+	When `AbortController.abort()` is called, [isCanceled](https://github.com/sindresorhus/execa#iscanceled) becomes `false`.
+
 	*Requires Node.js 16 or later.*
 
 	@example
@@ -363,6 +365,8 @@ export interface ExecaReturnValue<StdoutErrorType = string>
 
 	/**
 	Whether the process was canceled.
+
+	You can cancel the spawned process using the [`signal`](https://github.com/sindresorhus/execa#signal-1) option.
 	*/
 	isCanceled: boolean;
 }

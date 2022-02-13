@@ -207,7 +207,7 @@ export interface CommonOptions<EncodingType> {
 	/**
 	You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-	When `AbortController.abort()` is called, [isCanceled](https://github.com/sindresorhus/execa#iscanceled) becomes `false`.
+	When `AbortController.abort()` is called, [`.isCanceled`](https://github.com/sindresorhus/execa#iscanceled) becomes `false`.
 
 	*Requires Node.js 16 or later.*
 

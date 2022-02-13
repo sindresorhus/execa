@@ -5,7 +5,7 @@ import test from 'ava';
 import {pEvent} from 'p-event';
 import {execaNode} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 async function inspectMacro(t, input) {
 	const originalArgv = process.execArgv;

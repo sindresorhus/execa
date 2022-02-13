@@ -10,7 +10,7 @@ import {execa} from '../index.js';
 
 restorePromise();
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 test('should work with third-party Promise', async t => {
 	const {stdout} = await execa('noop.js', ['foo']);

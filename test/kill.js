@@ -6,7 +6,7 @@ import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 const TIMEOUT_REGEXP = /timed out after/;
 

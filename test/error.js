@@ -8,7 +8,7 @@ import {execa, execaSync} from '../index.js';
 
 const pExec = promisify(childProcess.exec);
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 const TIMEOUT_REGEXP = /timed out after/;
 

@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import test from 'ava';
 import {execa} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 test('promise methods are not enumerable', t => {
 	const descriptors = Object.getOwnPropertyDescriptors(execa('noop.js'));

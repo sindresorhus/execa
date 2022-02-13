@@ -9,7 +9,7 @@ import getStream from 'get-stream';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 test('buffer', async t => {
 	const {stdout} = await execa('noop.js', ['foo'], {encoding: null});
@@ -74,7 +74,8 @@ test('input can be a Stream', async t => {
 test('you can write to child.stdin', async t => {
 	const subprocess = execa('stdin.js');
 	subprocess.stdin.end('unicorns');
-	t.is((await subprocess).stdout, 'unicorns');
+	const {stdout} = await subprocess;
+	t.is(stdout, 'unicorns');
 });
 
 test('input option can be a String - sync', t => {

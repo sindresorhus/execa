@@ -7,7 +7,7 @@ import getNode from 'get-node';
 import semver from 'semver';
 import {execa, execaSync} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 process.env.FOO = 'foo';
 
 const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;
@@ -148,8 +148,10 @@ test('child_process.spawnSync() errors are propagated with a correct shape', t =
 
 test('do not try to consume streams twice', async t => {
 	const subprocess = execa('noop.js', ['foo']);
-	t.is((await subprocess).stdout, 'foo');
-	t.is((await subprocess).stdout, 'foo');
+	const {stdout} = await subprocess;
+	const {stdout: stdout2} = await subprocess;
+	t.is(stdout, 'foo');
+	t.is(stdout2, 'foo');
 });
 
 test('use relative path with \'..\' chars', async t => {

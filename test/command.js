@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import test from 'ava';
 import {execa, execaSync, execaCommand, execaCommandSync} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('./fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
 
 const command = async (t, expected, ...args) => {
 	const {command: failCommand} = await t.throwsAsync(execa('fail.js', args));

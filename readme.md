@@ -287,7 +287,7 @@ Type: `boolean`
 
 Whether the process was canceled.
 
-You can cancel the spawned process using the [signal](#signal-1) option.
+You can cancel the spawned process using the [`signal`](#signal-1) option.
 
 #### killed
 
@@ -543,7 +543,7 @@ Signal value to be used when the spawned process will be killed.
 
 #### signal
 
-Type: `object (AbortSignal)`
+Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
 You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 

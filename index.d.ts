@@ -1,7 +1,7 @@
 import {Buffer} from 'node:buffer';
 import {ChildProcess} from 'node:child_process';
 import {Stream, Readable as ReadableStream} from 'node:stream';
-import { URL } from 'url';
+import {URL} from 'url';
 
 export type StdioOption =
 	| 'pipe'

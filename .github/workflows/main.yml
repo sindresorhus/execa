@@ -10,21 +10,21 @@ jobs:
       fail-fast: false
       matrix:
         node-version:
-          - 16
-          - 14
-          - 12
+          - 18.0.0
+          - 16.4.0
+          - 14.18.0
         os:
           - ubuntu-latest
           - macos-latest
           # - windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm test
       - uses: codecov/codecov-action@v2
-        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 16
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 18.0.0
         with:
           fail_ci_if_error: true

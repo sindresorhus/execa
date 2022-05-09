@@ -25,6 +25,6 @@ jobs:
       - run: npm install
       - run: npm test
       - uses: codecov/codecov-action@v2
-        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 18.0.0
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '18.0.0'
         with:
           fail_ci_if_error: true

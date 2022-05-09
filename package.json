@@ -13,7 +13,7 @@
 	"type": "module",
 	"exports": "./index.js",
 	"engines": {
-		"node": "^14.18.0 || >=16.4.0 || >=18.0.0"
+		"node": "^14.18.0 || ^16.4.0 || >=18.0.0"
 	},
 	"scripts": {
 		"test": "xo && c8 ava && tsd"

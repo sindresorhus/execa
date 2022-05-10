@@ -361,8 +361,6 @@ Default: `process.cwd()`
 
 Preferred path to find locally installed binaries in (use with `preferLocal`).
 
-Using a `URL` is only supported in Node.js `14.18.0`, `16.14.0` or above.
-
 #### execPath
 
 Type: `string`\
@@ -452,8 +450,6 @@ Default: `process.cwd()`
 
 Current working directory of the child process.
 
-Using a `URL` is only supported in Node.js `14.18.0`, `16.14.0` or above.
-
 #### env
 
 Type: `object`\
@@ -482,8 +478,6 @@ Default: `'json'`
 Specify the kind of serialization used for sending messages between processes when using the [`stdio: 'ipc'`](#stdio) option or [`execaNode()`](#execanodescriptpath-arguments-options):
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
-
-Requires Node.js `13.2.0` or later.
 
 [More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization)
 

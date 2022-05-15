@@ -83,19 +83,17 @@ const filterLocalBinDirPath = () => {
 	return {[PATH_KEY]: newPath};
 };
 
-if (process.platform !== 'win32') {
-	test('preferLocal: true', async t => {
-		await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: filterLocalBinDirPath()}));
-	});
+test('preferLocal: true', async t => {
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: filterLocalBinDirPath()}));
+});
 
-	test('preferLocal: false', async t => {
-		await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: filterLocalBinDirPath()}), {message: ENOENT_REGEXP});
-	});
+test('preferLocal: false', async t => {
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: filterLocalBinDirPath()}), {message: ENOENT_REGEXP});
+});
 
-	test('preferLocal: undefined', async t => {
-		await t.throwsAsync(execa('ava', ['--version'], {env: filterLocalBinDirPath()}), {message: ENOENT_REGEXP});
-	});
-}
+test('preferLocal: undefined', async t => {
+	await t.throwsAsync(execa('ava', ['--version'], {env: filterLocalBinDirPath()}), {message: ENOENT_REGEXP});
+});
 
 test('localDir option', async t => {
 	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';

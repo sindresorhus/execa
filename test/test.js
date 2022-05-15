@@ -77,22 +77,23 @@ test('stripFinalNewline in sync mode on failure', t => {
 	t.is(stderr, 'foo');
 });
 
-const BIN_DIR_REGEXP = /node_modules[\\/]\.bin/;
-const filterLocalBinDirPath = () => {
+const getPathWithoutLocalDir = () => {
 	const newPath = process.env[PATH_KEY].split(path.delimiter).filter(pathDir => !BIN_DIR_REGEXP.test(pathDir)).join(path.delimiter);
 	return {[PATH_KEY]: newPath};
 };
 
+const BIN_DIR_REGEXP = /node_modules[\\/]\.bin/;
+
 test('preferLocal: true', async t => {
-	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: filterLocalBinDirPath()}));
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: getPathWithoutLocalDir()}));
 });
 
 test('preferLocal: false', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: filterLocalBinDirPath()}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: getPathWithoutLocalDir()}), {message: ENOENT_REGEXP});
 });
 
 test('preferLocal: undefined', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {env: filterLocalBinDirPath()}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {env: getPathWithoutLocalDir()}), {message: ENOENT_REGEXP});
 });
 
 test('localDir option', async t => {

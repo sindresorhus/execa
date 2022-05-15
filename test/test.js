@@ -4,11 +4,10 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
-import pathKey from 'path-key';
 import {execa, execaSync} from '../index.js';
+import {setFixtureDir} from './helpers/fixtures-dir.js';
 
-const PATH_KEY = pathKey();
-process.env[PATH_KEY] = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env[PATH_KEY];
+setFixtureDir();
 process.env.FOO = 'foo';
 
 const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;

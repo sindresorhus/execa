@@ -1,17 +1,14 @@
 import {Buffer} from 'node:buffer';
-import path from 'node:path';
 import process from 'node:process';
 import fs from 'node:fs';
-import {fileURLToPath} from 'node:url';
 import Stream from 'node:stream';
 import test from 'ava';
 import getStream from 'get-stream';
-import pathKey from 'path-key';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../index.js';
+import {setFixtureDir} from './helpers/fixtures-dir.js';
 
-const PATH_KEY = pathKey();
-process.env[PATH_KEY] = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env[PATH_KEY];
+setFixtureDir();
 
 test('buffer', async t => {
 	const {stdout} = await execa('noop.js', ['foo'], {encoding: null});

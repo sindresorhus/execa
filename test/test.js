@@ -196,12 +196,12 @@ if (process.platform !== 'win32') {
 		const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar'}});
 		t.deepEqual(stdout.split('\n'), ['foo', 'bar']);
 	});
-
-	test('do not extend environment with `extendEnv: false`', async t => {
-		const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
-		t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
-	});
 }
+
+test('do not extend environment with `extendEnv: false`', async t => {
+	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', [PATH_KEY]: process.env[PATH_KEY]}, extendEnv: false});
+	t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
+});
 
 test('can use `options.cwd` as a string', async t => {
 	const cwd = '/';

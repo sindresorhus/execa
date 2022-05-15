@@ -5,7 +5,7 @@ import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
 import {execa, execaSync} from '../index.js';
-import {setFixtureDir} from './helpers/fixtures-dir.js';
+import {setFixtureDir, PATH_KEY} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
 process.env.FOO = 'foo';
@@ -78,15 +78,15 @@ test('stripFinalNewline in sync mode on failure', t => {
 });
 
 test('preferLocal: true', async t => {
-	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {Path: '', PATH: ''}}));
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {[PATH_KEY]: ''}}));
 });
 
 test('preferLocal: false', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {Path: '', PATH: ''}}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {[PATH_KEY]: ''}}), {message: ENOENT_REGEXP});
 });
 
 test('preferLocal: undefined', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {env: {Path: '', PATH: ''}}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {env: {[PATH_KEY]: ''}}), {message: ENOENT_REGEXP});
 });
 
 test('localDir option', async t => {

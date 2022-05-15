@@ -3,7 +3,7 @@ import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import pathKey from 'path-key';
 
-const PATH_KEY = pathKey();
+export const PATH_KEY = pathKey();
 const FIXTURES_DIR = fileURLToPath(new URL('../fixtures', import.meta.url));
 
 // Add the fixtures directory to PATH so fixtures can be executed without adding

@@ -4,11 +4,13 @@ import childProcess from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {promisify} from 'node:util';
 import test from 'ava';
+import pathKey from 'path-key';
 import {execa, execaSync} from '../index.js';
 
 const pExec = promisify(childProcess.exec);
 
-process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+const PATH_KEY = pathKey();
+process.env[PATH_KEY] = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env[PATH_KEY];
 
 const TIMEOUT_REGEXP = /timed out after/;
 

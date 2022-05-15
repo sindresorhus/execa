@@ -4,9 +4,11 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
+import pathKey from 'path-key';
 import {execa, execaSync} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+const PATH_KEY = pathKey();
+process.env[PATH_KEY] = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env[PATH_KEY];
 process.env.FOO = 'foo';
 
 const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;

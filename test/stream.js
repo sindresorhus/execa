@@ -6,10 +6,12 @@ import {fileURLToPath} from 'node:url';
 import Stream from 'node:stream';
 import test from 'ava';
 import getStream from 'get-stream';
+import pathKey from 'path-key';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../index.js';
 
-process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+const PATH_KEY = pathKey();
+process.env[PATH_KEY] = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env[PATH_KEY];
 
 test('buffer', async t => {
 	const {stdout} = await execa('noop.js', ['foo'], {encoding: null});

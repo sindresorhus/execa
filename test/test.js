@@ -77,17 +77,19 @@ test('stripFinalNewline in sync mode on failure', t => {
 	t.is(stderr, 'foo');
 });
 
-test('preferLocal: true', async t => {
-	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {[PATH_KEY]: ''}}));
-});
+if (process.platform !== 'win32') {
+	test('preferLocal: true', async t => {
+		await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {[PATH_KEY]: ''}}));
+	});
 
-test('preferLocal: false', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {[PATH_KEY]: ''}}), {message: ENOENT_REGEXP});
-});
+	test('preferLocal: false', async t => {
+		await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {[PATH_KEY]: ''}}), {message: ENOENT_REGEXP});
+	});
 
-test('preferLocal: undefined', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {env: {[PATH_KEY]: ''}}), {message: ENOENT_REGEXP});
-});
+	test('preferLocal: undefined', async t => {
+		await t.throwsAsync(execa('ava', ['--version'], {env: {[PATH_KEY]: ''}}), {message: ENOENT_REGEXP});
+	});
+}
 
 test('localDir option', async t => {
 	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
@@ -189,15 +191,17 @@ test('use environment variables by default', async t => {
 	t.deepEqual(stdout.split('\n'), ['foo', 'undefined']);
 });
 
-test('extend environment variables by default', async t => {
-	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar'}});
-	t.deepEqual(stdout.split('\n'), ['foo', 'bar']);
-});
+if (process.platform !== 'win32') {
+	test('extend environment variables by default', async t => {
+		const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar'}});
+		t.deepEqual(stdout.split('\n'), ['foo', 'bar']);
+	});
 
-test('do not extend environment with `extendEnv: false`', async t => {
-	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
-	t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
-});
+	test('do not extend environment with `extendEnv: false`', async t => {
+		const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
+		t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
+	});
+}
 
 test('can use `options.cwd` as a string', async t => {
 	const cwd = '/';

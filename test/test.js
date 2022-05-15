@@ -192,7 +192,7 @@ test('use environment variables by default', async t => {
 });
 
 test('extend environment variables by default', async t => {
-	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar'}});
+	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', [PATH_KEY]: process.env[PATH_KEY]}});
 	t.deepEqual(stdout.split('\n'), ['foo', 'bar']);
 });
 

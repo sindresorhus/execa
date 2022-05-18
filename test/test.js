@@ -5,8 +5,9 @@ import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
 import {execa, execaSync} from '../index.js';
+import {setFixtureDir, PATH_KEY} from './helpers/fixtures-dir.js';
 
-process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+setFixtureDir();
 process.env.FOO = 'foo';
 
 const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;
@@ -76,16 +77,23 @@ test('stripFinalNewline in sync mode on failure', t => {
 	t.is(stderr, 'foo');
 });
 
+const getPathWithoutLocalDir = () => {
+	const newPath = process.env[PATH_KEY].split(path.delimiter).filter(pathDir => !BIN_DIR_REGEXP.test(pathDir)).join(path.delimiter);
+	return {[PATH_KEY]: newPath};
+};
+
+const BIN_DIR_REGEXP = /node_modules[\\/]\.bin/;
+
 test('preferLocal: true', async t => {
-	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: {Path: '', PATH: ''}}));
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: getPathWithoutLocalDir()}));
 });
 
 test('preferLocal: false', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: {Path: '', PATH: ''}}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: getPathWithoutLocalDir()}), {message: ENOENT_REGEXP});
 });
 
 test('preferLocal: undefined', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {env: {Path: '', PATH: ''}}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {env: getPathWithoutLocalDir()}), {message: ENOENT_REGEXP});
 });
 
 test('localDir option', async t => {
@@ -189,12 +197,12 @@ test('use environment variables by default', async t => {
 });
 
 test('extend environment variables by default', async t => {
-	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar'}});
+	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', [PATH_KEY]: process.env[PATH_KEY]}});
 	t.deepEqual(stdout.split('\n'), ['foo', 'bar']);
 });
 
 test('do not extend environment with `extendEnv: false`', async t => {
-	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', PATH: process.env.PATH}, extendEnv: false});
+	const {stdout} = await execa('environment.js', [], {env: {BAR: 'bar', [PATH_KEY]: process.env[PATH_KEY]}, extendEnv: false});
 	t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
 });
 

@@ -1,11 +1,10 @@
-import path from 'node:path';
 import process from 'node:process';
-import {fileURLToPath} from 'node:url';
 import test from 'ava';
 import {pEvent} from 'p-event';
 import {execaNode} from '../index.js';
+import {setFixtureDir} from './helpers/fixtures-dir.js';
 
-process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+setFixtureDir();
 
 async function inspectMacro(t, input) {
 	const originalArgv = process.execArgv;

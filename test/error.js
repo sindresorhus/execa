@@ -1,14 +1,13 @@
-import path from 'node:path';
 import process from 'node:process';
 import childProcess from 'node:child_process';
-import {fileURLToPath} from 'node:url';
 import {promisify} from 'node:util';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
+import {setFixtureDir} from './helpers/fixtures-dir.js';
 
 const pExec = promisify(childProcess.exec);
 
-process.env.PATH = fileURLToPath(new URL('fixtures', import.meta.url)) + path.delimiter + process.env.PATH;
+setFixtureDir();
 
 const TIMEOUT_REGEXP = /timed out after/;
 

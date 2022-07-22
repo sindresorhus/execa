@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="media/logo_dark.svg"/>
-  <img alt="execa logo" src="media/logo.svg" width="400"/>
+	<source media="(prefers-color-scheme: dark)" srcset="media/logo_dark.svg">
+	<img alt="execa logo" src="media/logo.svg" width="400">
 </picture>
 <br>
 

@@ -1,4 +1,7 @@
-<img src="media/logo.svg" width="400">
+<picture>
+	<source media="(prefers-color-scheme: dark)" srcset="media/logo_dark.svg">
+	<img alt="execa logo" src="media/logo.svg" width="400">
+</picture>
 <br>
 
 [![Coverage Status](https://codecov.io/gh/sindresorhus/execa/branch/main/graph/badge.svg)](https://codecov.io/gh/sindresorhus/execa)

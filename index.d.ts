@@ -575,7 +575,7 @@ export function execaNode(
 export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
-	options?: Options<null>
+	options?: NodeOptions<null>
 ): ExecaChildProcess<Buffer>;
-export function execaNode(scriptPath: string, options?: Options): ExecaChildProcess;
-export function execaNode(scriptPath: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+export function execaNode(scriptPath: string, options?: NodeOptions): ExecaChildProcess;
+export function execaNode(scriptPath: string, options?: NodeOptions<null>): ExecaChildProcess<Buffer>;

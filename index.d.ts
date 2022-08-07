@@ -26,7 +26,7 @@ export interface CommonOptions<EncodingType> {
 	/**
 	Prefer locally installed binaries when looking for a binary to execute.
 
-	If you `npm install foo`, you can then `execa('foo')`.
+	If you `$ npm install foo`, you can then `execa('foo')`.
 
 	@default false
 	*/
@@ -65,7 +65,7 @@ export interface CommonOptions<EncodingType> {
 
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
-   *
+
 	@default 'pipe'
 	*/
 	readonly stdin?: StdioOption;
@@ -138,7 +138,7 @@ export interface CommonOptions<EncodingType> {
 
 	@default 'pipe'
 	*/
-	readonly stdio?: 'pipe' | 'ignore' | 'inherit' | readonly StdioOption[];
+	readonly stdio?: 'pipe' | 'overlapped' | 'ignore' | 'inherit' | readonly StdioOption[];
 
 	/**
 	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:
@@ -353,15 +353,15 @@ export interface ExecaSyncReturnValue<StdoutErrorType = string>
 
 /**
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
- *
+
 The child process fails when:
- *
+
 - its exit code is not `0`
 - it was killed with a signal
 - timing out
 - being canceled
 - there's not enough memory or there are already too many child processes
- */
+*/
 export interface ExecaReturnValue<StdoutErrorType = string>
 	extends ExecaSyncReturnValue<StdoutErrorType> {
 	/**
@@ -466,40 +466,40 @@ Promise<ExecaReturnValue<StdoutErrorType>>;
 
 /**
 Execute a file.
- *
+
 Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
- *
+
 @param file - The program/script to execute.
 @param arguments - Arguments to pass to `file` on execution.
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
- *
+
 @example
 ```typescript
 import {execa} from 'execa';
- *
+
 const {stdout} = await execa('echo', ['unicorns']);
 console.log(stdout);
 //=> 'unicorns'
- *
+
 // Cancelling a spawned process
- *
+
 const subprocess = execa('node');
- *
+
 setTimeout(() => {
   subprocess.cancel()
 }, 1000);
- *
+
 try {
   await subprocess;
 } catch (error) {
   console.log(subprocess.killed); // true
   console.log(error.isCanceled); // true
 }
- *
+
 // Pipe the child process stdout to the current stdout
 execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 ```
- */
+*/
 export function execa(
 	file: string,
 	arguments?: readonly string[],
@@ -515,13 +515,13 @@ export function execa(file: string, options?: Options<null>): ExecaChildProcess<
 
 /**
 Execute a file synchronously.
- *
+
 This method throws an `Error` if the command fails.
- *
+
 @param file - The program/script to execute.
 @param arguments - Arguments to pass to `file` on execution.
 @returns A result `Object` with `stdout` and `stderr` properties.
- */
+*/
 export function execaSync(
 	file: string,
 	arguments?: readonly string[],
@@ -540,48 +540,48 @@ export function execaSync(
 
 /**
 Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
- *
+
 If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
- *
+
 The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
- *
+
 @param command - The program/script to execute and its arguments.
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
- *
+
 @example
 ```typescript
 import {execaCommand} from 'execa';
- *
+
 const {stdout} = await execaCommand('echo unicorns');
 console.log(stdout);
 //=> 'unicorns'
 ```
- */
+*/
 export function execaCommand(command: string, options?: Options): ExecaChildProcess;
 export function execaCommand(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
 /**
 Same as `execaCommand()` but synchronous.
- *
+
 @param command - The program/script to execute and its arguments.
 @returns A result `Object` with `stdout` and `stderr` properties.
- */
+*/
 export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
 export function execaCommandSync(command: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
 
 /**
 Execute a Node.js script as a child process.
- *
+
 Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
- *
+
 - the current Node version and options are used. This can be overridden using the `nodePath` and `nodeArguments` options.
 - the `shell` option cannot be used
 - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
- *
+
 @param scriptPath - Node.js script to execute.
 @param arguments - Arguments to pass to `scriptPath` on execution.
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
- */
+*/
 export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],

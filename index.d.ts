@@ -35,8 +35,6 @@ export interface CommonOptions<EncodingType> {
 	/**
 	Preferred path to find locally installed binaries in (use with `preferLocal`).
 
-	Using a `URL` is only supported in Node.js `14.18.0`, `16.14.0` or above.
-
 	@default process.cwd()
 	*/
 	readonly localDir?: string | URL;
@@ -115,8 +113,6 @@ export interface CommonOptions<EncodingType> {
 	/**
 	Current working directory of the child process.
 
-	Using a `URL` is only supported in Node.js `14.18.0`, `16.14.0` or above.
-
 	@default process.cwd()
 	*/
 	readonly cwd?: string | URL;
@@ -145,8 +141,6 @@ export interface CommonOptions<EncodingType> {
 
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
-
-	Requires Node.js `13.2.0` or later.
 
 	[More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization)
 
@@ -486,14 +480,14 @@ console.log(stdout);
 const subprocess = execa('node');
 
 setTimeout(() => {
-  subprocess.cancel()
+	subprocess.cancel()
 }, 1000);
 
 try {
-  await subprocess;
+	await subprocess;
 } catch (error) {
-  console.log(subprocess.killed); // true
-  console.log(error.isCanceled); // true
+	console.log(subprocess.killed); // true
+	console.log(error.isCanceled); // true
 }
 
 // Pipe the child process stdout to the current stdout

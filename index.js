@@ -224,6 +224,26 @@ export function execaSync(file, args, options) {
 	};
 }
 
+export function $(templatesOrOptions, ...expressions) {
+	if (Array.isArray(templatesOrOptions)) {
+		const [file, ...args] = parseCommand(join(templatesOrOptions, expressions));
+		return execa(file, args);
+	}
+
+	return (templates, ...expressions) => {
+		const [file, ...args] = parseCommand(join(templates, expressions));
+		return execa(file, args, templatesOrOptions);
+	};
+}
+
+function join(templates, expressions) {
+	let command = '';
+	for (const [i, template] of templates.entries()) {
+		command += `${template}${expressions[i] ?? ''}`;
+	}
+	return command;
+}
+
 export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);
 	return execa(file, args, options);

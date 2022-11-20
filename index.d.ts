@@ -580,10 +580,10 @@ await my$`echo rainbows`;
 */
 export function $<T extends Options | TemplateStringsArray>(
 	templatesOrOptions: T,
-	...expressions: Array<Expression>
+	...expressions: Expression[]
 ): T extends TemplateStringsArray
 	? ExecaChildProcess
-	: (templates: TemplateStringsArray, ...expressions: Array<Expression>) => ExecaChildProcess;
+	: (templates: TemplateStringsArray, ...expressions: Expression[]) => ExecaChildProcess;
 
 /**
 Same as `execaCommand()` but synchronous.

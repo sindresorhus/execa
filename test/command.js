@@ -1,5 +1,5 @@
 import test from 'ava';
-import {execa, execaSync, execaCommand, execaCommandSync} from '../index.js';
+import {execa, execaSync, execaCommand, execaCommandSync, $} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -83,5 +83,35 @@ test('execaCommand() trims', async t => {
 
 test('execaCommandSync()', t => {
 	const {stdout} = execaCommandSync('node test/fixtures/echo.js foo bar');
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js foo bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ ignores consecutive spaces', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js foo    bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows escaping spaces in commands', async t => {
+	const {stdout} = await $`command\\ with\\ space.js foo bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows escaping spaces in arguments', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js foo\\ bar`;
+	t.is(stdout, 'foo bar');
+});
+
+test('$ escapes other whitespaces', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js foo\tbar`;
+	t.is(stdout, 'foo\tbar');
+});
+
+test('$ trims', async t => {
+	const {stdout} = await $`  node test/fixtures/echo.js foo bar  `;
 	t.is(stdout, 'foo\nbar');
 });

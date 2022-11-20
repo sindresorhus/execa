@@ -239,9 +239,13 @@ export function $(templatesOrOptions, ...expressions) {
 function join(templates, expressions) {
 	let command = '';
 	for (const [i, template] of templates.entries()) {
-		command += `${template}${expressions[i] ?? ''}`;
+		command += `${template}${parseExpression(expressions[i])}`;
 	}
 	return command;
+}
+
+function parseExpression(expression) {
+	return Array.isArray(expression) ? expression.join(' ') : expression ?? '';
 }
 
 export function execaCommand(command, options) {

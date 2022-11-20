@@ -10,7 +10,10 @@ console.log(stdout);
 await $({ stdio: "inherit" })`echo bar`;
 
 // With pre-defined options
-const my$ = (templates, ...expressions) =>
-	$({ stdio: "inherit", shell: true })(templates, ...expressions);
+const my$ = $({ stdio: "inherit", shell: true });
 
 await my$`echo baz | sed 's/baz/qux/'`;
+
+let flags = ["--oneline", "--decorate", "--color", "-n 5"];
+
+await $({ stdio: "inherit" })`git --no-pager log ${flags}`;

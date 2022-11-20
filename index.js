@@ -241,6 +241,7 @@ function join(templates, expressions) {
 	for (const [i, template] of templates.entries()) {
 		command += `${template}${parseExpression(expressions[i])}`;
 	}
+
 	return command;
 }
 

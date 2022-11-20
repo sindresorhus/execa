@@ -91,6 +91,21 @@ test('$', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$ allows string interpolation', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js foo ${'bar'}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows array interpolation', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js ${['foo', 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ accepts options', async t => {
+	const {stdout} = await $({encoding: 'utf8'})`node test/fixtures/echo.js foo bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
 test('$ ignores consecutive spaces', async t => {
 	const {stdout} = await $`node test/fixtures/echo.js foo    bar`;
 	t.is(stdout, 'foo\nbar');

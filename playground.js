@@ -8,10 +8,14 @@ console.log(stdout);
 // With options
 await $({stdio: 'inherit'})`echo bar`;
 
+const buffer = await $({encoding: null})`echo bar`;
+
+console.log('buffer:', buffer);
+
 // With pre-defined options
 const my$ = $({stdio: 'inherit', shell: true});
 
-await my$`echo baz | sed 's/baz/qux/'`;
+await my$`echo bar | sed 's/bar/baz/'`;
 
 const flags = ['--oneline', '--decorate', '--color', '-n 5'];
 

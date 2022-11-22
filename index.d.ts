@@ -180,7 +180,7 @@ export interface CommonOptions<EncodingType> {
 
 	@default 'utf8'
 	*/
-	readonly encoding?: EncodingType;
+	readonly encoding?: EncodingType | null;
 
 	/**
 	If `timeout` is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than `timeout` milliseconds.
@@ -583,7 +583,9 @@ export function $<T extends Options | TemplateStringsArray>(
 	...expressions: Expression[]
 ): T extends TemplateStringsArray
 	? ExecaChildProcess
-	: (templates: TemplateStringsArray, ...expressions: Expression[]) => ExecaChildProcess;
+	: (templates: TemplateStringsArray, ...expressions: Expression[]) => T['encoding'] extends null
+		? ExecaChildProcess<Buffer>
+		: ExecaChildProcess;
 
 /**
 Same as `execaCommand()` but synchronous.

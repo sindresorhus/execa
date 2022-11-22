@@ -180,7 +180,7 @@ export interface CommonOptions<EncodingType> {
 
 	@default 'utf8'
 	*/
-	readonly encoding?: EncodingType | null;
+	readonly encoding?: EncodingType;
 
 	/**
 	If `timeout` is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than `timeout` milliseconds.
@@ -578,12 +578,12 @@ await my$`echo rainbows`;
 //=> 'unicorns rainbows'
 ```
 */
-export function $<T extends Options | TemplateStringsArray>(
+export function $<T extends Options<string | null> | TemplateStringsArray>(
 	templatesOrOptions: T,
 	...expressions: Expression[]
 ): T extends TemplateStringsArray
 	? ExecaChildProcess
-	: (templates: TemplateStringsArray, ...expressions: Expression[]) => T['encoding'] extends null
+	: (templates: TemplateStringsArray, ...expressions: Expression[]) => T extends Options<null>
 		? ExecaChildProcess<Buffer>
 		: ExecaChildProcess;
 

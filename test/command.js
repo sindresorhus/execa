@@ -135,3 +135,8 @@ test('$.sync', t => {
 	const {stdout} = $.sync`node test/fixtures/echo.js foo bar`;
 	t.is(stdout, 'foo\nbar');
 });
+
+test('$.sync accepts options', t => {
+	const {stdout} = $.sync({encoding: 'utf8'})`node test/fixtures/echo.js foo bar`;
+	t.is(stdout, 'foo\nbar');
+});

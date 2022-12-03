@@ -548,37 +548,38 @@ export function execaCommand(command: string, options?: Options<null>): ExecaChi
 
 type Expression = string | number | Array<string | number>;
 
+/**
+Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as $\`echo unicorns\`.
+
+If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
+
+The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+
+@example
+```
+import {$} from 'execa';
+
+const {stdout} = await $`echo unicorns`;
+console.log(stdout);
+//=> 'unicorns'
+
+const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+console.log(stdout);
+//=> 'unicorns rainbows'
+
+await $({stdio: 'inherit'})`echo unicorns`;
+//=> 'unicorns'
+
+const my$ = $({stdio: 'inherit'});
+await my$`echo unicorns`;
+//=> 'unicorns'
+await my$`echo rainbows`;
+//=> 'rainbows'
+```
+*/
 export const $: {
-	/**
-	Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as $\`echo unicorns\`.
-
-	If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
-
-	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
-
-	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
-
-	@example
-	```
-	import {$} from 'execa';
-
-	const {stdout} = await $`echo unicorns`;
-	console.log(stdout);
-	//=> 'unicorns'
-
-	const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
-	console.log(stdout);
-	//=> 'unicorns rainbows'
-
-	await $({stdio: 'inherit'})`echo unicorns`;
-	//=> 'unicorns'
-
-	const my$ = $({stdio: 'inherit'});
-	await my$`echo unicorns`;
-	await my$`echo rainbows`;
-	//=> 'unicorns rainbows'
-	```
-	*/
 	<T extends TemplateStringsArray | Options<string | null>>(
 		templatesOrOptions: T,
 		...expressions: Expression[]

@@ -548,44 +548,60 @@ export function execaCommand(command: string, options?: Options<null>): ExecaChi
 
 type Expression = string | number | Array<string | number>;
 
-/**
-Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as $\`echo unicorns\`.
+export const $: {
+	/**
+	Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as $\`echo unicorns\`.
 
-If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
+	If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 
-The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
-@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 
-@example
-```
-import {$} from 'execa';
+	@example
+	```
+	import {$} from 'execa';
 
-const {stdout} = await $`echo unicorns`;
-console.log(stdout);
-//=> 'unicorns'
+	const {stdout} = await $`echo unicorns`;
+	console.log(stdout);
+	//=> 'unicorns'
 
-const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
-console.log(stdout);
-//=> 'unicorns rainbows'
+	const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+	console.log(stdout);
+	//=> 'unicorns rainbows'
 
-await $({stdio: 'inherit'})`echo unicorns`;
-//=> 'unicorns'
+	await $({stdio: 'inherit'})`echo unicorns`;
+	//=> 'unicorns'
 
-const my$ = $({stdio: 'inherit'});
-await my$`echo unicorns`;
-await my$`echo rainbows`;
-//=> 'unicorns rainbows'
-```
-*/
-export function $<T extends Options<string | null> | TemplateStringsArray>(
-	templatesOrOptions: T,
-	...expressions: Expression[]
-): T extends TemplateStringsArray
-	? ExecaChildProcess
-	: (templates: TemplateStringsArray, ...expressions: Expression[]) => T extends Options<null>
-		? ExecaChildProcess<Buffer>
-		: ExecaChildProcess;
+	const my$ = $({stdio: 'inherit'});
+	await my$`echo unicorns`;
+	await my$`echo rainbows`;
+	//=> 'unicorns rainbows'
+	```
+	*/
+	<T extends TemplateStringsArray | Options<string | null>>(
+		templatesOrOptions: T,
+		...expressions: Expression[]
+	): T extends TemplateStringsArray
+		? ExecaChildProcess
+		: (templates: TemplateStringsArray, ...expressions: Expression[]) => T extends Options<null>
+			? ExecaChildProcess<Buffer>
+			: ExecaChildProcess;
+
+	/**
+	Same as `$` but synchronous.
+
+	@returns A result `Object` with `stdout` and `stderr` properties.
+	*/
+	sync<T extends TemplateStringsArray | Options<string | null>>(
+		templatesOrOptions: T,
+		...expressions: Expression[]
+	): T extends TemplateStringsArray
+		? ExecaSyncChildProcess
+		: (templates: TemplateStringsArray, ...expressions: Expression[]) => T extends Options<null>
+			? ExecaSyncChildProcess<Buffer>
+			: ExecaSyncChildProcess;
+};
 
 /**
 Same as `execaCommand()` but synchronous.

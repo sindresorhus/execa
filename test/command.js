@@ -130,3 +130,8 @@ test('$ trims', async t => {
 	const {stdout} = await $`  node test/fixtures/echo.js foo bar  `;
 	t.is(stdout, 'foo\nbar');
 });
+
+test('$.sync', t => {
+	const {stdout} = $.sync`node test/fixtures/echo.js foo bar`;
+	t.is(stdout, 'foo\nbar');
+});

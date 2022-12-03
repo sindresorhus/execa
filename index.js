@@ -236,6 +236,18 @@ export function $(templatesOrOptions, ...expressions) {
 	};
 }
 
+$.sync = (templatesOrOptions, ...expressions) => {
+	if (Array.isArray(templatesOrOptions)) {
+		const [file, ...args] = parseCommand(join(templatesOrOptions, expressions));
+		return execaSync(file, args);
+	}
+
+	return (templates, ...expressions) => {
+		const [file, ...args] = parseCommand(join(templates, expressions));
+		return execaSync(file, args, templatesOrOptions);
+	};
+};
+
 function join(templates, expressions) {
 	let command = '';
 	for (const [i, template] of templates.entries()) {

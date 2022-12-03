@@ -597,10 +597,10 @@ export const $: {
 		templatesOrOptions: T,
 		...expressions: Expression[]
 	): T extends TemplateStringsArray
-		? ExecaSyncChildProcess
+		? ExecaSyncReturnValue
 		: (templates: TemplateStringsArray, ...expressions: Expression[]) => T extends Options<null>
-			? ExecaSyncChildProcess<Buffer>
-			: ExecaSyncChildProcess;
+			? ExecaSyncReturnValue<Buffer>
+			: ExecaSyncReturnValue;
 };
 
 /**

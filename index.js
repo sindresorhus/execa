@@ -11,7 +11,7 @@ import {normalizeStdio, normalizeStdioNode} from './lib/stdio.js';
 import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
 import {handleInput, getSpawnedResult, makeAllStream, validateInputSync} from './lib/stream.js';
 import {mergePromise, getSpawnedPromise} from './lib/promise.js';
-import {joinCommand, parseCommand, getEscapedCommand} from './lib/command.js';
+import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
@@ -226,40 +226,27 @@ export function execaSync(file, args, options) {
 
 export function $(templatesOrOptions, ...expressions) {
 	if (Array.isArray(templatesOrOptions)) {
-		const [file, ...args] = parseCommand(join(templatesOrOptions, expressions));
+		const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
 		return execa(file, args);
 	}
 
 	return (templates, ...expressions) => {
-		const [file, ...args] = parseCommand(join(templates, expressions));
+		const [file, ...args] = parseTemplates(templates, expressions);
 		return execa(file, args, templatesOrOptions);
 	};
 }
 
 $.sync = (templatesOrOptions, ...expressions) => {
 	if (Array.isArray(templatesOrOptions)) {
-		const [file, ...args] = parseCommand(join(templatesOrOptions, expressions));
+		const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
 		return execaSync(file, args);
 	}
 
 	return (templates, ...expressions) => {
-		const [file, ...args] = parseCommand(join(templates, expressions));
+		const [file, ...args] = parseTemplates(templates, expressions);
 		return execaSync(file, args, templatesOrOptions);
 	};
 };
-
-function join(templates, expressions) {
-	let command = '';
-	for (const [i, template] of templates.entries()) {
-		command += `${template}${parseExpression(expressions[i])}`;
-	}
-
-	return command;
-}
-
-function parseExpression(expression) {
-	return Array.isArray(expression) ? expression.join(' ') : expression ?? '';
-}
 
 export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);

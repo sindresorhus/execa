@@ -91,6 +91,11 @@ test('$', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$ accepts options', async t => {
+	const {stdout} = await $({encoding: 'utf8'})`node test/fixtures/echo.js foo bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
 test('$ allows string interpolation', async t => {
 	const {stdout} = await $`node test/fixtures/echo.js foo ${'bar'}`;
 	t.is(stdout, 'foo\nbar');
@@ -101,24 +106,49 @@ test('$ allows array interpolation', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-test('$ accepts options', async t => {
-	const {stdout} = await $({encoding: 'utf8'})`node test/fixtures/echo.js foo bar`;
-	t.is(stdout, 'foo\nbar');
-});
-
 test('$ ignores consecutive spaces', async t => {
 	const {stdout} = await $`node test/fixtures/echo.js foo    bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
-test('$ allows escaping spaces in commands', async t => {
-	const {stdout} = await $`command\\ with\\ space.js foo bar`;
-	t.is(stdout, 'foo\nbar');
+test('$ allows escaping spaces with interpolation', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js ${'foo bar'}`;
+	t.is(stdout, 'foo bar');
 });
 
-test('$ allows escaping spaces in arguments', async t => {
+test('$ disallows escaping spaces with backslashes', async t => {
 	const {stdout} = await $`node test/fixtures/echo.js foo\\ bar`;
-	t.is(stdout, 'foo bar');
+	t.is(stdout, 'foo\\\nbar');
+});
+
+test('$ allows space escaped values in array interpolation', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js ${['foo', 'bar baz']}`;
+	t.is(stdout, 'foo\nbar baz');
+});
+
+test('$ passes newline escape sequence as one argument', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js \n`;
+	t.is(stdout, '\n');
+});
+
+test('$ passes newline escape sequence in interpolation as one argument', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js ${'\n'}`;
+	t.is(stdout, '\n');
+});
+
+test('$ handles invalid escape sequence', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js \u`;
+	t.is(stdout, '\\u');
+});
+
+test('$ coerces all interpolated expressions to strings', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js ${0} ${undefined} ${null}`;
+	t.is(stdout, '0\nundefined\nnull');
+});
+
+test('$ allows escaping spaces in commands with interpolation', async t => {
+	const {stdout} = await $`${'command with space.js'} foo bar`;
+	t.is(stdout, 'foo\nbar');
 });
 
 test('$ escapes other whitespaces', async t => {

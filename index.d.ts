@@ -211,7 +211,7 @@ export interface CommonOptions<EncodingType> {
 	*Requires Node.js 16 or later.*
 
 	@example
-	```js
+	```
 	import {execa} from 'execa';
 
 	const abortController = new AbortController();

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import Stream from 'node:stream';
 import test from 'ava';
 import getStream from 'get-stream';
+import {pEvent} from 'p-event';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
@@ -171,6 +172,11 @@ test('buffer: false > promise rejects when process returns non-zero', async t =>
 	const subprocess = execa('fail.js', {buffer: false});
 	const {exitCode} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 2);
+});
+
+test('buffer: false > emits end event when promise is rejected', async t => {
+	const subprocess = execa('wrong command', {buffer: false, reject: false});
+	await t.notThrowsAsync(Promise.all([subprocess, pEvent(subprocess.stdout, 'end')]));
 });
 
 test('can use all: true with stdout: ignore', async t => {

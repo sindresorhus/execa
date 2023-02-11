@@ -210,3 +210,12 @@ expectType<ExecaReturnValue>(
 expectType<ExecaReturnValue<Buffer>>(
 	await execaNode('unicorns', ['foo'], {encoding: null}),
 );
+
+expectType<ExecaChildProcess>(execaNode('unicorns', {nodeOptions: ['--async-stack-traces']}));
+expectType<ExecaChildProcess>(execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces']}));
+expectType<ExecaChildProcess<Buffer>>(
+	execaNode('unicorns', {nodeOptions: ['--async-stack-traces'], encoding: null}),
+);
+expectType<ExecaChildProcess<Buffer>>(
+	execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces'], encoding: null}),
+);

@@ -3,7 +3,7 @@ import {Buffer} from 'node:buffer';
 // `process.stdin`, `process.stderr`, and `process.stdout`
 // to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
 import * as process from 'node:process';
-import {Readable as ReadableStream} from 'node:stream';
+import {type Readable as ReadableStream} from 'node:stream';
 import {expectType, expectError} from 'tsd';
 import {
 	execa,
@@ -11,11 +11,11 @@ import {
 	execaCommand,
 	execaCommandSync,
 	execaNode,
-	ExecaReturnValue,
-	ExecaChildProcess,
-	ExecaError,
-	ExecaSyncReturnValue,
-	ExecaSyncError,
+	type ExecaReturnValue,
+	type ExecaChildProcess,
+	type ExecaError,
+	type ExecaSyncReturnValue,
+	type ExecaSyncError,
 } from './index.js';
 
 try {

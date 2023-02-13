@@ -224,57 +224,37 @@ export function execaSync(file, args, options) {
 	};
 }
 
-export function $(templatesOrOptions, ...expressions) {
-	if (Array.isArray(templatesOrOptions)) {
-		const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
-		return execa(file, args);
-	}
-
-	return (templates, ...expressions) => {
-		const [file, ...args] = parseTemplates(templates, expressions);
-		return execa(file, args, templatesOrOptions);
-	};
-}
-
-$.sync = (templatesOrOptions, ...expressions) => {
-	if (Array.isArray(templatesOrOptions)) {
-		const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
-		return execaSync(file, args);
-	}
-
-	return (templates, ...expressions) => {
-		const [file, ...args] = parseTemplates(templates, expressions);
-		return execaSync(file, args, templatesOrOptions);
-	};
-};
-
-$.create = (options) => {
-	function $wrapper (templatesOrOptions, ...expressions) {
+function create$(options) {
+	function $(templatesOrOptions, ...expressions) {
 		if (Array.isArray(templatesOrOptions)) {
-			return $(options)(templatesOrOptions, ...expressions);
+			const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
+			return execa(file, args, options);
 		}
-	
-		return (templates, ...expressions) => {
-			return $({ ...options, ...templatesOrOptions })(templates, ...expressions);
-		};
-	};
 
-	$wrapper.sync = (templatesOrOptions, ...expressions) => {
-		if (Array.isArray(templatesOrOptions)) {
-			return $.sync(options)(templatesOrOptions, ...expressions);
-		}
-	
 		return (templates, ...expressions) => {
-			return $.sync({ ...options, ...templatesOrOptions })(templates, ...expressions);
+			const [file, ...args] = parseTemplates(templates, expressions);
+			return execa(file, args, {...options, ...templatesOrOptions});
 		};
 	}
 
-	$wrapper.create = (innerOptions) => {
-		return $.create({ ...options, ...innerOptions });
+	$.sync = (templatesOrOptions, ...expressions) => {
+		if (Array.isArray(templatesOrOptions)) {
+			const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
+			return execaSync(file, args, options);
+		}
+
+		return (templates, ...expressions) => {
+			const [file, ...args] = parseTemplates(templates, expressions);
+			return execaSync(file, args, {...options, ...templatesOrOptions});
+		};
 	};
 
-	return $wrapper;
+	$.create = overrideOptions => create$({...options, ...overrideOptions});
+
+	return $;
 }
+
+export const $ = create$();
 
 export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);

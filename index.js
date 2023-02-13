@@ -248,6 +248,34 @@ $.sync = (templatesOrOptions, ...expressions) => {
 	};
 };
 
+$.create = (options) => {
+	function $wrapper (templatesOrOptions, ...expressions) {
+		if (Array.isArray(templatesOrOptions)) {
+			return $(options)(templatesOrOptions, ...expressions);
+		}
+	
+		return (templates, ...expressions) => {
+			return $({ ...options, ...templatesOrOptions })(templates, ...expressions);
+		};
+	};
+
+	$wrapper.sync = (templatesOrOptions, ...expressions) => {
+		if (Array.isArray(templatesOrOptions)) {
+			return $.sync(options)(templatesOrOptions, ...expressions);
+		}
+	
+		return (templates, ...expressions) => {
+			return $.sync({ ...options, ...templatesOrOptions })(templates, ...expressions);
+		};
+	}
+
+	$wrapper.create = (innerOptions) => {
+		return $.create({ ...options, ...innerOptions });
+	};
+
+	return $wrapper;
+}
+
 export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);
 	return execa(file, args, options);

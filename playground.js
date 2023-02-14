@@ -1,12 +1,12 @@
 import {$} from './index.js';
 
-let $$ = $.create({stdio: 'inherit'});
+let $$ = $({stdio: 'inherit'});
 
 await $$({shell: true})`ls *.ts`;
 
 await $$`echo "$TEST"`;
 
-$$ = $$.create({shell: true, env: {TEST: 'test'}});
+$$ = $$({shell: true, env: {TEST: 'test'}});
 
 // eslint-disable-next-line no-unused-expressions
 $$.sync`echo "$TEST"`;

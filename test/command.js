@@ -167,6 +167,6 @@ test('$.sync', t => {
 });
 
 test('$.sync accepts options', t => {
-	const {stdout} = $.sync({encoding: 'utf8'})`node test/fixtures/echo.js foo bar`;
+	const {stdout} = $({encoding: 'utf8'}).sync`node test/fixtures/echo.js foo bar`;
 	t.is(stdout, 'foo\nbar');
 });

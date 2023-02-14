@@ -231,25 +231,13 @@ function create$(options) {
 			return execa(file, args, options);
 		}
 
-		return (templates, ...expressions) => {
-			const [file, ...args] = parseTemplates(templates, expressions);
-			return execa(file, args, {...options, ...templatesOrOptions});
-		};
+		return create$({...options, ...templatesOrOptions});
 	}
 
-	$.sync = (templatesOrOptions, ...expressions) => {
-		if (Array.isArray(templatesOrOptions)) {
-			const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
-			return execaSync(file, args, options);
-		}
-
-		return (templates, ...expressions) => {
-			const [file, ...args] = parseTemplates(templates, expressions);
-			return execaSync(file, args, {...options, ...templatesOrOptions});
-		};
+	$.sync = (templates, ...expressions) => {
+		const [file, ...args] = parseTemplates(templates, expressions);
+		return execaSync(file, args, options);
 	};
-
-	$.create = overrideOptions => create$({...options, ...overrideOptions});
 
 	return $;
 }

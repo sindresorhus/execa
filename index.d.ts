@@ -546,7 +546,7 @@ console.log(stdout);
 export function execaCommand(command: string, options?: Options): ExecaChildProcess;
 export function execaCommand(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
-type Expression = string | number | Array<string | number>;
+type TemplateExpression = string | number | Array<string | number>;
 
 /**
 Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as $\`echo unicorns\`.
@@ -582,10 +582,10 @@ await my$`echo rainbows`;
 export const $: {
 	<T extends TemplateStringsArray | Options<string | null>>(
 		templatesOrOptions: T,
-		...expressions: Expression[]
+		...expressions: TemplateExpression[]
 	): T extends TemplateStringsArray
 		? ExecaChildProcess
-		: (templates: TemplateStringsArray, ...expressions: Expression[]) => T extends Options<null>
+		: (templates: TemplateStringsArray, ...expressions: TemplateExpression[]) => T extends Options<null>
 			? ExecaChildProcess<Buffer>
 			: ExecaChildProcess;
 
@@ -596,10 +596,10 @@ export const $: {
 	*/
 	sync<T extends TemplateStringsArray | Options<string | null>>(
 		templatesOrOptions: T,
-		...expressions: Expression[]
+		...expressions: TemplateExpression[]
 	): T extends TemplateStringsArray
 		? ExecaSyncReturnValue
-		: (templates: TemplateStringsArray, ...expressions: Expression[]) => T extends Options<null>
+		: (templates: TemplateStringsArray, ...expressions: TemplateExpression[]) => T extends Options<null>
 			? ExecaSyncReturnValue<Buffer>
 			: ExecaSyncReturnValue;
 };

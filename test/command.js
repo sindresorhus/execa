@@ -92,8 +92,8 @@ test('$', async t => {
 });
 
 test('$ accepts options', async t => {
-	const {stdout} = await $({shell: true, env: {TEST: 'test'}})`echo $TEST`;
-	t.is(stdout, 'test');
+	const {stdout} = await $({stripFinalNewline: true})`noop.js foo`;
+	t.is(stdout, 'foo');
 });
 
 test('$ allows string interpolation', async t => {
@@ -167,6 +167,6 @@ test('$.sync', t => {
 });
 
 test('$.sync accepts options', t => {
-	const {stdout} = $({shell: true, env: {TEST: 'test'}}).sync`echo $TEST`;
-	t.is(stdout, 'test');
+	const {stdout} = $({stripFinalNewline: true}).sync`noop.js foo`;
+	t.is(stdout, 'foo');
 });

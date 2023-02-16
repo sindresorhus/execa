@@ -2,8 +2,6 @@ import {type Buffer} from 'node:buffer';
 import {type ChildProcess} from 'node:child_process';
 import {type Stream, type Readable as ReadableStream} from 'node:stream';
 
-import type {Merge} from 'type-fest';
-
 export type StdioOption =
 	| 'pipe'
 	| 'overlapped'
@@ -545,24 +543,33 @@ export function execaCommand(command: string, options?: Options<null>): ExecaChi
 
 type TemplateExpression = string | number | Array<string | number>;
 
-type Create$<T extends Options<string | null> = Options<string | null>> = {
-	<U extends TemplateStringsArray | Options<string | null>>(
-		templatesOrOptions: U,
+type Buffer$ = {
+	(options: Options): String$;
+	(options: Options<null>): Buffer$;
+	(
+		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): U extends TemplateStringsArray
-		? T extends Options<null>
-			? ExecaChildProcess<Buffer>
-			: ExecaChildProcess
-		: Create$<Merge<T, U>>;
+	): ExecaChildProcess<Buffer>;
 	sync(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): T extends Options<null>
-		? ExecaSyncReturnValue<Buffer>
-		: ExecaSyncReturnValue;
+	): ExecaSyncReturnValue<Buffer>;
 };
 
-export const $: Create$;
+type String$ = {
+	(options: Options): String$;
+	(options: Options<null>): Buffer$;
+	(
+		templates: TemplateStringsArray,
+		...expressions: TemplateExpression[]
+	): ExecaChildProcess;
+	sync(
+		templates: TemplateStringsArray,
+		...expressions: TemplateExpression[]
+	): ExecaSyncReturnValue;
+};
+
+export const $: String$;
 
 /**
 Same as `execaCommand()` but synchronous.

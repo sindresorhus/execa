@@ -6,6 +6,7 @@ import * as process from 'node:process';
 import {type Readable as ReadableStream} from 'node:stream';
 import {expectType, expectError} from 'tsd';
 import {
+	$,
 	execa,
 	execaSync,
 	execaCommand,
@@ -219,3 +220,16 @@ expectType<ExecaChildProcess<Buffer>>(
 expectType<ExecaChildProcess<Buffer>>(
 	execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces'], encoding: null}),
 );
+
+expectType<ExecaChildProcess>($`unicorns`);
+expectType<ExecaReturnValue>(await $`unicorns`);
+expectType<ExecaReturnValue>(await $({encoding: 'utf8'})`unicorns`);
+expectType<ExecaReturnValue<Buffer>>(await $({encoding: null})`unicorns`);
+expectType<ExecaReturnValue>(await $({encoding: 'utf8'})`unicorns foo`);
+expectType<ExecaReturnValue<Buffer>>(await $({encoding: null})`unicorns foo`);
+
+expectType<ExecaSyncReturnValue>($.sync`unicorns`);
+expectType<ExecaSyncReturnValue>($({encoding: 'utf8'}).sync`unicorns`);
+expectType<ExecaSyncReturnValue<Buffer>>($({encoding: null}).sync`unicorns`);
+expectType<ExecaSyncReturnValue>($({encoding: 'utf8'}).sync`unicorns foo`);
+expectType<ExecaSyncReturnValue<Buffer>>($({encoding: null}).sync`unicorns foo`);

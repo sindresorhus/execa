@@ -104,9 +104,9 @@ test('localDir option', async t => {
 });
 
 test('execPath option', async t => {
-	const {path: execPath} = await getNode('6.0.0');
+	const {path: execPath} = await getNode('16.0.0');
 	const {stdout} = await execa('node', ['-p', 'process.env.Path || process.env.PATH'], {preferLocal: true, execPath});
-	t.true(stdout.includes('6.0.0'));
+	t.true(stdout.includes('16.0.0'));
 });
 
 test('stdin errors are handled', async t => {

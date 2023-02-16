@@ -3,7 +3,7 @@ import {Buffer} from 'node:buffer';
 // `process.stdin`, `process.stderr`, and `process.stdout`
 // to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
 import * as process from 'node:process';
-import {Readable as ReadableStream} from 'node:stream';
+import {type Readable as ReadableStream} from 'node:stream';
 import {expectType, expectError} from 'tsd';
 import {
 	execa,
@@ -11,11 +11,11 @@ import {
 	execaCommand,
 	execaCommandSync,
 	execaNode,
-	ExecaReturnValue,
-	ExecaChildProcess,
-	ExecaError,
-	ExecaSyncReturnValue,
-	ExecaSyncError,
+	type ExecaReturnValue,
+	type ExecaChildProcess,
+	type ExecaError,
+	type ExecaSyncReturnValue,
+	type ExecaSyncError,
 } from './index.js';
 
 try {
@@ -209,4 +209,13 @@ expectType<ExecaReturnValue>(
 );
 expectType<ExecaReturnValue<Buffer>>(
 	await execaNode('unicorns', ['foo'], {encoding: null}),
+);
+
+expectType<ExecaChildProcess>(execaNode('unicorns', {nodeOptions: ['--async-stack-traces']}));
+expectType<ExecaChildProcess>(execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces']}));
+expectType<ExecaChildProcess<Buffer>>(
+	execaNode('unicorns', {nodeOptions: ['--async-stack-traces'], encoding: null}),
+);
+expectType<ExecaChildProcess<Buffer>>(
+	execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces'], encoding: null}),
 );

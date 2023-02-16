@@ -1,6 +1,6 @@
 {
 	"name": "execa",
-	"version": "6.1.0",
+	"version": "7.0.0",
 	"description": "Process execution for humans",
 	"license": "MIT",
 	"repository": "sindresorhus/execa",
@@ -43,7 +43,7 @@
 	"dependencies": {
 		"cross-spawn": "^7.0.3",
 		"get-stream": "^6.0.1",
-		"human-signals": "^4.1.0",
+		"human-signals": "^4.3.0",
 		"is-stream": "^3.0.0",
 		"merge-stream": "^2.0.0",
 		"npm-run-path": "^5.1.0",
@@ -52,17 +52,17 @@
 		"strip-final-newline": "^3.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "^17.0.17",
-		"ava": "^4.0.1",
-		"c8": "^7.11.0",
-		"get-node": "^12.0.0",
+		"@types/node": "^18.13.0",
+		"ava": "^5.2.0",
+		"c8": "^7.12.0",
+		"get-node": "^13.5.0",
 		"is-running": "^2.1.0",
 		"p-event": "^5.0.1",
 		"path-key": "^4.0.0",
 		"tempfile": "^4.0.0",
-		"tsd": "^0.19.1",
+		"tsd": "^0.25.0",
 		"type-fest": "^3.5.7",
-		"xo": "^0.48.0"
+		"xo": "^0.53.1"
 	},
 	"c8": {
 		"reporter": [
@@ -74,6 +74,9 @@
 			"**/test.js",
 			"**/test/**"
 		]
+	},
+	"ava": {
+		"workerThreads": false
 	},
 	"xo": {
 		"rules": {

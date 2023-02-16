@@ -543,33 +543,24 @@ export function execaCommand(command: string, options?: Options<null>): ExecaChi
 
 type TemplateExpression = string | number | Array<string | number>;
 
-type Buffer$ = {
-	(options: Options): String$;
-	(options: Options<null>): Buffer$;
+type Execa$<EncodingType = string> = {
+	(options: Options): Execa$;
+	(options: Options<null>): Execa$<null>;
 	(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaChildProcess<Buffer>;
+	): EncodingType extends null
+		? ExecaChildProcess<Buffer>
+		: ExecaChildProcess;
 	sync(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaSyncReturnValue<Buffer>;
+	): EncodingType extends null
+		? ExecaSyncReturnValue<Buffer>
+		: ExecaSyncReturnValue;
 };
 
-type String$ = {
-	(options: Options): String$;
-	(options: Options<null>): Buffer$;
-	(
-		templates: TemplateStringsArray,
-		...expressions: TemplateExpression[]
-	): ExecaChildProcess;
-	sync(
-		templates: TemplateStringsArray,
-		...expressions: TemplateExpression[]
-	): ExecaSyncReturnValue;
-};
-
-export const $: String$;
+export const $: Execa$;
 
 /**
 Same as `execaCommand()` but synchronous.

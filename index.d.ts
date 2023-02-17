@@ -575,7 +575,7 @@ type Execa$<StdoutStderrType = string> = {
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
 	): ExecaChildProcess<StdoutStderrType>;
-  /**
+	/**
 	Same as `$` but synchronous.
 	@returns A result `Object` with `stdout` and `stderr` properties.
 	*/

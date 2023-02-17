@@ -39,6 +39,55 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
+### Using the tagged templates API
+
+#### Basic
+
+```js
+import {$} from 'execa';
+
+const {stdout} = await $`echo unicorns`;
+// const {stdout} = await $`echo ${'unicorns'}`;
+// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+
+console.log(stdout);
+//=> 'unicorns'
+```
+
+#### With options
+
+```js
+import {$} from 'execa';
+
+await $({stdio: 'inherit'})`echo unicorns`;
+//=> 'unicorns'
+```
+
+#### With pre-defined options
+
+```js
+const $$ = $({stdio: 'inherit'});
+
+await $$`echo unicorns`;
+//=> 'unicorns'
+await $$({shell: true})`echo unicorns && echo rainbows`;
+//=> 'unicorns'
+//=> 'rainbows'
+```
+
+#### Synchronous
+
+```js
+import {$} from 'execa';
+
+const {stdout} = $.sync`echo unicorns`;
+console.log(stdout);
+//=> 'unicorns'
+
+$({stdio: 'inherit'}).sync`echo rainbows`;
+//=> 'rainbows'
+```
+
 ### Pipe the child process stdout to the parent
 
 ```js
@@ -188,6 +237,18 @@ This is `undefined` if either:
 ### execaSync(file, arguments?, options?)
 
 Execute a file synchronously.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### \$(options?)\`command\`
+
+Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, ``$`echo unicorns` ``is the same as `execa('echo', ['unicorns'])`.
+
+The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+### $(options?).sync\`command\`
+
+Same as [$(options?)\`command\`](#optionscommand) but synchronous.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 

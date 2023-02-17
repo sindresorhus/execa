@@ -545,7 +545,7 @@ type TemplateExpression = string | number | Array<string | number>;
 
 type Execa$<StdoutStderrType = string> = {
 	/**
-	Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `execa('echo', ['unicorns'])` is the same as $\`echo unicorns\`.
+  Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, ``$`echo unicorns` ``is the same as `execa('echo', ['unicorns'])`.
 	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 	@example
@@ -564,8 +564,9 @@ type Execa$<StdoutStderrType = string> = {
 
 	const $$ = $({stdio: 'inherit'});
 	await $$`echo unicorns`;
+	//=> 'unicorns'
 	await $$`echo rainbows`;
-	//=> 'unicorns rainbows'
+	//=> 'rainbows'
 	```
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
@@ -586,7 +587,7 @@ type Execa$<StdoutStderrType = string> = {
 };
 
 /**
-Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `execa('echo', ['unicorns'])` is the same as $\`echo unicorns\`.
+Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, ``$`echo unicorns` ``is the same as `execa('echo', ['unicorns'])`.
 The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 @example
@@ -605,14 +606,15 @@ await $({stdio: 'inherit'})`echo unicorns`;
 
 const $$ = $({stdio: 'inherit'});
 await $$`echo unicorns`;
+//=> 'unicorns'
 await $$`echo rainbows`;
-//=> 'unicorns rainbows'
+//=> 'rainbows'
 ```
 */
 export const $: Execa$;
 
 /**
-Same as `execaCommand()` but synchronous.
+Same as `$` but synchronous.
 
 @param command - The program/script to execute and its arguments.
 @returns A result `Object` with `stdout` and `stderr` properties.

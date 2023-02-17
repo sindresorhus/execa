@@ -543,21 +543,18 @@ export function execaCommand(command: string, options?: Options<null>): ExecaChi
 
 type TemplateExpression = string | number | Array<string | number>;
 
-type Execa$<EncodingType = string> = {
+type Execa$<StdoutStderrType = string> = {
+	(options: Options<undefined>): Execa$<StdoutStderrType>;
 	(options: Options): Execa$;
-	(options: Options<null>): Execa$<null>;
+	(options: Options<null>): Execa$<Buffer>;
 	(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): EncodingType extends null
-		? ExecaChildProcess<Buffer>
-		: ExecaChildProcess;
+	): ExecaChildProcess<StdoutStderrType>;
 	sync(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): EncodingType extends null
-		? ExecaSyncReturnValue<Buffer>
-		: ExecaSyncReturnValue;
+	): ExecaSyncReturnValue<StdoutStderrType>;
 };
 
 export const $: Execa$;

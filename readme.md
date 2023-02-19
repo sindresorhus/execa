@@ -66,6 +66,8 @@ await $({stdio: 'inherit'})`echo unicorns`;
 #### With pre-defined options
 
 ```js
+import {$} from 'execa';
+
 const $$ = $({stdio: 'inherit'});
 
 await $$`echo unicorns`;

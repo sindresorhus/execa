@@ -614,7 +614,7 @@ await $$`echo rainbows`;
 export const $: Execa$;
 
 /**
-Same as `$` but synchronous.
+Same as `execaCommand()` but synchronous.
 
 @param command - The program/script to execute and its arguments.
 @returns A result `Object` with `stdout` and `stderr` properties.

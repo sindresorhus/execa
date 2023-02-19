@@ -248,7 +248,7 @@ The [`shell` option](#shell) must be used if the `command` uses shell-specific f
 
 ### $(options?).sync\`command\`
 
-Same as [$(options?)\`command\`](#optionscommand) but synchronous.
+Same as [$(options?)\`command\`](#optionscommand) but synchronous like [`execaSync()`](#execasyncfile-arguments-options).
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 

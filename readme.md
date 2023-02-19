@@ -244,9 +244,15 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### \$(options?)\`command\`
 
-Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single tagged template string. For example, ``$`echo unicorns` ``is the same as `execa('echo', ['unicorns'])`.
+Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
 
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+The return value of this function depends on whether you are binding options or executing a command:
+- If you are binding options, for example with `const $$ = $(options)`, the return value is a new `$` instance with the options bound to both the asynchronous `$` and synchronous `$.sync` APIs. It's important to note that consecutive calls to this API will shallow merge the options.
+- If you are executing a command, the result is a `Promise` that resolves or rejects with a [`childProcessResult`](#childProcessResult).
+
+> **Note:** Quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), etc...
 
 ### $(options?).sync\`command\`
 

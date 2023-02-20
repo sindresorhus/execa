@@ -583,7 +583,7 @@ type Execa$<StdoutStderrType = string> = {
 	/**
 	Same as `$` but synchronous.
 
-	@returns A result `Object` with `stdout` and `stderr` properties.
+	@returns The stdout and stderr output.
 	*/
 	sync(
 		templates: TemplateStringsArray,

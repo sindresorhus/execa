@@ -254,7 +254,7 @@ Returns a `Promise` that resolves or rejects with a [`childProcessResult`](#chil
 
 ### $.sync\`command\`
 
-Same as [$\`command\`](#optionscommand) but synchronous like [`execaSync()`](#execasyncfile-arguments-options).
+Same as [$\`command\`](#command) but synchronous like [`execaSync()`](#execasyncfile-arguments-options).
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 

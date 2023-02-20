@@ -260,7 +260,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### $(options)
 
-Binds options to the [`$`](#command) API. For example, you can use `$(options)` to create a new `$` instance with specific default options, which are then bound to both the asynchronous `` $`command` `` and synchronous `` $.sync`command` `` APIs.
+Binds options to the [`$`](#command) API. For example, you can use `$(options)` to create a new `$` instance with specific default options, which are then bound to both the asynchronous [`` $`command` ``](#command) and synchronous [`` $.sync`command` ``](#synccommand) APIs.
 
 > **Note:** Consecutive calls to this API will shallow merge the options.
 

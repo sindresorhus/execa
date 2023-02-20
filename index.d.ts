@@ -547,7 +547,9 @@ type Execa$<StdoutStderrType = string> = {
 	/**
   Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
 	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
 	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+
 	@example
 	```
 	import {$} from 'execa';
@@ -576,8 +578,10 @@ type Execa$<StdoutStderrType = string> = {
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
 	): ExecaChildProcess<StdoutStderrType>;
+
 	/**
 	Same as `$` but synchronous.
+
 	@returns A result `Object` with `stdout` and `stderr` properties.
 	*/
 	sync(
@@ -588,8 +592,11 @@ type Execa$<StdoutStderrType = string> = {
 
 /**
 Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+
 The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+
 @example
 ```
 import {$} from 'execa';

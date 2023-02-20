@@ -553,6 +553,7 @@ type Execa$<StdoutStderrType = string> = {
 	@example
 	```
 	import {$} from 'execa';
+
 	const {stdout} = await $`echo unicorns`;
 	console.log(stdout);
 	//=> 'unicorns'
@@ -600,6 +601,7 @@ The `shell` option must be used if the `command` uses shell-specific features (f
 @example
 ```
 import {$} from 'execa';
+
 const {stdout} = await $`echo unicorns`;
 console.log(stdout);
 //=> 'unicorns'

@@ -242,23 +242,27 @@ Execute a file synchronously.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
-### \$(options?)\`command\`
+### $\`command\`
 
 Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
 
+It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the [`shell` option](#shell) is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
+
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
-The return value of this function depends on whether you are binding options or executing a command:
-- If you are binding options, for example with `const $$ = $(options)`, the return value is a new `$` instance with the options bound to both the asynchronous `$` and synchronous `$.sync` APIs. It's important to note that consecutive calls to this API will shallow merge the options.
-- If you are executing a command, the result is a `Promise` that resolves or rejects with a [`childProcessResult`](#childProcessResult).
+Returns a `Promise` that resolves or rejects with a [`childProcessResult`](#childProcessResult).
 
-> **Note:** Quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), etc...
+### $.sync\`command\`
 
-### $(options?).sync\`command\`
-
-Same as [$(options?)\`command\`](#optionscommand) but synchronous like [`execaSync()`](#execasyncfile-arguments-options).
+Same as [$\`command\`](#optionscommand) but synchronous like [`execaSync()`](#execasyncfile-arguments-options).
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### $(options)
+
+Binds options to the [`$`](#command) API. For example, you can use `$(options)` to create a new `$` instance with specific default options, which are then bound to both the asynchronous `` $`command` `` and synchronous `` $.sync`command` `` APIs.
+
+> **Note:** Consecutive calls to this API will shallow merge the options.
 
 ### execaCommand(command, options?)
 

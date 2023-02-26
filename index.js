@@ -242,7 +242,7 @@ function create$(options) {
 	return $;
 }
 
-export const $ = create$();
+export const $ = create$({preferLocal: true});
 
 export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);

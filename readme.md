@@ -425,7 +425,7 @@ Kill the spawned process when the parent process exits unless either:
 #### preferLocal
 
 Type: `boolean`\
-Default: `false`
+Default: `true` with [`$`](#command)/[`$.sync`](#synccommand), `false` otherwise
 
 Prefer locally installed binaries when looking for a binary to execute.\
 If you `$ npm install foo`, you can then `execa('foo')`.

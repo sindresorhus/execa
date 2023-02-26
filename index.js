@@ -9,6 +9,7 @@ import onetime from 'onetime';
 import {makeError} from './lib/error.js';
 import {normalizeStdio, normalizeStdioNode} from './lib/stdio.js';
 import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
+import {addPipeMethods} from './lib/pipe.js';
 import {handleInput, getSpawnedResult, makeAllStream, validateInputSync} from './lib/stream.js';
 import {mergePromise, getSpawnedPromise} from './lib/promise.js';
 import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
@@ -100,7 +101,8 @@ export function execa(file, args, options) {
 			isCanceled: false,
 			killed: false,
 		}));
-		return mergePromise(dummySpawned, errorPromise);
+		mergePromise(dummySpawned, errorPromise);
+		return dummySpawned;
 	}
 
 	const spawnedPromise = getSpawnedPromise(spawned);
@@ -161,7 +163,9 @@ export function execa(file, args, options) {
 
 	spawned.all = makeAllStream(spawned, parsed.options);
 
-	return mergePromise(spawned, handlePromiseOnce);
+	addPipeMethods(spawned);
+	mergePromise(spawned, handlePromiseOnce);
+	return spawned;
 }
 
 export function execaSync(file, args, options) {

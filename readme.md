@@ -713,10 +713,7 @@ Let's say you want to show the output of a child process in real-time while also
 ```js
 import {execa} from 'execa';
 
-const subprocess = execa('echo', ['foo']);
-subprocess.stdout.pipe(process.stdout);
-
-const {stdout} = await subprocess;
+const {stdout} = await execa('echo', ['foo']).pipeStdout(process.stdout);
 console.log('child output:', stdout);
 ```
 
@@ -725,8 +722,7 @@ console.log('child output:', stdout);
 ```js
 import {execa} from 'execa';
 
-const subprocess = execa('echo', ['foo'])
-subprocess.stdout.pipe(fs.createWriteStream('stdout.txt'))
+await execa('echo', ['foo']).pipeStdout('stdout.txt')
 ```
 
 ### Redirect input from a file

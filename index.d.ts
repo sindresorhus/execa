@@ -244,6 +244,15 @@ export type CommonOptions<EncodingType> = {
 	@default true
 	*/
 	readonly windowsHide?: boolean;
+
+	/**
+	Print each command on `stderr` before executing it.
+
+  This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
+
+	@default false
+	*/
+	readonly verbose?: boolean;
 };
 
 export type Options<EncodingType = string> = {

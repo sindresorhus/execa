@@ -150,6 +150,7 @@ execa('unicorns', {killSignal: 9});
 execa('unicorns', {signal: new AbortController().signal});
 execa('unicorns', {windowsVerbatimArguments: true});
 execa('unicorns', {windowsHide: false});
+execa('unicorns', {verbose: false});
 /* eslint-enable @typescript-eslint/no-floating-promises */
 execa('unicorns').kill();
 execa('unicorns').kill('SIGKILL');

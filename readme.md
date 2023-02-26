@@ -101,6 +101,20 @@ $({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
 //=> 'unicorns rainbows'
 ```
 
+#### Verbose mode
+
+```sh
+$ node file.js
+unicorns
+rainbows
+
+$ NODE_DEBUG=execa node file.js
+[16:50:03.305] echo unicorns
+unicorns
+[16:50:03.308] echo rainbows
+rainbows
+```
+
 ### Pipe the child process stdout to the parent
 
 ```js
@@ -651,6 +665,15 @@ Type: `boolean`\
 Default: `true`
 
 On Windows, do not create a new console window. Please note this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
+
+#### verbose
+
+Type: `boolean`\
+Default: `false`
+
+[Print each command](#verbose-mode) on `stderr` before executing it.
+
+This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
 
 #### nodePath *(For `.node()` only)*
 

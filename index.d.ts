@@ -553,25 +553,44 @@ type Execa$<StdoutStderrType = string> = {
 
 	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 
-	@example
+	@example <caption>Basic</caption>
 	```
 	import {$} from 'execa';
 
 	const {stdout} = await $`echo unicorns`;
+	// const {stdout} = await $`echo ${'unicorns'}`;
+	// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+
 	console.log(stdout);
 	//=> 'unicorns'
-
-	const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
-	console.log(stdout);
-	//=> 'unicorns rainbows'
+	```
+	@example <caption>With options</caption>
+	```
+	import {$} from 'execa';
 
 	await $({stdio: 'inherit'})`echo unicorns`;
 	//=> 'unicorns'
+	```
+	@example <caption>With pre-defined options</caption>
+	```
+	import {$} from 'execa';
 
 	const $$ = $({stdio: 'inherit'});
 	await $$`echo unicorns`;
 	//=> 'unicorns'
-	await $$`echo rainbows`;
+	await $$({shell: true})`echo unicorns && echo rainbows`;
+	//=> 'unicorns'
+	//=> 'rainbows'
+	```
+	@example <caption>Synchronous</caption>
+	```
+	import {$} from 'execa';
+
+	const {stdout} = $.sync`echo unicorns`;
+	console.log(stdout);
+	//=> 'unicorns'
+
+	$({stdio: 'inherit'}).sync`echo rainbows`;
 	//=> 'rainbows'
 	```
 	*/
@@ -587,6 +606,18 @@ type Execa$<StdoutStderrType = string> = {
 	Same as `$` but synchronous like `execaSync()`.
 
 	@returns The stdout and stderr output.
+
+	@example
+	```
+	import {$} from 'execa';
+
+	const {stdout} = $.sync`echo unicorns`;
+	console.log(stdout);
+	//=> 'unicorns'
+
+	$({stdio: 'inherit'}).sync`echo rainbows`;
+	//=> 'rainbows'
+	```
 	*/
 	sync(
 		templates: TemplateStringsArray,
@@ -603,25 +634,44 @@ The `shell` option must be used if the `command` uses shell-specific features (f
 
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 
-@example
+@example <caption>Basic</caption>
 ```
 import {$} from 'execa';
 
 const {stdout} = await $`echo unicorns`;
+// const {stdout} = await $`echo ${'unicorns'}`;
+// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+
 console.log(stdout);
 //=> 'unicorns'
-
-const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
-console.log(stdout);
-//=> 'unicorns rainbows'
+```
+@example <caption>With options</caption>
+```
+import {$} from 'execa';
 
 await $({stdio: 'inherit'})`echo unicorns`;
 //=> 'unicorns'
+```
+@example <caption>With pre-defined options</caption>
+```
+import {$} from 'execa';
 
 const $$ = $({stdio: 'inherit'});
 await $$`echo unicorns`;
 //=> 'unicorns'
-await $$`echo rainbows`;
+await $$({shell: true})`echo unicorns && echo rainbows`;
+//=> 'unicorns'
+//=> 'rainbows'
+```
+@example <caption>Synchronous</caption>
+```
+import {$} from 'execa';
+
+const {stdout} = $.sync`echo unicorns`;
+console.log(stdout);
+//=> 'unicorns'
+
+$({stdio: 'inherit'}).sync`echo rainbows`;
 //=> 'rainbows'
 ```
 */

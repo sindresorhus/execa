@@ -564,6 +564,7 @@ type Execa$<StdoutStderrType = string> = {
 	console.log(stdout);
 	//=> 'unicorns'
 	```
+
 	@example <caption>With options</caption>
 	```
 	import {$} from 'execa';
@@ -571,6 +572,7 @@ type Execa$<StdoutStderrType = string> = {
 	await $({stdio: 'inherit'})`echo unicorns`;
 	//=> 'unicorns'
 	```
+
 	@example <caption>With pre-defined options</caption>
 	```
 	import {$} from 'execa';
@@ -582,6 +584,7 @@ type Execa$<StdoutStderrType = string> = {
 	//=> 'unicorns'
 	//=> 'rainbows'
 	```
+
 	@example <caption>Synchronous</caption>
 	```
 	import {$} from 'execa';
@@ -645,6 +648,7 @@ const {stdout} = await $`echo unicorns`;
 console.log(stdout);
 //=> 'unicorns'
 ```
+
 @example <caption>With options</caption>
 ```
 import {$} from 'execa';
@@ -652,6 +656,7 @@ import {$} from 'execa';
 await $({stdio: 'inherit'})`echo unicorns`;
 //=> 'unicorns'
 ```
+
 @example <caption>With pre-defined options</caption>
 ```
 import {$} from 'execa';
@@ -663,6 +668,7 @@ await $$({shell: true})`echo unicorns && echo rainbows`;
 //=> 'unicorns'
 //=> 'rainbows'
 ```
+
 @example <caption>Synchronous</caption>
 ```
 import {$} from 'execa';

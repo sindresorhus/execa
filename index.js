@@ -11,7 +11,7 @@ import {normalizeStdio, normalizeStdioNode} from './lib/stdio.js';
 import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
 import {handleInput, getSpawnedResult, makeAllStream, validateInputSync} from './lib/stream.js';
 import {mergePromise, getSpawnedPromise} from './lib/promise.js';
-import {joinCommand, parseCommand, getEscapedCommand} from './lib/command.js';
+import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
@@ -223,6 +223,26 @@ export function execaSync(file, args, options) {
 		killed: false,
 	};
 }
+
+function create$(options) {
+	function $(templatesOrOptions, ...expressions) {
+		if (Array.isArray(templatesOrOptions)) {
+			const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
+			return execa(file, args, options);
+		}
+
+		return create$({...options, ...templatesOrOptions});
+	}
+
+	$.sync = (templates, ...expressions) => {
+		const [file, ...args] = parseTemplates(templates, expressions);
+		return execaSync(file, args, options);
+	};
+
+	return $;
+}
+
+export const $ = create$();
 
 export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);

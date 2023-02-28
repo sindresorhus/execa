@@ -39,6 +39,57 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
+### Using the tagged templates API
+
+#### Basic
+
+```js
+import {$} from 'execa';
+
+const {stdout} = await $`echo unicorns`;
+// const {stdout} = await $`echo ${'unicorns'}`;
+// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+
+console.log(stdout);
+//=> 'unicorns'
+```
+
+#### With options
+
+```js
+import {$} from 'execa';
+
+await $({stdio: 'inherit'})`echo unicorns`;
+//=> 'unicorns'
+```
+
+#### With pre-defined options
+
+```js
+import {$} from 'execa';
+
+const $$ = $({stdio: 'inherit'});
+
+await $$`echo unicorns`;
+//=> 'unicorns'
+await $$({shell: true})`echo unicorns && echo rainbows`;
+//=> 'unicorns'
+//=> 'rainbows'
+```
+
+#### Synchronous
+
+```js
+import {$} from 'execa';
+
+const {stdout} = $.sync`echo unicorns`;
+console.log(stdout);
+//=> 'unicorns'
+
+$({stdio: 'inherit'}).sync`echo rainbows`;
+//=> 'rainbows'
+```
+
 ### Pipe the child process stdout to the parent
 
 ```js
@@ -190,6 +241,28 @@ This is `undefined` if either:
 Execute a file synchronously.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### $\`command\`
+
+Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+
+It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the [`shell` option](#shell) is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
+
+The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+Returns a `Promise` that resolves or rejects with a [`childProcessResult`](#childProcessResult).
+
+### $.sync\`command\`
+
+Same as [$\`command\`](#command) but synchronous like [`execaSync()`](#execasyncfile-arguments-options).
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### $(options)
+
+Binds options to the [`$`](#command) API. For example, you can use `$(options)` to create a new `$` instance with specific default options, which are then bound to both the asynchronous [`` $`command` ``](#command) and synchronous [`` $.sync`command` ``](#synccommand) APIs.
+
+> **Note:** Consecutive calls to this API will shallow merge the options.
 
 ### execaCommand(command, options?)
 

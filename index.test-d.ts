@@ -6,6 +6,7 @@ import * as process from 'node:process';
 import {type Readable as ReadableStream} from 'node:stream';
 import {expectType, expectError} from 'tsd';
 import {
+	$,
 	execa,
 	execaSync,
 	execaCommand,
@@ -219,3 +220,52 @@ expectType<ExecaChildProcess<Buffer>>(
 expectType<ExecaChildProcess<Buffer>>(
 	execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces'], encoding: null}),
 );
+
+expectType<ExecaChildProcess>($`unicorns`);
+expectType<ExecaReturnValue>(await $`unicorns`);
+expectType<ExecaSyncReturnValue>($.sync`unicorns`);
+
+expectType<ExecaChildProcess>($({encoding: 'utf8'})`unicorns`);
+expectType<ExecaReturnValue>(await $({encoding: 'utf8'})`unicorns`);
+expectType<ExecaSyncReturnValue>($({encoding: 'utf8'}).sync`unicorns`);
+
+expectType<ExecaChildProcess>($({encoding: 'utf8'})`unicorns foo`);
+expectType<ExecaReturnValue>(await $({encoding: 'utf8'})`unicorns foo`);
+expectType<ExecaSyncReturnValue>($({encoding: 'utf8'}).sync`unicorns foo`);
+
+expectType<ExecaChildProcess<Buffer>>($({encoding: null})`unicorns`);
+expectType<ExecaReturnValue<Buffer>>(await $({encoding: null})`unicorns`);
+expectType<ExecaSyncReturnValue<Buffer>>($({encoding: null}).sync`unicorns`);
+
+expectType<ExecaChildProcess<Buffer>>($({encoding: null})`unicorns foo`);
+expectType<ExecaReturnValue<Buffer>>(await $({encoding: null})`unicorns foo`);
+expectType<ExecaSyncReturnValue<Buffer>>($({encoding: null}).sync`unicorns foo`);
+
+expectType<ExecaChildProcess>($({encoding: null})({encoding: 'utf8'})`unicorns`);
+expectType<ExecaReturnValue>(await $({encoding: null})({encoding: 'utf8'})`unicorns`);
+expectType<ExecaSyncReturnValue>($({encoding: null})({encoding: 'utf8'}).sync`unicorns`);
+
+expectType<ExecaChildProcess>($({encoding: null})({encoding: 'utf8'})`unicorns foo`);
+expectType<ExecaReturnValue>(await $({encoding: null})({encoding: 'utf8'})`unicorns foo`);
+expectType<ExecaSyncReturnValue>($({encoding: null})({encoding: 'utf8'}).sync`unicorns foo`);
+
+expectType<ExecaChildProcess<Buffer>>($({encoding: null})({})`unicorns`);
+expectType<ExecaReturnValue<Buffer>>(await $({encoding: null})({})`unicorns`);
+expectType<ExecaSyncReturnValue<Buffer>>($({encoding: null})({}).sync`unicorns`);
+
+expectType<ExecaChildProcess<Buffer>>($({encoding: null})({})`unicorns foo`);
+expectType<ExecaReturnValue<Buffer>>(await $({encoding: null})({})`unicorns foo`);
+expectType<ExecaSyncReturnValue<Buffer>>($({encoding: null})({}).sync`unicorns foo`);
+
+expectType<ExecaReturnValue>(await $`unicorns ${'foo'}`);
+expectType<ExecaSyncReturnValue>($.sync`unicorns ${'foo'}`);
+expectType<ExecaReturnValue>(await $`unicorns ${1}`);
+expectType<ExecaSyncReturnValue>($.sync`unicorns ${1}`);
+expectType<ExecaReturnValue>(await $`unicorns ${['foo', 'bar']}`);
+expectType<ExecaSyncReturnValue>($.sync`unicorns ${['foo', 'bar']}`);
+expectType<ExecaReturnValue>(await $`unicorns ${[1, 2]}`);
+expectType<ExecaSyncReturnValue>($.sync`unicorns ${[1, 2]}`);
+expectType<ExecaReturnValue>(await $`unicorns ${true.toString()}`);
+expectType<ExecaSyncReturnValue>($.sync`unicorns ${false.toString()}`);
+expectError<ExecaReturnValue>(await $`unicorns ${true}`);
+expectError<ExecaSyncReturnValue>($.sync`unicorns ${false}`);

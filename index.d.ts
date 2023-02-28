@@ -337,8 +337,8 @@ export type ExecaReturnBase<StdoutStderrType> = {
 	signalDescription?: string;
 };
 
-export type ExecaSyncReturnValue<StdoutErrorType = string> = {
-} & ExecaReturnBase<StdoutErrorType>;
+export type ExecaSyncReturnValue<StdoutStderrType = string> = {
+} & ExecaReturnBase<StdoutStderrType>;
 
 /**
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
@@ -350,7 +350,7 @@ The child process fails when:
 - being canceled
 - there's not enough memory or there are already too many child processes
 */
-export type ExecaReturnValue<StdoutErrorType = string> = {
+export type ExecaReturnValue<StdoutStderrType = string> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -358,7 +358,7 @@ export type ExecaReturnValue<StdoutErrorType = string> = {
 	- the `all` option is `false` (default value)
 	- `execaSync()` was used
 	*/
-	all?: StdoutErrorType;
+	all?: StdoutStderrType;
 
 	/**
 	Whether the process was canceled.
@@ -366,9 +366,9 @@ export type ExecaReturnValue<StdoutErrorType = string> = {
 	You can cancel the spawned process using the [`signal`](https://github.com/sindresorhus/execa#signal-1) option.
 	*/
 	isCanceled: boolean;
-} & ExecaSyncReturnValue<StdoutErrorType>;
+} & ExecaSyncReturnValue<StdoutStderrType>;
 
-export type ExecaSyncError<StdoutErrorType = string> = {
+export type ExecaSyncError<StdoutStderrType = string> = {
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -387,9 +387,9 @@ export type ExecaSyncError<StdoutErrorType = string> = {
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/
 	originalMessage?: string;
-} & Error & ExecaReturnBase<StdoutErrorType>;
+} & Error & ExecaReturnBase<StdoutStderrType>;
 
-export type ExecaError<StdoutErrorType = string> = {
+export type ExecaError<StdoutStderrType = string> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -397,13 +397,13 @@ export type ExecaError<StdoutErrorType = string> = {
 	- the `all` option is `false` (default value)
 	- `execaSync()` was used
 	*/
-	all?: StdoutErrorType;
+	all?: StdoutStderrType;
 
 	/**
 	Whether the process was canceled.
 	*/
 	isCanceled: boolean;
-} & ExecaSyncError<StdoutErrorType>;
+} & ExecaSyncError<StdoutStderrType>;
 
 export type KillOptions = {
 	/**
@@ -416,7 +416,7 @@ export type KillOptions = {
 	forceKillAfterTimeout?: number | false;
 };
 
-export type ExecaChildPromise<StdoutErrorType> = {
+export type ExecaChildPromise<StdoutStderrType> = {
 	/**
 	Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
@@ -427,8 +427,8 @@ export type ExecaChildPromise<StdoutErrorType> = {
 	all?: ReadableStream;
 
 	catch<ResultType = never>(
-		onRejected?: (reason: ExecaError<StdoutErrorType>) => ResultType | PromiseLike<ResultType>
-	): Promise<ExecaReturnValue<StdoutErrorType> | ResultType>;
+		onRejected?: (reason: ExecaError<StdoutStderrType>) => ResultType | PromiseLike<ResultType>
+	): Promise<ExecaReturnValue<StdoutStderrType> | ResultType>;
 
 	/**
 	Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
@@ -441,9 +441,9 @@ export type ExecaChildPromise<StdoutErrorType> = {
 	cancel(): void;
 };
 
-export type ExecaChildProcess<StdoutErrorType = string> = ChildProcess &
-ExecaChildPromise<StdoutErrorType> &
-Promise<ExecaReturnValue<StdoutErrorType>>;
+export type ExecaChildProcess<StdoutStderrType = string> = ChildProcess &
+ExecaChildPromise<StdoutStderrType> &
+Promise<ExecaReturnValue<StdoutStderrType>>;
 
 /**
 Execute a file.
@@ -540,6 +540,148 @@ console.log(stdout);
 */
 export function execaCommand(command: string, options?: Options): ExecaChildProcess;
 export function execaCommand(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+
+type TemplateExpression = string | number | Array<string | number>;
+
+type Execa$<StdoutStderrType = string> = {
+	/**
+	Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+
+	It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
+
+	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+
+	@example <caption>Basic</caption>
+	```
+	import {$} from 'execa';
+
+	const {stdout} = await $`echo unicorns`;
+	// const {stdout} = await $`echo ${'unicorns'}`;
+	// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+
+	console.log(stdout);
+	//=> 'unicorns'
+	```
+
+	@example <caption>With options</caption>
+	```
+	import {$} from 'execa';
+
+	await $({stdio: 'inherit'})`echo unicorns`;
+	//=> 'unicorns'
+	```
+
+	@example <caption>With pre-defined options</caption>
+	```
+	import {$} from 'execa';
+
+	const $$ = $({stdio: 'inherit'});
+	await $$`echo unicorns`;
+	//=> 'unicorns'
+	await $$({shell: true})`echo unicorns && echo rainbows`;
+	//=> 'unicorns'
+	//=> 'rainbows'
+	```
+
+	@example <caption>Synchronous</caption>
+	```
+	import {$} from 'execa';
+
+	const {stdout} = $.sync`echo unicorns`;
+	console.log(stdout);
+	//=> 'unicorns'
+
+	$({stdio: 'inherit'}).sync`echo rainbows`;
+	//=> 'rainbows'
+	```
+	*/
+	(options: Options<undefined>): Execa$<StdoutStderrType>;
+	(options: Options): Execa$;
+	(options: Options<null>): Execa$<Buffer>;
+	(
+		templates: TemplateStringsArray,
+		...expressions: TemplateExpression[]
+	): ExecaChildProcess<StdoutStderrType>;
+
+	/**
+	Same as `$` but synchronous like `execaSync()`.
+
+	@returns The stdout and stderr output.
+
+	@example
+	```
+	import {$} from 'execa';
+
+	const {stdout} = $.sync`echo unicorns`;
+	console.log(stdout);
+	//=> 'unicorns'
+
+	$({stdio: 'inherit'}).sync`echo rainbows`;
+	//=> 'rainbows'
+	```
+	*/
+	sync(
+		templates: TemplateStringsArray,
+		...expressions: TemplateExpression[]
+	): ExecaSyncReturnValue<StdoutStderrType>;
+};
+
+/**
+Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+
+It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
+
+The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+
+@example <caption>Basic</caption>
+```
+import {$} from 'execa';
+
+const {stdout} = await $`echo unicorns`;
+// const {stdout} = await $`echo ${'unicorns'}`;
+// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+
+console.log(stdout);
+//=> 'unicorns'
+```
+
+@example <caption>With options</caption>
+```
+import {$} from 'execa';
+
+await $({stdio: 'inherit'})`echo unicorns`;
+//=> 'unicorns'
+```
+
+@example <caption>With pre-defined options</caption>
+```
+import {$} from 'execa';
+
+const $$ = $({stdio: 'inherit'});
+await $$`echo unicorns`;
+//=> 'unicorns'
+await $$({shell: true})`echo unicorns && echo rainbows`;
+//=> 'unicorns'
+//=> 'rainbows'
+```
+
+@example <caption>Synchronous</caption>
+```
+import {$} from 'execa';
+
+const {stdout} = $.sync`echo unicorns`;
+console.log(stdout);
+//=> 'unicorns'
+
+$({stdio: 'inherit'}).sync`echo rainbows`;
+//=> 'rainbows'
+```
+*/
+export const $: Execa$;
 
 /**
 Same as `execaCommand()` but synchronous.

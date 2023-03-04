@@ -106,6 +106,30 @@ test('$ allows array interpolation', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$ allows execa return value interpolation', async t => {
+	const foo = await $`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows execa return value array interpolation', async t => {
+	const foo = await $`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows execa return value buffer interpolation', async t => {
+	const foo = await $({encoding: null})`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows execa return value buffer array interpolation', async t => {
+	const foo = await $({encoding: null})`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
 test('$ ignores consecutive spaces', async t => {
 	const {stdout} = await $`node test/fixtures/echo.js foo    bar`;
 	t.is(stdout, 'foo\nbar');
@@ -170,3 +194,28 @@ test('$.sync accepts options', t => {
 	const {stdout} = $({stripFinalNewline: true}).sync`noop.js foo`;
 	t.is(stdout, 'foo');
 });
+
+test('$.sync allows execa return value interpolation', t => {
+	const foo = $.sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$.sync allows execa return value array interpolation', t => {
+	const foo = $.sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$.sync allows execa return value buffer interpolation', t => {
+	const foo = $({encoding: null}).sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$.sync allows execa return value buffer array interpolation', t => {
+	const foo = $({encoding: null}).sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+

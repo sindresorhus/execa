@@ -541,7 +541,12 @@ console.log(stdout);
 export function execaCommand(command: string, options?: Options): ExecaChildProcess;
 export function execaCommand(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
-type TemplateExpression = string | number | Array<string | number>;
+type TemplateExpression =
+	| string
+	| number
+	| ExecaReturnValue<string | Buffer>
+	| ExecaSyncReturnValue<string | Buffer>
+	| Array<string | number | ExecaReturnValue<string | Buffer> | ExecaSyncReturnValue<string | Buffer>>;
 
 type Execa$<StdoutStderrType = string> = {
 	/**

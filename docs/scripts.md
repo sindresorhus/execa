@@ -28,7 +28,7 @@ This file describes the differences between Bash, Execa, and [zx](https://github
 
 ### Flexibility
 
-Unlike shell languages like Bash, libraries like Execa and zx enable you to write scripts with a more featureful programming language (JavaScript). This allows complex logic (such as [parallel execution](#parallel-commands)) to be expressed easily. This also lets you use [any Node module](#builtin-utilities).
+Unlike shell languages like Bash, libraries like Execa and zx enable you to write scripts with a more featureful programming language (JavaScript). This allows complex logic (such as [parallel execution](#parallel-commands)) to be expressed easily. This also lets you use [any Node.js package](#builtin-utilities).
 
 ### Shell
 

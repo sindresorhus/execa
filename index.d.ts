@@ -537,7 +537,7 @@ await execa('echo', ['unicorns']).pipeStdout('stdout.txt');
 await execa('echo', ['unicorns']).pipeStderr('stderr.txt');
 
 // Similar to `echo unicorns &> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
+await execa('echo', ['unicorns'], {all: true}).pipeAll('all.txt');
 ```
 
 @example <caption>Redirect input from a file</caption>
@@ -545,7 +545,7 @@ await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
 import {execa} from 'execa';
 
 // Similar to `cat < stdin.txt` in Bash
-const {stdout} = await execa('cat', {inputFile:'stdin.txt'});
+const {stdout} = await execa('cat', {inputFile: 'stdin.txt'});
 console.log(stdout);
 //=> 'unicorns'
 ```
@@ -648,7 +648,7 @@ console.log(stdout);
 import {execa} from 'execa';
 
 // Similar to `cat < stdin.txt` in Bash
-const {stdout} = execaSync('cat', {inputFile:'stdin.txt'});
+const {stdout} = execaSync('cat', {inputFile: 'stdin.txt'});
 console.log(stdout);
 //=> 'unicorns'
 ```
@@ -794,15 +794,15 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	```
 	import {$} from 'execa';
 
-	const branch = $.sync`git branch --show-current`
-	$.sync`dep deploy --branch=${branch}`
+	const branch = $.sync`git branch --show-current`;
+	$.sync`dep deploy --branch=${branch}`;
 	```
 
 	@example <caption>Multiple arguments</caption>
 	```
 	import {$} from 'execa';
 
-	const args = ['unicorns', '&', 'rainbows!']
+	const args = ['unicorns', '&', 'rainbows!'];
 	const {stdout} = $.sync`echo ${args}`;
 	console.log(stdout);
 	//=> 'unicorns & rainbows!'
@@ -853,15 +853,15 @@ The `command` string can inject any `${value}` with the following types: string,
 ```
 import {$} from 'execa';
 
-const branch = await $`git branch --show-current`
-await $`dep deploy --branch=${branch}`
+const branch = await $`git branch --show-current`;
+await $`dep deploy --branch=${branch}`;
 ```
 
 @example <caption>Multiple arguments</caption>
 ```
 import {$} from 'execa';
 
-const args = ['unicorns', '&', 'rainbows!']
+const args = ['unicorns', '&', 'rainbows!'];
 const {stdout} = await $`echo ${args}`;
 console.log(stdout);
 //=> 'unicorns & rainbows!'

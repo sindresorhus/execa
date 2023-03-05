@@ -125,13 +125,24 @@ rainbows
 import {execa} from 'execa';
 
 // Similar to `echo unicorns > stdout.txt` in Bash
-await execa('echo', ['unicorns']).pipeStdout('stdout.txt')
+await execa('echo', ['unicorns']).pipeStdout('stdout.txt');
 
 // Similar to `echo unicorns 2> stdout.txt` in Bash
-await execa('echo', ['unicorns']).pipeStderr('stderr.txt')
+await execa('echo', ['unicorns']).pipeStderr('stderr.txt');
 
 // Similar to `echo unicorns &> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt')
+await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
+```
+
+### Redirect input from a file
+
+```js
+import {execa} from 'execa';
+
+// Similar to `cat < stdin.txt` in Bash
+const {stdout} = await execa('cat', {input:fs.createReadStream('stdin.txt')});
+console.log(stdout);
+//=> 'unicorns'
 ```
 
 ### Save and pipe output from a child process
@@ -762,15 +773,6 @@ const run = async () => {
 };
 
 console.log(await pRetry(run, {retries: 5}));
-```
-
-### Redirect input from a file
-
-```js
-import {execa} from 'execa';
-
-const subprocess = execa('cat')
-fs.createReadStream('stdin.txt').pipe(subprocess.stdin)
 ```
 
 ### Execute the current package's binary

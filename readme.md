@@ -279,58 +279,6 @@ No escaping/quoting is needed.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
-### childProcess
-
-This is both:
-  - a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
-  - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
-
-#### kill(signal?, options?)
-
-Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
-
-##### options.forceKillAfterTimeout
-
-Type: `number | false`\
-Default: `5000`
-
-Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
-
-Can be disabled with `false`.
-
-#### all
-
-Type: `ReadableStream | undefined`
-
-Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
-
-This is `undefined` if either:
-  - the [`all` option](#all-2) is `false` (the default value)
-  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
-
-#### pipeStdout(target)
-
-[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
-  - Another [`execa()` return value](#pipe-multiple-processes)
-  - A [writable stream](#save-and-pipe-output-from-a-child-process)
-  - A [file path string](#redirect-output-to-a-file)
-
-If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
-
-The [`stdout` option](#stdout-1) must be kept as `pipe`, its default value.
-
-#### pipeStderr(target)
-
-Like [`pipeStdout()`](#pipestdouttarget) but piping the child process's `stderr` instead.
-
-The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
-
-#### pipeAll(target)
-
-Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
-
-Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
-
 ### execaSync(file, arguments?, options?)
 
 Execute a file synchronously.
@@ -383,6 +331,58 @@ Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`chil
   - the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
   - the [`shell`](#shell) option cannot be used
   - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
+
+### childProcess
+
+This is both:
+  - a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
+  - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
+
+#### kill(signal?, options?)
+
+Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
+
+##### options.forceKillAfterTimeout
+
+Type: `number | false`\
+Default: `5000`
+
+Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
+
+Can be disabled with `false`.
+
+#### all
+
+Type: `ReadableStream | undefined`
+
+Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
+
+This is `undefined` if either:
+  - the [`all` option](#all-2) is `false` (the default value)
+  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+
+#### pipeStdout(target)
+
+[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
+  - Another [`execa()` return value](#pipe-multiple-processes)
+  - A [writable stream](#save-and-pipe-output-from-a-child-process)
+  - A [file path string](#redirect-output-to-a-file)
+
+If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
+
+The [`stdout` option](#stdout-1) must be kept as `pipe`, its default value.
+
+#### pipeStderr(target)
+
+Like [`pipeStdout()`](#pipestdouttarget) but piping the child process's `stderr` instead.
+
+The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
+
+#### pipeAll(target)
+
+Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
+
+Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
 
 ### childProcessResult
 

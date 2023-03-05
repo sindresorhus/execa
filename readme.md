@@ -68,13 +68,21 @@ console.log(stdout);
 ```js
 import {$} from 'execa';
 
+await $({stdio: 'inherit'})`echo unicorns`;
+//=> 'unicorns'
+```
+
+#### Shared options
+
+```js
+import {$} from 'execa';
+
 const $$ = $({stdio: 'inherit'});
 
 await $$`echo unicorns`;
 //=> 'unicorns'
 
-await $$({shell: true})`echo unicorns && echo rainbows`;
-//=> 'unicorns'
+await $$`echo rainbows`;
 //=> 'rainbows'
 ```
 

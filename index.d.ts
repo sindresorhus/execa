@@ -452,20 +452,31 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	cancel(): void;
 
 	/**
+	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
+    - Another `execa()` return value
+    - A writable stream
+    - A file path string
 
-	 */
+  If the `target` is another `execa()` return value, it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the final result.
+
+  The `stdout` option] must be kept as `pipe`, its default value.
+	*/
 	pipeStdout?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
 	pipeStdout?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
 
 	/**
+  Like `pipeStdout()` but piping the child process's `stderr` instead.
 
-	 */
+  The `stderr` option must be kept as `pipe`, its default value.
+	*/
 	pipeStderr?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
 	pipeStderr?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
 
 	/**
+  Combines both `pipeStdout()` and `pipeStderr()`.
 
-	 */
+  Either the `stdout` option or the `stderr` option must be kept as `pipe`, their default value. Also, the `all` option must be set to `true`.
+	*/
 	pipeAll?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
 	pipeAll?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
 };

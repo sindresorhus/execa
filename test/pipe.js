@@ -43,29 +43,36 @@ test('pipeStderr() can pipe to files', pipeToFile, 'noop-err.js', 'pipeStderr', 
 test('pipeAll() can pipe stdout to files', pipeToFile, 'noop.js', 'pipeAll', 'stdout');
 test('pipeAll() can pipe stderr to files', pipeToFile, 'noop-err.js', 'pipeAll', 'stderr');
 
-const invalidTargetMacro = (t, funcName, getTarget) => {
+const invalidTarget = (t, funcName, getTarget) => {
 	t.throws(() => execa('noop.js', {all: true})[funcName](getTarget()), {
 		message: /a stream or an Execa child process/,
 	});
 };
 
-test('pipeStdout() can only pipe to writable streams', invalidTargetMacro, 'pipeStdout', () => new Readable());
-test('pipeStderr() can only pipe to writable streams', invalidTargetMacro, 'pipeStderr', () => new Readable());
-test('pipeAll() can only pipe to writable streams', invalidTargetMacro, 'pipeAll', () => new Readable());
-test('pipeStdout() cannot pipe to processes with inherited stdin', invalidTargetMacro, 'pipeStdout', () => execa('stdin.js', {stdin: 'inherit'}));
-test('pipeStderr() cannot pipe to processes with inherited stdin', invalidTargetMacro, 'pipeStderr', () => execa('stdin.js', {stdin: 'inherit'}));
-test('pipeAll() cannot pipe to processes with inherited stdin', invalidTargetMacro, 'pipeStderr', () => execa('stdin.js', {stdin: 'inherit'}));
-test('pipeStdout() cannot pipe to non-processes', invalidTargetMacro, 'pipeStdout', () => ({stdin: new PassThrough()}));
-test('pipeStderr() cannot pipe to non-processes', invalidTargetMacro, 'pipeStderr', () => ({stdin: new PassThrough()}));
-test('pipeAll() cannot pipe to non-processes', invalidTargetMacro, 'pipeStderr', () => ({stdin: new PassThrough()}));
-test('pipeStdout() cannot pipe to non-Execa processes', invalidTargetMacro, 'pipeStdout', () => spawn('node', ['--version']));
-test('pipeStderr() cannot pipe to non-Execa processes', invalidTargetMacro, 'pipeStderr', () => spawn('node', ['--version']));
-test('pipeAll() cannot pipe to non-Execa processes', invalidTargetMacro, 'pipeStderr', () => spawn('node', ['--version']));
+test('pipeStdout() can only pipe to writable streams', invalidTarget, 'pipeStdout', () => new Readable());
+test('pipeStderr() can only pipe to writable streams', invalidTarget, 'pipeStderr', () => new Readable());
+test('pipeAll() can only pipe to writable streams', invalidTarget, 'pipeAll', () => new Readable());
+test('pipeStdout() cannot pipe to non-processes', invalidTarget, 'pipeStdout', () => ({stdin: new PassThrough()}));
+test('pipeStderr() cannot pipe to non-processes', invalidTarget, 'pipeStderr', () => ({stdin: new PassThrough()}));
+test('pipeAll() cannot pipe to non-processes', invalidTarget, 'pipeStderr', () => ({stdin: new PassThrough()}));
+test('pipeStdout() cannot pipe to non-Execa processes', invalidTarget, 'pipeStdout', () => spawn('node', ['--version']));
+test('pipeStderr() cannot pipe to non-Execa processes', invalidTarget, 'pipeStderr', () => spawn('node', ['--version']));
+test('pipeAll() cannot pipe to non-Execa processes', invalidTarget, 'pipeStderr', () => spawn('node', ['--version']));
 
-const invalidSourceMacro = (t, funcName) => {
+const invalidSource = (t, funcName) => {
 	t.false(funcName in execa('noop.js', {stdout: 'ignore', stderr: 'ignore'}));
 };
 
-test('Must set "stdout" option to "pipe" use pipeStdout()', invalidSourceMacro, 'pipeStdout');
-test('Must set "stderr" option to "pipe" use pipeStderr()', invalidSourceMacro, 'pipeStderr');
-test('Must set "stdout" or "stderr" option to "pipe" use pipeAll()', invalidSourceMacro, 'pipeAll');
+test('Must set "stdout" option to "pipe" to use pipeStdout()', invalidSource, 'pipeStdout');
+test('Must set "stderr" option to "pipe" to use pipeStderr()', invalidSource, 'pipeStderr');
+test('Must set "stdout" or "stderr" option to "pipe" to use pipeAll()', invalidSource, 'pipeAll');
+
+const invalidPipeToProcess = async (t, fixtureName, funcName) => {
+	t.throws(() => execa(fixtureName, ['test'], {all: true})[funcName](execa('stdin.js', {stdin: 'ignore'})), {
+		message: /stdin must be available/,
+	});
+};
+
+test('Must set target "stdin" option to "pipe" to use pipeStdout()', invalidPipeToProcess, 'noop.js', 'pipeStdout');
+test('Must set target "stdin" option to "pipe" to use pipeStderr()', invalidPipeToProcess, 'noop-err.js', 'pipeStderr');
+test('Must set target "stdin" option to "pipe" to use pipeAll()', invalidPipeToProcess, 'noop.js', 'pipeAll');

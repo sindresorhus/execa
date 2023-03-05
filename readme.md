@@ -179,7 +179,6 @@ try {
 		escapedCommand: 'unknown command',
 		stdout: '',
 		stderr: '',
-		all: '',
 		failed: true,
 		timedOut: false,
 		isCanceled: false,

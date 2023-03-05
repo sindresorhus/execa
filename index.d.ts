@@ -515,31 +515,100 @@ Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 @throws A `childProcessResult` error
 
-@example
+@example <caption>Promise interface</caption>
 ```
 import {execa} from 'execa';
 
 const {stdout} = await execa('echo', ['unicorns']);
 console.log(stdout);
 //=> 'unicorns'
+```
 
-// Cancelling a spawned process
+@example <caption>Redirect output to a file</caption>
+```
+import {execa} from 'execa';
 
+// Similar to `echo unicorns > stdout.txt` in Bash
+await execa('echo', ['unicorns']).pipeStdout('stdout.txt');
+
+// Similar to `echo unicorns 2> stdout.txt` in Bash
+await execa('echo', ['unicorns']).pipeStderr('stderr.txt');
+
+// Similar to `echo unicorns &> stdout.txt` in Bash
+await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
+```
+
+@example <caption>Redirect input from a file</caption>
+```
+import {execa} from 'execa';
+
+// Similar to `cat < stdin.txt` in Bash
+const {stdout} = await execa('cat', {inputFile:'stdin.txt'});
+console.log(stdout);
+//=> 'unicorns'
+```
+
+@example <caption>Save and pipe output from a child process</caption>
+```
+import {execa} from 'execa';
+
+const {stdout} = await execa('echo', ['unicorns']).pipeStdout(process.stdout);
+// Prints `unicorns`
+console.log(stdout);
+// Also returns 'unicorns'
+```
+
+@example <caption>Pipe multiple processes</caption>
+```
+import {execa} from 'execa';
+
+// Similar to `echo unicorns | cat` in Bash
+const {stdout} = await execa('echo', ['unicorns']).pipeStdout(execa('cat'));
+console.log(stdout);
+//=> 'unicorns'
+```
+
+@example <caption>Handling errors</caption>
+```
+import {execa} from 'execa';
+
+// Catching an error
+try {
+	await execa('unknown', ['command']);
+} catch (error) {
+	console.log(error);
+	/*
+	{
+		message: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
+		errno: -2,
+		code: 'ENOENT',
+		syscall: 'spawn unknown',
+		path: 'unknown',
+		spawnargs: ['command'],
+		originalMessage: 'spawn unknown ENOENT',
+		shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
+		command: 'unknown command',
+		escapedCommand: 'unknown command',
+		stdout: '',
+		stderr: '',
+		failed: true,
+		timedOut: false,
+		isCanceled: false,
+		killed: false
+	}
+	\*\/
+}
+```
+
+@example <caption>Graceful termination</caption>
+```
 const subprocess = execa('node');
 
 setTimeout(() => {
-	subprocess.cancel()
+	subprocess.kill('SIGTERM', {
+		forceKillAfterTimeout: 2000
+	});
 }, 1000);
-
-try {
-	await subprocess;
-} catch (error) {
-	console.log(subprocess.killed); // true
-	console.log(error.isCanceled); // true
-}
-
-// Pipe the child process stdout to the current stdout
-execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 ```
 */
 export function execa(
@@ -562,6 +631,57 @@ Same as `execa()` but synchronous.
 @param arguments - Arguments to pass to `file` on execution.
 @returns A `childProcessResult` object
 @throws A `childProcessResult` error
+
+@example <caption>Promise interface</caption>
+```
+import {execa} from 'execa';
+
+const {stdout} = execaSync('echo', ['unicorns']);
+console.log(stdout);
+//=> 'unicorns'
+```
+
+@example <caption>Redirect input from a file</caption>
+```
+import {execa} from 'execa';
+
+// Similar to `cat < stdin.txt` in Bash
+const {stdout} = execaSync('cat', {inputFile:'stdin.txt'});
+console.log(stdout);
+//=> 'unicorns'
+```
+
+@example <caption>Handling errors</caption>
+```
+import {execa} from 'execa';
+
+// Catching an error
+try {
+	execaSync('unknown', ['command']);
+} catch (error) {
+	console.log(error);
+	/*
+	{
+		message: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
+		errno: -2,
+		code: 'ENOENT',
+		syscall: 'spawnSync unknown',
+		path: 'unknown',
+		spawnargs: ['command'],
+		originalMessage: 'spawnSync unknown ENOENT',
+		shortMessage: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
+		command: 'unknown command',
+		escapedCommand: 'unknown command',
+		stdout: '',
+		stderr: '',
+		failed: true,
+		timedOut: false,
+		isCanceled: false,
+		killed: false
+	}
+	\*\/
+}
+```
 */
 export function execaSync(
 	file: string,
@@ -604,6 +724,25 @@ console.log(stdout);
 export function execaCommand(command: string, options?: Options): ExecaChildProcess;
 export function execaCommand(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
+/**
+Same as `execaCommand()` but synchronous.
+
+@param command - The program/script to execute and its arguments.
+@returns A `childProcessResult` object
+@throws A `childProcessResult` error
+
+@example
+```
+import {execaCommandSync} from 'execa';
+
+const {stdout} = execaCommandSync('echo unicorns');
+console.log(stdout);
+//=> 'unicorns'
+```
+*/
+export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
+export function execaCommandSync(command: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
+
 type TemplateExpression =
 	| string
 	| number
@@ -613,96 +752,47 @@ type TemplateExpression =
 
 type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
-	Same as `execa()` (including its return value) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+	Same as $\`command\` but synchronous.
 
-	It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
-
-	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
-
-	As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example below `` with results from `$` or `$.sync` `` for more details.
-
-	@returns An `ExecaChildProcess` that is both:
-		- a `Promise` resolving or rejecting with a `childProcessResult`.
-		- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error
 
 	@example <caption>Basic</caption>
 	```
 	import {$} from 'execa';
 
-	const {stdout} = await $`echo unicorns`;
-	// const {stdout} = await $`echo ${'unicorns'}`;
-	// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+	const branch = $.sync`git branch --show-current`
+	$.sync`dep deploy --branch=${branch}`
+	```
 
+	@example <caption>Multiple arguments</caption>
+	```
+	import {$} from 'execa';
+
+	const args = ['unicorns', '&', 'rainbows!']
+	const {stdout} = $.sync`echo ${args}`;
 	console.log(stdout);
-	//=> 'unicorns'
+	//=> 'unicorns & rainbows!'
 	```
 
 	@example <caption>With options</caption>
 	```
 	import {$} from 'execa';
 
-	await $({stdio: 'inherit'})`echo unicorns`;
+	$.sync({stdio: 'inherit'})`echo unicorns`;
 	//=> 'unicorns'
 	```
 
-	@example <caption>With pre-defined options</caption>
+	@example <caption>Shared options</caption>
 	```
 	import {$} from 'execa';
 
 	const $$ = $({stdio: 'inherit'});
-	await $$`echo unicorns`;
-	//=> 'unicorns'
-	await $$({shell: true})`echo unicorns && echo rainbows`;
-	//=> 'unicorns'
-	//=> 'rainbows'
-	```
 
-	@example <caption>Synchronous</caption>
-	```
-	import {$} from 'execa';
-
-	const {stdout} = $.sync`echo unicorns`;
-	console.log(stdout);
+	$$.sync`echo unicorns`;
 	//=> 'unicorns'
 
-	$({stdio: 'inherit'}).sync`echo rainbows`;
-	//=> 'rainbows'
-	```
-
-	@example <caption>With results from `$` or `$.sync`</caption>
-	```
-	import {$} from 'execa';
-
-	const unicorns = await $`echo unicorns`;
-
-	$({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
-	//=> 'unicorns rainbows'
-	```
-	*/
-	(options: Options<undefined>): Execa$<StdoutStderrType>;
-	(options: Options): Execa$;
-	(options: Options<null>): Execa$<Buffer>;
-	(
-		templates: TemplateStringsArray,
-		...expressions: TemplateExpression[]
-	): ExecaChildProcess<StdoutStderrType>;
-
-	/**
-	Same as $\`command\` but synchronous.
-
-	@returns A `childProcessResult` object
-	@throws A `childProcessResult` error
-
-	@example
-	```
-	import {$} from 'execa';
-
-	const {stdout} = $.sync`echo unicorns`;
-	console.log(stdout);
-	//=> 'unicorns'
-
-	$({stdio: 'inherit'}).sync`echo rainbows`;
+	$$.sync`echo rainbows`;
 	//=> 'rainbows'
 	```
 	*/
@@ -730,12 +820,18 @@ As a convenience, the result from previous `` $`command` `` or `` $.sync`command
 ```
 import {$} from 'execa';
 
-const {stdout} = await $`echo unicorns`;
-// const {stdout} = await $`echo ${'unicorns'}`;
-// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+const branch = await $`git branch --show-current`
+await $`dep deploy --branch=${branch}`
+```
 
+@example <caption>Multiple arguments</caption>
+```
+import {$} from 'execa';
+
+const args = ['unicorns', '&', 'rainbows!']
+const {stdout} = await $`echo ${args}`;
 console.log(stdout);
-//=> 'unicorns'
+//=> 'unicorns & rainbows!'
 ```
 
 @example <caption>With options</caption>
@@ -746,51 +842,20 @@ await $({stdio: 'inherit'})`echo unicorns`;
 //=> 'unicorns'
 ```
 
-@example <caption>With pre-defined options</caption>
+@example <caption>Shared options</caption>
 ```
 import {$} from 'execa';
 
 const $$ = $({stdio: 'inherit'});
+
 await $$`echo unicorns`;
 //=> 'unicorns'
-await $$({shell: true})`echo unicorns && echo rainbows`;
-//=> 'unicorns'
+
+await $$`echo rainbows`;
 //=> 'rainbows'
-```
-
-@example <caption>Synchronous</caption>
-```
-import {$} from 'execa';
-
-const {stdout} = $.sync`echo unicorns`;
-console.log(stdout);
-//=> 'unicorns'
-
-$({stdio: 'inherit'}).sync`echo rainbows`;
-//=> 'rainbows'
-```
-
-@example <caption>With results from `$` or `$.sync`</caption>
-```
-import {$} from 'execa';
-
-const unicorns = await $`echo unicorns`;
-
-$({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
-//=> 'unicorns rainbows'
 ```
 */
 export const $: Execa$;
-
-/**
-Same as `execaCommand()` but synchronous.
-
-@param command - The program/script to execute and its arguments.
-@returns A `childProcessResult` object
-@throws A `childProcessResult` error
-*/
-export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
-export function execaCommandSync(command: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
 
 /**
 Execute a Node.js script as a child process.
@@ -806,6 +871,13 @@ Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`chil
 	- a `Promise` resolving or rejecting with a `childProcessResult`.
 	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 @throws A `childProcessResult` error
+
+@example
+```
+import {execa} from 'execa';
+
+await execaNode('scriptPath', ['argument']);
+```
 */
 export function execaNode(
 	scriptPath: string,

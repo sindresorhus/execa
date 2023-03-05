@@ -13,6 +13,7 @@
 This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
 
 - Promise interface.
+- [Scripts interface](#scripts-interface).
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
 - Supports [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries cross-platform.
 - [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn#why)
@@ -39,7 +40,9 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
-### Using the tagged templates API
+### Scripts interface
+
+For more information, please see [this page](docs/scripts.md).
 
 #### Basic
 
@@ -251,6 +254,8 @@ It's important to note that quotes, backslashes, and spaces are automatically es
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
 Returns a `Promise` that resolves or rejects with a [`childProcessResult`](#childProcessResult).
+
+For more information, please see [this page](docs/scripts.md).
 
 ### $.sync\`command\`
 

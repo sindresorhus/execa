@@ -479,6 +479,13 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	*/
 	pipeAll?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
 	pipeAll?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+
+	/**
+	Inverse of `pipeStdout()`: pipes the `source` to the current child process's `stdin`.
+
+	If the `source` is a child process, its `stdout` is used, not its `stderr`. The `source`'s `stdout` option must then be kept as `pipe`, its default value.
+	*/
+	pipeToStdinFrom?(source: ExecaChildProcess<StdoutStderrAll> | WritableStream | string): ExecaChildProcess<StdoutStderrType>;
 };
 
 export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &

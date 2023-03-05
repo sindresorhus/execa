@@ -134,6 +134,15 @@ await execa('echo', ['unicorns']).pipeStderr('stderr.txt')
 await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt')
 ```
 
+### Redirect input from a file
+
+```js
+import {execa} from 'execa';
+
+// Similar to `cat < stdin.txt` in Bash
+await execa('cat').pipeToStdinFrom('stdin.txt')
+```
+
 ### Save and pipe output from a child process
 
 ```js
@@ -316,6 +325,12 @@ The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
 Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
 
 Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
+
+#### pipeToStdinFrom(source)
+
+Inverse of [`pipeStdout()`](#pipestdouttarget): pipes the `source` to the current child process's `stdin`.
+
+If the `source` is a child process, its `stdout` is used, not its `stderr`. The `source`'s [`stdout` option](#stdout-1) must then be kept as `pipe`, its default value.
 
 ### execaSync(file, arguments?, options?)
 
@@ -762,15 +777,6 @@ const run = async () => {
 };
 
 console.log(await pRetry(run, {retries: 5}));
-```
-
-### Redirect input from a file
-
-```js
-import {execa} from 'execa';
-
-const subprocess = execa('cat')
-fs.createReadStream('stdin.txt').pipe(subprocess.stdin)
 ```
 
 ### Execute the current package's binary

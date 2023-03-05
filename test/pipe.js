@@ -1,6 +1,6 @@
-import {PassThrough, Readable} from 'node:stream';
+import {PassThrough, Readable, Writable} from 'node:stream';
 import {spawn} from 'node:child_process';
-import {readFile} from 'node:fs/promises';
+import {readFile, writeFile} from 'node:fs/promises';
 import tempfile from 'tempfile';
 import test from 'ava';
 import getStream from 'get-stream';
@@ -76,3 +76,47 @@ const invalidPipeToProcess = async (t, fixtureName, funcName) => {
 test('Must set target "stdin" option to "pipe" to use pipeStdout()', invalidPipeToProcess, 'noop.js', 'pipeStdout');
 test('Must set target "stdin" option to "pipe" to use pipeStderr()', invalidPipeToProcess, 'noop-err.js', 'pipeStderr');
 test('Must set target "stdin" option to "pipe" to use pipeAll()', invalidPipeToProcess, 'noop.js', 'pipeAll');
+
+test('pipeToStdinFrom() can pipe stdout from Execa child processes', async t => {
+	const {stdout} = await execa('stdin.js').pipeToStdinFrom(execa('noop.js', ['test']));
+	t.is(stdout, 'test');
+});
+
+test('pipeToStdinFrom() cannot pipe stderr from Execa child processes', async t => {
+	const {stdout, stderr} = await execa('stdin.js').pipeToStdinFrom(execa('noop-err.js', ['test']));
+	t.is(stdout, '');
+	t.is(stderr, '');
+});
+
+test('pipeToStdinFrom() can pipe stdout from streams', async t => {
+	const stream = Readable.from('test');
+	const {stdout} = await execa('stdin.js').pipeToStdinFrom(stream);
+	t.is(stdout, 'test');
+});
+
+test('pipeToStdinFrom() can pipe stdout from files', async t => {
+	const file = tempfile('.txt');
+	await writeFile(file, 'test');
+	const {stdout} = await execa('stdin.js').pipeToStdinFrom(file);
+	t.is(stdout, 'test');
+});
+
+const invalidStdinSource = (t, getTarget) => {
+	t.throws(() => execa('stdin.js').pipeToStdinFrom(getTarget()), {
+		message: /a stream or an Execa child process/,
+	});
+};
+
+test('pipeToStdinFrom() can only pipe from readable streams', invalidStdinSource, () => new Writable());
+test('pipeToStdinFrom() cannot pipe from non-processes', invalidStdinSource, () => ({stdout: new Readable()}));
+test('pipeToStdinFrom() cannot pipe from non-Execa processes', invalidStdinSource, () => ({stdout: spawn('node', ['--version'])}));
+
+test('Must set "stdin" to "pipe" to use pipeToStdinFrom()', t => {
+	t.false('pipeToStdinFrom' in execa('stdin.js', {stdin: 'ignore'}));
+});
+
+test('Must set source "stdout" option to "pipe" to use pipeToStdinFrom()', t => {
+	t.throws(() => execa('stdin.js').pipeToStdinFrom(execa('noop.js', ['test'], {stdout: 'ignore'})), {
+		message: /stdout must be available/,
+	});
+});

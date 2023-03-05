@@ -58,6 +58,16 @@ try {
 	expectType<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaPromise));
 	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeAll!(execaBufferPromise));
 
+	expectAssignable<Function | undefined>(execaPromise.pipeToStdinFrom);
+	expectType<ExecaChildProcess>(execaPromise.pipeToStdinFrom!('file.txt'));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeToStdinFrom!('file.txt'));
+	expectType<ExecaChildProcess>(execaPromise.pipeToStdinFrom!(writeStream));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeToStdinFrom!(writeStream));
+	expectType<ExecaChildProcess>(execaPromise.pipeToStdinFrom!(execaPromise));
+	expectType<ExecaChildProcess>(execaPromise.pipeToStdinFrom!(execaBufferPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeToStdinFrom!(execaPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeToStdinFrom!(execaBufferPromise));
+
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);

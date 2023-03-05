@@ -134,6 +134,7 @@ execa('unicorns', {buffer: false});
 execa('unicorns', {input: ''});
 execa('unicorns', {input: Buffer.from('')});
 execa('unicorns', {input: process.stdin});
+execa('unicorns', {inputFile: ''});
 execa('unicorns', {stdin: 'pipe'});
 execa('unicorns', {stdin: 'overlapped'});
 execa('unicorns', {stdin: 'ipc'});

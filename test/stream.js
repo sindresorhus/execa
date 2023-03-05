@@ -71,6 +71,19 @@ test('input can be a Stream', async t => {
 	t.is(stdout, 'howdy');
 });
 
+test('inputFile can be set', async t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const {stdout} = await execa('stdin.js', {inputFile});
+	t.is(stdout, 'howdy');
+});
+
+test('inputFile and input cannot be both set', t => {
+	t.throws(() => execa('stdin.js', {inputFile: '', input: ''}), {
+		message: /cannot be both set/,
+	});
+});
+
 test('you can write to child.stdin', async t => {
 	const subprocess = execa('stdin.js');
 	subprocess.stdin.end('unicorns');
@@ -103,6 +116,19 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 		},
 		{message: /The `input` option cannot be a stream in sync mode/},
 	);
+});
+
+test('inputFile can be set - sync', t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const {stdout} = execaSync('stdin.js', {inputFile});
+	t.is(stdout, 'howdy');
+});
+
+test('inputFile and input cannot be both set - sync', t => {
+	t.throws(() => execaSync('stdin.js', {inputFile: '', input: ''}), {
+		message: /cannot be both set/,
+	});
 });
 
 test('maxBuffer affects stdout', async t => {

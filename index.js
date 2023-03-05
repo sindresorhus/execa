@@ -10,7 +10,7 @@ import {makeError} from './lib/error.js';
 import {normalizeStdio, normalizeStdioNode} from './lib/stdio.js';
 import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
-import {handleInput, getSpawnedResult, makeAllStream, validateInputSync} from './lib/stream.js';
+import {handleInput, getSpawnedResult, makeAllStream, handleInputSync} from './lib/stream.js';
 import {mergePromise, getSpawnedPromise} from './lib/promise.js';
 import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
 import {logCommand, verboseDefault} from './lib/verbose.js';
@@ -159,7 +159,7 @@ export function execa(file, args, options) {
 
 	const handlePromiseOnce = onetime(handlePromise);
 
-	handleInput(spawned, parsed.options.input);
+	handleInput(spawned, parsed.options);
 
 	spawned.all = makeAllStream(spawned, parsed.options);
 
@@ -174,11 +174,11 @@ export function execaSync(file, args, options) {
 	const escapedCommand = getEscapedCommand(file, args);
 	logCommand(escapedCommand, parsed.options);
 
-	validateInputSync(parsed.options);
+	const input = handleInputSync(parsed.options);
 
 	let result;
 	try {
-		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
+		result = childProcess.spawnSync(parsed.file, parsed.args, {...parsed.options, input});
 	} catch (error) {
 		throw makeError({
 			error,

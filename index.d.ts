@@ -260,6 +260,11 @@ export type Options<EncodingType = string> = {
 	Write some input to the `stdin` of your binary.
 	*/
 	readonly input?: string | Buffer | ReadableStream;
+
+	/**
+	Use a file as input to the the `stdin` of your binary.
+	*/
+	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
 export type SyncOptions<EncodingType = string> = {
@@ -267,6 +272,11 @@ export type SyncOptions<EncodingType = string> = {
 	Write some input to the `stdin` of your binary.
 	*/
 	readonly input?: string | Buffer;
+
+	/**
+	Use a file as input to the the `stdin` of your binary.
+	*/
+	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
 export type NodeOptions<EncodingType = string> = {

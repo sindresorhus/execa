@@ -53,14 +53,19 @@ For more information about Execa scripts, please see [this page](docs/scripts.md
 ```js
 import {$} from 'execa';
 
-const unicorns = await $`echo unicorns`;
-const {stdout} = await $`echo ${unicorns}${'!'}}`;
-console.log(stdout);
-//=> 'unicorns!'
+const branch = await $`git branch --show-current`
+await $`dep deploy --branch=${branch}`
+```
 
-const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+#### Multiple arguments
+
+```js
+import {$} from 'execa';
+
+const args = ['unicorns', '&', 'rainbows!']
+const {stdout} = await $`echo ${args}`;
 console.log(stdout);
-//=> 'unicorns rainbows'
+//=> 'unicorns & rainbows!'
 ```
 
 #### With options

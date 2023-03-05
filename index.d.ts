@@ -27,7 +27,7 @@ export type CommonOptions<EncodingType> = {
 
 	If you `$ npm install foo`, you can then `execa('foo')`.
 
-	@default false
+	@default `true` with `$`/`$.sync`, `false` otherwise
 	*/
 	readonly preferLocal?: boolean;
 

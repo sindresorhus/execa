@@ -4,7 +4,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
-import {execa, execaSync} from '../index.js';
+import {execa, execaSync, $} from '../index.js';
 import {setFixtureDir, PATH_KEY} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -94,6 +94,10 @@ test('preferLocal: false', async t => {
 
 test('preferLocal: undefined', async t => {
 	await t.throwsAsync(execa('ava', ['--version'], {env: getPathWithoutLocalDir()}), {message: ENOENT_REGEXP});
+});
+
+test('preferLocal: undefined with $', async t => {
+	await t.notThrowsAsync($({env: getPathWithoutLocalDir()})`ava --version`);
 });
 
 test('localDir option', async t => {

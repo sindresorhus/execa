@@ -4,7 +4,8 @@ import {Buffer} from 'node:buffer';
 // to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
 import * as process from 'node:process';
 import {type Readable as ReadableStream} from 'node:stream';
-import {expectType, expectError} from 'tsd';
+import {createWriteStream} from 'node:fs';
+import {expectType, expectError, expectAssignable} from 'tsd';
 import {
 	$,
 	execa,
@@ -23,6 +24,39 @@ try {
 	const execaPromise = execa('unicorns');
 	execaPromise.cancel();
 	expectType<ReadableStream | undefined>(execaPromise.all);
+
+	const execaBufferPromise = execa('unicorns', {encoding: null});
+	const writeStream = createWriteStream('output.txt');
+
+	expectAssignable<Function | undefined>(execaPromise.pipeStdout);
+	expectType<ExecaChildProcess>(execaPromise.pipeStdout!('file.txt'));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeStdout!('file.txt'));
+	expectType<ExecaChildProcess>(execaPromise.pipeStdout!(writeStream));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeStdout!(writeStream));
+	expectType<ExecaChildProcess>(execaPromise.pipeStdout!(execaPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaPromise.pipeStdout!(execaBufferPromise));
+	expectType<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeStdout!(execaBufferPromise));
+
+	expectAssignable<Function | undefined>(execaPromise.pipeStderr);
+	expectType<ExecaChildProcess>(execaPromise.pipeStderr!('file.txt'));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeStderr!('file.txt'));
+	expectType<ExecaChildProcess>(execaPromise.pipeStderr!(writeStream));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeStderr!(writeStream));
+	expectType<ExecaChildProcess>(execaPromise.pipeStderr!(execaPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaPromise.pipeStderr!(execaBufferPromise));
+	expectType<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeStderr!(execaBufferPromise));
+
+	expectAssignable<Function | undefined>(execaPromise.pipeAll);
+	expectType<ExecaChildProcess>(execaPromise.pipeAll!('file.txt'));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeAll!('file.txt'));
+	expectType<ExecaChildProcess>(execaPromise.pipeAll!(writeStream));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeAll!(writeStream));
+	expectType<ExecaChildProcess>(execaPromise.pipeAll!(execaPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaPromise.pipeAll!(execaBufferPromise));
+	expectType<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaPromise));
+	expectType<ExecaChildProcess<Buffer>>(execaBufferPromise.pipeAll!(execaBufferPromise));
 
 	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);

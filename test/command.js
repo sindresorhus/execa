@@ -102,6 +102,11 @@ test('$ allows string interpolation', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$ allows number interpolation', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js 1 ${2}`;
+	t.is(stdout, '1\n2');
+});
+
 test('$ allows array interpolation', async t => {
 	const {stdout} = await $`node test/fixtures/echo.js ${['foo', 'bar']}`;
 	t.is(stdout, 'foo\nbar');

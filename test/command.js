@@ -1,3 +1,4 @@
+import {inspect} from 'node:util';
 import test from 'ava';
 import {execa, execaSync, execaCommand, execaCommandSync, $} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
@@ -165,31 +166,6 @@ test('$ handles invalid escape sequence', async t => {
 	t.is(stdout, '\\u');
 });
 
-test('$ throws on invalid expression in interpolation', async t => {
-	const undefinedError = await t.throwsAsync(async () => $`node test/fixtures/echo.js ${undefined}`);
-	t.is(undefinedError?.message, 'Unexpected "undefined" in template expression');
-
-	const nullError = await t.throwsAsync(async () => $`node test/fixtures/echo.js ${null}`);
-	t.is(nullError?.message, 'Unexpected "object" in template expression');
-
-	const objectError = await t.throwsAsync(async () => $`node test/fixtures/echo.js ${{foo: 'bar'}}`);
-	t.is(objectError?.message, 'Unexpected "object" in template expression');
-
-	const promiseError = await t.throwsAsync(async () => $`node test/fixtures/echo.js ${Promise.resolve()}`);
-	t.is(promiseError?.message, 'Unexpected "object" in template expression');
-
-	const nonAwaited$ = await t.throwsAsync(async () => $`node test/fixtures/echo.js ${$`node test/fixtures/echo.js foo`}`);
-	t.is(nonAwaited$?.message, 'Unexpected "object" in template expression');
-
-	const stdioInheritError = await t.throwsAsync(async () =>
-		$`node test/fixtures/echo.js ${await $({stdio: 'inherit'})`node test/fixtures/echo.js foo`}`,
-	);
-	t.is(stdioInheritError?.message, 'Unexpected "undefined" stdout in template expression');
-
-	const stdoutError = await t.throwsAsync(async () => $`node test/fixtures/echo.js ${{stdout: true}}`);
-	t.is(stdoutError?.message, 'Unexpected "boolean" stdout in template expression');
-});
-
 test('$ allows escaping spaces in commands with interpolation', async t => {
 	const {stdout} = await $`${'command with space.js'} foo bar`;
 	t.is(stdout, 'foo\nbar');
@@ -239,28 +215,52 @@ test('$.sync allows execa return value buffer array interpolation', t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-test('$.sync throws on invalid expression in interpolation', async t => {
-	const undefinedError = await t.throws(() => $.sync`node test/fixtures/echo.js ${undefined}`);
-	t.is(undefinedError?.message, 'Unexpected "undefined" in template expression');
+const invalidExpression = test.macro({
+	async exec(t, input, expected) {
+		await t.throwsAsync(
+			async () => $`node test/fixtures/echo.js ${input}`,
+			{instanceOf: TypeError, message: expected},
+		);
 
-	const nullError = await t.throws(() => $.sync`node test/fixtures/echo.js ${null}`);
-	t.is(nullError?.message, 'Unexpected "object" in template expression');
-
-	const objectError = await t.throws(() => $.sync`node test/fixtures/echo.js ${{foo: 'bar'}}`);
-	t.is(objectError?.message, 'Unexpected "object" in template expression');
-
-	const promiseError = await t.throws(() => $.sync`node test/fixtures/echo.js ${Promise.resolve()}`);
-	t.is(promiseError?.message, 'Unexpected "object" in template expression');
-
-	const nonAwaited$ = await t.throws(() => $.sync`node test/fixtures/echo.js ${$`node test/fixtures/echo.js foo`}`);
-	t.is(nonAwaited$?.message, 'Unexpected "object" in template expression');
-
-	const stdioInheritError = await t.throws(() =>
-		$.sync`node test/fixtures/echo.js ${$({stdio: 'inherit'}).sync`node test/fixtures/echo.js foo`}`,
-	);
-	t.is(stdioInheritError?.message, 'Unexpected "undefined" stdout in template expression');
-
-	const stdoutError = await t.throws(() => $.sync`node test/fixtures/echo.js ${{stdout: true}}`);
-	t.is(stdoutError?.message, 'Unexpected "boolean" stdout in template expression');
+		t.throws(
+			() => $.sync`node test/fixtures/echo.js ${input}`,
+			{instanceOf: TypeError, message: expected},
+		);
+	},
+	title(prettyInput, input, expected) {
+		return `$ APIs throw on invalid '${prettyInput ?? inspect(input)}' expression with '${expected}'`;
+	},
 });
 
+test(invalidExpression, undefined, 'Unexpected "undefined" in template expression');
+test(invalidExpression, [undefined], 'Unexpected "undefined" in template expression');
+
+test(invalidExpression, null, 'Unexpected "object" in template expression');
+test(invalidExpression, [null], 'Unexpected "object" in template expression');
+
+test(invalidExpression, true, 'Unexpected "boolean" in template expression');
+test(invalidExpression, [true], 'Unexpected "boolean" in template expression');
+
+test(invalidExpression, {}, 'Unexpected "object" in template expression');
+test(invalidExpression, [{}], 'Unexpected "object" in template expression');
+
+test(invalidExpression, {foo: 'bar'}, 'Unexpected "object" in template expression');
+test(invalidExpression, [{foo: 'bar'}], 'Unexpected "object" in template expression');
+
+test(invalidExpression, {stdout: undefined}, 'Unexpected "undefined" stdout in template expression');
+test(invalidExpression, [{stdout: undefined}], 'Unexpected "undefined" stdout in template expression');
+
+test(invalidExpression, {stdout: 1}, 'Unexpected "number" stdout in template expression');
+test(invalidExpression, [{stdout: 1}], 'Unexpected "number" stdout in template expression');
+
+test(invalidExpression, Promise.resolve(), 'Unexpected "object" in template expression');
+test(invalidExpression, [Promise.resolve()], 'Unexpected "object" in template expression');
+
+test(invalidExpression, Promise.resolve({stdout: 'foo'}), 'Unexpected "object" in template expression');
+test(invalidExpression, [Promise.resolve({stdout: 'foo'})], 'Unexpected "object" in template expression');
+
+test('$`noop.js`', invalidExpression, $`noop.js`, 'Unexpected "object" in template expression');
+test('[ $`noop.js` ]', invalidExpression, [$`noop.js`], 'Unexpected "object" in template expression');
+
+test('$({stdio: \'inherit\'}).sync`noop.js`', invalidExpression, $({stdio: 'inherit'}).sync`noop.js`, 'Unexpected "undefined" stdout in template expression');
+test('[ $({stdio: \'inherit\'}).sync`noop.js` ]', invalidExpression, [$({stdio: 'inherit'}).sync`noop.js`], 'Unexpected "undefined" stdout in template expression');

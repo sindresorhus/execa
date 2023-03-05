@@ -492,7 +492,9 @@ Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 
 @param file - The program/script to execute.
 @param arguments - Arguments to pass to `file` on execution.
-@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+@returns An `ExecaChildProcess` that is both:
+	- a `Promise` resolving or rejecting with a `childProcessResult`.
+	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 
 @example
 ```
@@ -560,14 +562,16 @@ export function execaSync(
 ): ExecaSyncReturnValue<Buffer>;
 
 /**
-Same as `execa()` except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
+Same as `execa()` (including its return value) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
 
 If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 
 The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
 @param command - The program/script to execute and its arguments.
-@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+@returns An `ExecaChildProcess` that is both:
+	- a `Promise` resolving or rejecting with a `childProcessResult`.
+	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 
 @example
 ```
@@ -590,7 +594,7 @@ type TemplateExpression =
 
 type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
-	Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+	Same as `execa()` (including its return value) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
 
 	It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
 
@@ -598,7 +602,9 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 
 	As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example below `` with results from `$` or `$.sync` `` for more details.
 
-	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+	@returns An `ExecaChildProcess` that is both:
+		- a `Promise` resolving or rejecting with a `childProcessResult`.
+		- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 
 	@example <caption>Basic</caption>
 	```

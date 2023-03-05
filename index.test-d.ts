@@ -97,6 +97,9 @@ try {
 	expectType<string>(unicornsResult.stdout);
 	expectType<string>(unicornsResult.stderr);
 	expectError(unicornsResult.all);
+	expectError(unicornsResult.pipeStdout);
+	expectError(unicornsResult.pipeStderr);
+	expectError(unicornsResult.pipeAll);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
 	expectError(unicornsResult.isCanceled);

@@ -279,12 +279,6 @@ No escaping/quoting is needed.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
-### execaSync(file, arguments?, options?)
-
-Execute a file synchronously.
-
-Returns or throws a [`childProcessResult`](#childProcessResult).
-
 ### $\`command\`
 
 Same as [`execa()`](#execafile-arguments-options) (including its [return value](#childprocess)) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
@@ -296,12 +290,6 @@ The [`shell` option](#shell) must be used if the `command` uses shell-specific f
 As a convenience, the result from previous [`` $`command` ``](#command) or [`` $.sync`command` ``](#synccommand) calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example above [with results from `$` or `$.sync`](#with-results-from--or-sync) for more details.
 
 For more information, please see [this page](docs/scripts.md).
-
-### $.sync\`command\`
-
-Same as [$\`command\`](#command) but synchronous like [`execaSync()`](#execasyncfile-arguments-options).
-
-Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### $(options)
 
@@ -316,12 +304,6 @@ Same as [`execa()`](#execafile-arguments-options) (including its [return value](
 If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
-
-### execaCommandSync(command, options?)
-
-Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
-
-Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### execaNode(scriptPath, arguments?, options?)
 
@@ -383,6 +365,24 @@ The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
 Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
 
 Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
+
+### execaSync(file, arguments?, options?)
+
+Same as [`execa()`](#execacommandcommand-options) but synchronous.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### $.sync\`command\`
+
+Same as [$\`command\`](#command) but synchronous.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### execaCommandSync(command, options?)
+
+Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### childProcessResult
 

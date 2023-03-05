@@ -497,11 +497,15 @@ Type: `string | Buffer | stream.Readable`
 Write some input to the `stdin` of your binary.\
 Streams are not allowed when using the synchronous methods.
 
+If the input is a file, use the [`inputFile` option](#inputfile) instead.
+
 #### inputFile
 
 Type: `string`
 
 Use a file as input to the the `stdin` of your binary.
+
+If the input is not a file, use the [`input` option](#input) instead.
 
 #### stdin
 

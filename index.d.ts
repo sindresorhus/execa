@@ -259,12 +259,14 @@ export type Options<EncodingType = string> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
-	Tip: If the input is a file, use the `inputFile` option instead.
+	If the input is a file, use the `inputFile` option instead.
 	*/
 	readonly input?: string | Buffer | ReadableStream;
 
 	/**
 	Use a file as input to the the `stdin` of your binary.
+
+	If the input is not a file, use the `input` option instead.
 	*/
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
@@ -272,11 +274,15 @@ export type Options<EncodingType = string> = {
 export type SyncOptions<EncodingType = string> = {
 	/**
 	Write some input to the `stdin` of your binary.
+
+	If the input is a file, use the `inputFile` option instead.
 	*/
 	readonly input?: string | Buffer;
 
 	/**
 	Use a file as input to the the `stdin` of your binary.
+
+	If the input is not a file, use the `input` option instead.
 	*/
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;

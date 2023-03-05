@@ -298,21 +298,21 @@ This is `undefined` if either:
   - A [writable stream](#save-and-pipe-output-from-a-child-process)
   - A [file path string](#redirect-output-to-a-file)
 
-If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned.
+If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
 
-This requires the [`stdout` option](#stdout-1) to be kept as `pipe`, its default value.
+The [`stdout` option](#stdout-1) must be kept as `pipe`, its default value.
 
 #### pipeStderr(target)
 
 Like [`pipeStdout()`](#pipestdouttarget) but piping the child process's `stderr` instead.
 
-This requires the [`stderr` option](#stderr-1) to be kept as `pipe`, its default value.
+The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
 
 #### pipeAll(target)
 
 Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
 
-This requires either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) to be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
+Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
 
 ### execaSync(file, arguments?, options?)
 

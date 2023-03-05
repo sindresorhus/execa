@@ -104,11 +104,11 @@ $({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
 #### Verbose mode
 
 ```sh
-$ node file.js
+> node file.js
 unicorns
 rainbows
 
-$ NODE_DEBUG=execa node file.js
+> NODE_DEBUG=execa node file.js
 [16:50:03.305] echo unicorns
 unicorns
 [16:50:03.308] echo rainbows

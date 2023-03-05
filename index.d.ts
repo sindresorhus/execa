@@ -556,6 +556,8 @@ type Execa$<StdoutStderrType = string> = {
 
 	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
+	As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands. See the example below `` with results from `$` or `$.sync` `` for more details.
+
 	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 
 	@example <caption>Basic</caption>
@@ -601,6 +603,16 @@ type Execa$<StdoutStderrType = string> = {
 	$({stdio: 'inherit'}).sync`echo rainbows`;
 	//=> 'rainbows'
 	```
+
+	@example <caption>With results from `$` or `$.sync`</caption>
+	```
+	import {$} from 'execa';
+
+	const unicorns = await $`echo unicorns`;
+
+	$({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
+	//=> 'unicorns rainbows'
+	```
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
 	(options: Options): Execa$;
@@ -639,6 +651,8 @@ Same as `execa()` except both file and arguments are specified in a single tagge
 It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
 
 The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands. See the example below `` with results from `$` or `$.sync` `` for more details.
 
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 
@@ -684,6 +698,16 @@ console.log(stdout);
 
 $({stdio: 'inherit'}).sync`echo rainbows`;
 //=> 'rainbows'
+```
+
+@example <caption>With results from `$` or `$.sync`</caption>
+```
+import {$} from 'execa';
+
+const unicorns = await $`echo unicorns`;
+
+$({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
+//=> 'unicorns rainbows'
 ```
 */
 export const $: Execa$;

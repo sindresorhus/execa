@@ -53,8 +53,8 @@ For more information about Execa scripts, please see [this page](docs/scripts.md
 ```js
 import {$} from 'execa';
 
-const branch = await $`git branch --show-current`
-await $`dep deploy --branch=${branch}`
+const branch = await $`git branch --show-current`;
+await $`dep deploy --branch=${branch}`;
 ```
 
 #### Multiple arguments
@@ -62,7 +62,7 @@ await $`dep deploy --branch=${branch}`
 ```js
 import {$} from 'execa';
 
-const args = ['unicorns', '&', 'rainbows!']
+const args = ['unicorns', '&', 'rainbows!'];
 const {stdout} = await $`echo ${args}`;
 console.log(stdout);
 //=> 'unicorns & rainbows!'
@@ -119,7 +119,7 @@ await execa('echo', ['unicorns']).pipeStdout('stdout.txt');
 await execa('echo', ['unicorns']).pipeStderr('stderr.txt');
 
 // Similar to `echo unicorns &> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
+await execa('echo', ['unicorns'], {all: true}).pipeAll('all.txt');
 ```
 
 #### Redirect input from a file
@@ -128,7 +128,7 @@ await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
 import {execa} from 'execa';
 
 // Similar to `cat < stdin.txt` in Bash
-const {stdout} = await execa('cat', {inputFile:'stdin.txt'});
+const {stdout} = await execa('cat', {inputFile: 'stdin.txt'});
 console.log(stdout);
 //=> 'unicorns'
 ```

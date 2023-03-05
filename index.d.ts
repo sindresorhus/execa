@@ -752,6 +752,35 @@ type TemplateExpression =
 
 type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
+	Binds options to the `$` API. For example, you can use `$(options)` to create a new `$` instance with specific default options, which are then bound to both the asynchronous `` $`command` `` and synchronous `` $.sync`command` `` APIs.
+
+	> **Note:** Consecutive calls to this API will shallow merge the options.
+
+	@param options - Options to set
+	@returns A new instance of `$` with those `options` set
+
+	@example
+	```
+	import {$} from 'execa';
+
+	const $$ = $({stdio: 'inherit'});
+
+	await $$`echo unicorns`;
+	//=> 'unicorns'
+
+	await $$`echo rainbows`;
+	//=> 'rainbows'
+	```
+	*/
+	(options: Options<undefined>): Execa$<StdoutStderrType>;
+	(options: Options): Execa$;
+	(options: Options<null>): Execa$<Buffer>;
+	(
+		templates: TemplateStringsArray,
+		...expressions: TemplateExpression[]
+	): ExecaChildProcess<StdoutStderrType>;
+
+	/**
 	Same as $\`command\` but synchronous.
 
 	@returns A `childProcessResult` object

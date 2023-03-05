@@ -619,6 +619,25 @@ await $`echo example`.pipe(fs.createWriteStream('file.txt'));
 await $`echo example`.pipeStdout('file.txt');
 ```
 
+### Piping stdin from a file
+
+```sh
+# Bash
+echo example < file.txt
+```
+
+```js
+// zx
+const cat = $`cat`
+fs.createReadStream('file.txt').pipe(cat.stdin)
+await cat
+```
+
+```js
+// Execa
+await $`cat`.pipeStdin('file.txt');
+```
+
 ### Silent stderr
 
 ```sh

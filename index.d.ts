@@ -556,7 +556,7 @@ type Execa$<StdoutStderrType = string> = {
 
 	The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
-	As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands. See the example below `` with results from `$` or `$.sync` `` for more details.
+	As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example below `` with results from `$` or `$.sync` `` for more details.
 
 	@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 
@@ -652,7 +652,7 @@ It's important to note that quotes, backslashes, and spaces are automatically es
 
 The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
-As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands. See the example below `` with results from `$` or `$.sync` `` for more details.
+As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example below `` with results from `$` or `$.sync` `` for more details.
 
 @returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
 

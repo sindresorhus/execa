@@ -42,8 +42,7 @@ If you really need a shell though, the [`shell` option](../readme.md#shell) can 
 
 ### Simplicity
 
-Execa's scripting API mostly consists of only two methods: [`` $`command` ``](../readme.md#command) and
-[`$(options)`](../readme.md#options).
+Execa's scripting API mostly consists of only two methods: [`` $`command` ``](../readme.md#command) and [`$(options)`](../readme.md#options).
 
 [No special binary](#main-binary) is recommended, no [global variable](#global-variables) is injected: scripts are regular Node.js files.
 

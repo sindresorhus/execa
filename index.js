@@ -12,6 +12,7 @@ import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandle
 import {handleInput, getSpawnedResult, makeAllStream, validateInputSync} from './lib/stream.js';
 import {mergePromise, getSpawnedPromise} from './lib/promise.js';
 import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
+import {logCommand, verboseDefault} from './lib/verbose.js';
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
@@ -44,6 +45,7 @@ const handleArguments = (file, args, options = {}) => {
 		cleanup: true,
 		all: false,
 		windowsHide: true,
+		verbose: verboseDefault,
 		...options,
 	};
 
@@ -76,6 +78,7 @@ export function execa(file, args, options) {
 	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
 	const escapedCommand = getEscapedCommand(file, args);
+	logCommand(escapedCommand, parsed.options);
 
 	validateTimeout(parsed.options);
 
@@ -165,6 +168,7 @@ export function execaSync(file, args, options) {
 	const parsed = handleArguments(file, args, options);
 	const command = joinCommand(file, args);
 	const escapedCommand = getEscapedCommand(file, args);
+	logCommand(escapedCommand, parsed.options);
 
 	validateInputSync(parsed.options);
 

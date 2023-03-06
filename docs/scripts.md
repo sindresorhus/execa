@@ -66,7 +66,7 @@ Child processes can be hard to debug, which is why Execa includes a [`verbose` o
 
 Also, Execa's error messages and [properties](#errors) are very detailed to make it clear to determine why a process failed.
 
-Finally, unlike Bash and zx which are stateful (options, current directory, etc.), Execa is [purely functional](#current-directory), which also helps with debugging.
+Finally, unlike Bash and zx, which are stateful (options, current directory, etc.), Execa is [purely functional](#current-directory), which also helps with debugging.
 
 ## Details
 

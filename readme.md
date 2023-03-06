@@ -20,6 +20,7 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - [Executes locally installed binaries by name.](#preferlocal)
 - [Cleans up spawned processes when the parent process dies.](#cleanup)
 - [Get interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
+- Convenience methods to [pipe processes' output](#redirect-output-to-a-file)
 - [Can specify file and arguments as a single string without a shell](#execacommandcommand-options)
 - More descriptive errors.
 
@@ -115,12 +116,41 @@ unicorns
 rainbows
 ```
 
-### Pipe the child process stdout to the parent
+### Redirect output to a file
 
 ```js
 import {execa} from 'execa';
 
-execa('echo', ['unicorns']).stdout.pipe(process.stdout);
+// Similar to `echo unicorns > stdout.txt` in Bash
+await execa('echo', ['unicorns']).pipeStdout('stdout.txt')
+
+// Similar to `echo unicorns 2> stdout.txt` in Bash
+await execa('echo', ['unicorns']).pipeStderr('stderr.txt')
+
+// Similar to `echo unicorns &> stdout.txt` in Bash
+await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt')
+```
+
+### Save and pipe output from a child process
+
+```js
+import {execa} from 'execa';
+
+const {stdout} = await execa('echo', ['unicorns']).pipeStdout(process.stdout);
+// Prints `unicorns`
+console.log(stdout);
+// Also returns 'unicorns'
+```
+
+### Pipe multiple processes
+
+```js
+import {execa} from 'execa';
+
+// Similar to `echo unicorns | cat` in Bash
+const {stdout} = await execa('echo', ['unicorns']).pipeStdout(execa('cat'));
+console.log(stdout);
+//=> 'unicorns'
 ```
 
 ### Handling Errors
@@ -260,6 +290,29 @@ Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.ht
 This is `undefined` if either:
   - the [`all` option](#all-2) is `false` (the default value)
   - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+
+#### pipeStdout(target)
+
+[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
+  - Another [`execa()` return value](#pipe-multiple-processes)
+  - A [writable stream](#save-and-pipe-output-from-a-child-process)
+  - A [file path string](#redirect-output-to-a-file)
+
+If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
+
+The [`stdout` option](#stdout-1) must be kept as `pipe`, its default value.
+
+#### pipeStderr(target)
+
+Like [`pipeStdout()`](#pipestdouttarget) but piping the child process's `stderr` instead.
+
+The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
+
+#### pipeAll(target)
+
+Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
+
+Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
 
 ### execaSync(file, arguments?, options?)
 
@@ -704,29 +757,6 @@ const run = async () => {
 };
 
 console.log(await pRetry(run, {retries: 5}));
-```
-
-### Save and pipe output from a child process
-
-Let's say you want to show the output of a child process in real-time while also saving it to a variable.
-
-```js
-import {execa} from 'execa';
-
-const subprocess = execa('echo', ['foo']);
-subprocess.stdout.pipe(process.stdout);
-
-const {stdout} = await subprocess;
-console.log('child output:', stdout);
-```
-
-### Redirect output to a file
-
-```js
-import {execa} from 'execa';
-
-const subprocess = execa('echo', ['foo'])
-subprocess.stdout.pipe(fs.createWriteStream('stdout.txt'))
 ```
 
 ### Redirect input from a file

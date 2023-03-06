@@ -1,6 +1,6 @@
 import {type Buffer} from 'node:buffer';
 import {type ChildProcess} from 'node:child_process';
-import {type Stream, type Readable as ReadableStream} from 'node:stream';
+import {type Stream, type Readable as ReadableStream, type Writable as WritableStream} from 'node:stream';
 
 export type StdioOption =
 	| 'pipe'
@@ -285,7 +285,9 @@ export type NodeOptions<EncodingType = string> = {
 	readonly nodeOptions?: string[];
 } & Options<EncodingType>;
 
-export type ExecaReturnBase<StdoutStderrType> = {
+type StdoutStderrAll = string | Buffer | undefined;
+
+export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	/**
 	The file and arguments that were run, for logging purposes.
 
@@ -346,7 +348,7 @@ export type ExecaReturnBase<StdoutStderrType> = {
 	signalDescription?: string;
 };
 
-export type ExecaSyncReturnValue<StdoutStderrType = string> = {
+export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
 } & ExecaReturnBase<StdoutStderrType>;
 
 /**
@@ -359,7 +361,7 @@ The child process fails when:
 - being canceled
 - there's not enough memory or there are already too many child processes
 */
-export type ExecaReturnValue<StdoutStderrType = string> = {
+export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -377,7 +379,7 @@ export type ExecaReturnValue<StdoutStderrType = string> = {
 	isCanceled: boolean;
 } & ExecaSyncReturnValue<StdoutStderrType>;
 
-export type ExecaSyncError<StdoutStderrType = string> = {
+export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -398,7 +400,7 @@ export type ExecaSyncError<StdoutStderrType = string> = {
 	originalMessage?: string;
 } & Error & ExecaReturnBase<StdoutStderrType>;
 
-export type ExecaError<StdoutStderrType = string> = {
+export type ExecaError<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -425,7 +427,7 @@ export type KillOptions = {
 	forceKillAfterTimeout?: number | false;
 };
 
-export type ExecaChildPromise<StdoutStderrType> = {
+export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	/**
 	Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
@@ -448,9 +450,38 @@ export type ExecaChildPromise<StdoutStderrType> = {
 	Similar to [`childProcess.kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal). This used to be preferred when cancelling the child process execution as the error is more descriptive and [`childProcessResult.isCanceled`](#iscanceled) is set to `true`. But now this is deprecated and you should either use `.kill()` or the `signal` option when creating the child process.
 	*/
 	cancel(): void;
+
+	/**
+	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
+	- Another `execa()` return value
+	- A writable stream
+	- A file path string
+
+	If the `target` is another `execa()` return value, it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the final result.
+
+	The `stdout` option] must be kept as `pipe`, its default value.
+	*/
+	pipeStdout?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
+	pipeStdout?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+
+	/**
+	Like `pipeStdout()` but piping the child process's `stderr` instead.
+
+	The `stderr` option must be kept as `pipe`, its default value.
+	*/
+	pipeStderr?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
+	pipeStderr?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+
+	/**
+	Combines both `pipeStdout()` and `pipeStderr()`.
+
+	Either the `stdout` option or the `stderr` option must be kept as `pipe`, their default value. Also, the `all` option must be set to `true`.
+	*/
+	pipeAll?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
+	pipeAll?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
 };
 
-export type ExecaChildProcess<StdoutStderrType = string> = ChildProcess &
+export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &
 ExecaChildPromise<StdoutStderrType> &
 Promise<ExecaReturnValue<StdoutStderrType>>;
 
@@ -557,7 +588,7 @@ type TemplateExpression =
 	| ExecaSyncReturnValue<string | Buffer>
 	| Array<string | number | ExecaReturnValue<string | Buffer> | ExecaSyncReturnValue<string | Buffer>>;
 
-type Execa$<StdoutStderrType = string> = {
+type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
 

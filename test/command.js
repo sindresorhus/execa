@@ -1,3 +1,4 @@
+import {inspect} from 'node:util';
 import test from 'ava';
 import {execa, execaSync, execaCommand, execaCommandSync, $} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
@@ -101,8 +102,37 @@ test('$ allows string interpolation', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$ allows number interpolation', async t => {
+	const {stdout} = await $`node test/fixtures/echo.js 1 ${2}`;
+	t.is(stdout, '1\n2');
+});
+
 test('$ allows array interpolation', async t => {
 	const {stdout} = await $`node test/fixtures/echo.js ${['foo', 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows execa return value interpolation', async t => {
+	const foo = await $`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows execa return value array interpolation', async t => {
+	const foo = await $`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows execa return value buffer interpolation', async t => {
+	const foo = await $({encoding: null})`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ allows execa return value buffer array interpolation', async t => {
+	const foo = await $({encoding: null})`node test/fixtures/echo.js foo`;
+	const {stdout} = await $`node test/fixtures/echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });
 
@@ -141,11 +171,6 @@ test('$ handles invalid escape sequence', async t => {
 	t.is(stdout, '\\u');
 });
 
-test('$ coerces all interpolated expressions to strings', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js ${0} ${undefined} ${null}`;
-	t.is(stdout, '0\nundefined\nnull');
-});
-
 test('$ allows escaping spaces in commands with interpolation', async t => {
 	const {stdout} = await $`${'command with space.js'} foo bar`;
 	t.is(stdout, 'foo\nbar');
@@ -170,3 +195,77 @@ test('$.sync accepts options', t => {
 	const {stdout} = $({stripFinalNewline: true}).sync`noop.js foo`;
 	t.is(stdout, 'foo');
 });
+
+test('$.sync allows execa return value interpolation', t => {
+	const foo = $.sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$.sync allows execa return value array interpolation', t => {
+	const foo = $.sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$.sync allows execa return value buffer interpolation', t => {
+	const foo = $({encoding: null}).sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${foo} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$.sync allows execa return value buffer array interpolation', t => {
+	const foo = $({encoding: null}).sync`node test/fixtures/echo.js foo`;
+	const {stdout} = $.sync`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+const invalidExpression = test.macro({
+	async exec(t, input, expected) {
+		await t.throwsAsync(
+			async () => $`node test/fixtures/echo.js ${input}`,
+			{instanceOf: TypeError, message: expected},
+		);
+
+		t.throws(
+			() => $.sync`node test/fixtures/echo.js ${input}`,
+			{instanceOf: TypeError, message: expected},
+		);
+	},
+	title(prettyInput, input, expected) {
+		return `$ APIs throw on invalid '${prettyInput ?? inspect(input)}' expression with '${expected}'`;
+	},
+});
+
+test(invalidExpression, undefined, 'Unexpected "undefined" in template expression');
+test(invalidExpression, [undefined], 'Unexpected "undefined" in template expression');
+
+test(invalidExpression, null, 'Unexpected "object" in template expression');
+test(invalidExpression, [null], 'Unexpected "object" in template expression');
+
+test(invalidExpression, true, 'Unexpected "boolean" in template expression');
+test(invalidExpression, [true], 'Unexpected "boolean" in template expression');
+
+test(invalidExpression, {}, 'Unexpected "object" in template expression');
+test(invalidExpression, [{}], 'Unexpected "object" in template expression');
+
+test(invalidExpression, {foo: 'bar'}, 'Unexpected "object" in template expression');
+test(invalidExpression, [{foo: 'bar'}], 'Unexpected "object" in template expression');
+
+test(invalidExpression, {stdout: undefined}, 'Unexpected "undefined" stdout in template expression');
+test(invalidExpression, [{stdout: undefined}], 'Unexpected "undefined" stdout in template expression');
+
+test(invalidExpression, {stdout: 1}, 'Unexpected "number" stdout in template expression');
+test(invalidExpression, [{stdout: 1}], 'Unexpected "number" stdout in template expression');
+
+test(invalidExpression, Promise.resolve(), 'Unexpected "object" in template expression');
+test(invalidExpression, [Promise.resolve()], 'Unexpected "object" in template expression');
+
+test(invalidExpression, Promise.resolve({stdout: 'foo'}), 'Unexpected "object" in template expression');
+test(invalidExpression, [Promise.resolve({stdout: 'foo'})], 'Unexpected "object" in template expression');
+
+test('$`noop.js`', invalidExpression, $`noop.js`, 'Unexpected "object" in template expression');
+test('[ $`noop.js` ]', invalidExpression, [$`noop.js`], 'Unexpected "object" in template expression');
+
+test('$({stdio: \'inherit\'}).sync`noop.js`', invalidExpression, $({stdio: 'inherit'}).sync`noop.js`, 'Unexpected "undefined" stdout in template expression');
+test('[ $({stdio: \'inherit\'}).sync`noop.js` ]', invalidExpression, [$({stdio: 'inherit'}).sync`noop.js`], 'Unexpected "undefined" stdout in template expression');

@@ -90,6 +90,17 @@ $({stdio: 'inherit'}).sync`echo rainbows`;
 //=> 'rainbows'
 ```
 
+#### With results from `$` or `$.sync`
+
+```js
+import {$} from 'execa';
+
+const unicorns = await $`echo unicorns`;
+
+$({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
+//=> 'unicorns rainbows'
+```
+
 ### Pipe the child process stdout to the parent
 
 ```js
@@ -249,6 +260,8 @@ Same as [`execa()`](#execafile-arguments-options) except both file and arguments
 It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the [`shell` option](#shell) is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
 
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+
+As a convenience, the result from previous [`` $`command` ``](#command) or [`` $.sync`command` ``](#synccommand) calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example above [with results from `$` or `$.sync`](#with-results-from--or-sync) for more details.
 
 Returns a `Promise` that resolves or rejects with a [`childProcessResult`](#childProcessResult).
 

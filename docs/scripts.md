@@ -53,7 +53,7 @@ Execa is a thin wrapper around the core Node.js [`child_process` module](https:/
 
 zx includes many builtin utilities: `fetch()`, `question()`, `sleep()`, `stdin()`, `retry()`, `spinner()`, `chalk`, `fs-extra`, `os`, `path`, `globby`, `yaml`, `minimist`, `which`, Markdown scripts, remote scripts.
 
-Execa does not include [any utility](#builtin-utilities): it focuses on being small and modular instead. Any Node module can be used in your scripts.
+Execa does not include [any utility](#builtin-utilities): it focuses on being small and modular instead. Any Node.js package can be used in your scripts.
 
 ### Performance
 

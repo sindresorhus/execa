@@ -101,6 +101,7 @@ await $`echo example`;
 ```js
 // Execa
 import {$} from 'execa';
+
 await $`echo example`;
 ```
 
@@ -203,6 +204,7 @@ const content = await stdin();
 ```js
 // Execa
 import getStdin from 'get-stdin';
+
 const content = await getStdin();
 ```
 
@@ -290,9 +292,10 @@ await $`echo ${__filename}`;
 
 ```js
 // Execa
-import {fileURLToPath} from "node:url";
-import {basename} from "node:path";
-const __filename = basename(fileURLToPath(import.meta.url));
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+
+const __filename = path.basename(fileURLToPath(import.meta.url));
 
 await $`echo ${__filename}`;
 ```

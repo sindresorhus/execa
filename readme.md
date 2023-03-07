@@ -273,15 +273,17 @@ setTimeout(() => {
 
 ### execa(file, arguments, options?)
 
-Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
+Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options). This returns a [`childProcess`](#childprocess).
 
 No escaping/quoting is needed.
 
 Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
 
-Returns a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) which:
-  - is also a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
-  - exposes the following additional methods and properties.
+### childProcess
+
+This is both:
+  - a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
+  - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
 
 #### kill(signal?, options?)
 
@@ -337,15 +339,13 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### $\`command\`
 
-Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+Same as [`execa()`](#execafile-arguments-options) (including its [return value](#childprocess)) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
 
 It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the [`shell` option](#shell) is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
 
 The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
 
 As a convenience, the result from previous [`` $`command` ``](#command) or [`` $.sync`command` ``](#synccommand) calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example above [with results from `$` or `$.sync`](#with-results-from--or-sync) for more details.
-
-Returns a `Promise` that resolves or rejects with a [`childProcessResult`](#childProcessResult).
 
 For more information, please see [this page](docs/scripts.md).
 
@@ -363,7 +363,7 @@ Binds options to the [`$`](#command) API. For example, you can use `$(options)` 
 
 ### execaCommand(command, options?)
 
-Same as [`execa()`](#execafile-arguments-options) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
+Same as [`execa()`](#execafile-arguments-options) (including its [return value](#childprocess)) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
 
 If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
 

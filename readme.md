@@ -12,18 +12,19 @@
 
 This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
 
-- Promise interface.
-- [Scripts interface](#scripts-interface).
+- [Promise interface](#execacommandcommand-options).
+- [Scripts interface](#scripts-interface), like `zx`.
+- Improved [Windows support](https://github.com/IndigoUnited/node-cross-spawn#why), including [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries.
+- Executes [locally installed binaries](#preferlocal) without `npx`.
+- [Cleans up](#cleanup) child processes when the parent process ends.
+- [Graceful termination](#optionsforcekillaftertimeout).
+- Get [interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
-- Supports [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries cross-platform.
-- [Improved Windows support.](https://github.com/IndigoUnited/node-cross-spawn#why)
-- Higher max buffer. 100 MB instead of 200 KB.
-- [Executes locally installed binaries by name.](#preferlocal)
-- [Cleans up spawned processes when the parent process dies.](#cleanup)
-- [Get interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal. [*(Async only)*](#execasyncfile-arguments-options)
-- Convenience methods to [pipe processes' output](#redirect-output-to-a-file)
-- [Can specify file and arguments as a single string without a shell](#execacommandcommand-options)
+- Convenience methods to pipe processes' [input](#input) and [output](#redirect-output-to-a-file).
+- Can specify file and arguments [as a single string](#execacommandcommand-options) without a shell.
+- [Verbose mode](#verbose-mode) for debugging.
 - More descriptive errors.
+- Higher max buffer: 100 MB instead of 1 MB.
 
 ## Install
 

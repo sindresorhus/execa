@@ -495,6 +495,7 @@ Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
 @returns An `ExecaChildProcess` that is both:
 	- a `Promise` resolving or rejecting with a `childProcessResult`.
 	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+@throws A `childProcessResult` error
 
 @example
 ```
@@ -537,13 +538,12 @@ export function execa(file: string, options?: Options): ExecaChildProcess;
 export function execa(file: string, options?: Options<null>): ExecaChildProcess<Buffer>;
 
 /**
-Execute a file synchronously.
-
-This method throws an `Error` if the command fails.
+Same as `execa()` but synchronous.
 
 @param file - The program/script to execute.
 @param arguments - Arguments to pass to `file` on execution.
-@returns A result `Object` with `stdout` and `stderr` properties.
+@returns A `childProcessResult` object
+@throws A `childProcessResult` error
 */
 export function execaSync(
 	file: string,
@@ -572,6 +572,7 @@ The `shell` option must be used if the `command` uses shell-specific features (f
 @returns An `ExecaChildProcess` that is both:
 	- a `Promise` resolving or rejecting with a `childProcessResult`.
 	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+@throws A `childProcessResult` error
 
 @example
 ```
@@ -605,6 +606,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	@returns An `ExecaChildProcess` that is both:
 		- a `Promise` resolving or rejecting with a `childProcessResult`.
 		- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+	@throws A `childProcessResult` error
 
 	@example <caption>Basic</caption>
 	```
@@ -669,9 +671,10 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	): ExecaChildProcess<StdoutStderrType>;
 
 	/**
-	Same as `$` but synchronous like `execaSync()`.
+	Same as $\`command\` but synchronous.
 
-	@returns The stdout and stderr output.
+	@returns A `childProcessResult` object
+	@throws A `childProcessResult` error
 
 	@example
 	```
@@ -700,7 +703,10 @@ The `shell` option must be used if the `command` uses shell-specific features (f
 
 As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example below `` with results from `$` or `$.sync` `` for more details.
 
-@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+@returns An `ExecaChildProcess` that is both:
+	- a `Promise` resolving or rejecting with a `childProcessResult`.
+	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+@throws A `childProcessResult` error
 
 @example <caption>Basic</caption>
 ```
@@ -762,7 +768,8 @@ export const $: Execa$;
 Same as `execaCommand()` but synchronous.
 
 @param command - The program/script to execute and its arguments.
-@returns A result `Object` with `stdout` and `stderr` properties.
+@returns A `childProcessResult` object
+@throws A `childProcessResult` error
 */
 export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
 export function execaCommandSync(command: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
@@ -777,7 +784,10 @@ Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`chil
 
 @param scriptPath - Node.js script to execute.
 @param arguments - Arguments to pass to `scriptPath` on execution.
-@returns A [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess), which is enhanced to also be a `Promise` for a result `Object` with `stdout` and `stderr` properties.
+@returns An `ExecaChildProcess` that is both:
+	- a `Promise` resolving or rejecting with a `childProcessResult`.
+	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+@throws A `childProcessResult` error
 */
 export function execaNode(
 	scriptPath: string,

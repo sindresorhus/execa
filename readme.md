@@ -34,6 +34,8 @@ npm install execa
 
 ## Usage
 
+### Promise interface
+
 ```js
 import {execa} from 'execa';
 
@@ -44,19 +46,26 @@ console.log(stdout);
 
 ### Scripts interface
 
-For more information, please see [this page](docs/scripts.md).
+For more information about Execa scripts, please see [this page](docs/scripts.md).
 
 #### Basic
 
 ```js
 import {$} from 'execa';
 
-const {stdout} = await $`echo unicorns`;
-// const {stdout} = await $`echo ${'unicorns'}`;
-// const {stdout} = await $`echo ${['unicorns', 'rainbows']}`;
+const branch = await $`git branch --show-current`
+await $`dep deploy --branch=${branch}`
+```
 
+#### Multiple arguments
+
+```js
+import {$} from 'execa';
+
+const args = ['unicorns', '&', 'rainbows!']
+const {stdout} = await $`echo ${args}`;
 console.log(stdout);
-//=> 'unicorns'
+//=> 'unicorns & rainbows!'
 ```
 
 #### With options
@@ -68,7 +77,7 @@ await $({stdio: 'inherit'})`echo unicorns`;
 //=> 'unicorns'
 ```
 
-#### With pre-defined options
+#### Shared options
 
 ```js
 import {$} from 'execa';
@@ -77,33 +86,9 @@ const $$ = $({stdio: 'inherit'});
 
 await $$`echo unicorns`;
 //=> 'unicorns'
-await $$({shell: true})`echo unicorns && echo rainbows`;
-//=> 'unicorns'
+
+await $$`echo rainbows`;
 //=> 'rainbows'
-```
-
-#### Synchronous
-
-```js
-import {$} from 'execa';
-
-const {stdout} = $.sync`echo unicorns`;
-console.log(stdout);
-//=> 'unicorns'
-
-$({stdio: 'inherit'}).sync`echo rainbows`;
-//=> 'rainbows'
-```
-
-#### With results from `$` or `$.sync`
-
-```js
-import {$} from 'execa';
-
-const unicorns = await $`echo unicorns`;
-
-$({stdio: 'inherit'}).sync`echo ${unicorns} rainbows`;
-//=> 'unicorns rainbows'
 ```
 
 #### Verbose mode
@@ -120,7 +105,9 @@ unicorns
 rainbows
 ```
 
-### Redirect output to a file
+### Input/output
+
+#### Redirect output to a file
 
 ```js
 import {execa} from 'execa';
@@ -135,7 +122,7 @@ await execa('echo', ['unicorns']).pipeStderr('stderr.txt');
 await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
 ```
 
-### Redirect input from a file
+#### Redirect input from a file
 
 ```js
 import {execa} from 'execa';
@@ -146,7 +133,7 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
-### Save and pipe output from a child process
+#### Save and pipe output from a child process
 
 ```js
 import {execa} from 'execa';
@@ -157,7 +144,7 @@ console.log(stdout);
 // Also returns 'unicorns'
 ```
 
-### Pipe multiple processes
+#### Pipe multiple processes
 
 ```js
 import {execa} from 'execa';
@@ -202,60 +189,7 @@ try {
 }
 ```
 
-### Cancelling a spawned process
-
-```js
-import {execa} from 'execa';
-
-const abortController = new AbortController();
-const subprocess = execa('node', [], {signal: abortController.signal});
-
-setTimeout(() => {
-	abortController.abort();
-}, 1000);
-
-try {
-	await subprocess;
-} catch (error) {
-	console.log(subprocess.killed); // true
-	console.log(error.isCanceled); // true
-}
-```
-
-### Catching an error with the sync method
-
-```js
-import {execaSync} from 'execa';
-
-try {
-	execaSync('unknown', ['command']);
-} catch (error) {
-	console.log(error);
-	/*
-	{
-		message: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
-		errno: -2,
-		code: 'ENOENT',
-		syscall: 'spawnSync unknown',
-		path: 'unknown',
-		spawnargs: ['command'],
-		originalMessage: 'spawnSync unknown ENOENT',
-		shortMessage: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
-		command: 'unknown command',
-		escapedCommand: 'unknown command',
-		stdout: '',
-		stderr: '',
-		all: '',
-		failed: true,
-		timedOut: false,
-		isCanceled: false,
-		killed: false
-	}
-	*/
-}
-```
-
-### Kill a process
+### Graceful termination
 
 Using SIGTERM, and after 2 seconds, kill it with SIGKILL.
 
@@ -776,13 +710,33 @@ const run = async () => {
 console.log(await pRetry(run, {retries: 5}));
 ```
 
+### Cancelling a spawned process
+
+```js
+import {execa} from 'execa';
+
+const abortController = new AbortController();
+const subprocess = execa('node', [], {signal: abortController.signal});
+
+setTimeout(() => {
+	abortController.abort();
+}, 1000);
+
+try {
+	await subprocess;
+} catch (error) {
+	console.log(subprocess.killed); // true
+	console.log(error.isCanceled); // true
+}
+```
+
 ### Execute the current package's binary
 
 ```js
-import {getBinPathSync} from 'get-bin-path';
+import {getBinPath} from 'get-bin-path';
 
-const binPath = getBinPathSync();
-const subprocess = execa(binPath);
+const binPath = await getBinPath();
+await execa(binPath);
 ```
 
 `execa` can be combined with [`get-bin-path`](https://github.com/ehmicky/get-bin-path) to test the current package's binary. As opposed to hard-coding the path to the binary, this validates that the `package.json` `bin` field is correctly set up.

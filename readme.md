@@ -128,7 +128,7 @@ await execa('echo', ['unicorns'], {all:true}).pipeAll('all.txt');
 import {execa} from 'execa';
 
 // Similar to `cat < stdin.txt` in Bash
-const {stdout} = await execa('cat', {input:fs.createReadStream('stdin.txt')});
+const {stdout} = await execa('cat', {inputFile:'stdin.txt'});
 console.log(stdout);
 //=> 'unicorns'
 ```
@@ -496,6 +496,16 @@ Type: `string | Buffer | stream.Readable`
 
 Write some input to the `stdin` of your binary.\
 Streams are not allowed when using the synchronous methods.
+
+If the input is a file, use the [`inputFile` option](#inputfile) instead.
+
+#### inputFile
+
+Type: `string`
+
+Use a file as input to the the `stdin` of your binary.
+
+If the input is not a file, use the [`input` option](#input) instead.
 
 #### stdin
 

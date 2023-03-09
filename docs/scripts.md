@@ -635,7 +635,7 @@ await cat
 
 ```js
 // Execa
-await $({input: fs.createReadStream('file.txt')})`cat`
+await $({inputFile: 'file.txt'})`cat`
 ```
 
 ### Silent stderr

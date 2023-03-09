@@ -258,6 +258,8 @@ export type CommonOptions<EncodingType> = {
 export type Options<EncodingType = string> = {
 	/**
 	Write some input to the `stdin` of your binary.
+
+	Tip: If the input is a file, use the `inputFile` option instead.
 	*/
 	readonly input?: string | Buffer | ReadableStream;
 

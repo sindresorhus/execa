@@ -204,52 +204,82 @@ setTimeout(() => {
 
 ## API
 
-### execa(file, arguments, options?)
+### Methods
 
-Execute a file. Think of this as a mix of [`child_process.execFile()`](https://nodejs.org/api/child_process.html#child_process_child_process_execfile_file_args_options_callback) and [`child_process.spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options). This returns a [`childProcess`](#childprocess).
+#### execa(file, arguments?, options?)
 
-No escaping/quoting is needed.
+Executes a command using `file ...arguments`. `arguments` are specified as an array of strings. Returns a [`childProcess`](#childprocess).
 
-Unless the [`shell`](#shell) option is used, no shell interpreter (Bash, `cmd.exe`, etc.) is used, so shell features such as variables substitution (`echo $PATH`) are not allowed.
+Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces.
 
-### $\`command\`
+This is the preferred method when executing single commands.
 
-Same as [`execa()`](#execafile-arguments-options) (including its [return value](#childprocess)) except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+#### execaNode(scriptPath, arguments?, options?)
 
-It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the [`shell` option](#shell) is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
+Executes a Node.js file using `node scriptPath ...arguments`. `arguments` are specified as an array of strings. Returns a [`childProcess`](#childprocess).
 
-The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces.
 
-As a convenience, the result from previous [`` $`command` ``](#command) or [`` $.sync`command` ``](#synccommand) calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example above [with results from `$` or `$.sync`](#with-results-from--or-sync) for more details.
+This is the preferred method when executing Node.js files.
 
-For more information, please see [this page](docs/scripts.md).
-
-### $(options)
-
-Binds options to the [`$`](#command) API. For example, you can use `$(options)` to create a new `$` instance with specific default options, which are then bound to both the asynchronous [`` $`command` ``](#command) and synchronous [`` $.sync`command` ``](#synccommand) APIs.
-
-> **Note:** Consecutive calls to this API will shallow merge the options.
-
-### execaCommand(command, options?)
-
-Same as [`execa()`](#execafile-arguments-options) (including its [return value](#childprocess)) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
-
-If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
-
-The [`shell` option](#shell) must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
-
-### execaNode(scriptPath, arguments?, options?)
-
-Execute a Node.js script as a child process.
-
-Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
+Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
   - the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
   - the [`shell`](#shell) option cannot be used
   - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
+#### $\`command\`
+
+Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a [`childProcess`](#childprocess).
+
+Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces must use `${}` like `` $`echo ${'has space'}` ``.
+
+This is the preferred method when executing multiple commands in a script file.
+
+The `command` string can inject any `${value}` with the following types: string, number, [`childProcess`](#childprocess) or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${childProcess}`, the process's `stdout` is used.
+
+For more information, please see [this section](#scripts-interface) and [this page](docs/scripts.md).
+
+#### $(options)
+
+Returns a new instance of [`$`](#command) but with different default `options`. Consecutive calls are merged to previous ones.
+
+This can be used to either:
+  - Set options for a specific command: `` $(options)`command` ``
+  - Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand`; ``
+
+#### execaCommand(command, options?)
+
+Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a [`childProcess`](#childprocess).
+
+Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces must be escaped with a backslash like `execaCommand('echo has\\ space')`.
+
+This is the preferred method when executing a user-supplied `command` string, such as in a REPL.
+
+### execaSync(file, arguments?, options?)
+
+Same as [`execa()`](#execacommandcommand-options) but synchronous.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### $.sync\`command\`
+
+Same as [$\`command\`](#command) but synchronous.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### execaCommandSync(command, options?)
+
+Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
+
+Returns or throws a [`childProcessResult`](#childProcessResult).
+
+### Shell syntax
+
+For all the [methods above](#methods), no shell interpreter (Bash, cmd.exe, etc.) is used unless the [`shell` option](#shell) is set. This means shell-specific characters and expressions (`$variable`, `&&`, `||`, `;`, `|`, etc.) have no special meaning and do not need to be escaped.
+
 ### childProcess
 
-This is both:
+The return value of all [asynchronous methods](#methods) is both:
   - a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
   - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
 
@@ -298,24 +328,6 @@ The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
 Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
 
 Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
-
-### execaSync(file, arguments?, options?)
-
-Same as [`execa()`](#execacommandcommand-options) but synchronous.
-
-Returns or throws a [`childProcessResult`](#childProcessResult).
-
-### $.sync\`command\`
-
-Same as [$\`command\`](#command) but synchronous.
-
-Returns or throws a [`childProcessResult`](#childProcessResult).
-
-### execaCommandSync(command, options?)
-
-Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
-
-Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### childProcessResult
 

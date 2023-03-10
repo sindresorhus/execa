@@ -504,9 +504,11 @@ ExecaChildPromise<StdoutStderrType> &
 Promise<ExecaReturnValue<StdoutStderrType>>;
 
 /**
-Execute a file.
+Executes a command using `file ...arguments`. `arguments` are specified as an array of strings. Returns a `childProcess`.
 
-Think of this as a mix of `child_process.execFile` and `child_process.spawn`.
+Arguments are automatically escaped. They can contain any character, including spaces.
+
+This is the preferred method when executing single commands.
 
 @param file - The program/script to execute.
 @param arguments - Arguments to pass to `file` on execution.
@@ -700,11 +702,11 @@ export function execaSync(
 ): ExecaSyncReturnValue<Buffer>;
 
 /**
-Same as `execa()` (including its return value) except both file and arguments are specified in a single `command` string. For example, `execa('echo', ['unicorns'])` is the same as `execaCommand('echo unicorns')`.
+Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
 
-If the file or an argument contains spaces, they must be escaped with backslashes. This matters especially if `command` is not a constant but a variable, for example with `__dirname` or `process.cwd()`. Except for spaces, no escaping/quoting is needed.
+Arguments are automatically escaped. They can contain any character, but spaces must be escaped with a backslash like `execaCommand('echo has\\ space')`.
 
-The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+This is the preferred method when executing a user-supplied `command` string, such as in a REPL.
 
 @param command - The program/script to execute and its arguments.
 @returns An `ExecaChildProcess` that is both:
@@ -752,9 +754,11 @@ type TemplateExpression =
 
 type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
-	Binds options to the `$` API. For example, you can use `$(options)` to create a new `$` instance with specific default options, which are then bound to both the asynchronous `` $`command` `` and synchronous `` $.sync`command` `` APIs.
+	Returns a new instance of `$` but with different default `options`. Consecutive calls are merged to previous ones.
 
-	> **Note:** Consecutive calls to this API will shallow merge the options.
+	This can be used to either:
+		- Set options for a specific command: `` $(options)`command` ``
+		- Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand` ``
 
 	@param options - Options to set
 	@returns A new instance of `$` with those `options` set
@@ -832,13 +836,13 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 };
 
 /**
-Same as `execa()` except both file and arguments are specified in a single tagged template string. For example, `` $`echo unicorns` `` is the same as `execa('echo', ['unicorns'])`.
+Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
 
-It's important to note that quotes, backslashes, and spaces are automatically escaped and have no special meaning unless the `shell` option is used. This escaping behavior also applies to interpolated expressions such as strings (`` $`echo ${'string'}` ``), arrays of strings (`` $`echo ${['array', 'of strings']}` ``), and so on.
+Arguments are automatically escaped. They can contain any character, but spaces must use `${}` like `` $`echo ${'has space'}` ``.
 
-The `shell` option must be used if the `command` uses shell-specific features (for example, `&&` or `||`), as opposed to being a simple `file` followed by its `arguments`.
+This is the preferred method when executing multiple commands in a script file.
 
-As a convenience, the result from previous `` $`command` `` or `` $.sync`command` `` calls can be used as template expressions in subsequent commands and `$`/`$.sync` will use the `stdout` value. See the example below `` with results from `$` or `$.sync` `` for more details.
+The `command` string can inject any `${value}` with the following types: string, number, `childProcess` or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${childProcess}`, the process's `stdout` is used.
 
 @returns An `ExecaChildProcess` that is both:
 	- a `Promise` resolving or rejecting with a `childProcessResult`.
@@ -889,10 +893,14 @@ export const $: Execa$;
 /**
 Execute a Node.js script as a child process.
 
-Same as `execa('node', [scriptPath, ...arguments], options)` except (like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options)):
-	- the current Node version and options are used. This can be overridden using the `nodePath` and `nodeArguments` options.
-	- the `shell` option cannot be used
-	- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
+Arguments are automatically escaped. They can contain any character, including spaces.
+
+This is the preferred method when executing Node.js files.
+
+Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
+  - the current Node version and options are used. This can be overridden using the `nodePath` and `nodeOptions` options.
+  - the `shell` option cannot be used
+  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to `stdio`
 
 @param scriptPath - Node.js script to execute.
 @param arguments - Arguments to pass to `scriptPath` on execution.

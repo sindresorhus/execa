@@ -196,6 +196,10 @@ test('$.sync accepts options', t => {
 	t.is(stdout, 'foo');
 });
 
+test('$.sync must be used after options binding, not before', t => {
+	t.throws(() => $.sync({})`noop.js`, {message: /Please use/});
+});
+
 test('$.sync allows execa return value interpolation', t => {
 	const foo = $.sync`node test/fixtures/echo.js foo`;
 	const {stdout} = $.sync`node test/fixtures/echo.js ${foo} bar`;

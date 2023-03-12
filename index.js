@@ -234,15 +234,19 @@ export function execaSync(file, args, options) {
 
 function create$(options) {
 	function $(templatesOrOptions, ...expressions) {
-		if (Array.isArray(templatesOrOptions)) {
-			const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
-			return execa(file, args, options);
+		if (!Array.isArray(templatesOrOptions)) {
+			return create$({...options, ...templatesOrOptions});
 		}
 
-		return create$({...options, ...templatesOrOptions});
+		const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
+		return execa(file, args, options);
 	}
 
 	$.sync = (templates, ...expressions) => {
+		if (!Array.isArray(templates)) {
+			throw new TypeError('Please use $(options).sync`command` instead of $.sync(options)`command`.');
+		}
+
 		const [file, ...args] = parseTemplates(templates, expressions);
 		return execaSync(file, args, options);
 	};

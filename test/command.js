@@ -112,6 +112,11 @@ test('$ allows array interpolation', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$ allows empty array interpolation', async t => {
+	const {stdout} = await $`echo.js foo ${[]} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
 test('$ allows execa return value interpolation', async t => {
 	const foo = await $`echo.js foo`;
 	const {stdout} = await $`echo.js ${foo} bar`;
@@ -169,6 +174,41 @@ test('$ passes newline escape sequence in interpolation as one argument', async 
 test('$ handles invalid escape sequence', async t => {
 	const {stdout} = await $`echo.js \u`;
 	t.is(stdout, '\\u');
+});
+
+test('$ can concatenate at the end of tokens', async t => {
+	const {stdout} = await $`echo.js foo${'bar'}`;
+	t.is(stdout, 'foobar');
+});
+
+test('$ does not concatenate at the end of tokens with a space', async t => {
+	const {stdout} = await $`echo.js foo ${'bar'}`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ can concatenate at the end of tokens followed by an array', async t => {
+	const {stdout} = await $`echo.js foo${['bar', 'foo']}`;
+	t.is(stdout, 'foobar\nfoo');
+});
+
+test('$ can concatenate at the start of tokens', async t => {
+	const {stdout} = await $`echo.js ${'foo'}bar`;
+	t.is(stdout, 'foobar');
+});
+
+test('$ does not concatenate at the start of tokens with a space', async t => {
+	const {stdout} = await $`echo.js ${'foo'} bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
+test('$ can concatenate at the start of tokens followed by an array', async t => {
+	const {stdout} = await $`echo.js ${['foo', 'bar']}foo`;
+	t.is(stdout, 'foo\nbarfoo');
+});
+
+test('$ can concatenate multiple tokens', async t => {
+	const {stdout} = await $`echo.js ${'foo'}bar${'foo'}`;
+	t.is(stdout, 'foobarfoo');
 });
 
 test('$ allows escaping spaces in commands with interpolation', async t => {

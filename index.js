@@ -232,6 +232,16 @@ export function execaSync(file, args, options) {
 	};
 }
 
+const normalizeScriptStdin = ({input, inputFile, stdio}) => input === undefined && inputFile === undefined && stdio === undefined
+	? {stdin: 'inherit'}
+	: {};
+
+const normalizeScriptOptions = (options = {}) => ({
+	preferLocal: true,
+	...normalizeScriptStdin(options),
+	...options,
+});
+
 function create$(options) {
 	function $(templatesOrOptions, ...expressions) {
 		if (!Array.isArray(templatesOrOptions)) {
@@ -239,7 +249,7 @@ function create$(options) {
 		}
 
 		const [file, ...args] = parseTemplates(templatesOrOptions, expressions);
-		return execa(file, args, options);
+		return execa(file, args, normalizeScriptOptions(options));
 	}
 
 	$.sync = (templates, ...expressions) => {
@@ -248,13 +258,13 @@ function create$(options) {
 		}
 
 		const [file, ...args] = parseTemplates(templates, expressions);
-		return execaSync(file, args, options);
+		return execaSync(file, args, normalizeScriptOptions(options));
 	};
 
 	return $;
 }
 
-export const $ = create$({preferLocal: true});
+export const $ = create$();
 
 export function execaCommand(command, options) {
 	const [file, ...args] = parseCommand(command);

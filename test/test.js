@@ -100,6 +100,10 @@ test('preferLocal: undefined with $', async t => {
 	await t.notThrowsAsync($({env: getPathWithoutLocalDir()})`ava --version`);
 });
 
+test('preferLocal: undefined with $.sync', t => {
+	t.notThrows(() => $({env: getPathWithoutLocalDir()}).sync`ava --version`);
+});
+
 test('localDir option', async t => {
 	const command = process.platform === 'win32' ? 'echo %PATH%' : 'echo $PATH';
 	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: '/test'});

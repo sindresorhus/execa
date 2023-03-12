@@ -231,13 +231,13 @@ test('can use `options.cwd` as a URL', async t => {
 });
 
 test('can use `options.shell: true`', async t => {
-	const {stdout} = await execa('noop.js foo', {shell: true});
+	const {stdout} = await execa('node test/fixtures/noop.js foo', {shell: true});
 	t.is(stdout, 'foo');
 });
 
 test('can use `options.shell: string`', async t => {
 	const shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/bash';
-	const {stdout} = await execa('noop.js foo', {shell});
+	const {stdout} = await execa('node test/fixtures/noop.js foo', {shell});
 	t.is(stdout, 'foo');
 });
 

@@ -19,13 +19,13 @@ test('buffer', async t => {
 
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile('.txt');
-	await execa('test/fixtures/noop.js', ['foo bar'], {stdout: fs.openSync(file, 'w')});
+	await execa('noop.js', ['foo bar'], {stdout: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 
 test('pass `stderr` to a file descriptor', async t => {
 	const file = tempfile('.txt');
-	await execa('test/fixtures/noop-err.js', ['foo bar'], {stderr: fs.openSync(file, 'w')});
+	await execa('noop-err.js', ['foo bar'], {stderr: fs.openSync(file, 'w')});
 	t.is(fs.readFileSync(file, 'utf8'), 'foo bar\n');
 });
 

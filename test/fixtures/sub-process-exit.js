@@ -6,7 +6,7 @@ const cleanup = process.argv[2] === 'true';
 const detached = process.argv[3] === 'true';
 
 try {
-	await execa('node', ['./test/fixtures/noop.js'], {cleanup, detached});
+	await execa('noop.js', {cleanup, detached});
 } catch (error) {
 	console.error(error);
 	process.exit(1);

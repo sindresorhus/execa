@@ -53,12 +53,12 @@ test('allow commands with spaces and array arguments', async t => {
 });
 
 test('execaCommand()', async t => {
-	const {stdout} = await execaCommand('node test/fixtures/echo.js foo bar');
+	const {stdout} = await execaCommand('echo.js foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('execaCommand() ignores consecutive spaces', async t => {
-	const {stdout} = await execaCommand('node test/fixtures/echo.js foo    bar');
+	const {stdout} = await execaCommand('echo.js foo    bar');
 	t.is(stdout, 'foo\nbar');
 });
 
@@ -68,27 +68,27 @@ test('execaCommand() allows escaping spaces in commands', async t => {
 });
 
 test('execaCommand() allows escaping spaces in arguments', async t => {
-	const {stdout} = await execaCommand('node test/fixtures/echo.js foo\\ bar');
+	const {stdout} = await execaCommand('echo.js foo\\ bar');
 	t.is(stdout, 'foo bar');
 });
 
 test('execaCommand() escapes other whitespaces', async t => {
-	const {stdout} = await execaCommand('node test/fixtures/echo.js foo\tbar');
+	const {stdout} = await execaCommand('echo.js foo\tbar');
 	t.is(stdout, 'foo\tbar');
 });
 
 test('execaCommand() trims', async t => {
-	const {stdout} = await execaCommand('  node test/fixtures/echo.js foo bar  ');
+	const {stdout} = await execaCommand('  echo.js foo bar  ');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('execaCommandSync()', t => {
-	const {stdout} = execaCommandSync('node test/fixtures/echo.js foo bar');
+	const {stdout} = execaCommandSync('echo.js foo bar');
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js foo bar`;
+	const {stdout} = await $`echo.js foo bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
@@ -98,76 +98,76 @@ test('$ accepts options', async t => {
 });
 
 test('$ allows string interpolation', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js foo ${'bar'}`;
+	const {stdout} = await $`echo.js foo ${'bar'}`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ allows number interpolation', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js 1 ${2}`;
+	const {stdout} = await $`echo.js 1 ${2}`;
 	t.is(stdout, '1\n2');
 });
 
 test('$ allows array interpolation', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js ${['foo', 'bar']}`;
+	const {stdout} = await $`echo.js ${['foo', 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ allows execa return value interpolation', async t => {
-	const foo = await $`node test/fixtures/echo.js foo`;
-	const {stdout} = await $`node test/fixtures/echo.js ${foo} bar`;
+	const foo = await $`echo.js foo`;
+	const {stdout} = await $`echo.js ${foo} bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ allows execa return value array interpolation', async t => {
-	const foo = await $`node test/fixtures/echo.js foo`;
-	const {stdout} = await $`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	const foo = await $`echo.js foo`;
+	const {stdout} = await $`echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ allows execa return value buffer interpolation', async t => {
-	const foo = await $({encoding: null})`node test/fixtures/echo.js foo`;
-	const {stdout} = await $`node test/fixtures/echo.js ${foo} bar`;
+	const foo = await $({encoding: null})`echo.js foo`;
+	const {stdout} = await $`echo.js ${foo} bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ allows execa return value buffer array interpolation', async t => {
-	const foo = await $({encoding: null})`node test/fixtures/echo.js foo`;
-	const {stdout} = await $`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	const foo = await $({encoding: null})`echo.js foo`;
+	const {stdout} = await $`echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ ignores consecutive spaces', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js foo    bar`;
+	const {stdout} = await $`echo.js foo    bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ allows escaping spaces with interpolation', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js ${'foo bar'}`;
+	const {stdout} = await $`echo.js ${'foo bar'}`;
 	t.is(stdout, 'foo bar');
 });
 
 test('$ disallows escaping spaces with backslashes', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js foo\\ bar`;
+	const {stdout} = await $`echo.js foo\\ bar`;
 	t.is(stdout, 'foo\\\nbar');
 });
 
 test('$ allows space escaped values in array interpolation', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js ${['foo', 'bar baz']}`;
+	const {stdout} = await $`echo.js ${['foo', 'bar baz']}`;
 	t.is(stdout, 'foo\nbar baz');
 });
 
 test('$ passes newline escape sequence as one argument', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js \n`;
+	const {stdout} = await $`echo.js \n`;
 	t.is(stdout, '\n');
 });
 
 test('$ passes newline escape sequence in interpolation as one argument', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js ${'\n'}`;
+	const {stdout} = await $`echo.js ${'\n'}`;
 	t.is(stdout, '\n');
 });
 
 test('$ handles invalid escape sequence', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js \u`;
+	const {stdout} = await $`echo.js \u`;
 	t.is(stdout, '\\u');
 });
 
@@ -177,17 +177,17 @@ test('$ allows escaping spaces in commands with interpolation', async t => {
 });
 
 test('$ escapes other whitespaces', async t => {
-	const {stdout} = await $`node test/fixtures/echo.js foo\tbar`;
+	const {stdout} = await $`echo.js foo\tbar`;
 	t.is(stdout, 'foo\tbar');
 });
 
 test('$ trims', async t => {
-	const {stdout} = await $`  node test/fixtures/echo.js foo bar  `;
+	const {stdout} = await $`  echo.js foo bar  `;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$.sync', t => {
-	const {stdout} = $.sync`node test/fixtures/echo.js foo bar`;
+	const {stdout} = $.sync`echo.js foo bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
@@ -197,38 +197,38 @@ test('$.sync accepts options', t => {
 });
 
 test('$.sync allows execa return value interpolation', t => {
-	const foo = $.sync`node test/fixtures/echo.js foo`;
-	const {stdout} = $.sync`node test/fixtures/echo.js ${foo} bar`;
+	const foo = $.sync`echo.js foo`;
+	const {stdout} = $.sync`echo.js ${foo} bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$.sync allows execa return value array interpolation', t => {
-	const foo = $.sync`node test/fixtures/echo.js foo`;
-	const {stdout} = $.sync`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	const foo = $.sync`echo.js foo`;
+	const {stdout} = $.sync`echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$.sync allows execa return value buffer interpolation', t => {
-	const foo = $({encoding: null}).sync`node test/fixtures/echo.js foo`;
-	const {stdout} = $.sync`node test/fixtures/echo.js ${foo} bar`;
+	const foo = $({encoding: null}).sync`echo.js foo`;
+	const {stdout} = $.sync`echo.js ${foo} bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$.sync allows execa return value buffer array interpolation', t => {
-	const foo = $({encoding: null}).sync`node test/fixtures/echo.js foo`;
-	const {stdout} = $.sync`node test/fixtures/echo.js ${[foo, 'bar']}`;
+	const foo = $({encoding: null}).sync`echo.js foo`;
+	const {stdout} = $.sync`echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });
 
 const invalidExpression = test.macro({
 	async exec(t, input, expected) {
 		await t.throwsAsync(
-			async () => $`node test/fixtures/echo.js ${input}`,
+			async () => $`echo.js ${input}`,
 			{instanceOf: TypeError, message: expected},
 		);
 
 		t.throws(
-			() => $.sync`node test/fixtures/echo.js ${input}`,
+			() => $.sync`echo.js ${input}`,
 			{instanceOf: TypeError, message: expected},
 		);
 	},

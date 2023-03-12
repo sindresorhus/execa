@@ -206,6 +206,11 @@ test('$ can concatenate at the start of tokens followed by an array', async t =>
 	t.is(stdout, 'foo\nbarfoo');
 });
 
+test('$ can concatenate at the start and end of tokens followed by an array', async t => {
+	const {stdout} = await $`echo.js foo${['bar', 'foo']}bar`;
+	t.is(stdout, 'foobar\nfoobar');
+});
+
 test('$ can concatenate multiple tokens', async t => {
 	const {stdout} = await $`echo.js ${'foo'}bar${'foo'}`;
 	t.is(stdout, 'foobarfoo');

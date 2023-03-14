@@ -10,7 +10,7 @@ setFixtureDir();
 const TIMEOUT_REGEXP = /timed out after/;
 
 test('kill("SIGKILL") should terminate cleanly', async t => {
-	const subprocess = execa('node', ['./test/fixtures/no-killable.js'], {stdio: ['ipc']});
+	const subprocess = execa('no-killable.js', {stdio: ['ipc']});
 	await pEvent(subprocess, 'message');
 
 	subprocess.kill('SIGKILL');
@@ -23,7 +23,7 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
 	test('`forceKillAfterTimeout: false` should not kill after a timeout', async t => {
-		const subprocess = execa('node', ['./test/fixtures/no-killable.js'], {stdio: ['ipc']});
+		const subprocess = execa('no-killable.js', {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {forceKillAfterTimeout: false});
@@ -33,7 +33,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterTimeout: number` should kill after a timeout', async t => {
-		const subprocess = execa('node', ['./test/fixtures/no-killable.js'], {stdio: ['ipc']});
+		const subprocess = execa('no-killable.js', {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {forceKillAfterTimeout: 50});
@@ -43,7 +43,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterTimeout: true` should kill after a timeout', async t => {
-		const subprocess = execa('node', ['./test/fixtures/no-killable.js'], {stdio: ['ipc']});
+		const subprocess = execa('no-killable.js', {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill('SIGTERM', {forceKillAfterTimeout: true});
@@ -53,7 +53,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('kill() with no arguments should kill after a timeout', async t => {
-		const subprocess = execa('node', ['./test/fixtures/no-killable.js'], {stdio: ['ipc']});
+		const subprocess = execa('no-killable.js', {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
 		subprocess.kill();

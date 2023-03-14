@@ -140,6 +140,26 @@ const example = await $`echo example`;
 await $`echo ${example}`;
 ```
 
+### Concatenation
+
+```sh
+# Bash
+tmpDir="/tmp"
+mkdir "$tmpDir/filename"
+```
+
+```js
+// zx
+const tmpDir = '/tmp'
+await $`mkdir ${tmpDir}/filename`;
+```
+
+```js
+// Execa
+const tmpDir = '/tmp'
+await $`mkdir ${tmpDir}/filename`;
+```
+
 ### Parallel commands
 
 ```sh

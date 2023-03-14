@@ -1,5 +1,6 @@
 import {inspect} from 'node:util';
 import test from 'ava';
+import {isStream} from 'is-stream';
 import {execa, execaSync, execaCommand, execaCommandSync, $} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
 
@@ -273,3 +274,17 @@ test('[ $`noop.js` ]', invalidExpression, [$`noop.js`], 'Unexpected "object" in 
 
 test('$({stdio: \'inherit\'}).sync`noop.js`', invalidExpression, $({stdio: 'inherit'}).sync`noop.js`, 'Unexpected "undefined" stdout in template expression');
 test('[ $({stdio: \'inherit\'}).sync`noop.js` ]', invalidExpression, [$({stdio: 'inherit'}).sync`noop.js`], 'Unexpected "undefined" stdout in template expression');
+
+test('$ stdin defaults to "inherit"', async t => {
+	const {stdout} = await $({input: 'foo'})`stdin-script.js`;
+	t.is(stdout, 'foo');
+});
+
+test('$.sync stdin defaults to "inherit"', t => {
+	const {stdout} = $({input: 'foo'}).sync`stdin-script.js`;
+	t.is(stdout, 'foo');
+});
+
+test('$ stdin has no default value when stdio is set', t => {
+	t.true(isStream($({stdio: 'pipe'})`noop.js`.stdin));
+});

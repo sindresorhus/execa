@@ -6,7 +6,7 @@ import test from 'ava';
 import getStream from 'get-stream';
 import {pEvent} from 'p-event';
 import tempfile from 'tempfile';
-import {execa, execaSync} from '../index.js';
+import {execa, execaSync, $} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -71,10 +71,22 @@ test('input can be a Stream', async t => {
 	t.is(stdout, 'howdy');
 });
 
+test('input option can be used with $', async t => {
+	const {stdout} = await $({input: 'foobar'})`stdin.js`;
+	t.is(stdout, 'foobar');
+});
+
 test('inputFile can be set', async t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
 	const {stdout} = await execa('stdin.js', {inputFile});
+	t.is(stdout, 'howdy');
+});
+
+test('inputFile can be set with $', async t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const {stdout} = await $({inputFile})`stdin.js`;
 	t.is(stdout, 'howdy');
 });
 
@@ -93,6 +105,11 @@ test('you can write to child.stdin', async t => {
 
 test('input option can be a String - sync', t => {
 	const {stdout} = execaSync('stdin.js', {input: 'foobar'});
+	t.is(stdout, 'foobar');
+});
+
+test('input option can be used with $.sync', t => {
+	const {stdout} = $({input: 'foobar'}).sync`stdin.js`;
 	t.is(stdout, 'foobar');
 });
 
@@ -122,6 +139,13 @@ test('inputFile can be set - sync', t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
 	const {stdout} = execaSync('stdin.js', {inputFile});
+	t.is(stdout, 'howdy');
+});
+
+test('inputFile option can be used with $.sync', t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const {stdout} = $({inputFile}).sync`stdin.js`;
 	t.is(stdout, 'howdy');
 });
 

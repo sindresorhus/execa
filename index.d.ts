@@ -27,7 +27,7 @@ export type CommonOptions<EncodingType> = {
 
 	If you `$ npm install foo`, you can then `execa('foo')`.
 
-	@default `true` with `$`/`$.sync`, `false` otherwise
+	@default `true` with `$`, `false` otherwise
 	*/
 	readonly preferLocal?: boolean;
 
@@ -63,7 +63,7 @@ export type CommonOptions<EncodingType> = {
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	@default 'pipe'
+	@default `inherit` with `$`, `pipe` otherwise
 	*/
 	readonly stdin?: StdioOption;
 

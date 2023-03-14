@@ -467,7 +467,7 @@ Kill the spawned process when the parent process exits unless either:
 #### preferLocal
 
 Type: `boolean`\
-Default: `true` with [`$`](#command)/[`$.sync`](#synccommand), `false` otherwise
+Default: `true` with [`$`](#command), `false` otherwise
 
 Prefer locally installed binaries when looking for a binary to execute.\
 If you `$ npm install foo`, you can then `execa('foo')`.
@@ -521,7 +521,7 @@ If the input is not a file, use the [`input` option](#input) instead.
 #### stdin
 
 Type: `string | number | Stream | undefined`\
-Default: `pipe`
+Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 

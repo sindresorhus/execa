@@ -38,7 +38,8 @@
 		"binaries",
 		"npm",
 		"path",
-		"local"
+		"local",
+		"zx"
 	],
 	"dependencies": {
 		"cross-spawn": "^7.0.3",

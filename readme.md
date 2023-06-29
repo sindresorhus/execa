@@ -8,37 +8,6 @@
 
 > Process execution for humans
 
-<br>
-
----
-
-<div align="center">
-	<p>
-		<p>
-			<sup>
-				<a href="https://github.com/sponsors/sindresorhus">Sindre's open source work is supported by the community</a>
-			</sup>
-		</p>
-		<sup>Special thanks to:</sup>
-		<br>
-		<br>
-		<a href="https://dashcam.io?ref=sindresorhus_execa">
-			<div>
-				<img src="https://sindresorhus.com/assets/thanks/dashcam-logo.png" width="280" alt="Dashcam">
-			</div>
-			<b>Never miss another bug</b>
-			<div>
-				<sup>Capture the steps to reproduce every bug, every time, with Dashcam for desktop.</sup>
-			</div>
-		</a>
-		<br>
-	</p>
-</div>
-
----
-
-<br>
-
 ## Why
 
 This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:

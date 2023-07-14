@@ -3,7 +3,7 @@ import childProcess from 'node:child_process';
 import {promisify} from 'node:util';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
-import {setFixtureDir} from './helpers/fixtures-dir.js';
+import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
 
 const pExec = promisify(childProcess.exec);
 
@@ -211,4 +211,9 @@ test('error.code is undefined on success', async t => {
 test('error.code is defined on failure if applicable', async t => {
 	const {code} = await t.throwsAsync(execa('noop.js', {cwd: 1}));
 	t.is(code, 'ERR_INVALID_ARG_TYPE');
+});
+
+test('error.cwd is defined on failure if applicable', async t => {
+	const {cwd} = await t.throwsAsync(execa('noop-throw.js', [], {cwd: FIXTURES_DIR}));
+	t.is(cwd, FIXTURES_DIR);
 });

@@ -366,9 +366,9 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	signalDescription?: string;
 
 	/**
-	The `cwd` of the command if provided in the command options. Otherwise it is `undefined`.
+	The `cwd` of the command if provided in the command options. Otherwise it is `process.cwd()`.
 	*/
-	cwd?: string;
+	cwd: string;
 };
 
 export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
@@ -602,7 +602,7 @@ try {
 		timedOut: false,
 		isCanceled: false,
 		killed: false,
-		cwd: undefined
+		cwd: '/path/to/cwd'
 	}
 	\*\/
 }
@@ -686,7 +686,7 @@ try {
 		timedOut: false,
 		isCanceled: false,
 		killed: false,
-		cwd: undefined
+		cwd: '/path/to/cwd'
 	}
 	\*\/
 }

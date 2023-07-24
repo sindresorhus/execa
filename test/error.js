@@ -219,6 +219,7 @@ test('error.cwd is defined on failure if applicable', async t => {
 });
 
 test('error.cwd is undefined on failure if not passed as options', async t => {
+	const expectedCwd = process.cwd();
 	const {cwd} = await t.throwsAsync(execa('noop-throw.js'));
-	t.is(cwd, undefined);
+	t.is(cwd, expectedCwd);
 });

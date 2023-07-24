@@ -217,3 +217,8 @@ test('error.cwd is defined on failure if applicable', async t => {
 	const {cwd} = await t.throwsAsync(execa('noop-throw.js', [], {cwd: FIXTURES_DIR}));
 	t.is(cwd, FIXTURES_DIR);
 });
+
+test('error.cwd is undefined on failure if not passed as options', async t => {
+	const {cwd} = await t.throwsAsync(execa('noop-throw.js'));
+	t.is(cwd, undefined);
+});

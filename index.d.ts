@@ -364,6 +364,11 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 	*/
 	signalDescription?: string;
+
+	/**
+	The `cwd` of the command if provided in the command options. Otherwise it is `process.cwd()`.
+	*/
+	cwd: string;
 };
 
 export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
@@ -596,7 +601,8 @@ try {
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
-		killed: false
+		killed: false,
+		cwd: '/path/to/cwd'
 	}
 	\*\/
 }
@@ -679,7 +685,8 @@ try {
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
-		killed: false
+		killed: false,
+		cwd: '/path/to/cwd'
 	}
 	\*\/
 }

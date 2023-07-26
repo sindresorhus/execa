@@ -461,6 +461,12 @@ A human-friendly description of the signal that was used to terminate the proces
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 
+#### cwd
+
+Type: `string`
+
+The `cwd` of the command if provided in the [command options](#cwd-1). Otherwise it is `process.cwd()`.
+
 #### message
 
 Type: `string`

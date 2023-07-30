@@ -713,8 +713,6 @@ You can abort the spawned process using [`AbortController`](https://developer.mo
 
 When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `false`.
 
-*Requires Node.js 16 or later.*
-
 #### windowsVerbatimArguments
 
 Type: `boolean`\

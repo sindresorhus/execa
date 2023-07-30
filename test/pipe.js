@@ -32,7 +32,7 @@ test('pipeAll() can pipe stdout to streams', pipeToStream, 'noop.js', 'pipeAll',
 test('pipeAll() can pipe stderr to streams', pipeToStream, 'noop-err.js', 'pipeAll', 'stderr');
 
 const pipeToFile = async (t, fixtureName, funcName, streamName) => {
-	const file = tempfile('.txt');
+	const file = tempfile({extension: '.txt'});
 	const result = await execa(fixtureName, ['test'], {all: true})[funcName](file);
 	t.is(result[streamName], 'test');
 	t.is(await readFile(file, 'utf8'), 'test\n');

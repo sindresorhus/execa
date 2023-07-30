@@ -13,7 +13,7 @@
 	"type": "module",
 	"exports": "./index.js",
 	"engines": {
-		"node": "^16.14.0 || >=18.0.0 || >=20.0.0"
+		"node": "^16.17.0 || >=18.0.0 || >=20.0.0"
 	},
 	"scripts": {
 		"test": "xo && c8 ava && tsd"
@@ -44,7 +44,7 @@
 	"dependencies": {
 		"cross-spawn": "^7.0.3",
 		"get-stream": "^6.0.1",
-		"human-signals": "^4.3.0",
+		"human-signals": "^5.0.0",
 		"is-stream": "^3.0.0",
 		"merge-stream": "^2.0.0",
 		"npm-run-path": "^5.1.0",

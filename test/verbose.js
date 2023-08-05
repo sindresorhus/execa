@@ -4,7 +4,7 @@ import {setFixtureDir} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-const normalizeTimestamp = output => output.replace(/\d/g, '0');
+const normalizeTimestamp = output => output.replaceAll(/\d/g, '0');
 const testTimestamp = '[00:00:00.000]';
 
 test('Prints command when "verbose" is true', async t => {

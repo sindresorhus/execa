@@ -208,8 +208,6 @@ export type CommonOptions<EncodingType> = {
 
 	When `AbortController.abort()` is called, [`.isCanceled`](https://github.com/sindresorhus/execa#iscanceled) becomes `false`.
 
-	*Requires Node.js 16 or later.*
-
 	@example
 	```
 	import {execa} from 'execa';

@@ -11,9 +11,12 @@
 		"url": "https://sindresorhus.com"
 	},
 	"type": "module",
-	"exports": "./index.js",
+	"exports": {
+		"types": "./index.d.ts",
+		"default": "./index.js"
+	},
 	"engines": {
-		"node": "^16.17.0 || >=18.0.0 || >=20.0.0"
+		"node": ">=16.17"
 	},
 	"scripts": {
 		"test": "xo && c8 ava && tsd"

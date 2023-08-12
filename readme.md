@@ -711,7 +711,7 @@ Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSign
 
 You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `false`.
+When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `true`.
 
 #### windowsVerbatimArguments
 

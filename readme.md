@@ -682,7 +682,7 @@ We recommend against using this option since it is:
 Type: `string | null`\
 Default: `utf8`
 
-Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
+Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'` or `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
 
 #### timeout
 

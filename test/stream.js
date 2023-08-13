@@ -17,6 +17,25 @@ test('buffer', async t => {
 	t.is(stdout.toString(), 'foo');
 });
 
+const checkEncoding = async (t, encoding) => {
+	const encodedString = '\u1000.';
+	const {stdout} = await execa('noop-no-newline.js', [encodedString], {encoding});
+	t.is(stdout, Buffer.from(encodedString).toString(encoding));
+};
+
+test('can pass encoding "utf8"', checkEncoding, 'utf8');
+test('can pass encoding "utf-8"', checkEncoding, 'utf8');
+test('can pass encoding "utf16le"', checkEncoding, 'utf16le');
+test('can pass encoding "utf-16le"', checkEncoding, 'utf16le');
+test('can pass encoding "ucs2"', checkEncoding, 'utf16le');
+test('can pass encoding "ucs-2"', checkEncoding, 'utf16le');
+test('can pass encoding "latin1"', checkEncoding, 'latin1');
+test('can pass encoding "binary"', checkEncoding, 'latin1');
+test('can pass encoding "ascii"', checkEncoding, 'ascii');
+test('can pass encoding "hex"', checkEncoding, 'hex');
+test('can pass encoding "base64"', checkEncoding, 'base64');
+test('can pass encoding "base64url"', checkEncoding, 'base64url');
+
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile({extension: '.txt'});
 	await execa('noop.js', ['foo bar'], {stdout: fs.openSync(file, 'w')});

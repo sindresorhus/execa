@@ -43,6 +43,21 @@ test('can pass encoding "hex"', checkEncoding, 'hex');
 test('can pass encoding "base64"', checkEncoding, 'base64');
 test('can pass encoding "base64url"', checkEncoding, 'base64url');
 
+const checkBufferEncoding = async (t, encoding) => {
+	const {stdout} = await execa('noop-no-newline.js', [STRING_TO_ENCODE], {encoding});
+	t.true(Buffer.from(STRING_TO_ENCODE).equals(stdout));
+
+	const {stdout: nativeStdout} = await promisify(exec)(`node noop-no-newline.js ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
+	t.true(Buffer.from(STRING_TO_ENCODE).equals(nativeStdout));
+};
+
+test('can pass encoding "buffer"', checkBufferEncoding, 'buffer');
+test('can pass encoding null', checkBufferEncoding, null);
+
+test('validate unknown encodings', async t => {
+	await t.throwsAsync(execa('noop.js', {encoding: 'unknownEncoding'}), {message: /ERR_UNKNOWN_ENCODING/});
+});
+
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile({extension: '.txt'});
 	await execa('noop.js', ['foo bar'], {stdout: fs.openSync(file, 'w')});

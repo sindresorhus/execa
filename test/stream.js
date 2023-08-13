@@ -18,10 +18,12 @@ test('buffer', async t => {
 });
 
 const checkEncoding = async (t, encoding) => {
-	const encodedString = '\u1000.';
-	const {stdout} = await execa('noop-no-newline.js', [encodedString], {encoding});
-	t.is(stdout, Buffer.from(encodedString).toString(encoding));
+	const {stdout} = await execa('noop-no-newline.js', [STRING_TO_ENCODE], {encoding});
+	t.is(stdout, Buffer.from(STRING_TO_ENCODE).toString(encoding));
 };
+
+// This string gives different outputs with each encoding type
+const STRING_TO_ENCODE = '\u1000.';
 
 test('can pass encoding "utf8"', checkEncoding, 'utf8');
 test('can pass encoding "utf-8"', checkEncoding, 'utf8');

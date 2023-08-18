@@ -1,13 +1,15 @@
 import {Buffer} from 'node:buffer';
+import {exec} from 'node:child_process';
 import process from 'node:process';
 import fs from 'node:fs';
 import Stream from 'node:stream';
+import {promisify} from 'node:util';
 import test from 'ava';
 import getStream from 'get-stream';
 import {pEvent} from 'p-event';
 import tempfile from 'tempfile';
 import {execa, execaSync, $} from '../index.js';
-import {setFixtureDir} from './helpers/fixtures-dir.js';
+import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
 
@@ -16,6 +18,30 @@ test('buffer', async t => {
 	t.true(Buffer.isBuffer(stdout));
 	t.is(stdout.toString(), 'foo');
 });
+
+const checkEncoding = async (t, encoding) => {
+	const {stdout} = await execa('noop-no-newline.js', [STRING_TO_ENCODE], {encoding});
+	t.is(stdout, Buffer.from(STRING_TO_ENCODE).toString(encoding));
+
+	const {stdout: nativeStdout} = await promisify(exec)(`node noop-no-newline.js ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
+	t.is(stdout, nativeStdout);
+};
+
+// This string gives different outputs with each encoding type
+const STRING_TO_ENCODE = '\u1000.';
+
+test('can pass encoding "utf8"', checkEncoding, 'utf8');
+test('can pass encoding "utf-8"', checkEncoding, 'utf8');
+test('can pass encoding "utf16le"', checkEncoding, 'utf16le');
+test('can pass encoding "utf-16le"', checkEncoding, 'utf16le');
+test('can pass encoding "ucs2"', checkEncoding, 'utf16le');
+test('can pass encoding "ucs-2"', checkEncoding, 'utf16le');
+test('can pass encoding "latin1"', checkEncoding, 'latin1');
+test('can pass encoding "binary"', checkEncoding, 'latin1');
+test('can pass encoding "ascii"', checkEncoding, 'ascii');
+test('can pass encoding "hex"', checkEncoding, 'hex');
+test('can pass encoding "base64"', checkEncoding, 'base64');
+test('can pass encoding "base64url"', checkEncoding, 'base64url');
 
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile({extension: '.txt'});

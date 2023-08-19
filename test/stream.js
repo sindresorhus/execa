@@ -11,6 +11,8 @@ import tempfile from 'tempfile';
 import {execa, execaSync, $} from '../index.js';
 import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
 
+const pExec = promisify(exec);
+
 setFixtureDir();
 
 test('buffer', async t => {
@@ -21,14 +23,15 @@ test('buffer', async t => {
 
 const checkEncoding = async (t, encoding) => {
 	const {stdout} = await execa('noop-no-newline.js', [STRING_TO_ENCODE], {encoding});
-	t.is(stdout, Buffer.from(STRING_TO_ENCODE).toString(encoding));
+	t.is(stdout, BUFFER_TO_ENCODE.toString(encoding));
 
-	const {stdout: nativeStdout} = await promisify(exec)(`node noop-no-newline.js ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
+	const {stdout: nativeStdout} = await pExec(`node noop-no-newline.js ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
 	t.is(stdout, nativeStdout);
 };
 
 // This string gives different outputs with each encoding type
 const STRING_TO_ENCODE = '\u1000.';
+const BUFFER_TO_ENCODE = Buffer.from(STRING_TO_ENCODE);
 
 test('can pass encoding "utf8"', checkEncoding, 'utf8');
 test('can pass encoding "utf-8"', checkEncoding, 'utf8');
@@ -42,6 +45,21 @@ test('can pass encoding "ascii"', checkEncoding, 'ascii');
 test('can pass encoding "hex"', checkEncoding, 'hex');
 test('can pass encoding "base64"', checkEncoding, 'base64');
 test('can pass encoding "base64url"', checkEncoding, 'base64url');
+
+const checkBufferEncoding = async (t, encoding) => {
+	const {stdout} = await execa('noop-no-newline.js', [STRING_TO_ENCODE], {encoding});
+	t.true(BUFFER_TO_ENCODE.equals(stdout));
+
+	const {stdout: nativeStdout} = await pExec(`node noop-no-newline.js ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
+	t.true(BUFFER_TO_ENCODE.equals(nativeStdout));
+};
+
+test('can pass encoding "buffer"', checkBufferEncoding, 'buffer');
+test('can pass encoding null', checkBufferEncoding, null);
+
+test('validate unknown encodings', async t => {
+	await t.throwsAsync(execa('noop.js', {encoding: 'unknownEncoding'}), {code: 'ERR_UNKNOWN_ENCODING'});
+});
 
 test('pass `stdout` to a file descriptor', async t => {
 	const file = tempfile({extension: '.txt'});

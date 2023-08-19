@@ -12,7 +12,27 @@ export type StdioOption =
 	| number
 	| undefined;
 
-export type CommonOptions<EncodingType> = {
+type EncodingOption =
+  | 'utf8'
+  // eslint-disable-next-line unicorn/text-encoding-identifier-case
+  | 'utf-8'
+  | 'utf16le'
+  | 'utf-16le'
+  | 'ucs2'
+  | 'ucs-2'
+  | 'latin1'
+  | 'binary'
+  | 'ascii'
+  | 'hex'
+  | 'base64'
+  | 'base64url'
+  | 'buffer'
+  | null
+  | undefined;
+type DefaultEncodingOption = 'utf8';
+type BufferEncodingOption = 'buffer' | null;
+
+export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Kill the spawned process when the parent process exits unless either:
 		- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
@@ -176,7 +196,7 @@ export type CommonOptions<EncodingType> = {
 	readonly shell?: boolean | string;
 
 	/**
-	Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
+	Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'` or `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
 
 	@default 'utf8'
 	*/
@@ -253,7 +273,7 @@ export type CommonOptions<EncodingType> = {
 	readonly verbose?: boolean;
 };
 
-export type Options<EncodingType = string> = {
+export type Options<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -269,7 +289,7 @@ export type Options<EncodingType = string> = {
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type SyncOptions<EncodingType = string> = {
+export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -285,7 +305,7 @@ export type SyncOptions<EncodingType = string> = {
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type NodeOptions<EncodingType = string> = {
+export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	The Node.js executable to use.
 
@@ -625,10 +645,10 @@ export function execa(
 export function execa(
 	file: string,
 	arguments?: readonly string[],
-	options?: Options<null>
+	options?: Options<BufferEncodingOption>
 ): ExecaChildProcess<Buffer>;
 export function execa(file: string, options?: Options): ExecaChildProcess;
-export function execa(file: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+export function execa(file: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
 
 /**
 Same as `execa()` but synchronous.
@@ -698,12 +718,12 @@ export function execaSync(
 export function execaSync(
 	file: string,
 	arguments?: readonly string[],
-	options?: SyncOptions<null>
+	options?: SyncOptions<BufferEncodingOption>
 ): ExecaSyncReturnValue<Buffer>;
 export function execaSync(file: string, options?: SyncOptions): ExecaSyncReturnValue;
 export function execaSync(
 	file: string,
-	options?: SyncOptions<null>
+	options?: SyncOptions<BufferEncodingOption>
 ): ExecaSyncReturnValue<Buffer>;
 
 /**
@@ -729,7 +749,7 @@ console.log(stdout);
 ```
 */
 export function execaCommand(command: string, options?: Options): ExecaChildProcess;
-export function execaCommand(command: string, options?: Options<null>): ExecaChildProcess<Buffer>;
+export function execaCommand(command: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
 
 /**
 Same as `execaCommand()` but synchronous.
@@ -748,7 +768,7 @@ console.log(stdout);
 ```
 */
 export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
-export function execaCommandSync(command: string, options?: SyncOptions<null>): ExecaSyncReturnValue<Buffer>;
+export function execaCommandSync(command: string, options?: SyncOptions<BufferEncodingOption>): ExecaSyncReturnValue<Buffer>;
 
 type TemplateExpression =
 	| string
@@ -783,7 +803,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
 	(options: Options): Execa$;
-	(options: Options<null>): Execa$<Buffer>;
+	(options: Options<BufferEncodingOption>): Execa$<Buffer>;
 	(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
@@ -929,7 +949,7 @@ export function execaNode(
 export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
-	options?: NodeOptions<null>
+	options?: NodeOptions<BufferEncodingOption>
 ): ExecaChildProcess<Buffer>;
 export function execaNode(scriptPath: string, options?: NodeOptions): ExecaChildProcess;
-export function execaNode(scriptPath: string, options?: NodeOptions<null>): ExecaChildProcess<Buffer>;
+export function execaNode(scriptPath: string, options?: NodeOptions<BufferEncodingOption>): ExecaChildProcess<Buffer>;

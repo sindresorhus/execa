@@ -111,7 +111,7 @@ test('localDir option', async t => {
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });
 
-test('execPath option', async t => {
+test.serial('execPath option', async t => {
 	const {path: execPath} = await getNode('16.0.0');
 	const {stdout} = await execa('node', ['-p', 'process.env.Path || process.env.PATH'], {preferLocal: true, execPath});
 	t.true(stdout.includes('16.0.0'));

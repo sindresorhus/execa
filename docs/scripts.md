@@ -619,7 +619,7 @@ await Promise.all([echo, cat]);
 
 ```js
 // Execa
-await $({all: true})`echo example`.pipeAll($({ stdin: 'pipe' })`cat`);
+await $({all: true})`echo example`.pipeAll($({stdin: 'pipe'})`cat`);
 ```
 
 ### Piping stdout to a file

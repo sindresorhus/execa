@@ -6,7 +6,7 @@ With Execa, you can write scripts with Node.js instead of a shell language. It i
 import {$} from 'execa';
 
 const {stdout: name} = await $`cat package.json`
-  .pipeStdout($`grep name`);
+  .pipeStdout($({stdin: 'pipe'})`grep name`);
 console.log(name);
 
 const branch = await $`git branch --show-current`;
@@ -598,7 +598,7 @@ await $`echo example | cat`;
 
 ```js
 // Execa
-await $`echo example`.pipeStdout($`cat`);
+await $`echo example`.pipeStdout($({stdin: 'pipe'})`cat`);
 ```
 
 ### Piping stdout and stderr to another command
@@ -619,7 +619,7 @@ await Promise.all([echo, cat]);
 
 ```js
 // Execa
-await $`echo example`.pipeAll($`cat`);
+await $({all: true})`echo example`.pipeAll($({stdin: 'pipe'})`cat`);
 ```
 
 ### Piping stdout to a file

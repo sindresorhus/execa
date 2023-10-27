@@ -273,7 +273,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly verbose?: boolean;
 };
 
-export type Options<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type Options<EncodingType extends EncodingOption> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -305,7 +305,7 @@ export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOpt
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type NodeOptions<EncodingType extends EncodingOption> = {
 	/**
 	The Node.js executable to use.
 
@@ -522,7 +522,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	pipeAll?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
 };
 
-export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &
+export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll> = ChildProcess &
 ExecaChildPromise<StdoutStderrType> &
 Promise<ExecaReturnValue<StdoutStderrType>>;
 
@@ -640,14 +640,14 @@ setTimeout(() => {
 export function execa(
 	file: string,
 	arguments?: readonly string[],
-	options?: Options
-): ExecaChildProcess;
+	options?: Options<DefaultEncodingOption>
+): ExecaChildProcess<string>;
 export function execa(
 	file: string,
 	arguments?: readonly string[],
 	options?: Options<BufferEncodingOption>
 ): ExecaChildProcess<Buffer>;
-export function execa(file: string, options?: Options): ExecaChildProcess;
+export function execa(file: string, options?: Options<DefaultEncodingOption>): ExecaChildProcess<string>;
 export function execa(file: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
 
 /**
@@ -748,7 +748,7 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommand(command: string, options?: Options): ExecaChildProcess;
+export function execaCommand(command: string, options?: Options<DefaultEncodingOption>): ExecaChildProcess<string>;
 export function execaCommand(command: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
 
 /**
@@ -802,7 +802,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	```
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
-	(options: Options): Execa$;
+	(options: Options<DefaultEncodingOption>): Execa$;
 	(options: Options<BufferEncodingOption>): Execa$<Buffer>;
 	(
 		templates: TemplateStringsArray,
@@ -944,12 +944,12 @@ await execaNode('scriptPath', ['argument']);
 export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
-	options?: NodeOptions
-): ExecaChildProcess;
+	options?: NodeOptions<DefaultEncodingOption>
+): ExecaChildProcess<string>;
 export function execaNode(
 	scriptPath: string,
 	arguments?: readonly string[],
 	options?: NodeOptions<BufferEncodingOption>
 ): ExecaChildProcess<Buffer>;
-export function execaNode(scriptPath: string, options?: NodeOptions): ExecaChildProcess;
+export function execaNode(scriptPath: string, options?: NodeOptions<DefaultEncodingOption>): ExecaChildProcess<string>;
 export function execaNode(scriptPath: string, options?: NodeOptions<BufferEncodingOption>): ExecaChildProcess<Buffer>;

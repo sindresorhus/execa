@@ -541,7 +541,7 @@ If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stder
 
 #### input
 
-Type: `string | Buffer | stream.Readable`
+Type: `string | Uint8Array | stream.Readable`
 
 Write some input to the `stdin` of your binary.\
 Streams are not allowed when using the synchronous methods.
@@ -808,15 +808,3 @@ await execa(binPath);
 
 - [Sindre Sorhus](https://github.com/sindresorhus)
 - [@ehmicky](https://github.com/ehmicky)
-
----
-
-<div align="center">
-	<b>
-		<a href="https://tidelift.com/subscription/pkg/npm-execa?utm_source=npm-execa&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
-	</b>
-	<br>
-	<sub>
-		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
-	</sub>
-</div>

@@ -16,7 +16,7 @@
 		"default": "./index.js"
 	},
 	"engines": {
-		"node": ">=16.17"
+		"node": ">=18"
 	},
 	"scripts": {
 		"test": "xo && c8 ava && tsd"
@@ -45,27 +45,27 @@
 		"zx"
 	],
 	"dependencies": {
+		"@sindresorhus/merge-streams": "^1.0.0",
 		"cross-spawn": "^7.0.3",
 		"get-stream": "^8.0.1",
 		"human-signals": "^5.0.0",
 		"is-stream": "^3.0.0",
-		"merge-stream": "^2.0.0",
 		"npm-run-path": "^5.1.0",
 		"onetime": "^6.0.0",
 		"signal-exit": "^4.1.0",
 		"strip-final-newline": "^3.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "^20.4.0",
-		"ava": "^5.2.0",
+		"@types/node": "^20.8.9",
+		"ava": "^5.3.1",
 		"c8": "^8.0.1",
-		"get-node": "^14.2.0",
+		"get-node": "^14.2.1",
 		"is-running": "^2.1.0",
 		"p-event": "^6.0.0",
 		"path-key": "^4.0.0",
 		"tempfile": "^5.0.0",
-		"tsd": "^0.28.1",
-		"xo": "^0.55.0"
+		"tsd": "^0.29.0",
+		"xo": "^0.56.0"
 	},
 	"c8": {
 		"reporter": [

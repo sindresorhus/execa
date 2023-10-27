@@ -279,7 +279,7 @@ export type Options<EncodingType extends EncodingOption = DefaultEncodingOption>
 
 	If the input is a file, use the `inputFile` option instead.
 	*/
-	readonly input?: string | Buffer | ReadableStream;
+	readonly input?: string | Uint8Array | ReadableStream;
 
 	/**
 	Use a file as input to the the `stdin` of your binary.
@@ -295,7 +295,7 @@ export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOpt
 
 	If the input is a file, use the `inputFile` option instead.
 	*/
-	readonly input?: string | Buffer;
+	readonly input?: string | Uint8Array;
 
 	/**
 	Use a file as input to the the `stdin` of your binary.

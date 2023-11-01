@@ -768,7 +768,7 @@ type TemplateExpression =
 	| ExecaSyncReturnValue<string | Buffer>
 	| Array<string | number | ExecaReturnValue<string | Buffer> | ExecaSyncReturnValue<string | Buffer>>;
 
-type Execa$<StdoutStderrType extends StdoutStderrAll> = {
+type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	Returns a new instance of `$` but with different default `options`. Consecutive calls are merged to previous ones.
 
@@ -793,7 +793,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll> = {
 	```
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
-	(options: Options): Execa$<string>;
+	(options: Options): Execa$;
 	(options: Options<BufferEncodingOption>): Execa$<Buffer>;
 	(
 		templates: TemplateStringsArray,
@@ -904,7 +904,7 @@ await $$`echo rainbows`;
 //=> 'rainbows'
 ```
 */
-export const $: Execa$<string>;
+export const $: Execa$;
 
 /**
 Execute a Node.js script as a child process.

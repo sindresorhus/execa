@@ -32,7 +32,7 @@ type EncodingOption =
 type DefaultEncodingOption = 'utf8';
 type BufferEncodingOption = 'buffer' | null;
 
-export type CommonOptions<EncodingType extends EncodingOption> = {
+export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Kill the spawned process when the parent process exits unless either:
 		- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
@@ -273,7 +273,7 @@ export type CommonOptions<EncodingType extends EncodingOption> = {
 	readonly verbose?: boolean;
 };
 
-export type Options<EncodingType extends EncodingOption> = {
+export type Options<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -289,7 +289,7 @@ export type Options<EncodingType extends EncodingOption> = {
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type SyncOptions<EncodingType extends EncodingOption> = {
+export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -305,7 +305,7 @@ export type SyncOptions<EncodingType extends EncodingOption> = {
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type NodeOptions<EncodingType extends EncodingOption> = {
+export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	The Node.js executable to use.
 
@@ -389,7 +389,7 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	cwd: string;
 };
 
-export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll> = {
+export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
 } & ExecaReturnBase<StdoutStderrType>;
 
 /**
@@ -402,7 +402,7 @@ The child process fails when:
 - being canceled
 - there's not enough memory or there are already too many child processes
 */
-export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll> = {
+export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -420,7 +420,7 @@ export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll> = {
 	isCanceled: boolean;
 } & ExecaSyncReturnValue<StdoutStderrType>;
 
-export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll> = {
+export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -441,7 +441,7 @@ export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll> = {
 	originalMessage?: string;
 } & Error & ExecaReturnBase<StdoutStderrType>;
 
-export type ExecaError<StdoutStderrType extends StdoutStderrAll> = {
+export type ExecaError<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -522,7 +522,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	pipeAll?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
 };
 
-export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll> = ChildProcess &
+export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &
 ExecaChildPromise<StdoutStderrType> &
 Promise<ExecaReturnValue<StdoutStderrType>>;
 
@@ -793,7 +793,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll> = {
 	```
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
-	(options: Options<DefaultEncodingOption>): Execa$<string>;
+	(options: Options): Execa$<string>;
 	(options: Options<BufferEncodingOption>): Execa$<Buffer>;
 	(
 		templates: TemplateStringsArray,

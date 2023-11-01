@@ -637,18 +637,14 @@ setTimeout(() => {
 }, 1000);
 ```
 */
-export function execa(
+export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string,
 	arguments?: readonly string[],
-	options?: Options<DefaultEncodingOption>
-): ExecaChildProcess<string>;
-export function execa(
-	file: string,
-	arguments?: readonly string[],
-	options?: Options<BufferEncodingOption>
-): ExecaChildProcess<Buffer>;
-export function execa(file: string, options?: Options<DefaultEncodingOption>): ExecaChildProcess<string>;
-export function execa(file: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
+	options?: Options<EncodingType>
+): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	file: string, options?: Options<EncodingType>
+): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
 
 /**
 Same as `execa()` but synchronous.
@@ -710,21 +706,14 @@ try {
 }
 ```
 */
-export function execaSync(
+export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string,
 	arguments?: readonly string[],
-	options?: SyncOptions<DefaultEncodingOption>
-): ExecaSyncReturnValue<string>;
-export function execaSync(
-	file: string,
-	arguments?: readonly string[],
-	options?: SyncOptions<BufferEncodingOption>
-): ExecaSyncReturnValue<Buffer>;
-export function execaSync(file: string, options?: SyncOptions<DefaultEncodingOption>): ExecaSyncReturnValue<string>;
-export function execaSync(
-	file: string,
-	options?: SyncOptions<BufferEncodingOption>
-): ExecaSyncReturnValue<Buffer>;
+	options?: SyncOptions<EncodingType>
+): ExecaSyncReturnValue<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	file: string, options?: SyncOptions<EncodingType>
+): ExecaSyncReturnValue<EncodingType extends DefaultEncodingOption ? string : Buffer>;
 
 /**
 Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
@@ -748,8 +737,9 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommand(command: string, options?: Options<DefaultEncodingOption>): ExecaChildProcess<string>;
-export function execaCommand(command: string, options?: Options<BufferEncodingOption>): ExecaChildProcess<Buffer>;
+export function execaCommand<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	command: string, options?: Options<EncodingType>
+): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
 
 /**
 Same as `execaCommand()` but synchronous.
@@ -767,8 +757,9 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommandSync(command: string, options?: SyncOptions<DefaultEncodingOption>): ExecaSyncReturnValue<string>;
-export function execaCommandSync(command: string, options?: SyncOptions<BufferEncodingOption>): ExecaSyncReturnValue<Buffer>;
+export function execaCommandSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	command: string, options?: SyncOptions<EncodingType>
+): ExecaSyncReturnValue<EncodingType extends DefaultEncodingOption ? string : Buffer>;
 
 type TemplateExpression =
 	| string
@@ -941,15 +932,11 @@ import {execa} from 'execa';
 await execaNode('scriptPath', ['argument']);
 ```
 */
-export function execaNode(
+export function execaNode<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	scriptPath: string,
 	arguments?: readonly string[],
-	options?: NodeOptions<DefaultEncodingOption>
-): ExecaChildProcess<string>;
-export function execaNode(
-	scriptPath: string,
-	arguments?: readonly string[],
-	options?: NodeOptions<BufferEncodingOption>
-): ExecaChildProcess<Buffer>;
-export function execaNode(scriptPath: string, options?: NodeOptions<DefaultEncodingOption>): ExecaChildProcess<string>;
-export function execaNode(scriptPath: string, options?: NodeOptions<BufferEncodingOption>): ExecaChildProcess<Buffer>;
+	options?: NodeOptions<EncodingType>
+): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+export function execaNode<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	scriptPath: string, options?: NodeOptions<EncodingType>
+): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;

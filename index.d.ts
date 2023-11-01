@@ -32,6 +32,9 @@ type EncodingOption =
 type DefaultEncodingOption = 'utf8';
 type BufferEncodingOption = 'buffer' | null;
 
+type GetStdoutStderrType<EncodingType extends EncodingOption> =
+  EncodingType extends DefaultEncodingOption ? string : Buffer;
+
 export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Kill the spawned process when the parent process exits unless either:
@@ -641,10 +644,10 @@ export function execa<EncodingType extends EncodingOption = DefaultEncodingOptio
 	file: string,
 	arguments?: readonly string[],
 	options?: Options<EncodingType>
-): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string, options?: Options<EncodingType>
-): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 
 /**
 Same as `execa()` but synchronous.
@@ -710,10 +713,10 @@ export function execaSync<EncodingType extends EncodingOption = DefaultEncodingO
 	file: string,
 	arguments?: readonly string[],
 	options?: SyncOptions<EncodingType>
-): ExecaSyncReturnValue<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
 export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string, options?: SyncOptions<EncodingType>
-): ExecaSyncReturnValue<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
 
 /**
 Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
@@ -739,7 +742,7 @@ console.log(stdout);
 */
 export function execaCommand<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	command: string, options?: Options<EncodingType>
-): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 
 /**
 Same as `execaCommand()` but synchronous.
@@ -759,7 +762,7 @@ console.log(stdout);
 */
 export function execaCommandSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	command: string, options?: SyncOptions<EncodingType>
-): ExecaSyncReturnValue<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
 
 type TemplateExpression =
 	| string
@@ -936,7 +939,7 @@ export function execaNode<EncodingType extends EncodingOption = DefaultEncodingO
 	scriptPath: string,
 	arguments?: readonly string[],
 	options?: NodeOptions<EncodingType>
-): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 export function execaNode<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	scriptPath: string, options?: NodeOptions<EncodingType>
-): ExecaChildProcess<EncodingType extends DefaultEncodingOption ? string : Buffer>;
+): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;

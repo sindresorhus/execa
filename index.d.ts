@@ -32,7 +32,7 @@ type EncodingOption =
 type DefaultEncodingOption = 'utf8';
 type BufferEncodingOption = 'buffer' | null;
 
-export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type CommonOptions<EncodingType extends EncodingOption> = {
 	/**
 	Kill the spawned process when the parent process exits unless either:
 		- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
@@ -289,7 +289,7 @@ export type Options<EncodingType extends EncodingOption> = {
 	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
-export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type SyncOptions<EncodingType extends EncodingOption> = {
 	/**
 	Write some input to the `stdin` of your binary.
 
@@ -389,7 +389,7 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	cwd: string;
 };
 
-export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
+export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll> = {
 } & ExecaReturnBase<StdoutStderrType>;
 
 /**
@@ -402,7 +402,7 @@ The child process fails when:
 - being canceled
 - there's not enough memory or there are already too many child processes
 */
-export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
+export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -420,7 +420,7 @@ export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> 
 	isCanceled: boolean;
 } & ExecaSyncReturnValue<StdoutStderrType>;
 
-export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = {
+export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll> = {
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -441,7 +441,7 @@ export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = 
 	originalMessage?: string;
 } & Error & ExecaReturnBase<StdoutStderrType>;
 
-export type ExecaError<StdoutStderrType extends StdoutStderrAll = string> = {
+export type ExecaError<StdoutStderrType extends StdoutStderrAll> = {
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -713,14 +713,14 @@ try {
 export function execaSync(
 	file: string,
 	arguments?: readonly string[],
-	options?: SyncOptions
-): ExecaSyncReturnValue;
+	options?: SyncOptions<DefaultEncodingOption>
+): ExecaSyncReturnValue<string>;
 export function execaSync(
 	file: string,
 	arguments?: readonly string[],
 	options?: SyncOptions<BufferEncodingOption>
 ): ExecaSyncReturnValue<Buffer>;
-export function execaSync(file: string, options?: SyncOptions): ExecaSyncReturnValue;
+export function execaSync(file: string, options?: SyncOptions<DefaultEncodingOption>): ExecaSyncReturnValue<string>;
 export function execaSync(
 	file: string,
 	options?: SyncOptions<BufferEncodingOption>
@@ -767,7 +767,7 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommandSync(command: string, options?: SyncOptions): ExecaSyncReturnValue;
+export function execaCommandSync(command: string, options?: SyncOptions<DefaultEncodingOption>): ExecaSyncReturnValue<string>;
 export function execaCommandSync(command: string, options?: SyncOptions<BufferEncodingOption>): ExecaSyncReturnValue<Buffer>;
 
 type TemplateExpression =
@@ -777,7 +777,7 @@ type TemplateExpression =
 	| ExecaSyncReturnValue<string | Buffer>
 	| Array<string | number | ExecaReturnValue<string | Buffer> | ExecaSyncReturnValue<string | Buffer>>;
 
-type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
+type Execa$<StdoutStderrType extends StdoutStderrAll> = {
 	/**
 	Returns a new instance of `$` but with different default `options`. Consecutive calls are merged to previous ones.
 
@@ -802,7 +802,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	```
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
-	(options: Options<DefaultEncodingOption>): Execa$;
+	(options: Options<DefaultEncodingOption>): Execa$<string>;
 	(options: Options<BufferEncodingOption>): Execa$<Buffer>;
 	(
 		templates: TemplateStringsArray,
@@ -913,7 +913,7 @@ await $$`echo rainbows`;
 //=> 'rainbows'
 ```
 */
-export const $: Execa$;
+export const $: Execa$<string>;
 
 /**
 Execute a Node.js script as a child process.

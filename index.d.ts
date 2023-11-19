@@ -41,10 +41,9 @@ type EncodingOption =
   | 'base64'
   | 'base64url'
   | 'buffer'
-  | null
   | undefined;
 type DefaultEncodingOption = 'utf8';
-type BufferEncodingOption = 'buffer' | null;
+type BufferEncodingOption = 'buffer';
 
 type GetStdoutStderrType<EncodingType extends EncodingOption> =
   EncodingType extends DefaultEncodingOption ? string : Buffer;

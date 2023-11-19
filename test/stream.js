@@ -62,7 +62,6 @@ const checkBufferEncoding = async (t, encoding) => {
 };
 
 test('can pass encoding "buffer"', checkBufferEncoding, 'buffer');
-test('can pass encoding null', checkBufferEncoding, null);
 
 test('validate unknown encodings', async t => {
 	await t.throwsAsync(execa('noop.js', {encoding: 'unknownEncoding'}), {code: 'ERR_UNKNOWN_ENCODING'});

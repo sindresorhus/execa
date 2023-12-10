@@ -1,4 +1,5 @@
 import process from 'node:process';
+import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {pEvent} from 'p-event';
 import isRunning from 'is-running';
@@ -150,10 +151,16 @@ const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 
 	await t.throwsAsync(subprocess);
 
-	t.false(isRunning(subprocess.pid));
-	t.is(isRunning(pid), !isKilled);
+	// The `cleanup` option can introduce a race condition in this test.
+	// This is especially true when run concurrently, so we use `test.serial()` and a manual timeout.
+	if (signal === 'SIGTERM' && cleanup && !detached) {
+		await setTimeout(1e3);
+	}
 
-	if (isRunning(pid)) {
+	t.false(isRunning(subprocess.pid));
+	t.not(isRunning(pid), isKilled);
+
+	if (!isKilled) {
 		process.kill(pid, 'SIGKILL');
 	}
 };
@@ -167,8 +174,6 @@ const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 const exitIfWindows = process.platform === 'win32';
 test('spawnAndKill SIGTERM', spawnAndKill, ['SIGTERM', false, false, exitIfWindows]);
 test('spawnAndKill SIGKILL', spawnAndKill, ['SIGKILL', false, false, exitIfWindows]);
-// The `cleanup` option can introduce a race condition in this test
-// This is especially true when run concurrently, so we use `test.serial()`
 test.serial('spawnAndKill cleanup SIGTERM', spawnAndKill, ['SIGTERM', true, false, true]);
 test('spawnAndKill cleanup SIGKILL', spawnAndKill, ['SIGKILL', true, false, exitIfWindows]);
 test('spawnAndKill detached SIGTERM', spawnAndKill, ['SIGTERM', false, true, false]);

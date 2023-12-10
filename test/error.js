@@ -92,7 +92,7 @@ test('failed is true on failure', async t => {
 });
 
 test('error.killed is true if process was killed directly', async t => {
-	const subprocess = execa('noop.js');
+	const subprocess = execa('forever.js');
 
 	subprocess.kill();
 
@@ -101,7 +101,7 @@ test('error.killed is true if process was killed directly', async t => {
 });
 
 test('error.killed is false if process was killed indirectly', async t => {
-	const subprocess = execa('noop.js');
+	const subprocess = execa('forever.js');
 
 	process.kill(subprocess.pid, 'SIGINT');
 
@@ -135,7 +135,7 @@ test('result.killed is false on process error, in sync mode', t => {
 
 if (process.platform === 'darwin') {
 	test('sanity check: child_process.exec also has killed.false if killed indirectly', async t => {
-		const promise = pExec('noop.js');
+		const promise = pExec('forever.js');
 
 		process.kill(promise.child.pid, 'SIGINT');
 
@@ -147,7 +147,7 @@ if (process.platform === 'darwin') {
 
 if (process.platform !== 'win32') {
 	test('error.signal is SIGINT', async t => {
-		const subprocess = execa('noop.js');
+		const subprocess = execa('forever.js');
 
 		process.kill(subprocess.pid, 'SIGINT');
 
@@ -156,7 +156,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('error.signalDescription is defined', async t => {
-		const subprocess = execa('noop.js');
+		const subprocess = execa('forever.js');
 
 		process.kill(subprocess.pid, 'SIGINT');
 
@@ -165,7 +165,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('error.signal is SIGTERM', async t => {
-		const subprocess = execa('noop.js');
+		const subprocess = execa('forever.js');
 
 		process.kill(subprocess.pid, 'SIGTERM');
 
@@ -179,7 +179,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('exitCode is undefined on signal termination', async t => {
-		const subprocess = execa('noop.js');
+		const subprocess = execa('forever.js');
 
 		process.kill(subprocess.pid);
 

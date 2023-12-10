@@ -119,6 +119,11 @@ const binaryGenerator = function * () {
 	yield * [binaryFoo, binaryBar];
 };
 
+const throwingGenerator = function * () {
+	yield 'foo';
+	throw new Error('generator error');
+};
+
 test('stdin option can be an async iterable of strings', async t => {
 	const {stdout} = await execa('stdin.js', {stdin: stringGenerator()});
 	t.is(stdout, 'foobar');
@@ -155,6 +160,11 @@ test('stdin option cannot be an iterable when "inputFile" is used', t => {
 
 test('stdin option cannot be a generic iterable string', async t => {
 	await t.throwsAsync(() => execa('stdin.js', {stdin: 'foobar'}), {code: 'ERR_INVALID_SYNC_FORK_INPUT'});
+});
+
+test('stdin option handles errors in iterables', async t => {
+	const {originalMessage} = await t.throwsAsync(() => execa('stdin.js', {stdin: throwingGenerator()}));
+	t.is(originalMessage, 'generator error');
 });
 
 test('input option can be a String', async t => {

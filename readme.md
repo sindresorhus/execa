@@ -559,10 +559,10 @@ If the input is not a file, use the [`input` option](#input) instead.
 
 #### stdin
 
-Type: `string | number | Stream | undefined`\
+Type: `string | number | Stream | undefined | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
-Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) except it can also be an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols).
 
 #### stdout
 

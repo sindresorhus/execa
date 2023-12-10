@@ -97,6 +97,66 @@ test('stdout/stderr/all are undefined if ignored in sync mode', t => {
 	t.is(all, undefined);
 });
 
+test('stdin option can be a sync iterable of strings', async t => {
+	const {stdout} = await execa('stdin.js', {stdin: ['foo', 'bar']});
+	t.is(stdout, 'foobar');
+});
+
+const textEncoder = new TextEncoder();
+const binaryFoo = textEncoder.encode('foo');
+const binaryBar = textEncoder.encode('bar');
+
+test('stdin option can be a sync iterable of Uint8Arrays', async t => {
+	const {stdout} = await execa('stdin.js', {stdin: [binaryFoo, binaryBar]});
+	t.is(stdout, 'foobar');
+});
+
+const stringGenerator = function * () {
+	yield * ['foo', 'bar'];
+};
+
+const binaryGenerator = function * () {
+	yield * [binaryFoo, binaryBar];
+};
+
+test('stdin option can be an async iterable of strings', async t => {
+	const {stdout} = await execa('stdin.js', {stdin: stringGenerator()});
+	t.is(stdout, 'foobar');
+});
+
+test('stdin option can be an async iterable of Uint8Arrays', async t => {
+	const {stdout} = await execa('stdin.js', {stdin: binaryGenerator()});
+	t.is(stdout, 'foobar');
+});
+
+test('stdin option cannot be a sync iterable with execa.sync()', t => {
+	t.throws(() => {
+		execaSync('stdin.js', {stdin: ['foo', 'bar']});
+	}, {message: /an iterable in sync mode/});
+});
+
+test('stdin option cannot be an async iterable with execa.sync()', t => {
+	t.throws(() => {
+		execaSync('stdin.js', {stdin: stringGenerator()});
+	}, {message: /an iterable in sync mode/});
+});
+
+test('stdin option cannot be an iterable when "input" is used', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: ['foo', 'bar'], input: 'foobar'});
+	}, {message: /when the `input` option/});
+});
+
+test('stdin option cannot be an iterable when "inputFile" is used', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: ['foo', 'bar'], inputFile: 'dummy.txt'});
+	}, {message: /when the `inputFile` option/});
+});
+
+test('stdin option cannot be a generic iterable string', async t => {
+	await t.throwsAsync(() => execa('stdin.js', {stdin: 'foobar'}), {code: 'ERR_INVALID_SYNC_FORK_INPUT'});
+});
+
 test('input option can be a String', async t => {
 	const {stdout} = await execa('stdin.js', {input: 'foobar'});
 	t.is(stdout, 'foobar');

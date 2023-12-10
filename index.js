@@ -7,7 +7,7 @@ import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
 import onetime from 'onetime';
 import {makeError} from './lib/error.js';
-import {normalizeStdio, normalizeStdioNode} from './lib/stdio.js';
+import {transformStdio, normalizeStdio, normalizeStdioNode} from './lib/stdio.js';
 import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
 import {validateInputOptions, handleInput, getSpawnedResult, makeAllStream, handleInputSync} from './lib/stream.js';
@@ -52,14 +52,15 @@ const handleArguments = (file, args, options = {}) => {
 
 	options.env = getEnv(options);
 
-	options.stdio = normalizeStdio(options);
+	const stdio = normalizeStdio(options);
+	options.stdio = transformStdio(stdio);
 
 	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
 		// #116
 		args.unshift('/q');
 	}
 
-	return {file, args, options, parsed};
+	return {file, args, options, parsed, stdio};
 };
 
 const handleOutput = (options, value, error) => {
@@ -82,7 +83,7 @@ export function execa(file, args, options) {
 	logCommand(escapedCommand, parsed.options);
 
 	validateTimeout(parsed.options);
-	validateInputOptions(parsed.options);
+	validateInputOptions(parsed.options, parsed.stdio);
 
 	let spawned;
 	try {
@@ -160,7 +161,7 @@ export function execa(file, args, options) {
 
 	const handlePromiseOnce = onetime(handlePromise);
 
-	handleInput(spawned, parsed.options);
+	handleInput(spawned, parsed.options, parsed.stdio);
 
 	spawned.all = makeAllStream(spawned, parsed.options);
 
@@ -175,8 +176,8 @@ export function execaSync(file, args, options) {
 	const escapedCommand = getEscapedCommand(file, args);
 	logCommand(escapedCommand, parsed.options);
 
-	validateInputOptions(parsed.options);
-	const inputOption = handleInputSync(parsed.options);
+	validateInputOptions(parsed.options, parsed.stdio);
+	const inputOption = handleInputSync(parsed.options, parsed.stdio);
 
 	let result;
 	try {

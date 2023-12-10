@@ -12,6 +12,8 @@ export type StdioOption =
 	| number
 	| undefined;
 
+type StdinOption = StdioOption | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>;
+
 type EncodingOption =
   | 'utf8'
   // eslint-disable-next-line unicorn/text-encoding-identifier-case
@@ -84,11 +86,11 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly buffer?: boolean;
 
 	/**
-	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) except it can also be an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols).
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
-	readonly stdin?: StdioOption;
+	readonly stdin?: StdinOption;
 
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).

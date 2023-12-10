@@ -128,6 +128,18 @@ try {
 	expectType<string | undefined>(execaError.originalMessage);
 }
 
+const stringGenerator = function * () {
+	yield '';
+};
+
+const binaryGenerator = function * () {
+	yield new Uint8Array(0);
+};
+
+const numberGenerator = function * () {
+	yield 0;
+};
+
 /* eslint-disable @typescript-eslint/no-floating-promises */
 execa('unicorns', {cleanup: false});
 execa('unicorns', {preferLocal: false});
@@ -146,6 +158,12 @@ execa('unicorns', {stdin: 'ipc'});
 execa('unicorns', {stdin: 'ignore'});
 execa('unicorns', {stdin: 'inherit'});
 execa('unicorns', {stdin: process.stdin});
+execa('unicorns', {stdin: ['']});
+execa('unicorns', {stdin: [new Uint8Array(0)]});
+execa('unicorns', {stdin: stringGenerator()});
+execa('unicorns', {stdin: binaryGenerator()});
+expectError(execa('unicorns', {stdin: [0]}));
+expectError(execa('unicorns', {stdin: numberGenerator()}));
 execa('unicorns', {stdin: 1});
 execa('unicorns', {stdin: undefined});
 execa('unicorns', {stdout: 'pipe'});

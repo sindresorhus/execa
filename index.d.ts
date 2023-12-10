@@ -20,6 +20,10 @@ export type StdinOption =
 	| string
 	| ReadableStream;
 
+export type StdoutStderrOption =
+	| StdioOption
+	| WritableStream;
+
 type EncodingOption =
   | 'utf8'
   // eslint-disable-next-line unicorn/text-encoding-identifier-case
@@ -94,7 +98,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	It can also be a file path, a file URL, a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)) an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), providing neither [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) nor the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
+	It can also be a file path, a file URL, a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), unless either [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) or the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
@@ -103,16 +107,20 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
+	It can also be a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used.
+
 	@default 'pipe'
 	*/
-	readonly stdout?: StdioOption;
+	readonly stdout?: StdoutStderrOption;
 
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
+	It can also be a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used.
+
 	@default 'pipe'
 	*/
-	readonly stderr?: StdioOption;
+	readonly stderr?: StdoutStderrOption;
 
 	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.

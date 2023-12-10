@@ -186,9 +186,22 @@ test('stdin option cannot be a file path when "inputFile" is used', t => {
 });
 
 test('stdin option handles errors in iterables', async t => {
-	const {originalMessage} = await t.throwsAsync(() => execa('stdin.js', {stdin: throwingGenerator()}));
+	const {originalMessage} = await t.throwsAsync(execa('stdin.js', {stdin: throwingGenerator()}));
 	t.is(originalMessage, 'generator error');
 });
+
+const testWritableStreamError = async (t, streamName) => {
+	const writableStream = new WritableStream({
+		start(controller) {
+			controller.error(new Error('foobar'));
+		},
+	});
+	const {originalMessage} = await t.throwsAsync(execa('noop.js', {[streamName]: writableStream}));
+	t.is(originalMessage, 'foobar');
+};
+
+test('stdout option handles errors in WritableStream', testWritableStreamError, 'stdout');
+test('stderr option handles errors in WritableStream', testWritableStreamError, 'stderr');
 
 test('input option can be a String', async t => {
 	const {stdout} = await execa('stdin.js', {input: 'foobar'});
@@ -236,6 +249,20 @@ test('stdin can be a ReadableStream', async t => {
 	const {stdout} = await execa('stdin.js', {stdin});
 	t.is(stdout, 'howdy');
 });
+
+const testWritableStream = async (t, streamName, fixtureName) => {
+	const result = [];
+	const writableStream = new WritableStream({
+		write(chunk) {
+			result.push(chunk);
+		},
+	});
+	await execa(fixtureName, ['foobar'], {[streamName]: writableStream});
+	t.is(result.join(''), 'foobar\n');
+};
+
+test('stdout can be a WritableStream', testWritableStream, 'stdout', 'noop.js');
+test('stderr can be a WritableStream', testWritableStream, 'stderr', 'noop-err.js');
 
 test('stdin cannot be a ReadableStream when input is used', t => {
 	const stdin = Stream.Readable.toWeb(Stream.Readable.from('howdy'));
@@ -354,7 +381,7 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 	t.is(stdout, undefined);
 });
 
-test('input cannot be a stream in sync mode', t => {
+test('input cannot be a Node.js Readable in sync mode', t => {
 	t.throws(() => {
 		execaSync('stdin.js', {input: new Stream.PassThrough()});
 	}, {message: /The `input` option cannot be a stream in sync mode/});
@@ -366,6 +393,15 @@ test('stdin cannot be a ReadableStream in sync mode', t => {
 		execaSync('stdin.js', {stdin});
 	}, {message: /The `stdin` option cannot be a stream in sync mode/});
 });
+
+const testWritableStreamSync = (t, streamName) => {
+	t.throws(() => {
+		execaSync('noop.js', {[streamName]: new WritableStream()});
+	}, {message: new RegExp(`The \`${streamName}\` option cannot be a stream in sync mode`)});
+};
+
+test('stdout cannot be a WritableStream in sync mode', testWritableStreamSync, 'stdout');
+test('stderr cannot be a WritableStream in sync mode', testWritableStreamSync, 'stderr');
 
 test('stdin can be a file URL - sync', t => {
 	const inputFile = tempfile();

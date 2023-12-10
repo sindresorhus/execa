@@ -1,6 +1,6 @@
 import {type Buffer} from 'node:buffer';
 import {type ChildProcess} from 'node:child_process';
-import {type Stream, type Readable as ReadableStream, type Writable as WritableStream} from 'node:stream';
+import {type Stream, type Readable, type Writable} from 'node:stream';
 
 export type StdioOption =
 	| 'pipe'
@@ -17,7 +17,8 @@ export type StdinOption =
 	| Iterable<string | Uint8Array>
 	| AsyncIterable<string | Uint8Array>
 	| URL
-	| string;
+	| string
+	| ReadableStream;
 
 type EncodingOption =
   | 'utf8'
@@ -93,7 +94,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	It can also be a file path, a file URL, an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), providing neither [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) nor the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
+	It can also be a file path, a file URL, a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)) an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), providing neither [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) nor the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
@@ -291,7 +292,7 @@ export type Options<EncodingType extends EncodingOption = DefaultEncodingOption>
 
 	If the input is a file, use the `inputFile` option instead.
 	*/
-	readonly input?: string | Uint8Array | ReadableStream;
+	readonly input?: string | Uint8Array | Readable;
 
 	/**
 	Use a file as input to the the `stdin` of your binary.
@@ -488,7 +489,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 		- the `all` option is `false` (the default value)
 		- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 	*/
-	all?: ReadableStream;
+	all?: Readable;
 
 	catch<ResultType = never>(
 		onRejected?: (reason: ExecaError<StdoutStderrType>) => ResultType | PromiseLike<ResultType>
@@ -515,7 +516,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	The `stdout` option] must be kept as `pipe`, its default value.
 	*/
 	pipeStdout?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeStdout?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+	pipeStdout?(target: Writable | string): ExecaChildProcess<StdoutStderrType>;
 
 	/**
 	Like `pipeStdout()` but piping the child process's `stderr` instead.
@@ -523,7 +524,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	The `stderr` option must be kept as `pipe`, its default value.
 	*/
 	pipeStderr?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeStderr?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+	pipeStderr?(target: Writable | string): ExecaChildProcess<StdoutStderrType>;
 
 	/**
 	Combines both `pipeStdout()` and `pipeStderr()`.
@@ -531,7 +532,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	Either the `stdout` option or the `stderr` option must be kept as `pipe`, their default value. Also, the `all` option must be set to `true`.
 	*/
 	pipeAll?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeAll?(target: WritableStream | string): ExecaChildProcess<StdoutStderrType>;
+	pipeAll?(target: Writable | string): ExecaChildProcess<StdoutStderrType>;
 };
 
 export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &

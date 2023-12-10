@@ -292,6 +292,7 @@ expectType<ExecaChildProcess<Buffer>>(
 expectType<ExecaChildProcess>($`unicorns`);
 expectType<ExecaReturnValue>(await $`unicorns`);
 expectType<ExecaSyncReturnValue>($.sync`unicorns`);
+expectType<ExecaSyncReturnValue>($.s`unicorns`);
 
 expectType<ExecaChildProcess>($({encoding: 'utf8'})`unicorns`);
 expectType<ExecaReturnValue>(await $({encoding: 'utf8'})`unicorns`);

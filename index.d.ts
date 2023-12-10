@@ -852,6 +852,56 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
 	): ExecaSyncReturnValue<StdoutStderrType>;
+
+	/**
+	Same as $\`command\` but synchronous.
+
+	@returns A `childProcessResult` object
+	@throws A `childProcessResult` error
+
+	@example <caption>Basic</caption>
+	```
+	import {$} from 'execa';
+
+	const branch = $.s`git branch --show-current`;
+	$.s`dep deploy --branch=${branch}`;
+	```
+
+	@example <caption>Multiple arguments</caption>
+	```
+	import {$} from 'execa';
+
+	const args = ['unicorns', '&', 'rainbows!'];
+	const {stdout} = $.s`echo ${args}`;
+	console.log(stdout);
+	//=> 'unicorns & rainbows!'
+	```
+
+	@example <caption>With options</caption>
+	```
+	import {$} from 'execa';
+
+	$.s({stdio: 'inherit'})`echo unicorns`;
+	//=> 'unicorns'
+	```
+
+	@example <caption>Shared options</caption>
+	```
+	import {$} from 'execa';
+
+	const $$ = $({stdio: 'inherit'});
+
+	$$.s`echo unicorns`;
+	//=> 'unicorns'
+
+	$$.s`echo rainbows`;
+	//=> 'rainbows'
+	```
+	*/
+	s(
+		templates: TemplateStringsArray,
+		...expressions: TemplateExpression[]
+	): ExecaSyncReturnValue<StdoutStderrType>;
 };
 
 /**

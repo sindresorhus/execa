@@ -237,6 +237,11 @@ test('$.sync', t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$.sync can be called $.s', t => {
+	const {stdout} = $.s`echo.js foo bar`;
+	t.is(stdout, 'foo\nbar');
+});
+
 test('$.sync accepts options', t => {
 	const {stdout} = $({stripFinalNewline: true}).sync`noop.js foo`;
 	t.is(stdout, 'foo');

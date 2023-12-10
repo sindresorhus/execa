@@ -7,10 +7,10 @@ import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
 import onetime from 'onetime';
 import {makeError} from './lib/error.js';
-import {handleStdioOption, normalizeStdioNode} from './lib/stdio.js';
+import {handleStdioOption, handleInputOption, pipeStdioOption, normalizeStdioNode} from './lib/stdio.js';
 import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
-import {validateInputOptions, handleInput, getSpawnedResult, makeAllStream, handleInputSync} from './lib/stream.js';
+import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise, getSpawnedPromise} from './lib/promise.js';
 import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
 import {logCommand, verboseDefault} from './lib/verbose.js';
@@ -52,14 +52,12 @@ const handleArguments = (file, args, options = {}) => {
 
 	options.env = getEnv(options);
 
-	const stdioStreams = handleStdioOption(options);
-
 	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
 		// #116
 		args.unshift('/q');
 	}
 
-	return {file, args, options, parsed, stdioStreams};
+	return {file, args, options};
 };
 
 const handleOutput = (options, value, error) => {
@@ -77,12 +75,12 @@ const handleOutput = (options, value, error) => {
 
 export function execa(file, args, options) {
 	const parsed = handleArguments(file, args, options);
+	const stdioStreams = handleStdioOption(parsed.options);
+	validateTimeout(parsed.options);
+
 	const command = joinCommand(file, args);
 	const escapedCommand = getEscapedCommand(file, args);
 	logCommand(escapedCommand, parsed.options);
-
-	validateTimeout(parsed.options);
-	validateInputOptions(parsed.options, parsed.stdioStreams);
 
 	let spawned;
 	try {
@@ -116,7 +114,7 @@ export function execa(file, args, options) {
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
 	const handlePromise = async () => {
-		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, parsed.stdioStreams, processDone);
+		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, stdioStreams, processDone);
 		const stdout = handleOutput(parsed.options, stdoutResult);
 		const stderr = handleOutput(parsed.options, stderrResult);
 		const all = handleOutput(parsed.options, allResult);
@@ -160,7 +158,7 @@ export function execa(file, args, options) {
 
 	const handlePromiseOnce = onetime(handlePromise);
 
-	handleInput(spawned, parsed.options, parsed.stdioStreams);
+	pipeStdioOption(spawned, stdioStreams);
 
 	spawned.all = makeAllStream(spawned, parsed.options);
 
@@ -171,16 +169,15 @@ export function execa(file, args, options) {
 
 export function execaSync(file, args, options) {
 	const parsed = handleArguments(file, args, options);
+	handleInputOption(parsed.options);
+
 	const command = joinCommand(file, args);
 	const escapedCommand = getEscapedCommand(file, args);
 	logCommand(escapedCommand, parsed.options);
 
-	validateInputOptions(parsed.options, parsed.stdioStreams);
-	const inputOption = handleInputSync(parsed.options, parsed.stdioStreams);
-
 	let result;
 	try {
-		result = childProcess.spawnSync(parsed.file, parsed.args, {...parsed.options, input: inputOption});
+		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
 	} catch (error) {
 		throw makeError({
 			error,

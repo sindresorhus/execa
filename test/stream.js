@@ -184,10 +184,6 @@ test('stdin option cannot be a file path when "inputFile" is used', t => {
 	}, {message: /`inputFile` and `stdin` options/});
 });
 
-test('stdin option cannot be a generic iterable string', async t => {
-	await t.throwsAsync(() => execa('stdin.js', {stdin: 'foobar'}), {code: 'ERR_INVALID_SYNC_FORK_INPUT'});
-});
-
 test('stdin option handles errors in iterables', async t => {
 	const {originalMessage} = await t.throwsAsync(() => execa('stdin.js', {stdin: throwingGenerator()}));
 	t.is(originalMessage, 'generator error');
@@ -242,6 +238,12 @@ test('stdin can be a file URL', async t => {
 	t.is(stdout, 'howdy');
 });
 
+test('stdin cannot be a non-file URL', async t => {
+	await t.throws(() => {
+		execa('stdin.js', {stdin: new URL('https://example.com')});
+	}, {message: /pathToFileURL/});
+});
+
 test('stdin can be an absolute file path', async t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
@@ -257,10 +259,10 @@ test('stdin can be a relative file path', async t => {
 	t.is(stdout, 'howdy');
 });
 
-test('stdin cannot be a non-file URL', async t => {
-	await t.throws(() => {
-		execa('stdin.js', {stdin: new URL('https://example.com')});
-	}, {message: /pathToFileURL/});
+test('stdin option must start with . when being a relative file path', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: 'foobar'});
+	}, {message: /absolute file path/});
 });
 
 test('inputFile can be set', async t => {

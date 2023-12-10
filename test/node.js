@@ -100,4 +100,6 @@ test('node\'s forked script has a communication channel', async t => {
 
 	const message = await pEvent(subprocess, 'message');
 	t.is(message, 'pong');
+
+	subprocess.kill();
 });

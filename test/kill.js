@@ -167,7 +167,9 @@ const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 const exitIfWindows = process.platform === 'win32';
 test('spawnAndKill SIGTERM', spawnAndKill, ['SIGTERM', false, false, exitIfWindows]);
 test('spawnAndKill SIGKILL', spawnAndKill, ['SIGKILL', false, false, exitIfWindows]);
-test('spawnAndKill cleanup SIGTERM', spawnAndKill, ['SIGTERM', true, false, true]);
+// The `cleanup` option can introduce a race condition in this test
+// This is especially true when run concurrently, so we use `test.serial()`
+test.serial('spawnAndKill cleanup SIGTERM', spawnAndKill, ['SIGTERM', true, false, true]);
 test('spawnAndKill cleanup SIGKILL', spawnAndKill, ['SIGKILL', true, false, exitIfWindows]);
 test('spawnAndKill detached SIGTERM', spawnAndKill, ['SIGTERM', false, true, false]);
 test('spawnAndKill detached SIGKILL', spawnAndKill, ['SIGKILL', false, true, false]);

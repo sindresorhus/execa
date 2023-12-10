@@ -298,3 +298,9 @@ if (process.platform !== 'win32') {
 		t.true(timedOut);
 	});
 }
+
+test('Errors on streams should make the process exit', async t => {
+	const childProcess = execa('forever');
+	childProcess.stdout.destroy();
+	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+});

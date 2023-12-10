@@ -3,6 +3,7 @@ import {exec} from 'node:child_process';
 import process from 'node:process';
 import fs from 'node:fs';
 import Stream from 'node:stream';
+import {setTimeout} from 'node:timers/promises';
 import {promisify} from 'node:util';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
@@ -446,4 +447,35 @@ test('Errors on streams should make the process exit', async t => {
 	const childProcess = execa('forever');
 	childProcess.stdout.destroy();
 	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+});
+
+test.serial('Processes wait on stdin before exiting', async t => {
+	const childProcess = execa('stdin.js');
+	await setTimeout(1e3);
+	childProcess.stdin.end('foobar');
+	const {stdout} = await childProcess;
+	t.is(stdout, 'foobar');
+});
+
+test.serial('Processes buffer stdout before it is read', async t => {
+	const childProcess = execa('noop-delay.js', ['foobar']);
+	await setTimeout(5e2);
+	const {stdout} = await childProcess;
+	t.is(stdout, 'foobar');
+});
+
+// This test is not the desired behavior, but is the current one.
+// I.e. this is mostly meant for documentation and regression testing.
+test.serial('Processes might successfully exit before their stdout is read', async t => {
+	const childProcess = execa('noop.js', ['foobar']);
+	await setTimeout(1e3);
+	const {stdout} = await childProcess;
+	t.is(stdout, '');
+});
+
+test.serial('Processes might fail before their stdout is read', async t => {
+	const childProcess = execa('noop-fail.js', ['foobar'], {reject: false});
+	await setTimeout(1e3);
+	const {stdout} = await childProcess;
+	t.is(stdout, '');
 });

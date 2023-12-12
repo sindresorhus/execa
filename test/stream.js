@@ -23,9 +23,9 @@ setFixtureDir();
 const nonFileUrl = new URL('https://example.com');
 
 test('buffer', async t => {
-	const {stdout} = await execa('noop.js', ['foo'], {encoding: null});
-	t.true(Buffer.isBuffer(stdout));
-	t.is(stdout.toString(), 'foo');
+	const {stdout} = await execa('noop.js', ['foo'], {encoding: 'buffer'});
+	t.true(ArrayBuffer.isView(stdout));
+	t.is(new TextDecoder().decode(stdout), 'foo');
 });
 
 const checkEncoding = async (t, encoding) => {
@@ -222,6 +222,11 @@ test('input option can be a String', async t => {
 	t.is(stdout, 'foobar');
 });
 
+test('input option can be a Uint8Array', async t => {
+	const {stdout} = await execa('stdin.js', {input: Uint8Array.from('foo', c => c.codePointAt(0))});
+	t.is(stdout, 'foo');
+});
+
 test('input option cannot be a String when stdin is set', t => {
 	t.throws(() => {
 		execa('stdin.js', {input: 'foobar', stdin: 'ignore'});
@@ -232,11 +237,6 @@ test('input option cannot be a String when stdio is set', t => {
 	t.throws(() => {
 		execa('stdin.js', {input: 'foobar', stdio: 'ignore'});
 	}, {message: /`input` and `stdin` options/});
-});
-
-test('input option can be a Buffer', async t => {
-	const {stdout} = await execa('stdin.js', {input: 'testing12'});
-	t.is(stdout, 'testing12');
 });
 
 const createNoFileReadable = value => {
@@ -510,9 +510,9 @@ test('input option can be used with $.sync', t => {
 	t.is(stdout, 'foobar');
 });
 
-test('input option can be a Buffer - sync', t => {
-	const {stdout} = execaSync('stdin.js', {input: Buffer.from('testing12', 'utf8')});
-	t.is(stdout, 'testing12');
+test('input option can be a Uint8Array - sync', t => {
+	const {stdout} = execaSync('stdin.js', {input: Uint8Array.from('foo', c => c.codePointAt(0))});
+	t.is(stdout, 'foo');
 });
 
 test('opts.stdout:ignore - stdout will not collect data', async t => {

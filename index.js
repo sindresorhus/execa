@@ -1,4 +1,3 @@
-import {Buffer} from 'node:buffer';
 import path from 'node:path';
 import childProcess from 'node:child_process';
 import process from 'node:process';
@@ -63,7 +62,7 @@ const handleArguments = (file, args, options = {}) => {
 };
 
 const handleOutput = (options, value, error) => {
-	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
+	if (typeof value !== 'string' && !ArrayBuffer.isView(value)) {
 		// When `execaSync()` errors, we normalize it to '' to mimic `execa()`
 		return error === undefined ? undefined : '';
 	}

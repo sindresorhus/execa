@@ -1,4 +1,3 @@
-import {type Buffer} from 'node:buffer';
 import {type ChildProcess} from 'node:child_process';
 import {type Stream, type Readable, type Writable} from 'node:stream';
 
@@ -46,7 +45,7 @@ type DefaultEncodingOption = 'utf8';
 type BufferEncodingOption = 'buffer';
 
 type GetStdoutStderrType<EncodingType extends EncodingOption> =
-  EncodingType extends DefaultEncodingOption ? string : Buffer;
+  EncodingType extends DefaultEncodingOption ? string : Uint8Array;
 
 export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
@@ -218,7 +217,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly shell?: boolean | string;
 
 	/**
-	Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'` or `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
+	Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'`, then `stdout` and `stderr` will be a `Uint8Array` instead of a string.
 
 	@default 'utf8'
 	*/
@@ -343,7 +342,7 @@ export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOpt
 	readonly nodeOptions?: string[];
 } & Options<EncodingType>;
 
-type StdoutStderrAll = string | Buffer | undefined;
+type StdoutStderrAll = string | Uint8Array | undefined;
 
 export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	/**
@@ -790,9 +789,9 @@ export function execaCommandSync<EncodingType extends EncodingOption = DefaultEn
 type TemplateExpression =
 	| string
 	| number
-	| ExecaReturnValue<string | Buffer>
-	| ExecaSyncReturnValue<string | Buffer>
-	| Array<string | number | ExecaReturnValue<string | Buffer> | ExecaSyncReturnValue<string | Buffer>>;
+	| ExecaReturnValue<string | Uint8Array>
+	| ExecaSyncReturnValue<string | Uint8Array>
+	| Array<string | number | ExecaReturnValue<string | Uint8Array> | ExecaSyncReturnValue<string | Uint8Array>>;
 
 type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
@@ -820,7 +819,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	*/
 	(options: Options<undefined>): Execa$<StdoutStderrType>;
 	(options: Options): Execa$;
-	(options: Options<BufferEncodingOption>): Execa$<Buffer>;
+	(options: Options<BufferEncodingOption>): Execa$<Uint8Array>;
 	(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]

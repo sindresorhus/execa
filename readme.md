@@ -400,19 +400,19 @@ The numeric exit code of the process that was run.
 
 #### stdout
 
-Type: `string | Buffer`
+Type: `string | Uint8Array`
 
 The output of the process on stdout.
 
 #### stderr
 
-Type: `string | Buffer`
+Type: `string | Uint8Array`
 
 The output of the process on stderr.
 
 #### all
 
-Type: `string | Buffer | undefined`
+Type: `string | Uint8Array | undefined`
 
 The output of the process with `stdout` and `stderr` interleaved.
 
@@ -690,10 +690,10 @@ We recommend against using this option since it is:
 
 #### encoding
 
-Type: `string | null`\
+Type: `string`\
 Default: `utf8`
 
-Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'` or `null`, then `stdout` and `stderr` will be a `Buffer` instead of a string.
+Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'`, then `stdout` and `stderr` will be a `Uint8Array` instead of a string.
 
 #### timeout
 

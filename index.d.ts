@@ -12,7 +12,7 @@ export type StdioOption =
 	| number
 	| undefined;
 
-type StdinOption = StdioOption | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>;
+export type StdinOption = StdioOption | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>;
 
 type EncodingOption =
   | 'utf8'

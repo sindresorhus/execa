@@ -38,10 +38,11 @@ const pipeToFile = async (t, fixtureName, funcName, streamName) => {
 	t.is(await readFile(file, 'utf8'), 'test\n');
 };
 
-test('pipeStdout() can pipe to files', pipeToFile, 'noop.js', 'pipeStdout', 'stdout');
-test('pipeStderr() can pipe to files', pipeToFile, 'noop-err.js', 'pipeStderr', 'stderr');
-test('pipeAll() can pipe stdout to files', pipeToFile, 'noop.js', 'pipeAll', 'stdout');
-test('pipeAll() can pipe stderr to files', pipeToFile, 'noop-err.js', 'pipeAll', 'stderr');
+// `test.serial()` is due to a race condition: `execa(...).pipe*(file)` might resolve before the file stream has resolved
+test.serial('pipeStdout() can pipe to files', pipeToFile, 'noop.js', 'pipeStdout', 'stdout');
+test.serial('pipeStderr() can pipe to files', pipeToFile, 'noop-err.js', 'pipeStderr', 'stderr');
+test.serial('pipeAll() can pipe stdout to files', pipeToFile, 'noop.js', 'pipeAll', 'stdout');
+test.serial('pipeAll() can pipe stderr to files', pipeToFile, 'noop-err.js', 'pipeAll', 'stderr');
 
 const invalidTarget = (t, funcName, getTarget) => {
 	t.throws(() => execa('noop.js', {all: true})[funcName](getTarget()), {

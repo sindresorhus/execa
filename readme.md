@@ -292,6 +292,7 @@ Same as [`execa()`](#execacommandcommand-options) but synchronous.
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### $.sync\`command\`
+### $.s\`command\`
 
 Same as [$\`command\`](#command) but synchronous.
 

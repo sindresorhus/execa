@@ -263,6 +263,8 @@ function create$(options) {
 		return execaSync(file, args, normalizeScriptOptions(options));
 	};
 
+	$.s = $.sync;
+
 	return $;
 }
 

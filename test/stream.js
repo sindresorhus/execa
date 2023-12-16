@@ -149,13 +149,13 @@ test('stdin option cannot be an async iterable with execa.sync()', t => {
 test('stdin option cannot be an iterable when "input" is used', t => {
 	t.throws(() => {
 		execa('stdin.js', {stdin: ['foo', 'bar'], input: 'foobar'});
-	}, {message: /when the `input` option/});
+	}, {message: /`input` and `stdin` options/});
 });
 
 test('stdin option cannot be an iterable when "inputFile" is used', t => {
 	t.throws(() => {
 		execa('stdin.js', {stdin: ['foo', 'bar'], inputFile: 'dummy.txt'});
-	}, {message: /when the `inputFile` option/});
+	}, {message: /`inputFile` and `stdin` options/});
 });
 
 test('stdin option cannot be a generic iterable string', async t => {
@@ -172,6 +172,18 @@ test('input option can be a String', async t => {
 	t.is(stdout, 'foobar');
 });
 
+test('input option cannot be a String when stdin is set', t => {
+	t.throws(() => {
+		execa('stdin.js', {input: 'foobar', stdin: 'ignore'});
+	}, {message: /`input` and `stdin` options/});
+});
+
+test('input option cannot be a String when stdio is set', t => {
+	t.throws(() => {
+		execa('stdin.js', {input: 'foobar', stdio: 'ignore'});
+	}, {message: /`input` and `stdin` options/});
+});
+
 test('input option can be a Buffer', async t => {
 	const {stdout} = await execa('stdin.js', {input: 'testing12'});
 	t.is(stdout, 'testing12');
@@ -183,6 +195,12 @@ test('input can be a Stream', async t => {
 	stream.end();
 	const {stdout} = await execa('stdin.js', {input: stream});
 	t.is(stdout, 'howdy');
+});
+
+test('input option cannot be a Stream when stdin is set', t => {
+	t.throws(() => {
+		execa('stdin.js', {input: new Stream.PassThrough(), stdin: 'ignore'});
+	}, {message: /`input` and `stdin` options/});
 });
 
 test('input option can be used with $', async t => {
@@ -208,6 +226,16 @@ test('inputFile and input cannot be both set', t => {
 	t.throws(() => execa('stdin.js', {inputFile: '', input: ''}), {
 		message: /cannot be both set/,
 	});
+});
+
+test('inputFile option cannot be set when stdin is set', t => {
+	t.throws(() => {
+		execa('stdin.js', {inputFile: '', stdin: 'ignore'});
+	}, {message: /`inputFile` and `stdin` options/});
+});
+
+test('inputFile errors should be handled', async t => {
+	await t.throwsAsync(execa('stdin.js', {inputFile: 'unknown'}), {code: 'ENOENT'});
 });
 
 test('you can write to child.stdin', async t => {

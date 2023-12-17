@@ -289,6 +289,9 @@ expectType<ExecaReturnValue<Uint8Array>>(
 	await execaNode('unicorns', ['foo'], {encoding: 'buffer'}),
 );
 
+expectType<ExecaChildProcess>(execaNode('unicorns', {nodePath: './node'}));
+expectType<ExecaChildProcess>(execaNode('unicorns', {nodePath: new URL('file:///test')}));
+
 expectType<ExecaChildProcess>(execaNode('unicorns', {nodeOptions: ['--async-stack-traces']}));
 expectType<ExecaChildProcess>(execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces']}));
 expectType<ExecaChildProcess<Uint8Array>>(

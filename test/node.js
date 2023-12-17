@@ -1,4 +1,5 @@
 import process from 'node:process';
+import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import {pEvent} from 'p-event';
 import {execaNode} from '../index.js';
@@ -44,6 +45,12 @@ test('node correctly use nodePath', async t => {
 	});
 
 	t.is(stdout, 'Hello World');
+});
+
+test('The nodePath option can be a file URL', async t => {
+	const nodePath = pathToFileURL(process.execPath);
+	const {stdout} = await execaNode('test/fixtures/noop.js', ['foo'], {nodePath});
+	t.is(stdout, 'foo');
 });
 
 test('node pass on nodeOptions', async t => {

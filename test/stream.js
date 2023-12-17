@@ -2,6 +2,7 @@ import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
 import process from 'node:process';
 import fs from 'node:fs';
+import {readFile} from 'node:fs/promises';
 import {relative} from 'node:path';
 import Stream from 'node:stream';
 import {setTimeout} from 'node:timers/promises';
@@ -17,6 +18,8 @@ import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
 const pExec = promisify(exec);
 
 setFixtureDir();
+
+const nonFileUrl = new URL('https://example.com');
 
 test('buffer', async t => {
 	const {stdout} = await execa('noop.js', ['foo'], {encoding: null});
@@ -281,16 +284,31 @@ test('stdin cannot be a ReadableStream when inputFile is used', t => {
 test('stdin can be a file URL', async t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
-	const stdin = pathToFileURL(inputFile);
-	const {stdout} = await execa('stdin.js', {stdin});
+	const {stdout} = await execa('stdin.js', {stdin: pathToFileURL(inputFile)});
 	t.is(stdout, 'howdy');
 });
 
-test('stdin cannot be a non-file URL', async t => {
-	await t.throws(() => {
-		execa('stdin.js', {stdin: new URL('https://example.com')});
+const testOutputFileUrl = async (t, streamName, fixtureName) => {
+	const outputFile = tempfile();
+	await execa(fixtureName, ['foobar'], {[streamName]: pathToFileURL(outputFile)});
+	t.is(await readFile(outputFile, 'utf8'), 'foobar\n');
+};
+
+test('stdout can be a file URL', testOutputFileUrl, 'stdout', 'noop.js');
+test('stderr can be a file URL', testOutputFileUrl, 'stderr', 'noop-err.js');
+
+const testStdioNonFileUrl = (t, streamName, method) => {
+	t.throws(() => {
+		method('noop.js', {[streamName]: nonFileUrl});
 	}, {message: /pathToFileURL/});
-});
+};
+
+test('stdin cannot be a non-file URL', testStdioNonFileUrl, 'stdin', execa);
+test('stdout cannot be a non-file URL', testStdioNonFileUrl, 'stdout', execa);
+test('stderr cannot be a non-file URL', testStdioNonFileUrl, 'stderr', execa);
+test('stdin cannot be a non-file URL - sync', testStdioNonFileUrl, 'stdin', execaSync);
+test('stdout cannot be a non-file URL - sync', testStdioNonFileUrl, 'stdout', execaSync);
+test('stderr cannot be a non-file URL - sync', testStdioNonFileUrl, 'stderr', execaSync);
 
 test('stdin can be an absolute file path', async t => {
 	const inputFile = tempfile();
@@ -299,19 +317,43 @@ test('stdin can be an absolute file path', async t => {
 	t.is(stdout, 'howdy');
 });
 
+const testOutputAbsoluteFile = async (t, streamName, fixtureName) => {
+	const outputFile = tempfile();
+	await execa(fixtureName, ['foobar'], {[streamName]: outputFile});
+	t.is(await readFile(outputFile, 'utf8'), 'foobar\n');
+};
+
+test('stdout can be an absolute file path', testOutputAbsoluteFile, 'stdout', 'noop.js');
+test('stderr can be an absolute file path', testOutputAbsoluteFile, 'stderr', 'noop-err.js');
+
 test('stdin can be a relative file path', async t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
-	const stdin = relative('.', inputFile);
-	const {stdout} = await execa('stdin.js', {stdin});
+	const {stdout} = await execa('stdin.js', {stdin: relative('.', inputFile)});
 	t.is(stdout, 'howdy');
 });
 
-test('stdin option must start with . when being a relative file path', t => {
+const testOutputRelativeFile = async (t, streamName, fixtureName) => {
+	const outputFile = tempfile();
+	await execa(fixtureName, ['foobar'], {[streamName]: relative('.', outputFile)});
+	t.is(await readFile(outputFile, 'utf8'), 'foobar\n');
+};
+
+test('stdout can be a relative file path', testOutputRelativeFile, 'stdout', 'noop.js');
+test('stderr can be a relative file path', testOutputRelativeFile, 'stderr', 'noop-err.js');
+
+const testStdioValidUrl = (t, streamName, method) => {
 	t.throws(() => {
-		execa('stdin.js', {stdin: 'foobar'});
+		method('noop.js', {[streamName]: 'foobar'});
 	}, {message: /absolute file path/});
-});
+};
+
+test('stdin must start with . when being a relative file path', testStdioValidUrl, 'stdin', execa);
+test('stdout must start with . when being a relative file path', testStdioValidUrl, 'stdout', execa);
+test('stderr must start with . when being a relative file path', testStdioValidUrl, 'stderr', execa);
+test('stdin must start with . when being a relative file path - sync', testStdioValidUrl, 'stdin', execaSync);
+test('stdout must start with . when being a relative file path - sync', testStdioValidUrl, 'stdout', execaSync);
+test('stderr must start with . when being a relative file path - sync', testStdioValidUrl, 'stderr', execaSync);
 
 test('inputFile can be set', async t => {
 	const inputFile = tempfile();
@@ -339,13 +381,47 @@ test('inputFile option cannot be set when stdin is set', t => {
 	}, {message: /`inputFile` and `stdin` options/});
 });
 
-test('stdin file URL errors should be handled', async t => {
-	await t.throwsAsync(execa('stdin.js', {stdin: pathToFileURL('unknown')}), {code: 'ENOENT'});
-});
+const testFileUrlError = async (t, streamName) => {
+	await t.throwsAsync(
+		execa('noop.js', {[streamName]: pathToFileURL('./unknown/file')}),
+		{code: 'ENOENT'},
+	);
+};
 
-test('stdin file path errors should be handled', async t => {
-	await t.throwsAsync(execa('stdin.js', {stdin: './unknown'}), {code: 'ENOENT'});
-});
+test('stdin file URL errors should be handled', testFileUrlError, 'stdin');
+test('stdout file URL errors should be handled', testFileUrlError, 'stdout');
+test('stderr file URL errors should be handled', testFileUrlError, 'stderr');
+
+const testFileUrlErrorSync = (t, streamName) => {
+	t.throws(() => {
+		execaSync('noop.js', {[streamName]: pathToFileURL('./unknown/file')});
+	}, {code: 'ENOENT'});
+};
+
+test('stdin file URL errors should be handled - sync', testFileUrlErrorSync, 'stdin');
+test('stdout file URL errors should be handled - sync', testFileUrlErrorSync, 'stdout');
+test('stderr file URL errors should be handled - sync', testFileUrlErrorSync, 'stderr');
+
+const testFilePathError = async (t, streamName) => {
+	await t.throwsAsync(
+		execa('noop.js', {[streamName]: './unknown/file'}),
+		{code: 'ENOENT'},
+	);
+};
+
+test('stdin file path errors should be handled', testFilePathError, 'stdin');
+test('stdout file path errors should be handled', testFilePathError, 'stdout');
+test('stderr file path errors should be handled', testFilePathError, 'stderr');
+
+const testFilePathErrorSync = (t, streamName) => {
+	t.throws(() => {
+		execaSync('noop.js', {[streamName]: './unknown/file'});
+	}, {code: 'ENOENT'});
+};
+
+test('stdin file path errors should be handled - sync', testFilePathErrorSync, 'stdin');
+test('stdout file path errors should be handled - sync', testFilePathErrorSync, 'stdout');
+test('stderr file path errors should be handled - sync', testFilePathErrorSync, 'stderr');
 
 test('inputFile errors should be handled', async t => {
 	await t.throwsAsync(execa('stdin.js', {inputFile: 'unknown'}), {code: 'ENOENT'});
@@ -411,12 +487,30 @@ test('stdin can be a file URL - sync', t => {
 	t.is(stdout, 'howdy');
 });
 
+const testOutputFileUrlSync = (t, streamName, fixtureName) => {
+	const outputFile = tempfile();
+	execaSync(fixtureName, ['foobar'], {[streamName]: pathToFileURL(outputFile)});
+	t.is(fs.readFileSync(outputFile, 'utf8'), 'foobar\n');
+};
+
+test('stdout can be a file URL - sync', testOutputFileUrlSync, 'stdout', 'noop.js');
+test('stderr can be a file URL - sync', testOutputFileUrlSync, 'stderr', 'noop-err.js');
+
 test('stdin can be an absolute file path - sync', t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
 	const {stdout} = execaSync('stdin.js', {stdin: inputFile});
 	t.is(stdout, 'howdy');
 });
+
+const testOutputAbsoluteFileSync = (t, streamName, fixtureName) => {
+	const outputFile = tempfile();
+	execaSync(fixtureName, ['foobar'], {[streamName]: outputFile});
+	t.is(fs.readFileSync(outputFile, 'utf8'), 'foobar\n');
+};
+
+test('stdout can be an absolute file path - sync', testOutputAbsoluteFileSync, 'stdout', 'noop.js');
+test('stderr can be an absolute file path - sync', testOutputAbsoluteFileSync, 'stderr', 'noop-err.js');
 
 test('stdin can be a relative file path - sync', t => {
 	const inputFile = tempfile();
@@ -426,11 +520,14 @@ test('stdin can be a relative file path - sync', t => {
 	t.is(stdout, 'howdy');
 });
 
-test('stdin cannot be a non-file URL - sync', async t => {
-	await t.throws(() => {
-		execaSync('stdin.js', {stdin: new URL('https://example.com')});
-	}, {message: /pathToFileURL/});
-});
+const testOutputRelativeFileSync = (t, streamName, fixtureName) => {
+	const outputFile = tempfile();
+	execaSync(fixtureName, ['foobar'], {[streamName]: relative('.', outputFile)});
+	t.is(fs.readFileSync(outputFile, 'utf8'), 'foobar\n');
+};
+
+test('stdout can be a relative file path - sync', testOutputRelativeFileSync, 'stdout', 'noop.js');
+test('stderr can be a relative file path - sync', testOutputRelativeFileSync, 'stderr', 'noop-err.js');
 
 test('inputFile can be set - sync', t => {
 	const inputFile = tempfile();

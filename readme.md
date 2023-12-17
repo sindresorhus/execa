@@ -568,19 +568,21 @@ It can also be a file path, a file URL, a web stream ([`ReadableStream`](https:/
 
 #### stdout
 
-Type: `string | number | stream.Writable | WritableStream | undefined`\
+Type: `string | number | stream.Writable | WritableStream | undefined | URL`\
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-It can also be a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used.
+It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
 
 #### stderr
 
-Type: `string | number | stream.Writable | WritableStream | undefined`\
+Type: `string | number | stream.Writable | WritableStream | undefined | URL`\
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+
+It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
 
 #### all
 

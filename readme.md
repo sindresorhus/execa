@@ -253,9 +253,9 @@ Arguments are [automatically escaped](#shell-syntax). They can contain any chara
 This is the preferred method when executing Node.js files.
 
 Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
-  - the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
-  - the [`shell`](#shell) option cannot be used
-  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
+- the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
+- the [`shell`](#shell) option cannot be used
+- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
 #### $\`command\`
 
@@ -274,8 +274,8 @@ For more information, please see [this section](#scripts-interface) and [this pa
 Returns a new instance of [`$`](#command) but with different default `options`. Consecutive calls are merged to previous ones.
 
 This can be used to either:
-  - Set options for a specific command: `` $(options)`command` ``
-  - Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand`; ``
+- Set options for a specific command: `` $(options)`command` ``
+- Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand`; ``
 
 #### execaCommand(command, options?)
 
@@ -311,8 +311,8 @@ For all the [methods above](#methods), no shell interpreter (Bash, cmd.exe, etc.
 ### childProcess
 
 The return value of all [asynchronous methods](#methods) is both:
-  - a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
-  - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
+- a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
+- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
 
 #### kill(signal?, options?)
 
@@ -336,16 +336,16 @@ Type: `ReadableStream | undefined`
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 This is `undefined` if either:
-  - the [`all` option](#all-2) is `false` (the default value)
-  - the [synchronous methods](#execasyncfile-arguments-options) are used
-  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+- the [`all` option](#all-2) is `false` (the default value)
+- the [synchronous methods](#execasyncfile-arguments-options) are used
+- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### pipeStdout(target)
 
 [Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
-  - Another [`execa()` return value](#pipe-multiple-processes)
-  - A [writable stream](#save-and-pipe-output-from-a-child-process)
-  - A [file path string](#redirect-output-to-a-file)
+- Another [`execa()` return value](#pipe-multiple-processes)
+- A [writable stream](#save-and-pipe-output-from-a-child-process)
+- A [file path string](#redirect-output-to-a-file)
 
 If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
 
@@ -422,9 +422,9 @@ Type: `string | Uint8Array | undefined`
 The output of the process with `stdout` and `stderr` interleaved.
 
 This is `undefined` if either:
-  - the [`all` option](#all-2) is `false` (the default value)
-  - the [synchronous methods](#execasyncfile-arguments-options) are used
-  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+- the [`all` option](#all-2) is `false` (the default value)
+- the [synchronous methods](#execasyncfile-arguments-options) are used
+- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### failed
 
@@ -451,16 +451,16 @@ You can cancel the spawned process using the [`signal`](#signal-1) option.
 Type: `boolean`
 
 Whether the process was terminated using either:
-  - [`childProcess.kill()`](#killsignal-options).
-  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+- [`childProcess.kill()`](#killsignal-options).
+- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 #### signal
 
 Type: `string | undefined`
 
 The name of the signal (like `SIGFPE`) that terminated the process using either:
-  - [`childProcess.kill()`](#killsignal-options).
-  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+- [`childProcess.kill()`](#killsignal-options).
+- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
 

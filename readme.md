@@ -212,7 +212,7 @@ try {
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
-		killed: false
+		isTerminated: false
 	}
 	*/
 }
@@ -370,7 +370,7 @@ Result of a child process execution. On success this is a plain object. On failu
 
 The child process [fails](#failed) when:
 - its [exit code](#exitcode) is not `0`
-- it was [killed](#killed) with a [signal](#signal)
+- it was [terminated](#isterminated) with a [signal](#signal)
 - [timing out](#timedout)
 - [being canceled](#iscanceled)
 - there's not enough memory or there are already too many child processes
@@ -440,11 +440,11 @@ Whether the process was canceled.
 
 You can cancel the spawned process using the [`signal`](#signal-1) option.
 
-#### killed
+#### isTerminated
 
 Type: `boolean`
 
-Whether the process was killed.
+Whether the process was terminated by a signal.
 
 #### signal
 
@@ -789,7 +789,7 @@ setTimeout(() => {
 try {
 	await subprocess;
 } catch (error) {
-	console.log(subprocess.killed); // true
+	console.log(error.isTerminated); // true
 	console.log(error.isCanceled); // true
 }
 ```

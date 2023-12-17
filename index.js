@@ -100,7 +100,6 @@ export function execa(file, args, options) {
 			parsed,
 			timedOut: false,
 			isCanceled: false,
-			killed: false,
 		}));
 		mergePromise(dummySpawned, errorPromise);
 		return dummySpawned;
@@ -134,7 +133,6 @@ export function execa(file, args, options) {
 				parsed,
 				timedOut,
 				isCanceled: context.isCanceled || (parsed.options.signal ? parsed.options.signal.aborted : false),
-				killed: spawned.killed,
 			});
 
 			if (!parsed.options.reject) {
@@ -154,7 +152,7 @@ export function execa(file, args, options) {
 			failed: false,
 			timedOut: false,
 			isCanceled: false,
-			killed: false,
+			isTerminated: false,
 		};
 	};
 
@@ -191,7 +189,6 @@ export function execaSync(file, args, options) {
 			parsed,
 			timedOut: false,
 			isCanceled: false,
-			killed: false,
 		});
 	}
 
@@ -211,7 +208,6 @@ export function execaSync(file, args, options) {
 			parsed,
 			timedOut: result.error && result.error.code === 'ETIMEDOUT',
 			isCanceled: false,
-			killed: result.signal !== null,
 		});
 
 		if (!parsed.options.reject) {
@@ -230,7 +226,7 @@ export function execaSync(file, args, options) {
 		failed: false,
 		timedOut: false,
 		isCanceled: false,
-		killed: false,
+		isTerminated: false,
 	};
 }
 

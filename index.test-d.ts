@@ -68,7 +68,7 @@ try {
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
 	expectType<boolean>(unicornsResult.isCanceled);
-	expectType<boolean>(unicornsResult.killed);
+	expectType<boolean>(unicornsResult.isTerminated);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
@@ -83,7 +83,7 @@ try {
 	expectType<boolean>(execaError.failed);
 	expectType<boolean>(execaError.timedOut);
 	expectType<boolean>(execaError.isCanceled);
-	expectType<boolean>(execaError.killed);
+	expectType<boolean>(execaError.isTerminated);
 	expectType<string | undefined>(execaError.signal);
 	expectType<string | undefined>(execaError.signalDescription);
 	expectType<string>(execaError.cwd);
@@ -105,7 +105,7 @@ try {
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
 	expectError(unicornsResult.isCanceled);
-	expectType<boolean>(unicornsResult.killed);
+	expectType<boolean>(unicornsResult.isTerminated);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
@@ -120,7 +120,7 @@ try {
 	expectType<boolean>(execaError.failed);
 	expectType<boolean>(execaError.timedOut);
 	expectError(execaError.isCanceled);
-	expectType<boolean>(execaError.killed);
+	expectType<boolean>(execaError.isTerminated);
 	expectType<string | undefined>(execaError.signal);
 	expectType<string | undefined>(execaError.signalDescription);
 	expectType<string>(execaError.cwd);

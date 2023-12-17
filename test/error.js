@@ -1,11 +1,7 @@
 import process from 'node:process';
-import childProcess from 'node:child_process';
-import {promisify} from 'node:util';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
 import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
-
-const pExec = promisify(childProcess.exec);
 
 setFixtureDir();
 
@@ -91,59 +87,55 @@ test('failed is true on failure', async t => {
 	t.true(failed);
 });
 
-test('error.killed is true if process was killed directly', async t => {
+test('error.isTerminated is true if process was killed directly', async t => {
 	const subprocess = execa('forever.js');
 
 	subprocess.kill();
 
-	const {killed} = await t.throwsAsync(subprocess, {message: /was killed with SIGTERM/});
-	t.true(killed);
+	const {isTerminated} = await t.throwsAsync(subprocess, {message: /was killed with SIGTERM/});
+	t.true(isTerminated);
 });
 
-test('error.killed is false if process was killed indirectly', async t => {
+test('error.isTerminated is true if process was killed indirectly', async t => {
 	const subprocess = execa('forever.js');
 
 	process.kill(subprocess.pid, 'SIGINT');
 
 	// `process.kill()` is emulated by Node.js on Windows
 	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
-	const {killed} = await t.throwsAsync(subprocess, {message});
-	t.false(killed);
+	const {isTerminated} = await t.throwsAsync(subprocess, {message});
+	t.true(isTerminated);
 });
 
-test('result.killed is false if not killed', async t => {
-	const {killed} = await execa('noop.js');
-	t.false(killed);
+test('result.isTerminated is false if not killed', async t => {
+	const {isTerminated} = await execa('noop.js');
+	t.false(isTerminated);
 });
 
-test('result.killed is false if not killed, in sync mode', t => {
-	const {killed} = execaSync('noop.js');
-	t.false(killed);
+test('result.isTerminated is false if not killed and childProcess.kill() was called', async t => {
+	const subprocess = execa('noop.js');
+	subprocess.kill(0);
+	t.true(subprocess.killed);
+	const {isTerminated} = await subprocess;
+	t.false(isTerminated);
 });
 
-test('result.killed is false on process error', async t => {
-	const {killed} = await t.throwsAsync(execa('wrong command'));
-	t.false(killed);
+test('result.isTerminated is false if not killed, in sync mode', t => {
+	const {isTerminated} = execaSync('noop.js');
+	t.false(isTerminated);
 });
 
-test('result.killed is false on process error, in sync mode', t => {
-	const {killed} = t.throws(() => {
+test('result.isTerminated is false on process error', async t => {
+	const {isTerminated} = await t.throwsAsync(execa('wrong command'));
+	t.false(isTerminated);
+});
+
+test('result.isTerminated is false on process error, in sync mode', t => {
+	const {isTerminated} = t.throws(() => {
 		execaSync('wrong command');
 	});
-	t.false(killed);
+	t.false(isTerminated);
 });
-
-if (process.platform === 'darwin') {
-	test('sanity check: child_process.exec also has killed.false if killed indirectly', async t => {
-		const promise = pExec('forever.js');
-
-		process.kill(promise.child.pid, 'SIGINT');
-
-		const error = await t.throwsAsync(promise);
-		t.truthy(error);
-		t.false(error.killed);
-	});
-}
 
 if (process.platform !== 'win32') {
 	test('error.signal is SIGINT', async t => {

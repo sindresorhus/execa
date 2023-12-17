@@ -265,7 +265,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	try {
 		await subprocess;
 	} catch (error) {
-		console.log(subprocess.killed); // true
+		console.log(error.isTerminated); // true
 		console.log(error.isCanceled); // true
 	}
 	```
@@ -388,9 +388,9 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	timedOut: boolean;
 
 	/**
-	Whether the process was killed.
+	Whether the process was terminated by a signal.
 	*/
-	killed: boolean;
+	isTerminated: boolean;
 
 	/**
 	The name of the signal that was used to terminate the process. For example, `SIGFPE`.
@@ -420,7 +420,7 @@ Result of a child process execution. On success this is a plain object. On failu
 
 The child process fails when:
 - its exit code is not `0`
-- it was killed with a signal
+- it was terminated with a signal
 - timing out
 - being canceled
 - there's not enough memory or there are already too many child processes
@@ -642,7 +642,7 @@ try {
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
-		killed: false,
+		isTerminated: false,
 		cwd: '/path/to/cwd'
 	}
 	\*\/
@@ -722,7 +722,7 @@ try {
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
-		killed: false,
+		isTerminated: false,
 		cwd: '/path/to/cwd'
 	}
 	\*\/

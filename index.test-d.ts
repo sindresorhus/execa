@@ -3,7 +3,7 @@ import {Buffer} from 'node:buffer';
 // `process.stdin`, `process.stderr`, and `process.stdout`
 // to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
 import * as process from 'node:process';
-import {type Readable as ReadableStream} from 'node:stream';
+import {type Readable} from 'node:stream';
 import {createWriteStream} from 'node:fs';
 import {expectType, expectError, expectAssignable} from 'tsd';
 import {
@@ -23,7 +23,7 @@ import {
 try {
 	const execaPromise = execa('unicorns');
 	execaPromise.cancel();
-	expectType<ReadableStream | undefined>(execaPromise.all);
+	expectType<Readable | undefined>(execaPromise.all);
 
 	const execaBufferPromise = execa('unicorns', {encoding: 'buffer'});
 	const writeStream = createWriteStream('output.txt');
@@ -158,6 +158,7 @@ execa('unicorns', {stdin: 'ipc'});
 execa('unicorns', {stdin: 'ignore'});
 execa('unicorns', {stdin: 'inherit'});
 execa('unicorns', {stdin: process.stdin});
+execa('unicorns', {stdin: new ReadableStream()});
 execa('unicorns', {stdin: ['']});
 execa('unicorns', {stdin: [new Uint8Array(0)]});
 execa('unicorns', {stdin: stringGenerator()});

@@ -212,7 +212,7 @@ test('input option can be a Buffer', async t => {
 	t.is(stdout, 'testing12');
 });
 
-test('input can be a Stream', async t => {
+test('input can be a Node.js Readable', async t => {
 	const stream = new Stream.PassThrough();
 	stream.write('howdy');
 	stream.end();
@@ -220,7 +220,7 @@ test('input can be a Stream', async t => {
 	t.is(stdout, 'howdy');
 });
 
-test('input option cannot be a Stream when stdin is set', t => {
+test('input option cannot be a Node.js Readable when stdin is set', t => {
 	t.throws(() => {
 		execa('stdin.js', {input: new Stream.PassThrough(), stdin: 'ignore'});
 	}, {message: /`input` and `stdin` options/});
@@ -229,6 +229,26 @@ test('input option cannot be a Stream when stdin is set', t => {
 test('input option can be used with $', async t => {
 	const {stdout} = await $({input: 'foobar'})`stdin.js`;
 	t.is(stdout, 'foobar');
+});
+
+test('stdin can be a ReadableStream', async t => {
+	const stdin = Stream.Readable.toWeb(Stream.Readable.from('howdy'));
+	const {stdout} = await execa('stdin.js', {stdin});
+	t.is(stdout, 'howdy');
+});
+
+test('stdin cannot be a ReadableStream when input is used', t => {
+	const stdin = Stream.Readable.toWeb(Stream.Readable.from('howdy'));
+	t.throws(() => {
+		execa('stdin.js', {stdin, input: 'foobar'});
+	}, {message: /`input` and `stdin` options/});
+});
+
+test('stdin cannot be a ReadableStream when inputFile is used', t => {
+	const stdin = Stream.Readable.toWeb(Stream.Readable.from('howdy'));
+	t.throws(() => {
+		execa('stdin.js', {stdin, inputFile: 'dummy.txt'});
+	}, {message: /`inputFile` and `stdin` options/});
 });
 
 test('stdin can be a file URL', async t => {
@@ -334,13 +354,17 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 	t.is(stdout, undefined);
 });
 
-test('helpful error trying to provide an input stream in sync mode', t => {
-	t.throws(
-		() => {
-			execaSync('stdin.js', {input: new Stream.PassThrough()});
-		},
-		{message: /The `input` option cannot be a stream in sync mode/},
-	);
+test('input cannot be a stream in sync mode', t => {
+	t.throws(() => {
+		execaSync('stdin.js', {input: new Stream.PassThrough()});
+	}, {message: /The `input` option cannot be a stream in sync mode/});
+});
+
+test('stdin cannot be a ReadableStream in sync mode', t => {
+	const stdin = Stream.Readable.toWeb(Stream.Readable.from('howdy'));
+	t.throws(() => {
+		execaSync('stdin.js', {stdin});
+	}, {message: /The `stdin` option cannot be a stream in sync mode/});
 });
 
 test('stdin can be a file URL - sync', t => {

@@ -1,6 +1,6 @@
 import {inspect} from 'node:util';
 import test from 'ava';
-import {normalizeStdio, normalizeStdioNode} from '../lib/stdio.js';
+import {normalizeStdio, normalizeStdioNode} from '../lib/stdio/normalize.js';
 
 const macro = (t, input, expected, func) => {
 	if (expected instanceof Error) {

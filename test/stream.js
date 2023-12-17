@@ -460,20 +460,20 @@ test('opts.stdout:ignore - stdout will not collect data', async t => {
 test('input cannot be a Node.js Readable in sync mode', t => {
 	t.throws(() => {
 		execaSync('stdin.js', {input: new Stream.PassThrough()});
-	}, {message: /The `input` option cannot be a stream in sync mode/});
+	}, {message: /The `input` option cannot be a Node\.js stream in sync mode/});
 });
 
 test('stdin cannot be a ReadableStream in sync mode', t => {
 	const stdin = Stream.Readable.toWeb(Stream.Readable.from('howdy'));
 	t.throws(() => {
 		execaSync('stdin.js', {stdin});
-	}, {message: /The `stdin` option cannot be a stream in sync mode/});
+	}, {message: /The `stdin` option cannot be a web stream in sync mode/});
 });
 
 const testWritableStreamSync = (t, streamName) => {
 	t.throws(() => {
 		execaSync('noop.js', {[streamName]: new WritableStream()});
-	}, {message: new RegExp(`The \`${streamName}\` option cannot be a stream in sync mode`)});
+	}, {message: new RegExp(`The \`${streamName}\` option cannot be a web stream in sync mode`)});
 };
 
 test('stdout cannot be a WritableStream in sync mode', testWritableStreamSync, 'stdout');

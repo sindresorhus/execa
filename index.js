@@ -7,7 +7,9 @@ import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
 import onetime from 'onetime';
 import {makeError} from './lib/error.js';
-import {handleStdioOption, handleInputSync, handleOutputSync, pipeStdioOptions, normalizeStdioNode} from './lib/stdio.js';
+import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
+import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
+import {normalizeStdioNode} from './lib/stdio/normalize.js';
 import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
@@ -75,7 +77,7 @@ const handleOutput = (options, value, error) => {
 
 export function execa(file, args, options) {
 	const parsed = handleArguments(file, args, options);
-	const stdioStreams = handleStdioOption(parsed.options);
+	const stdioStreams = handleInputAsync(parsed.options);
 	validateTimeout(parsed.options);
 
 	const command = joinCommand(file, args);
@@ -158,7 +160,7 @@ export function execa(file, args, options) {
 
 	const handlePromiseOnce = onetime(handlePromise);
 
-	pipeStdioOptions(spawned, stdioStreams);
+	pipeOutputAsync(spawned, stdioStreams);
 
 	spawned.all = makeAllStream(spawned, parsed.options);
 
@@ -169,7 +171,7 @@ export function execa(file, args, options) {
 
 export function execaSync(file, args, options) {
 	const parsed = handleArguments(file, args, options);
-	const stdioArray = handleInputSync(parsed.options);
+	const stdioStreams = handleInputSync(parsed.options);
 
 	const command = joinCommand(file, args);
 	const escapedCommand = getEscapedCommand(file, args);
@@ -193,7 +195,7 @@ export function execaSync(file, args, options) {
 		});
 	}
 
-	handleOutputSync(stdioArray, result);
+	pipeOutputSync(stdioStreams, result);
 	const stdout = handleOutput(parsed.options, result.stdout, result.error);
 	const stderr = handleOutput(parsed.options, result.stderr, result.error);
 

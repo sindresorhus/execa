@@ -338,7 +338,7 @@ Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.ht
 This is `undefined` if either:
   - the [`all` option](#all-2) is `false` (the default value)
   - the [synchronous methods](#execasyncfile-arguments-options) are used
-  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### pipeStdout(target)
 
@@ -405,7 +405,7 @@ Type: `string | Uint8Array | undefined`
 
 The output of the process on `stdout`.
 
-This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 
 #### stderr
 
@@ -413,7 +413,7 @@ Type: `string | Uint8Array | undefined`
 
 The output of the process on `stderr`.
 
-This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 
 #### all
 
@@ -424,7 +424,7 @@ The output of the process with `stdout` and `stderr` interleaved.
 This is `undefined` if either:
   - the [`all` option](#all-2) is `false` (the default value)
   - the [synchronous methods](#execasyncfile-arguments-options) are used
-  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### failed
 
@@ -572,7 +572,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 Type: `string | number | stream.Readable | ReadableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
-[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
 - `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stdin`.
@@ -592,7 +592,7 @@ Unless either the [synchronous methods](#execasyncfile-arguments-options), the [
 Type: `string | number | stream.Writable | WritableStream | URL`\
 Default: `pipe`
 
-[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
 - `'pipe'`: Sets [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) stream.
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stdout`.
@@ -611,7 +611,7 @@ Unless either [synchronous methods](#execasyncfile-arguments-options), the value
 Type: `string | number | stream.Writable | WritableStream | URL`\
 Default: `pipe`
 
-[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
 - `'pipe'`: Sets [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) stream.
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stderr`.

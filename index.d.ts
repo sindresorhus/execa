@@ -96,7 +96,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly buffer?: boolean;
 
 	/**
-	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
+	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
 	- `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdin`.
@@ -116,7 +116,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly stdin?: StdinOption;
 
 	/**
-	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
+	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
 	- `'pipe'`: Sets [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) stream.
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdout`.
@@ -135,7 +135,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly stdout?: StdoutStderrOption;
 
 	/**
-	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
+	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
 	- `'pipe'`: Sets [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) stream.
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stderr`.
@@ -403,14 +403,14 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	/**
 	The output of the process on `stdout`.
 
-	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 	*/
 	stdout: StdoutStderrType;
 
 	/**
 	The output of the process on `stderr`.
 
-	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 	*/
 	stderr: StdoutStderrType;
 
@@ -473,7 +473,7 @@ export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> 
 	This is `undefined` if either:
 	- the `all` option is `false` (default value)
 	- the synchronous methods are used
-  - both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+  - both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
 	all?: StdoutStderrType;
 
@@ -540,7 +540,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	This is `undefined` if either:
 		- the `all` option is `false` (the default value)
 		- the synchronous methods are used
-		- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+		- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
 	all?: Readable;
 

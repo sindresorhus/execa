@@ -4,6 +4,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
+import which from 'which';
 import {execa, execaSync, execaNode, $} from '../index.js';
 import {setFixtureDir, PATH_KEY, FIXTURES_DIR_URL} from './helpers/fixtures-dir.js';
 
@@ -245,11 +246,15 @@ test('can use `options.shell: true`', async t => {
 	t.is(stdout, 'foo');
 });
 
-test('can use `options.shell: string`', async t => {
-	const shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/bash';
+const testShellPath = async (t, mapPath) => {
+	const shellPath = process.platform === 'win32' ? 'cmd.exe' : 'bash';
+	const shell = mapPath(await which(shellPath));
 	const {stdout} = await execa('node test/fixtures/noop.js foo', {shell});
 	t.is(stdout, 'foo');
-});
+};
+
+test('can use `options.shell: string`', testShellPath, identity);
+test('can use `options.shell: file URL`', testShellPath, pathToFileURL);
 
 test('use extend environment with `extendEnv: true` and `shell: true`', async t => {
 	process.env.TEST = 'test';

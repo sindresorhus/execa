@@ -30,16 +30,16 @@ const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) =>
 	return env;
 };
 
-const getFilePath = file => {
-	if (file instanceof URL) {
-		return fileURLToPath(file);
-	}
+const normalizeFileUrl = file => file instanceof URL ? fileURLToPath(file) : file;
 
-	if (typeof file !== 'string') {
+const getFilePath = file => {
+	const fileString = normalizeFileUrl(file);
+
+	if (typeof fileString !== 'string') {
 		throw new TypeError('First argument must be a string or a file URL.');
 	}
 
-	return file;
+	return fileString;
 };
 
 const handleArguments = (file, args, options = {}) => {
@@ -63,6 +63,7 @@ const handleArguments = (file, args, options = {}) => {
 		windowsHide: true,
 		verbose: verboseDefault,
 		...options,
+		shell: normalizeFileUrl(options.shell),
 	};
 
 	options.env = getEnv(options);

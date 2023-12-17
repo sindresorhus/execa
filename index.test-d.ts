@@ -264,6 +264,7 @@ execa('unicorns', {uid: 0});
 execa('unicorns', {gid: 0});
 execa('unicorns', {shell: true});
 execa('unicorns', {shell: '/bin/sh'});
+execa('unicorns', {shell: fileUrl});
 execa('unicorns', {timeout: 1000});
 execa('unicorns', {maxBuffer: 1000});
 execa('unicorns', {killSignal: 'SIGTERM'});

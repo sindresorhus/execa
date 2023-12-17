@@ -2,6 +2,7 @@ import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
 import process from 'node:process';
 import fs from 'node:fs';
+import {relative} from 'node:path';
 import Stream from 'node:stream';
 import {promisify} from 'node:util';
 import {pathToFileURL} from 'node:url';
@@ -171,8 +172,16 @@ test('stdin option cannot be a file URL when "inputFile" is used', t => {
 	}, {message: /`inputFile` and `stdin` options/});
 });
 
-test('stdin option cannot be a generic iterable string', async t => {
-	await t.throwsAsync(() => execa('stdin.js', {stdin: 'foobar'}), {code: 'ERR_INVALID_SYNC_FORK_INPUT'});
+test('stdin option cannot be a file path when "input" is used', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: './unknown', input: 'foobar'});
+	}, {message: /`input` and `stdin` options/});
+});
+
+test('stdin option cannot be a file path when "inputFile" is used', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: './unknown', inputFile: 'dummy.txt'});
+	}, {message: /`inputFile` and `stdin` options/});
 });
 
 test('stdin option handles errors in iterables', async t => {
@@ -235,6 +244,27 @@ test('stdin cannot be a non-file URL', async t => {
 	}, {message: /pathToFileURL/});
 });
 
+test('stdin can be an absolute file path', async t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const {stdout} = await execa('stdin.js', {stdin: inputFile});
+	t.is(stdout, 'howdy');
+});
+
+test('stdin can be a relative file path', async t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const stdin = relative('.', inputFile);
+	const {stdout} = await execa('stdin.js', {stdin});
+	t.is(stdout, 'howdy');
+});
+
+test('stdin option must start with . when being a relative file path', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: 'foobar'});
+	}, {message: /absolute file path/});
+});
+
 test('inputFile can be set', async t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
@@ -263,6 +293,10 @@ test('inputFile option cannot be set when stdin is set', t => {
 
 test('stdin file URL errors should be handled', async t => {
 	await t.throwsAsync(execa('stdin.js', {stdin: pathToFileURL('unknown')}), {code: 'ENOENT'});
+});
+
+test('stdin file path errors should be handled', async t => {
+	await t.throwsAsync(execa('stdin.js', {stdin: './unknown'}), {code: 'ENOENT'});
 });
 
 test('inputFile errors should be handled', async t => {
@@ -312,6 +346,21 @@ test('stdin can be a file URL - sync', t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
 	const stdin = pathToFileURL(inputFile);
+	const {stdout} = execaSync('stdin.js', {stdin});
+	t.is(stdout, 'howdy');
+});
+
+test('stdin can be an absolute file path - sync', t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const {stdout} = execaSync('stdin.js', {stdin: inputFile});
+	t.is(stdout, 'howdy');
+});
+
+test('stdin can be a relative file path - sync', t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const stdin = relative('.', inputFile);
 	const {stdout} = execaSync('stdin.js', {stdin});
 	t.is(stdout, 'howdy');
 });

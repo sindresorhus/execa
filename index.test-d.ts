@@ -165,6 +165,7 @@ execa('unicorns', {stdin: binaryGenerator()});
 expectError(execa('unicorns', {stdin: [0]}));
 expectError(execa('unicorns', {stdin: numberGenerator()}));
 execa('unicorns', {stdin: new URL('file:///test')});
+execa('unicorns', {stdin: './test'});
 execa('unicorns', {stdin: 1});
 execa('unicorns', {stdin: undefined});
 execa('unicorns', {stdout: 'pipe'});

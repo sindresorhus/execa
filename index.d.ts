@@ -50,8 +50,8 @@ type GetStdoutStderrType<EncodingType extends EncodingOption> =
 export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Kill the spawned process when the parent process exits unless either:
-		- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-		- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
 
 	@default true
 	*/
@@ -212,8 +212,8 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	/**
 	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:
-		- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
-		- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
+	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
+	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 
 	[More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization)
 
@@ -426,15 +426,15 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 
 	/**
 	Whether the process was terminated using either:
-		- `childProcess.kill()`.
-		- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+	- `childProcess.kill()`.
+	- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 	*/
 	isTerminated: boolean;
 
 	/**
 	The name of the signal (like `SIGFPE`) that terminated the process using either:
-		- `childProcess.kill()`.
-		- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+	- `childProcess.kill()`.
+	- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 	If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
 	*/
@@ -538,9 +538,9 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 	This is `undefined` if either:
-		- the `all` option is `false` (the default value)
-		- the synchronous methods are used
-		- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+	- the `all` option is `false` (the default value)
+	- the synchronous methods are used
+	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
 	all?: Readable;
 
@@ -602,8 +602,8 @@ This is the preferred method when executing single commands.
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
 @returns An `ExecaChildProcess` that is both:
-	- a `Promise` resolving or rejecting with a `childProcessResult`.
-	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+- a `Promise` resolving or rejecting with a `childProcessResult`.
+- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 @throws A `childProcessResult` error
 
 @example <caption>Promise interface</caption>
@@ -792,8 +792,8 @@ This is the preferred method when executing a user-supplied `command` string, su
 
 @param command - The program/script to execute and its arguments.
 @returns An `ExecaChildProcess` that is both:
-	- a `Promise` resolving or rejecting with a `childProcessResult`.
-	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+- a `Promise` resolving or rejecting with a `childProcessResult`.
+- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 @throws A `childProcessResult` error
 
 @example
@@ -841,8 +841,8 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	Returns a new instance of `$` but with different default `options`. Consecutive calls are merged to previous ones.
 
 	This can be used to either:
-		- Set options for a specific command: `` $(options)`command` ``
-		- Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand` ``
+	- Set options for a specific command: `` $(options)`command` ``
+	- Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand` ``
 
 	@param options - Options to set
 	@returns A new instance of `$` with those `options` set
@@ -1032,15 +1032,15 @@ Arguments are automatically escaped. They can contain any character, including s
 This is the preferred method when executing Node.js files.
 
 Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
-  - the current Node version and options are used. This can be overridden using the `nodePath` and `nodeOptions` options.
-  - the `shell` option cannot be used
-  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to `stdio`
+- the current Node version and options are used. This can be overridden using the `nodePath` and `nodeOptions` options.
+- the `shell` option cannot be used
+- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to `stdio`
 
 @param scriptPath - Node.js script to execute, as a string or file URL
 @param arguments - Arguments to pass to `scriptPath` on execution.
 @returns An `ExecaChildProcess` that is both:
-	- a `Promise` resolving or rejecting with a `childProcessResult`.
-	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
+- a `Promise` resolving or rejecting with a `childProcessResult`.
+- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 @throws A `childProcessResult` error
 
 @example

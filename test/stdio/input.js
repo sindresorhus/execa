@@ -4,6 +4,7 @@ import test from 'ava';
 import {execa, execaSync, $} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdinOption, getPlainStdioOption, getScriptSync, identity} from '../helpers/stdio.js';
+import {stringGenerator} from '../helpers/generator.js';
 
 setFixtureDir();
 
@@ -16,8 +17,8 @@ const testInputOptionError = (t, stdin, inputName) => {
 	}, {message: new RegExp(`\`${inputName}\` and \`stdin\` options`)});
 };
 
-test('stdin option cannot be an iterable when "input" is used', testInputOptionError, ['foo', 'bar'], 'input');
-test('stdin option cannot be an iterable when "inputFile" is used', testInputOptionError, ['foo', 'bar'], 'inputFile');
+test('stdin option cannot be an iterable when "input" is used', testInputOptionError, stringGenerator(), 'input');
+test('stdin option cannot be an iterable when "inputFile" is used', testInputOptionError, stringGenerator(), 'inputFile');
 test('stdin option cannot be a file URL when "input" is used', testInputOptionError, pathToFileURL('unknown'), 'input');
 test('stdin option cannot be a file URL when "inputFile" is used', testInputOptionError, pathToFileURL('unknown'), 'inputFile');
 test('stdin option cannot be a file path when "input" is used', testInputOptionError, './unknown', 'input');

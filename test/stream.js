@@ -1,8 +1,9 @@
 import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
 import process from 'node:process';
+import {once} from 'node:events';
 import fs from 'node:fs';
-import {readFile} from 'node:fs/promises';
+import {readFile, writeFile, rm} from 'node:fs/promises';
 import {relative} from 'node:path';
 import Stream from 'node:stream';
 import {setTimeout} from 'node:timers/promises';
@@ -193,6 +194,25 @@ test('stdin option handles errors in iterables', async t => {
 	t.is(originalMessage, 'generator error');
 });
 
+const testNoIterableOutput = async (t, optionName) => {
+	await t.throwsAsync(
+		execa('noop.js', {[optionName]: ['foo', 'bar']}),
+		{code: 'ERR_INVALID_ARG_VALUE'},
+	);
+};
+
+test('stdout option cannot be an iterable', testNoIterableOutput, 'stdout');
+test('stderr option cannot be an iterable', testNoIterableOutput, 'stderr');
+
+const testNoIterableOutputSync = (t, optionName) => {
+	t.throws(() => {
+		execaSync('noop.js', {[optionName]: ['foo', 'bar']});
+	}, {code: 'ERR_INVALID_ARG_VALUE'});
+};
+
+test('stdout option cannot be an iterable - sync', testNoIterableOutputSync, 'stdout');
+test('stderr option cannot be an iterable - sync', testNoIterableOutputSync, 'stderr');
+
 const testWritableStreamError = async (t, streamName) => {
 	const writableStream = new WritableStream({
 		start(controller) {
@@ -228,13 +248,68 @@ test('input option can be a Buffer', async t => {
 	t.is(stdout, 'testing12');
 });
 
-test('input can be a Node.js Readable', async t => {
+const createNoFileReadable = value => {
 	const stream = new Stream.PassThrough();
-	stream.write('howdy');
+	stream.write(value);
 	stream.end();
-	const {stdout} = await execa('stdin.js', {input: stream});
-	t.is(stdout, 'howdy');
+	return stream;
+};
+
+test('input can be a Node.js Readable without a file descriptor', async t => {
+	const {stdout} = await execa('stdin.js', {input: createNoFileReadable('foobar')});
+	t.is(stdout, 'foobar');
 });
+
+const testNoFileStream = async (t, optionName, StreamClass) => {
+	await t.throwsAsync(execa('noop.js', {[optionName]: new StreamClass()}), {code: 'ERR_INVALID_ARG_VALUE'});
+};
+
+test('stdin cannot be a Node.js Readable without a file descriptor', testNoFileStream, 'stdin', Stream.Readable);
+test('stdout cannot be a Node.js Writable without a file descriptor', testNoFileStream, 'stdout', Stream.Writable);
+test('stderr cannot be a Node.js Writable without a file descriptor', testNoFileStream, 'stderr', Stream.Writable);
+
+const createFileReadable = async value => {
+	const filePath = tempfile();
+	await writeFile(filePath, value);
+	const stream = fs.createReadStream(filePath);
+	await once(stream, 'open');
+	const cleanup = () => rm(filePath);
+	return {stream, cleanup};
+};
+
+const testFileReadable = async (t, optionName) => {
+	const {stream, cleanup} = await createFileReadable('foobar');
+	try {
+		const {stdout} = await execa('stdin.js', {[optionName]: stream});
+		t.is(stdout, 'foobar');
+	} finally {
+		await cleanup();
+	}
+};
+
+test('input can be a Node.js Readable with a file descriptor', testFileReadable, 'input');
+test('stdin can be a Node.js Readable with a file descriptor', testFileReadable, 'stdin');
+
+const createFileWritable = async () => {
+	const filePath = tempfile();
+	const stream = fs.createWriteStream(filePath);
+	await once(stream, 'open');
+	const cleanup = () => rm(filePath);
+	return {stream, filePath, cleanup};
+};
+
+const testFileWritable = async (t, optionName, fixtureName) => {
+	const {stream, filePath, cleanup} = await createFileWritable();
+	try {
+		await execa(fixtureName, ['foobar'], {[optionName]: stream});
+		t.is(await readFile(filePath, 'utf8'), 'foobar\n');
+	} finally {
+		await cleanup();
+	}
+};
+
+test('stdout can be a Node.js Writable with a file descriptor', testFileWritable, 'stdout', 'noop.js');
+test('stderr can be a Node.js Writable with a file descriptor', testFileWritable, 'stderr', 'noop-err.js');
 
 test('input option cannot be a Node.js Readable when stdin is set', t => {
 	t.throws(() => {

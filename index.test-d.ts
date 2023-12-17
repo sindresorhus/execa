@@ -160,54 +160,100 @@ execa('unicorns', {input: process.stdin});
 execa('unicorns', {inputFile: ''});
 execa('unicorns', {inputFile: fileUrl});
 execa('unicorns', {stdin: 'pipe'});
+execa('unicorns', {stdin: ['pipe']});
 execa('unicorns', {stdin: 'overlapped'});
+execa('unicorns', {stdin: ['overlapped']});
 execa('unicorns', {stdin: 'ipc'});
+execa('unicorns', {stdin: ['ipc']});
 execa('unicorns', {stdin: 'ignore'});
+execa('unicorns', {stdin: ['ignore']});
 execa('unicorns', {stdin: 'inherit'});
+execa('unicorns', {stdin: ['inherit']});
 execa('unicorns', {stdin: process.stdin});
+execa('unicorns', {stdin: [process.stdin]});
 execa('unicorns', {stdin: new Readable()});
+execa('unicorns', {stdin: [new Readable()]});
 expectError(execa('unicorns', {stdin: new Writable()}));
+expectError(execa('unicorns', {stdin: [new Writable()]}));
 execa('unicorns', {stdin: new ReadableStream()});
+execa('unicorns', {stdin: [new ReadableStream()]});
 expectError(execa('unicorns', {stdin: new WritableStream()}));
-execa('unicorns', {stdin: ['']});
-execa('unicorns', {stdin: [new Uint8Array(0)]});
+expectError(execa('unicorns', {stdin: [new WritableStream()]}));
 execa('unicorns', {stdin: stringGenerator()});
+execa('unicorns', {stdin: [stringGenerator()]});
 execa('unicorns', {stdin: binaryGenerator()});
+execa('unicorns', {stdin: [binaryGenerator()]});
 execa('unicorns', {stdin: asyncStringGenerator()});
-expectError(execa('unicorns', {stdin: [0]}));
+execa('unicorns', {stdin: [asyncStringGenerator()]});
 expectError(execa('unicorns', {stdin: numberGenerator()}));
+expectError(execa('unicorns', {stdin: [numberGenerator()]}));
 execa('unicorns', {stdin: fileUrl});
+execa('unicorns', {stdin: [fileUrl]});
 execa('unicorns', {stdin: './test'});
+execa('unicorns', {stdin: ['./test']});
 execa('unicorns', {stdin: 1});
+execa('unicorns', {stdin: [1]});
 execa('unicorns', {stdin: undefined});
+execa('unicorns', {stdin: [undefined]});
+execa('unicorns', {stdin: ['pipe', 'inherit']});
 execa('unicorns', {stdout: 'pipe'});
+execa('unicorns', {stdout: ['pipe']});
 execa('unicorns', {stdout: 'overlapped'});
+execa('unicorns', {stdout: ['overlapped']});
 execa('unicorns', {stdout: 'ipc'});
+execa('unicorns', {stdout: ['ipc']});
 execa('unicorns', {stdout: 'ignore'});
+execa('unicorns', {stdout: ['ignore']});
 execa('unicorns', {stdout: 'inherit'});
+execa('unicorns', {stdout: ['inherit']});
 execa('unicorns', {stdout: process.stdout});
+execa('unicorns', {stdout: [process.stdout]});
 execa('unicorns', {stdout: new Writable()});
+execa('unicorns', {stdout: [new Writable()]});
 expectError(execa('unicorns', {stdout: new Readable()}));
+expectError(execa('unicorn', {stdout: [new Readable()]}));
 execa('unicorns', {stdout: new WritableStream()});
+execa('unicorns', {stdout: [new WritableStream()]});
 expectError(execa('unicorns', {stdout: new ReadableStream()}));
+expectError(execa('unicorn', {stdout: [new ReadableStream()]}));
 execa('unicorns', {stdout: fileUrl});
+execa('unicorns', {stdout: [fileUrl]});
 execa('unicorns', {stdout: './test'});
+execa('unicorns', {stdout: ['./test']});
 execa('unicorns', {stdout: 1});
+execa('unicorns', {stdout: [1]});
 execa('unicorns', {stdout: undefined});
+execa('unicorns', {stdout: [undefined]});
+execa('unicorns', {stdout: ['pipe', 'inherit']});
 execa('unicorns', {stderr: 'pipe'});
+execa('unicorns', {stderr: ['pipe']});
 execa('unicorns', {stderr: 'overlapped'});
+execa('unicorns', {stderr: ['overlapped']});
 execa('unicorns', {stderr: 'ipc'});
+execa('unicorns', {stderr: ['ipc']});
 execa('unicorns', {stderr: 'ignore'});
+execa('unicorns', {stderr: ['ignore']});
 execa('unicorns', {stderr: 'inherit'});
+execa('unicorns', {stderr: ['inherit']});
 execa('unicorns', {stderr: process.stderr});
+execa('unicorns', {stderr: [process.stderr]});
 execa('unicorns', {stderr: new Writable()});
+execa('unicorns', {stderr: [new Writable()]});
 expectError(execa('unicorns', {stderr: new Readable()}));
+expectError(execa('unicorns', {stderr: [new Readable()]}));
 execa('unicorns', {stderr: new WritableStream()});
+execa('unicorns', {stderr: [new WritableStream()]});
 expectError(execa('unicorns', {stderr: new ReadableStream()}));
+expectError(execa('unicorns', {stderr: [new ReadableStream()]}));
 execa('unicorns', {stderr: fileUrl});
+execa('unicorns', {stderr: [fileUrl]});
 execa('unicorns', {stderr: './test'});
+execa('unicorns', {stderr: ['./test']});
 execa('unicorns', {stderr: 1});
+execa('unicorns', {stderr: [1]});
 execa('unicorns', {stderr: undefined});
+execa('unicorns', {stderr: [undefined]});
+execa('unicorns', {stderr: ['pipe', 'inherit']});
 execa('unicorns', {all: true});
 execa('unicorns', {reject: false});
 execa('unicorns', {stripFinalNewline: false});
@@ -233,11 +279,17 @@ expectError(execa('unicorns', {stdio: stringGenerator()}));
 expectError(execa('unicorns', {stdio: asyncStringGenerator()}));
 expectError(execa('unicorns', {stdio: ['pipe', 'pipe']}));
 execa('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});
+execa('unicorns', {stdio: [[new Readable()], ['pipe'], ['pipe']]});
 execa('unicorns', {stdio: ['pipe', new Writable(), 'pipe']});
+execa('unicorns', {stdio: [['pipe'], [new Writable()], ['pipe']]});
 execa('unicorns', {stdio: ['pipe', 'pipe', new Writable()]});
+execa('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]});
 expectError(execa('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
+expectError(execa('unicorns', {stdio: [[new Writable()], ['pipe'], ['pipe']]}));
 expectError(execa('unicorns', {stdio: ['pipe', new Readable(), 'pipe']}));
+expectError(execa('unicorns', {stdio: [['pipe'], [new Readable()], ['pipe']]}));
 expectError(execa('unicorns', {stdio: ['pipe', 'pipe', new Readable()]}));
+expectError(execa('unicorns', {stdio: [['pipe'], ['pipe'], [new Readable()]]}));
 execa('unicorns', {
 	stdio: [
 		'pipe',
@@ -256,6 +308,27 @@ execa('unicorns', {
 		new ReadableStream(),
 		stringGenerator(),
 		asyncStringGenerator(),
+	],
+});
+execa('unicorns', {
+	stdio: [
+		['pipe'],
+		['pipe', 'inherit'],
+		['overlapped'],
+		['ipc'],
+		['ignore'],
+		['inherit'],
+		[process.stdin],
+		[1],
+		[undefined],
+		[fileUrl],
+		['./test'],
+		[new Writable()],
+		[new Readable()],
+		[new WritableStream()],
+		[new ReadableStream()],
+		[stringGenerator()],
+		[asyncStringGenerator()],
 	],
 });
 execa('unicorns', {serialization: 'advanced'});

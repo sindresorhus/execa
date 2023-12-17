@@ -569,7 +569,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 
 #### stdin
 
-Type: `string | number | stream.Readable | ReadableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
+Type: `string | number | stream.Readable | ReadableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array> | StdioOption[]`\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
@@ -587,9 +587,11 @@ Unless either the [synchronous methods](#execasyncfile-arguments-options), the [
 - web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 - [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
+This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+
 #### stdout
 
-Type: `string | number | stream.Writable | WritableStream | URL`\
+Type: `string | number | stream.Writable | WritableStream | URL | StdoutOption[]`\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
@@ -606,9 +608,11 @@ Unless either [synchronous methods](#execasyncfile-arguments-options), the value
 - file URL.
 - web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
+This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+
 #### stderr
 
-Type: `string | number | stream.Writable | WritableStream | URL`\
+Type: `string | number | stream.Writable | WritableStream | URL | StderrOption[]`\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
@@ -624,6 +628,8 @@ Unless either [synchronous methods](#execasyncfile-arguments-options), the value
 - file path. If relative, it must start with `.`.
 - file URL.
 - web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+
+This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
 #### stdio
 
@@ -802,6 +808,18 @@ Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_proces
 List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
 
 ## Tips
+
+### Redirect stdin/stdout/stderr to multiple destinations
+
+The [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options can be an array of values.
+The following example redirects `stdout` to both the terminal and an `output.txt` file, while also retrieving its value programmatically.
+
+```js
+const {stdout} = await execa('npm', ['install'], {stdout:['inherit', './output.txt', 'pipe']})
+console.log(stdout);
+```
+
+When combining `inherit` with other values, please note that the child process will not be an interactive TTY, even if the parent process is one.
 
 ### Retry on error
 

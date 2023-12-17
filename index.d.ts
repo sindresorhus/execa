@@ -25,9 +25,15 @@ type OutputStdioOption =
 	| Writable
 	| WritableStream;
 
-export type StdinOption = CommonStdioOption | InputStdioOption;
-export type StdoutStderrOption = CommonStdioOption | OutputStdioOption;
-export type StdioOption = CommonStdioOption | InputStdioOption | OutputStdioOption;
+export type StdinOption =
+	CommonStdioOption | InputStdioOption
+	| Array<CommonStdioOption | InputStdioOption>;
+export type StdoutStderrOption =
+	CommonStdioOption | OutputStdioOption
+	| Array<CommonStdioOption | OutputStdioOption>;
+export type StdioOption =
+	CommonStdioOption | InputStdioOption | OutputStdioOption
+	| Array<CommonStdioOption | InputStdioOption | OutputStdioOption>;
 
 type StdioOptions =
 	| BaseStdioOption
@@ -119,6 +125,8 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 	- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
+	This can be an array of values such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
 	readonly stdin?: StdinOption;
@@ -138,6 +146,8 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
+	This can be an array of values such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+
 	@default 'pipe'
 	*/
 	readonly stdout?: StdoutStderrOption;
@@ -156,6 +166,8 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- file path. If relative, it must start with `.`.
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+
+	This can be an array of values such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
 	@default 'pipe'
 	*/

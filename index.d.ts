@@ -98,11 +98,11 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	/**
 	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
 	- `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
-	- `'overlapped'`: like `'pipe'` but asynchronous on Windows.
-	- `'ignore'`: do not use `stdin`.
-	- `'ipc'`: sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
-	- `'inherit'`: re-use the current process' `stdin`.
-	- an integer: re-use a specific file descriptor from the current process.
+	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
+	- `'ignore'`: Do not use `stdin`.
+	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
+	- `'inherit'`: Re-use the current process' `stdin`.
+	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Readable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
 	Unless either the synchronous methods, the `input` option or the `inputFile` option is used, the value can also be a:
@@ -117,12 +117,12 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	/**
 	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
-	- `'pipe'`: sets [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) stream.
-	- `'overlapped'`: like `'pipe'` but asynchronous on Windows.
-	- `'ignore'`: do not use `stdout`.
-	- `'ipc'`: sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
-	- `'inherit'`: re-use the current process' `stdout`.
-	- an integer: re-use a specific file descriptor from the current process.
+	- `'pipe'`: Sets [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) stream.
+	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
+	- `'ignore'`: Do not use `stdout`.
+	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
+	- `'inherit'`: Re-use the current process' `stdout`.
+	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
 	Unless either synchronous methods, the value can also be a:
@@ -136,12 +136,12 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	/**
 	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
-	- `'pipe'`: sets [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) stream.
-	- `'overlapped'`: like `'pipe'` but asynchronous on Windows.
-	- `'ignore'`: do not use `stderr`.
-	- `'ipc'`: sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
-	- `'inherit'`: re-use the current process' `stderr`.
-	- an integer: re-use a specific file descriptor from the current process.
+	- `'pipe'`: Sets [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) stream.
+	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
+	- `'ignore'`: Do not use `stderr`.
+	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
+	- `'inherit'`: Re-use the current process' `stderr`.
+	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
 	Unless either synchronous methods, the value can also be a:

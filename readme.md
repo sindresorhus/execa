@@ -871,14 +871,15 @@ console.error('2'); // writes to stderr
 console.log('3'); // writes to stdout
 ```
 
-This can be worked around by using `process.nextTick()` or `setTimeout()`.
+This can be worked around by using `setTimeout()`.
 
 ```js
+import {setTimeout} from 'timers/promises';
+
 console.log('1');
 console.error('2');
-process.nextTick(() => {
-	console.log('3');
-});
+await setTimeout(0);
+console.log('3');
 ```
 
 ## Related

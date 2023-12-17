@@ -3,6 +3,8 @@ import test from 'ava';
 import {execa, execaSync} from '../index.js';
 import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
 
+const isWindows = process.platform === 'win32';
+
 setFixtureDir();
 
 const TIMEOUT_REGEXP = /timed out after/;
@@ -16,7 +18,7 @@ test('stdout/stderr/all available on errors', async t => {
 	t.is(typeof all, 'string');
 });
 
-const WRONG_COMMAND = process.platform === 'win32'
+const WRONG_COMMAND = isWindows
 	? '\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.'
 	: '';
 
@@ -102,9 +104,9 @@ test('error.isTerminated is true if process was killed indirectly', async t => {
 	process.kill(subprocess.pid, 'SIGINT');
 
 	// `process.kill()` is emulated by Node.js on Windows
-	const message = process.platform === 'win32' ? /failed with exit code 1/ : /was killed with SIGINT/;
+	const message = isWindows ? /failed with exit code 1/ : /was killed with SIGINT/;
 	const {isTerminated} = await t.throwsAsync(subprocess, {message});
-	t.true(isTerminated);
+	t.not(isTerminated, isWindows);
 });
 
 test('result.isTerminated is false if not killed', async t => {
@@ -137,7 +139,7 @@ test('result.isTerminated is false on process error, in sync mode', t => {
 	t.false(isTerminated);
 });
 
-if (process.platform !== 'win32') {
+if (!isWindows) {
 	test('error.signal is SIGINT', async t => {
 		const subprocess = execa('forever.js');
 

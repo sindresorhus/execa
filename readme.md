@@ -559,7 +559,7 @@ If the input is not a file, use the [`input` option](#input) instead.
 
 #### stdin
 
-Type: `string | number | Readable | ReadableStream | undefined | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
+Type: `string | number | stream.Readable | ReadableStream | undefined | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).

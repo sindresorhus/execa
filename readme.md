@@ -555,7 +555,7 @@ If the input is a file, use the [`inputFile` option](#inputfile) instead.
 
 #### inputFile
 
-Type: `string`
+Type: `string | URL`
 
 Use a file as input to the the `stdin` of your binary.
 

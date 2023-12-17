@@ -499,7 +499,7 @@ export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = 
 	shortMessage: string;
 
 	/**
-	Original error message. This is the same as the `message` property except it includes neither the child process `stdout`/`stderr` nor some additional information added by Execa.
+	Original error message. This is the same as the `message` property excluding the child process `stdout`/`stderr` and some additional information added by Execa.
 
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/

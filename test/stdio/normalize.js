@@ -18,12 +18,12 @@ const macroTitle = name => (title, input) => `${name} ${(inspect(input))}`;
 const stdioMacro = (...args) => macro(...args, normalizeStdio);
 stdioMacro.title = macroTitle('execa()');
 
-test(stdioMacro, undefined, undefined);
-test(stdioMacro, null, undefined);
+test(stdioMacro, undefined, [undefined, undefined, undefined]);
+test(stdioMacro, null, [undefined, undefined, undefined]);
 
-test(stdioMacro, {stdio: 'inherit'}, 'inherit');
-test(stdioMacro, {stdio: 'pipe'}, 'pipe');
-test(stdioMacro, {stdio: 'ignore'}, 'ignore');
+test(stdioMacro, {stdio: 'inherit'}, ['inherit', 'inherit', 'inherit']);
+test(stdioMacro, {stdio: 'pipe'}, ['pipe', 'pipe', 'pipe']);
+test(stdioMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore']);
 test(stdioMacro, {stdio: [0, 1, 2]}, [0, 1, 2]);
 
 test(stdioMacro, {}, [undefined, undefined, undefined]);
@@ -52,7 +52,7 @@ forkMacro.title = macroTitle('execaNode()');
 
 test(forkMacro, undefined, [undefined, undefined, undefined, 'ipc']);
 test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
-test(forkMacro, {stdio: 'ipc'}, 'ipc');
+test(forkMacro, {stdio: 'ipc'}, ['ipc', 'ipc', 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 3]}, [0, 1, 2, 3, 'ipc']);
 test(forkMacro, {stdio: [0, 1, 2, 'ipc']}, [0, 1, 2, 'ipc']);

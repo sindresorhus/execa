@@ -444,13 +444,17 @@ You can cancel the spawned process using the [`signal`](#signal-1) option.
 
 Type: `boolean`
 
-Whether the process was terminated by a signal.
+Whether the process was terminated using either:
+  - [`childProcess.kill()`](#killsignal-options).
+  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 #### signal
 
 Type: `string | undefined`
 
-The name of the signal that was used to terminate the process. For example, `SIGFPE`.
+The name of the signal (like `SIGFPE`) that terminated the process using either:
+  - [`childProcess.kill()`](#killsignal-options).
+  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
 

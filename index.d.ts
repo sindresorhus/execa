@@ -96,27 +96,58 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly buffer?: boolean;
 
 	/**
-	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
+	- `'pipe'`: sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
+	- `'overlapped'`: like `'pipe'` but asynchronous on Windows.
+	- `'ignore'`: do not use `stdin`.
+	- `'ipc'`: sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
+	- `'inherit'`: re-use the current process' `stdin`.
+	- an integer: re-use a specific file descriptor from the current process.
+	- a Node.js `Readable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
-	It can also be a file path, a file URL, a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), unless either [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) or the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
+	Unless either the synchronous methods, the `input` option or the `inputFile` option is used, the value can also be a:
+	- file path. If relative, it must start with `.`.
+	- file URL.
+	- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+	- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
 	readonly stdin?: StdinOption;
 
 	/**
-	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
+	- `'pipe'`: sets [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) stream.
+	- `'overlapped'`: like `'pipe'` but asynchronous on Windows.
+	- `'ignore'`: do not use `stdout`.
+	- `'ipc'`: sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
+	- `'inherit'`: re-use the current process' `stdout`.
+	- an integer: re-use a specific file descriptor from the current process.
+	- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
-	It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
+	Unless either synchronous methods, the value can also be a:
+	- file path. If relative, it must start with `.`.
+	- file URL.
+	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 	@default 'pipe'
 	*/
 	readonly stdout?: StdoutStderrOption;
 
 	/**
-	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
+	- `'pipe'`: sets [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) stream.
+	- `'overlapped'`: like `'pipe'` but asynchronous on Windows.
+	- `'ignore'`: do not use `stderr`.
+	- `'ipc'`: sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
+	- `'inherit'`: re-use the current process' `stderr`.
+	- an integer: re-use a specific file descriptor from the current process.
+	- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
-	It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
+	Unless either synchronous methods, the value can also be a:
+	- file path. If relative, it must start with `.`.
+	- file URL.
+	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 	@default 'pipe'
 	*/
@@ -170,7 +201,10 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly argv0?: string;
 
 	/**
-	Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.
+	Like the `stdin`, `stdout` and `stderr` options but for all file descriptors at once.
+	The possible values are the same except it can also be:
+	- a single string, to set the same value to each standard stream.
+	- an array with more than 3 values, to create more than 3 file descriptors.
 
 	@default 'pipe'
 	*/
@@ -296,16 +330,17 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 export type Options<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
-	Write some input to the `stdin` of your binary.
+	Write some input to the child process' `stdin`.\
+	Streams are not allowed when using the synchronous methods.
 
-	If the input is a file, use the `inputFile` option instead.
+	See also the `inputFile` and `stdin` options.
 	*/
 	readonly input?: string | Uint8Array | Readable;
 
 	/**
-	Use a file as input to the the `stdin` of your binary.
+	Use a file as input to the child process' `stdin`.
 
-	If the input is not a file, use the `input` option instead.
+	See also the `input` and `stdin` options.
 	*/
 	readonly inputFile?: string | URL;
 } & CommonOptions<EncodingType>;
@@ -366,12 +401,16 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	exitCode: number;
 
 	/**
-	The output of the process on stdout.
+	The output of the process on `stdout`.
+
+	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 	*/
 	stdout: StdoutStderrType;
 
 	/**
-	The output of the process on stderr.
+	The output of the process on `stderr`.
+
+	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 	*/
 	stderr: StdoutStderrType;
 
@@ -433,7 +472,8 @@ export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> 
 
 	This is `undefined` if either:
 	- the `all` option is `false` (default value)
-	- `execaSync()` was used
+	- the synchronous methods are used
+  - both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 	*/
 	all?: StdoutStderrType;
 
@@ -449,17 +489,17 @@ export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = 
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
-	The child process stderr then stdout are appended to the end, separated with newlines and not interleaved.
+	The child process `stderr` then `stdout` are appended to the end, separated with newlines and not interleaved.
 	*/
 	message: string;
 
 	/**
-	This is the same as the `message` property except it does not include the child process stdout/stderr.
+	This is the same as the `message` property except it does not include the child process `stdout`/`stderr`.
 	*/
 	shortMessage: string;
 
 	/**
-	Original error message. This is the same as the `message` property except it includes neither the child process stdout/stderr nor some additional information added by Execa.
+	Original error message. This is the same as the `message` property except it includes neither the child process `stdout`/`stderr` nor some additional information added by Execa.
 
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/
@@ -499,7 +539,8 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 
 	This is `undefined` if either:
 		- the `all` option is `false` (the default value)
-		- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+		- the synchronous methods are used
+		- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
 	*/
 	all?: Readable;
 

@@ -84,7 +84,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default process.execPath
 	*/
-	readonly execPath?: string;
+	readonly execPath?: string | URL;
 
 	/**
 	Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.

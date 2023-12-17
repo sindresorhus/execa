@@ -12,6 +12,8 @@ process.env.FOO = 'foo';
 
 const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;
 
+const identity = value => value;
+
 test('execa()', async t => {
 	const {stdout} = await execa('noop.js', ['foo']);
 	t.is(stdout, 'foo');
@@ -111,11 +113,15 @@ test('localDir option', async t => {
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });
 
-test.serial('execPath option', async t => {
-	const {path: execPath} = await getNode('16.0.0');
+const testExecPath = async (t, mapPath) => {
+	const {path} = await getNode('16.0.0');
+	const execPath = mapPath(path);
 	const {stdout} = await execa('node', ['-p', 'process.env.Path || process.env.PATH'], {preferLocal: true, execPath});
 	t.true(stdout.includes('16.0.0'));
-});
+};
+
+test.serial('execPath option', testExecPath, identity);
+test.serial('execPath option can be a file URL', testExecPath, pathToFileURL);
 
 test('stdin errors are handled', async t => {
 	const subprocess = execa('noop.js');

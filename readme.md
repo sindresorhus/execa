@@ -530,7 +530,7 @@ Preferred path to find locally installed binaries in (use with `preferLocal`).
 
 #### execPath
 
-Type: `string`\
+Type: `string | URL`\
 Default: `process.execPath` (Current Node.js executable)
 
 Path to the Node.js executable to use in child processes.

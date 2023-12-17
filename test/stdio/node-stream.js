@@ -6,7 +6,7 @@ import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdinOption, getStdoutOption, getStderrOption, getInputOption} from '../helpers/stdio.js';
+import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption, getInputOption} from '../helpers/stdio.js';
 
 setFixtureDir();
 
@@ -24,6 +24,11 @@ const testNodeStreamSync = (t, StreamClass, getOptions, optionName) => {
 };
 
 test('input cannot be a Node.js Readable - sync', testNodeStreamSync, Readable, getInputOption, 'input');
+test('stdin cannot be a Node.js Readable - sync', testNodeStreamSync, Readable, getStdinOption, 'stdin');
+test('stdio[*] cannot be a Node.js Readable - sync', testNodeStreamSync, Readable, getStdioOption, 'stdio[3]');
+test('stdout cannot be a Node.js Writable - sync', testNodeStreamSync, Writable, getStdoutOption, 'stdout');
+test('stderr cannot be a Node.js Writable - sync', testNodeStreamSync, Writable, getStderrOption, 'stderr');
+test('stdio[*] cannot be a Node.js Writable - sync', testNodeStreamSync, Writable, getStdioOption, 'stdio[3]');
 
 test('input can be a Node.js Readable without a file descriptor', async t => {
 	const {stdout} = await execa('stdin.js', {input: createNoFileReadable('foobar')});
@@ -37,6 +42,8 @@ const testNoFileStream = async (t, getOptions, StreamClass) => {
 test('stdin cannot be a Node.js Readable without a file descriptor', testNoFileStream, getStdinOption, Readable);
 test('stdout cannot be a Node.js Writable without a file descriptor', testNoFileStream, getStdoutOption, Writable);
 test('stderr cannot be a Node.js Writable without a file descriptor', testNoFileStream, getStderrOption, Writable);
+test('stdio[*] cannot be a Node.js Readable without a file descriptor', testNoFileStream, getStdioOption, Readable);
+test('stdio[*] cannot be a Node.js Writable without a file descriptor', testNoFileStream, getStdioOption, Writable);
 
 const testFileReadable = async (t, fixtureName, getOptions) => {
 	const filePath = tempfile();
@@ -52,6 +59,7 @@ const testFileReadable = async (t, fixtureName, getOptions) => {
 
 test('input can be a Node.js Readable with a file descriptor', testFileReadable, 'stdin.js', getInputOption);
 test('stdin can be a Node.js Readable with a file descriptor', testFileReadable, 'stdin.js', getStdinOption);
+test('stdio[*] can be a Node.js Readable with a file descriptor', testFileReadable, 'stdin-fd3.js', getStdioOption);
 
 const testFileWritable = async (t, getOptions, fixtureName) => {
 	const filePath = tempfile();
@@ -66,3 +74,4 @@ const testFileWritable = async (t, getOptions, fixtureName) => {
 
 test('stdout can be a Node.js Writable with a file descriptor', testFileWritable, getStdoutOption, 'noop.js');
 test('stderr can be a Node.js Writable with a file descriptor', testFileWritable, getStderrOption, 'noop-err.js');
+test('stdio[*] can be a Node.js Writable with a file descriptor', testFileWritable, getStdioOption, 'noop-fd3.js');

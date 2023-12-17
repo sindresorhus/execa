@@ -1,29 +1,37 @@
 import {type ChildProcess} from 'node:child_process';
-import {type Stream, type Readable, type Writable} from 'node:stream';
+import {type Readable, type Writable} from 'node:stream';
 
-export type StdioOption =
+type BaseStdioOption =
 	| 'pipe'
 	| 'overlapped'
-	| 'ipc'
 	| 'ignore'
-	| 'inherit'
-	| Stream
-	| number
-	| undefined;
+	| 'inherit';
 
-export type StdinOption =
-	| StdioOption
+type CommonStdioOption =
+	| BaseStdioOption
+	| 'ipc'
+	| number
+	| undefined
+	| URL
+	| string;
+
+type InputStdioOption =
 	| Iterable<string | Uint8Array>
 	| AsyncIterable<string | Uint8Array>
-	| URL
-	| string
+	| Readable
 	| ReadableStream;
 
-export type StdoutStderrOption =
-	| StdioOption
-	| URL
-	| string
+type OutputStdioOption =
+	| Writable
 	| WritableStream;
+
+export type StdinOption = CommonStdioOption | InputStdioOption;
+export type StdoutStderrOption = CommonStdioOption | OutputStdioOption;
+export type StdioOption = CommonStdioOption | InputStdioOption | OutputStdioOption;
+
+type StdioOptions =
+	| BaseStdioOption
+	| readonly [StdinOption, StdoutStderrOption, StdoutStderrOption, ...StdioOption[]];
 
 type EncodingOption =
   | 'utf8'
@@ -208,7 +216,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default 'pipe'
 	*/
-	readonly stdio?: 'pipe' | 'overlapped' | 'ignore' | 'inherit' | readonly StdioOption[];
+	readonly stdio?: StdioOptions;
 
 	/**
 	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:

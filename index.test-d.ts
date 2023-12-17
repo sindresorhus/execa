@@ -2,7 +2,7 @@
 // `process.stdin`, `process.stderr`, and `process.stdout`
 // to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
 import * as process from 'node:process';
-import {type Readable} from 'node:stream';
+import {Readable, Writable} from 'node:stream';
 import {createWriteStream} from 'node:fs';
 import {expectType, expectError, expectAssignable} from 'tsd';
 import {
@@ -139,34 +139,44 @@ const numberGenerator = function * () {
 	yield 0;
 };
 
+const asyncStringGenerator = async function * () {
+	yield '';
+};
+
+const fileUrl = new URL('file:///test');
+
 /* eslint-disable @typescript-eslint/no-floating-promises */
 execa('unicorns', {cleanup: false});
 execa('unicorns', {preferLocal: false});
 execa('unicorns', {localDir: '.'});
-execa('unicorns', {localDir: new URL('file:///test')});
+execa('unicorns', {localDir: fileUrl});
 expectError(execa('unicorns', {encoding: 'unknownEncoding'}));
 execa('unicorns', {execPath: '/path'});
-execa('unicorns', {execPath: new URL('file:///test')});
+execa('unicorns', {execPath: fileUrl});
 execa('unicorns', {buffer: false});
 execa('unicorns', {input: ''});
 execa('unicorns', {input: new Uint8Array()});
 execa('unicorns', {input: process.stdin});
 execa('unicorns', {inputFile: ''});
-execa('unicorns', {inputFile: new URL('file:///test')});
+execa('unicorns', {inputFile: fileUrl});
 execa('unicorns', {stdin: 'pipe'});
 execa('unicorns', {stdin: 'overlapped'});
 execa('unicorns', {stdin: 'ipc'});
 execa('unicorns', {stdin: 'ignore'});
 execa('unicorns', {stdin: 'inherit'});
 execa('unicorns', {stdin: process.stdin});
+execa('unicorns', {stdin: new Readable()});
+expectError(execa('unicorns', {stdin: new Writable()}));
 execa('unicorns', {stdin: new ReadableStream()});
+expectError(execa('unicorns', {stdin: new WritableStream()}));
 execa('unicorns', {stdin: ['']});
 execa('unicorns', {stdin: [new Uint8Array(0)]});
 execa('unicorns', {stdin: stringGenerator()});
 execa('unicorns', {stdin: binaryGenerator()});
+execa('unicorns', {stdin: asyncStringGenerator()});
 expectError(execa('unicorns', {stdin: [0]}));
 expectError(execa('unicorns', {stdin: numberGenerator()}));
-execa('unicorns', {stdin: new URL('file:///test')});
+execa('unicorns', {stdin: fileUrl});
 execa('unicorns', {stdin: './test'});
 execa('unicorns', {stdin: 1});
 execa('unicorns', {stdin: undefined});
@@ -176,8 +186,11 @@ execa('unicorns', {stdout: 'ipc'});
 execa('unicorns', {stdout: 'ignore'});
 execa('unicorns', {stdout: 'inherit'});
 execa('unicorns', {stdout: process.stdout});
+execa('unicorns', {stdout: new Writable()});
+expectError(execa('unicorns', {stdout: new Readable()}));
 execa('unicorns', {stdout: new WritableStream()});
-execa('unicorns', {stdout: new URL('file:///test')});
+expectError(execa('unicorns', {stdout: new ReadableStream()}));
+execa('unicorns', {stdout: fileUrl});
 execa('unicorns', {stdout: './test'});
 execa('unicorns', {stdout: 1});
 execa('unicorns', {stdout: undefined});
@@ -187,8 +200,11 @@ execa('unicorns', {stderr: 'ipc'});
 execa('unicorns', {stderr: 'ignore'});
 execa('unicorns', {stderr: 'inherit'});
 execa('unicorns', {stderr: process.stderr});
+execa('unicorns', {stderr: new Writable()});
+expectError(execa('unicorns', {stderr: new Readable()}));
 execa('unicorns', {stderr: new WritableStream()});
-execa('unicorns', {stderr: new URL('file:///test')});
+expectError(execa('unicorns', {stderr: new ReadableStream()}));
+execa('unicorns', {stderr: fileUrl});
 execa('unicorns', {stderr: './test'});
 execa('unicorns', {stderr: 1});
 execa('unicorns', {stderr: undefined});
@@ -197,7 +213,7 @@ execa('unicorns', {reject: false});
 execa('unicorns', {stripFinalNewline: false});
 execa('unicorns', {extendEnv: false});
 execa('unicorns', {cwd: '.'});
-execa('unicorns', {cwd: new URL('file:///test')});
+execa('unicorns', {cwd: fileUrl});
 // eslint-disable-next-line @typescript-eslint/naming-convention
 execa('unicorns', {env: {PATH: ''}});
 execa('unicorns', {argv0: ''});
@@ -205,8 +221,42 @@ execa('unicorns', {stdio: 'pipe'});
 execa('unicorns', {stdio: 'overlapped'});
 execa('unicorns', {stdio: 'ignore'});
 execa('unicorns', {stdio: 'inherit'});
+expectError(execa('unicorns', {stdio: 'ipc'}));
+expectError(execa('unicorns', {stdio: 1}));
+expectError(execa('unicorns', {stdio: fileUrl}));
+expectError(execa('unicorns', {stdio: './test'}));
+expectError(execa('unicorns', {stdio: new Writable()}));
+expectError(execa('unicorns', {stdio: new Readable()}));
+expectError(execa('unicorns', {stdio: new WritableStream()}));
+expectError(execa('unicorns', {stdio: new ReadableStream()}));
+expectError(execa('unicorns', {stdio: stringGenerator()}));
+expectError(execa('unicorns', {stdio: asyncStringGenerator()}));
+expectError(execa('unicorns', {stdio: ['pipe', 'pipe']}));
+execa('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});
+execa('unicorns', {stdio: ['pipe', new Writable(), 'pipe']});
+execa('unicorns', {stdio: ['pipe', 'pipe', new Writable()]});
+expectError(execa('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
+expectError(execa('unicorns', {stdio: ['pipe', new Readable(), 'pipe']}));
+expectError(execa('unicorns', {stdio: ['pipe', 'pipe', new Readable()]}));
 execa('unicorns', {
-	stdio: ['pipe', 'overlapped', 'ipc', 'ignore', 'inherit', process.stdin, 1, undefined],
+	stdio: [
+		'pipe',
+		'overlapped',
+		'ipc',
+		'ignore',
+		'inherit',
+		process.stdin,
+		1,
+		undefined,
+		fileUrl,
+		'./test',
+		new Writable(),
+		new Readable(),
+		new WritableStream(),
+		new ReadableStream(),
+		stringGenerator(),
+		asyncStringGenerator(),
+	],
 });
 execa('unicorns', {serialization: 'advanced'});
 execa('unicorns', {detached: true});
@@ -233,7 +283,7 @@ execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: undefined});
 
 expectError(execa(['unicorns', 'arg']));
 expectType<ExecaChildProcess>(execa('unicorns'));
-expectType<ExecaChildProcess>(execa(new URL('file:///test')));
+expectType<ExecaChildProcess>(execa(fileUrl));
 expectType<ExecaReturnValue>(await execa('unicorns'));
 expectType<ExecaReturnValue>(
 	await execa('unicorns', {encoding: 'utf8'}),
@@ -248,7 +298,7 @@ expectType<ExecaReturnValue<Uint8Array>>(
 
 expectError(execaSync(['unicorns', 'arg']));
 expectType<ExecaSyncReturnValue>(execaSync('unicorns'));
-expectType<ExecaSyncReturnValue>(execaSync(new URL('file:///test')));
+expectType<ExecaSyncReturnValue>(execaSync(fileUrl));
 expectType<ExecaSyncReturnValue>(
 	execaSync('unicorns', {encoding: 'utf8'}),
 );
@@ -278,7 +328,7 @@ expectType<ExecaSyncReturnValue<Uint8Array>>(execaCommandSync('unicorns foo', {e
 expectError(execaNode(['unicorns', 'arg']));
 expectType<ExecaChildProcess>(execaNode('unicorns'));
 expectType<ExecaReturnValue>(await execaNode('unicorns'));
-expectType<ExecaReturnValue>(await execaNode(new URL('file:///test')));
+expectType<ExecaReturnValue>(await execaNode(fileUrl));
 expectType<ExecaReturnValue>(
 	await execaNode('unicorns', {encoding: 'utf8'}),
 );
@@ -291,7 +341,7 @@ expectType<ExecaReturnValue<Uint8Array>>(
 );
 
 expectType<ExecaChildProcess>(execaNode('unicorns', {nodePath: './node'}));
-expectType<ExecaChildProcess>(execaNode('unicorns', {nodePath: new URL('file:///test')}));
+expectType<ExecaChildProcess>(execaNode('unicorns', {nodePath: fileUrl}));
 
 expectType<ExecaChildProcess>(execaNode('unicorns', {nodeOptions: ['--async-stack-traces']}));
 expectType<ExecaChildProcess>(execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces']}));

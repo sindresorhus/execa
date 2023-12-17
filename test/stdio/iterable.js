@@ -1,7 +1,7 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdinOption, getStdoutOption, getStderrOption} from '../helpers/stdio.js';
+import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption} from '../helpers/stdio.js';
 
 setFixtureDir();
 
@@ -28,9 +28,13 @@ const testIterable = async (t, stdioOption, fixtureName, getOptions) => {
 };
 
 test('stdin option can be a sync iterable of strings', testIterable, ['foo', 'bar'], 'stdin.js', getStdinOption);
+test('stdio[*] option can be a sync iterable of strings', testIterable, ['foo', 'bar'], 'stdin-fd3.js', getStdioOption);
 test('stdin option can be a sync iterable of Uint8Arrays', testIterable, [binaryFoo, binaryBar], 'stdin.js', getStdinOption);
+test('stdio[*] option can be a sync iterable of Uint8Arrays', testIterable, [binaryFoo, binaryBar], 'stdin-fd3.js', getStdioOption);
 test('stdin option can be an sync iterable of strings', testIterable, stringGenerator(), 'stdin.js', getStdinOption);
+test('stdio[*] option can be an sync iterable of strings', testIterable, stringGenerator(), 'stdin-fd3.js', getStdioOption);
 test('stdin option can be an sync iterable of Uint8Arrays', testIterable, binaryGenerator(), 'stdin.js', getStdinOption);
+test('stdio[*] option can be an sync iterable of Uint8Arrays', testIterable, binaryGenerator(), 'stdin-fd3.js', getStdioOption);
 
 const testIterableSync = (t, stdioOption, fixtureName, getOptions) => {
 	t.throws(() => {
@@ -39,7 +43,9 @@ const testIterableSync = (t, stdioOption, fixtureName, getOptions) => {
 };
 
 test('stdin option cannot be a sync iterable - sync', testIterableSync, ['foo', 'bar'], 'stdin.js', getStdinOption);
+test('stdio[*] option cannot be a sync iterable - sync', testIterableSync, ['foo', 'bar'], 'stdin-fd3.js', getStdioOption);
 test('stdin option cannot be an async iterable - sync', testIterableSync, stringGenerator(), 'stdin.js', getStdinOption);
+test('stdio[*] option cannot be an async iterable - sync', testIterableSync, stringGenerator(), 'stdin-fd3.js', getStdioOption);
 
 const testIterableError = async (t, fixtureName, getOptions) => {
 	const {originalMessage} = await t.throwsAsync(execa(fixtureName, getOptions(throwingGenerator())));
@@ -47,6 +53,7 @@ const testIterableError = async (t, fixtureName, getOptions) => {
 };
 
 test('stdin option handles errors in iterables', testIterableError, 'stdin.js', getStdinOption);
+test('stdio[*] option handles errors in iterables', testIterableError, 'stdin-fd3.js', getStdioOption);
 
 const testNoIterableOutput = (t, getOptions, execaMethod) => {
 	t.throws(() => {

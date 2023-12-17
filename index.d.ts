@@ -125,7 +125,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	/**
 	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
-	- `'pipe'`: Sets [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) stream.
+	- `'pipe'`: Sets `childProcessResult.stdout` (as a string or `Uint8Array`) and [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdout`.
 	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
@@ -144,7 +144,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	/**
 	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
-	- `'pipe'`: Sets [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) stream.
+	- `'pipe'`: Sets `childProcessResult.stderr` (as a string or `Uint8Array`) and [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stderr`.
 	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.

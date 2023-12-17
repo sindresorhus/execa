@@ -4,6 +4,7 @@ import process from 'node:process';
 import fs from 'node:fs';
 import Stream from 'node:stream';
 import {promisify} from 'node:util';
+import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import getStream from 'get-stream';
 import {pEvent} from 'p-event';
@@ -158,6 +159,18 @@ test('stdin option cannot be an iterable when "inputFile" is used', t => {
 	}, {message: /`inputFile` and `stdin` options/});
 });
 
+test('stdin option cannot be a file URL when "input" is used', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: pathToFileURL('unknown'), input: 'foobar'});
+	}, {message: /`input` and `stdin` options/});
+});
+
+test('stdin option cannot be a file URL when "inputFile" is used', t => {
+	t.throws(() => {
+		execa('stdin.js', {stdin: pathToFileURL('unknown'), inputFile: 'dummy.txt'});
+	}, {message: /`inputFile` and `stdin` options/});
+});
+
 test('stdin option cannot be a generic iterable string', async t => {
 	await t.throwsAsync(() => execa('stdin.js', {stdin: 'foobar'}), {code: 'ERR_INVALID_SYNC_FORK_INPUT'});
 });
@@ -208,6 +221,20 @@ test('input option can be used with $', async t => {
 	t.is(stdout, 'foobar');
 });
 
+test('stdin can be a file URL', async t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const stdin = pathToFileURL(inputFile);
+	const {stdout} = await execa('stdin.js', {stdin});
+	t.is(stdout, 'howdy');
+});
+
+test('stdin cannot be a non-file URL', async t => {
+	await t.throws(() => {
+		execa('stdin.js', {stdin: new URL('https://example.com')});
+	}, {message: /pathToFileURL/});
+});
+
 test('inputFile can be set', async t => {
 	const inputFile = tempfile();
 	fs.writeFileSync(inputFile, 'howdy');
@@ -232,6 +259,10 @@ test('inputFile option cannot be set when stdin is set', t => {
 	t.throws(() => {
 		execa('stdin.js', {inputFile: '', stdin: 'ignore'});
 	}, {message: /`inputFile` and `stdin` options/});
+});
+
+test('stdin file URL errors should be handled', async t => {
+	await t.throwsAsync(execa('stdin.js', {stdin: pathToFileURL('unknown')}), {code: 'ENOENT'});
 });
 
 test('inputFile errors should be handled', async t => {
@@ -275,6 +306,20 @@ test('helpful error trying to provide an input stream in sync mode', t => {
 		},
 		{message: /The `input` option cannot be a stream in sync mode/},
 	);
+});
+
+test('stdin can be a file URL - sync', t => {
+	const inputFile = tempfile();
+	fs.writeFileSync(inputFile, 'howdy');
+	const stdin = pathToFileURL(inputFile);
+	const {stdout} = execaSync('stdin.js', {stdin});
+	t.is(stdout, 'howdy');
+});
+
+test('stdin cannot be a non-file URL - sync', async t => {
+	await t.throws(() => {
+		execaSync('stdin.js', {stdin: new URL('https://example.com')});
+	}, {message: /pathToFileURL/});
 });
 
 test('inputFile can be set - sync', t => {

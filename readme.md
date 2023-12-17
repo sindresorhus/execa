@@ -559,12 +559,12 @@ If the input is not a file, use the [`input` option](#input) instead.
 
 #### stdin
 
-Type: `string | number | Stream | undefined | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
+Type: `string | number | Stream | undefined | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-It can also be an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), providing neither [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) nor the [`inputFile` option](#inputfile) is used.
+It can also be a file URL, an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), providing neither [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) nor the [`inputFile` option](#inputfile) is used.
 
 #### stdout
 

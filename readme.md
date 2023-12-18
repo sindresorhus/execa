@@ -564,18 +564,20 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-It can also be a file path, a file URL, a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)) an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), providing neither [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) nor the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
+It can also be a file path, a file URL, a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), unless either [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) or the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
 
 #### stdout
 
-Type: `string | number | Stream | undefined`\
+Type: `string | number | stream.Writable | WritableStream | undefined`\
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
+It can also be a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used.
+
 #### stderr
 
-Type: `string | number | Stream | undefined`\
+Type: `string | number | stream.Writable | WritableStream | undefined`\
 Default: `pipe`
 
 Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).

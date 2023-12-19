@@ -500,7 +500,7 @@ const {
   failed,
   timedOut,
   isCanceled,
-  killed,
+  isTerminated,
 	// and other error-related properties: code, etc.
 } = await $({timeout: 1})`sleep 2`;
 // file:///home/me/code/execa/lib/kill.js:60
@@ -521,7 +521,7 @@ const {
 //   stderr: '',
 //   failed: true,
 //   isCanceled: false,
-//   killed: false
+//   isTerminated: false
 // }
 ```
 

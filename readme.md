@@ -212,7 +212,7 @@ try {
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
-		killed: false
+		isTerminated: false
 	}
 	*/
 }
@@ -370,7 +370,7 @@ Result of a child process execution. On success this is a plain object. On failu
 
 The child process [fails](#failed) when:
 - its [exit code](#exitcode) is not `0`
-- it was [killed](#killed) with a [signal](#signal)
+- it was [terminated](#isterminated) with a [signal](#signal)
 - [timing out](#timedout)
 - [being canceled](#iscanceled)
 - there's not enough memory or there are already too many child processes
@@ -440,17 +440,21 @@ Whether the process was canceled.
 
 You can cancel the spawned process using the [`signal`](#signal-1) option.
 
-#### killed
+#### isTerminated
 
 Type: `boolean`
 
-Whether the process was killed.
+Whether the process was terminated using either:
+  - [`childProcess.kill()`](#killsignal-options).
+  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 #### signal
 
 Type: `string | undefined`
 
-The name of the signal that was used to terminate the process. For example, `SIGFPE`.
+The name of the signal (like `SIGFPE`) that terminated the process using either:
+  - [`childProcess.kill()`](#killsignal-options).
+  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
 
@@ -789,7 +793,7 @@ setTimeout(() => {
 try {
 	await subprocess;
 } catch (error) {
-	console.log(subprocess.killed); // true
+	console.log(error.isTerminated); // true
 	console.log(error.isCanceled); // true
 }
 ```

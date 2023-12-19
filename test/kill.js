@@ -82,16 +82,16 @@ test('execa() returns a promise with kill()', t => {
 });
 
 test('timeout kills the process if it times out', async t => {
-	const {killed, timedOut} = await t.throwsAsync(execa('noop.js', {timeout: 1}), {message: TIMEOUT_REGEXP});
-	t.false(killed);
+	const {isTerminated, timedOut} = await t.throwsAsync(execa('noop.js', {timeout: 1}), {message: TIMEOUT_REGEXP});
+	t.true(isTerminated);
 	t.true(timedOut);
 });
 
 test('timeout kills the process if it times out, in sync mode', async t => {
-	const {killed, timedOut} = await t.throws(() => {
+	const {isTerminated, timedOut} = await t.throws(() => {
 		execaSync('noop.js', {timeout: 1, message: TIMEOUT_REGEXP});
 	});
-	t.false(killed);
+	t.true(isTerminated);
 	t.true(timedOut);
 });
 
@@ -198,10 +198,12 @@ test('removes exit handler on exit', async t => {
 	t.false(included);
 });
 
-test('cancel method kills the subprocess', t => {
+test('cancel method kills the subprocess', async t => {
 	const subprocess = execa('node');
 	subprocess.cancel();
 	t.true(subprocess.killed);
+	const {isTerminated} = await t.throwsAsync(subprocess);
+	t.true(isTerminated);
 });
 
 test('result.isCanceled is false when spawned.cancel() isn\'t called (success)', async t => {

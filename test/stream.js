@@ -194,24 +194,16 @@ test('stdin option handles errors in iterables', async t => {
 	t.is(originalMessage, 'generator error');
 });
 
-const testNoIterableOutput = async (t, optionName) => {
-	await t.throwsAsync(
-		execa('noop.js', {[optionName]: ['foo', 'bar']}),
-		{code: 'ERR_INVALID_ARG_VALUE'},
-	);
-};
-
-test('stdout option cannot be an iterable', testNoIterableOutput, 'stdout');
-test('stderr option cannot be an iterable', testNoIterableOutput, 'stderr');
-
-const testNoIterableOutputSync = (t, optionName) => {
+const testNoIterableOutput = (t, optionName, execaMethod) => {
 	t.throws(() => {
-		execaSync('noop.js', {[optionName]: ['foo', 'bar']});
-	}, {code: 'ERR_INVALID_ARG_VALUE'});
+		execaMethod('noop.js', {[optionName]: ['foo', 'bar']});
+	}, {message: /cannot be an iterable/});
 };
 
-test('stdout option cannot be an iterable - sync', testNoIterableOutputSync, 'stdout');
-test('stderr option cannot be an iterable - sync', testNoIterableOutputSync, 'stderr');
+test('stdout option cannot be an iterable', testNoIterableOutput, 'stdout', execa);
+test('stderr option cannot be an iterable', testNoIterableOutput, 'stderr', execa);
+test('stdout option cannot be an iterable - sync', testNoIterableOutput, 'stdout', execaSync);
+test('stderr option cannot be an iterable - sync', testNoIterableOutput, 'stderr', execaSync);
 
 const testWritableStreamError = async (t, streamName) => {
 	const writableStream = new WritableStream({

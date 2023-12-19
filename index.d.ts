@@ -22,6 +22,8 @@ export type StdinOption =
 
 export type StdoutStderrOption =
 	| StdioOption
+	| URL
+	| string
 	| WritableStream;
 
 type EncodingOption =
@@ -107,7 +109,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	It can also be a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used.
+	It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
 
 	@default 'pipe'
 	*/
@@ -116,7 +118,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	/**
 	Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
 
-	It can also be a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used.
+	It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
 
 	@default 'pipe'
 	*/

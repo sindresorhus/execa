@@ -22,10 +22,16 @@ setFixtureDir();
 
 const nonFileUrl = new URL('https://example.com');
 
-test('buffer', async t => {
+test('encoding option can be buffer', async t => {
 	const {stdout} = await execa('noop.js', ['foo'], {encoding: 'buffer'});
 	t.true(ArrayBuffer.isView(stdout));
-	t.is(new TextDecoder().decode(stdout), 'foo');
+	t.is(textDecoder.decode(stdout), 'foo');
+});
+
+test('encoding option can be buffer - Sync', t => {
+	const {stdout} = execaSync('noop.js', ['foo'], {encoding: 'buffer'});
+	t.true(ArrayBuffer.isView(stdout));
+	t.is(textDecoder.decode(stdout), 'foo');
 });
 
 const checkEncoding = async (t, encoding) => {
@@ -109,6 +115,7 @@ test('stdin option can be a sync iterable of strings', async t => {
 });
 
 const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 const binaryFoo = textEncoder.encode('foo');
 const binaryBar = textEncoder.encode('bar');
 
@@ -223,7 +230,7 @@ test('input option can be a String', async t => {
 });
 
 test('input option can be a Uint8Array', async t => {
-	const {stdout} = await execa('stdin.js', {input: Uint8Array.from('foo', c => c.codePointAt(0))});
+	const {stdout} = await execa('stdin.js', {input: binaryFoo});
 	t.is(stdout, 'foo');
 });
 
@@ -511,7 +518,7 @@ test('input option can be used with $.sync', t => {
 });
 
 test('input option can be a Uint8Array - sync', t => {
-	const {stdout} = execaSync('stdin.js', {input: Uint8Array.from('foo', c => c.codePointAt(0))});
+	const {stdout} = execaSync('stdin.js', {input: binaryFoo});
 	t.is(stdout, 'foo');
 });
 

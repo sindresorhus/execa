@@ -1,3 +1,4 @@
+import {Buffer} from 'node:buffer';
 import path from 'node:path';
 import childProcess from 'node:child_process';
 import process from 'node:process';
@@ -59,6 +60,14 @@ const handleArguments = (file, args, options = {}) => {
 	}
 
 	return {file, args, options};
+};
+
+const handleOutputSync = (options, value, error) => {
+	if (options.encoding === 'buffer' && Buffer.isBuffer(value)) {
+		value = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+	}
+
+	return handleOutput(options, value, error);
 };
 
 const handleOutput = (options, value, error) => {
@@ -192,8 +201,8 @@ export function execaSync(file, args, options) {
 	}
 
 	pipeOutputSync(stdioStreams, result);
-	const stdout = handleOutput(parsed.options, result.stdout, result.error);
-	const stderr = handleOutput(parsed.options, result.stderr, result.error);
+	const stdout = handleOutputSync(parsed.options, result.stdout, result.error);
+	const stderr = handleOutputSync(parsed.options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError({

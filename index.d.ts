@@ -97,7 +97,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	/**
 	[How to setup](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
-	- `'pipe'`: sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
+	- `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
 	- `'overlapped'`: like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: do not use `stdin`.
 	- `'ipc'`: sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.

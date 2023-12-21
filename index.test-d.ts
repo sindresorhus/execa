@@ -151,6 +151,7 @@ execa('unicorns', {input: ''});
 execa('unicorns', {input: new Uint8Array()});
 execa('unicorns', {input: process.stdin});
 execa('unicorns', {inputFile: ''});
+execa('unicorns', {inputFile: new URL('file:///test')});
 execa('unicorns', {stdin: 'pipe'});
 execa('unicorns', {stdin: 'overlapped'});
 execa('unicorns', {stdin: 'ipc'});

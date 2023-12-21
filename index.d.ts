@@ -307,7 +307,7 @@ export type Options<EncodingType extends EncodingOption = DefaultEncodingOption>
 
 	If the input is not a file, use the `input` option instead.
 	*/
-	readonly inputFile?: string;
+	readonly inputFile?: string | URL;
 } & CommonOptions<EncodingType>;
 
 export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {

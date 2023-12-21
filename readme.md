@@ -718,7 +718,7 @@ Sets the group identity of the process.
 
 #### shell
 
-Type: `boolean | string`\
+Type: `boolean | string | URL`\
 Default: `false`
 
 If `true`, runs `file` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.

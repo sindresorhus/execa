@@ -256,7 +256,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default false
 	*/
-	readonly shell?: boolean | string;
+	readonly shell?: boolean | string | URL;
 
 	/**
 	Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'`, then `stdout` and `stderr` will be a `Uint8Array` instead of a string.

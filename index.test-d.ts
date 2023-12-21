@@ -148,6 +148,7 @@ expectError(execa('unicorns', {encoding: 'unknownEncoding'}));
 execa('unicorns', {execPath: '/path'});
 execa('unicorns', {buffer: false});
 execa('unicorns', {input: ''});
+execa('unicorns', {input: new Uint8Array()});
 execa('unicorns', {input: process.stdin});
 execa('unicorns', {inputFile: ''});
 execa('unicorns', {stdin: 'pipe'});

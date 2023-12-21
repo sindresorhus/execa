@@ -6,7 +6,7 @@ import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync, $} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdinOption, getStdoutOption, getStderrOption, getInputFileOption, getScriptSync, identity} from '../helpers/stdio.js';
+import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption, getInputFileOption, getScriptSync, identity} from '../helpers/stdio.js';
 
 setFixtureDir();
 
@@ -45,16 +45,22 @@ const testOutputFile = async (t, mapFile, fixtureName, getOptions, execaMethod) 
 
 test('stdout can be a file URL', testOutputFile, pathToFileURL, 'noop.js', getStdoutOption, execa);
 test('stderr can be a file URL', testOutputFile, pathToFileURL, 'noop-err.js', getStderrOption, execa);
+test('stdio[*] can be a file URL', testOutputFile, pathToFileURL, 'noop-fd3.js', getStdioOption, execa);
 test('stdout can be an absolute file path', testOutputFile, identity, 'noop.js', getStdoutOption, execa);
 test('stderr can be an absolute file path', testOutputFile, identity, 'noop-err.js', getStderrOption, execa);
+test('stdio[*] can be an absolute file path', testOutputFile, identity, 'noop-fd3.js', getStdioOption, execa);
 test('stdout can be a relative file path', testOutputFile, getRelativePath, 'noop.js', getStdoutOption, execa);
 test('stderr can be a relative file path', testOutputFile, getRelativePath, 'noop-err.js', getStderrOption, execa);
+test('stdio[*] can be a relative file path', testOutputFile, getRelativePath, 'noop-fd3.js', getStdioOption, execa);
 test('stdout can be a file URL - sync', testOutputFile, pathToFileURL, 'noop.js', getStdoutOption, execaSync);
 test('stderr can be a file URL - sync', testOutputFile, pathToFileURL, 'noop-err.js', getStderrOption, execaSync);
+test('stdio[*] can be a file URL - sync', testOutputFile, pathToFileURL, 'noop-fd3.js', getStdioOption, execaSync);
 test('stdout can be an absolute file path - sync', testOutputFile, identity, 'noop.js', getStdoutOption, execaSync);
 test('stderr can be an absolute file path - sync', testOutputFile, identity, 'noop-err.js', getStderrOption, execaSync);
+test('stdio[*] can be an absolute file path - sync', testOutputFile, identity, 'noop-fd3.js', getStdioOption, execaSync);
 test('stdout can be a relative file path - sync', testOutputFile, getRelativePath, 'noop.js', getStdoutOption, execaSync);
 test('stderr can be a relative file path - sync', testOutputFile, getRelativePath, 'noop-err.js', getStderrOption, execaSync);
+test('stdio[*] can be a relative file path - sync', testOutputFile, getRelativePath, 'noop-fd3.js', getStdioOption, execaSync);
 
 const testStdioNonFileUrl = (t, getOptions, execaMethod) => {
 	t.throws(() => {
@@ -66,10 +72,12 @@ test('inputFile cannot be a non-file URL', testStdioNonFileUrl, getInputFileOpti
 test('stdin cannot be a non-file URL', testStdioNonFileUrl, getStdinOption, execa);
 test('stdout cannot be a non-file URL', testStdioNonFileUrl, getStdoutOption, execa);
 test('stderr cannot be a non-file URL', testStdioNonFileUrl, getStderrOption, execa);
+test('stdio[*] cannot be a non-file URL', testStdioNonFileUrl, getStdioOption, execa);
 test('inputFile cannot be a non-file URL - sync', testStdioNonFileUrl, getInputFileOption, execaSync);
 test('stdin cannot be a non-file URL - sync', testStdioNonFileUrl, getStdinOption, execaSync);
 test('stdout cannot be a non-file URL - sync', testStdioNonFileUrl, getStdoutOption, execaSync);
 test('stderr cannot be a non-file URL - sync', testStdioNonFileUrl, getStderrOption, execaSync);
+test('stdio[*] cannot be a non-file URL - sync', testStdioNonFileUrl, getStdioOption, execaSync);
 
 const testInputFileValidUrl = async (t, execaMethod) => {
 	const filePath = tempfile();
@@ -98,9 +106,11 @@ const testStdioValidUrl = (t, getOptions, execaMethod) => {
 test('stdin must start with . when being a relative file path', testStdioValidUrl, getStdinOption, execa);
 test('stdout must start with . when being a relative file path', testStdioValidUrl, getStdoutOption, execa);
 test('stderr must start with . when being a relative file path', testStdioValidUrl, getStderrOption, execa);
+test('stdio[*] must start with . when being a relative file path', testStdioValidUrl, getStdioOption, execa);
 test('stdin must start with . when being a relative file path - sync', testStdioValidUrl, getStdinOption, execaSync);
 test('stdout must start with . when being a relative file path - sync', testStdioValidUrl, getStdoutOption, execaSync);
 test('stderr must start with . when being a relative file path - sync', testStdioValidUrl, getStderrOption, execaSync);
+test('stdio[*] must start with . when being a relative file path - sync', testStdioValidUrl, getStdioOption, execaSync);
 
 const testFileError = async (t, mapFile, getOptions) => {
 	await t.throwsAsync(
@@ -113,10 +123,12 @@ test('inputFile file URL errors should be handled', testFileError, pathToFileURL
 test('stdin file URL errors should be handled', testFileError, pathToFileURL, getStdinOption);
 test('stdout file URL errors should be handled', testFileError, pathToFileURL, getStdoutOption);
 test('stderr file URL errors should be handled', testFileError, pathToFileURL, getStderrOption);
+test('stdio[*] file URL errors should be handled', testFileError, pathToFileURL, getStdioOption);
 test('inputFile file path errors should be handled', testFileError, identity, getInputFileOption);
 test('stdin file path errors should be handled', testFileError, identity, getStdinOption);
 test('stdout file path errors should be handled', testFileError, identity, getStdoutOption);
 test('stderr file path errors should be handled', testFileError, identity, getStderrOption);
+test('stdio[*] file path errors should be handled', testFileError, identity, getStdioOption);
 
 const testFileErrorSync = (t, mapFile, getOptions) => {
 	t.throws(() => {
@@ -128,10 +140,12 @@ test('inputFile file URL errors should be handled - sync', testFileErrorSync, pa
 test('stdin file URL errors should be handled - sync', testFileErrorSync, pathToFileURL, getStdinOption);
 test('stdout file URL errors should be handled - sync', testFileErrorSync, pathToFileURL, getStdoutOption);
 test('stderr file URL errors should be handled - sync', testFileErrorSync, pathToFileURL, getStderrOption);
+test('stdio[*] file URL errors should be handled - sync', testFileErrorSync, pathToFileURL, getStdioOption);
 test('inputFile file path errors should be handled - sync', testFileErrorSync, identity, getInputFileOption);
 test('stdin file path errors should be handled - sync', testFileErrorSync, identity, getStdinOption);
 test('stdout file path errors should be handled - sync', testFileErrorSync, identity, getStdoutOption);
 test('stderr file path errors should be handled - sync', testFileErrorSync, identity, getStderrOption);
+test('stdio[*] file path errors should be handled - sync', testFileErrorSync, identity, getStdioOption);
 
 const testInputFile = async (t, execaMethod) => {
 	const inputFile = tempfile();

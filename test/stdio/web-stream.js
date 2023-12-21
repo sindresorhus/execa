@@ -2,7 +2,7 @@ import {Readable} from 'node:stream';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdinOption, getStdoutOption, getStderrOption} from '../helpers/stdio.js';
+import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption} from '../helpers/stdio.js';
 
 setFixtureDir();
 
@@ -13,6 +13,7 @@ const testReadableStream = async (t, fixtureName, getOptions) => {
 };
 
 test('stdin can be a ReadableStream', testReadableStream, 'stdin.js', getStdinOption);
+test('stdio[*] can be a ReadableStream', testReadableStream, 'stdin-fd3.js', getStdioOption);
 
 const testWritableStream = async (t, fixtureName, getOptions) => {
 	const result = [];
@@ -27,6 +28,7 @@ const testWritableStream = async (t, fixtureName, getOptions) => {
 
 test('stdout can be a WritableStream', testWritableStream, 'noop.js', getStdoutOption);
 test('stderr can be a WritableStream', testWritableStream, 'noop-err.js', getStderrOption);
+test('stdio[*] can be a WritableStream', testWritableStream, 'noop-fd3.js', getStdioOption);
 
 const testWebStreamSync = (t, StreamClass, getOptions, optionName) => {
 	t.throws(() => {
@@ -35,8 +37,10 @@ const testWebStreamSync = (t, StreamClass, getOptions, optionName) => {
 };
 
 test('stdin cannot be a ReadableStream - sync', testWebStreamSync, ReadableStream, getStdinOption, 'stdin');
+test('stdio[*] cannot be a ReadableStream - sync', testWebStreamSync, ReadableStream, getStdioOption, 'stdio[3]');
 test('stdout cannot be a WritableStream - sync', testWebStreamSync, WritableStream, getStdoutOption, 'stdout');
 test('stderr cannot be a WritableStream - sync', testWebStreamSync, WritableStream, getStderrOption, 'stderr');
+test('stdio[*] cannot be a WritableStream - sync', testWebStreamSync, WritableStream, getStdioOption, 'stdio[3]');
 
 const testWritableStreamError = async (t, getOptions) => {
 	const writableStream = new WritableStream({
@@ -50,3 +54,4 @@ const testWritableStreamError = async (t, getOptions) => {
 
 test('stdout option handles errors in WritableStream', testWritableStreamError, getStdoutOption);
 test('stderr option handles errors in WritableStream', testWritableStreamError, getStderrOption);
+test('stdio[*] option handles errors in WritableStream', testWritableStreamError, getStdioOption);

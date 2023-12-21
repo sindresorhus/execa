@@ -3,11 +3,12 @@ import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdinOption, getStdoutOption, getStderrOption} from '../helpers/stdio.js';
+import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption} from '../helpers/stdio.js';
 
 setFixtureDir();
 
 const getStdinProp = ({stdin}) => stdin;
+const getStdioProp = ({stdio}) => stdio[3];
 
 const testFileDescriptorOption = async (t, fixtureName, getOptions, execaMethod) => {
 	const filePath = tempfile();
@@ -19,8 +20,10 @@ const testFileDescriptorOption = async (t, fixtureName, getOptions, execaMethod)
 
 test('pass `stdout` to a file descriptor', testFileDescriptorOption, 'noop.js', getStdoutOption, execa);
 test('pass `stderr` to a file descriptor', testFileDescriptorOption, 'noop-err.js', getStderrOption, execa);
+test('pass `stdio[*]` to a file descriptor', testFileDescriptorOption, 'noop-fd3.js', getStdioOption, execa);
 test('pass `stdout` to a file descriptor - sync', testFileDescriptorOption, 'noop.js', getStdoutOption, execaSync);
 test('pass `stderr` to a file descriptor - sync', testFileDescriptorOption, 'noop-err.js', getStderrOption, execaSync);
+test('pass `stdio[*]` to a file descriptor - sync', testFileDescriptorOption, 'noop-fd3.js', getStdioOption, execaSync);
 
 const testStdinWrite = async (t, getStreamProp, fixtureName, getOptions) => {
 	const subprocess = execa(fixtureName, getOptions('pipe'));
@@ -30,3 +33,4 @@ const testStdinWrite = async (t, getStreamProp, fixtureName, getOptions) => {
 };
 
 test('you can write to child.stdin', testStdinWrite, getStdinProp, 'stdin.js', getStdinOption);
+test('you can write to child.stdio[*]', testStdinWrite, getStdioProp, 'stdin-fd3.js', getStdioOption);

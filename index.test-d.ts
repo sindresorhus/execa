@@ -146,6 +146,7 @@ execa('unicorns', {localDir: '.'});
 execa('unicorns', {localDir: new URL('file:///test')});
 expectError(execa('unicorns', {encoding: 'unknownEncoding'}));
 execa('unicorns', {execPath: '/path'});
+execa('unicorns', {execPath: new URL('file:///test')});
 execa('unicorns', {buffer: false});
 execa('unicorns', {input: ''});
 execa('unicorns', {input: new Uint8Array()});

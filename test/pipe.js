@@ -1,6 +1,6 @@
 import {PassThrough, Readable} from 'node:stream';
 import {spawn} from 'node:child_process';
-import {readFile} from 'node:fs/promises';
+import {readFile, rm} from 'node:fs/promises';
 import tempfile from 'tempfile';
 import test from 'ava';
 import getStream from 'get-stream';
@@ -32,10 +32,11 @@ test('pipeAll() can pipe stdout to streams', pipeToStream, 'noop.js', 'pipeAll',
 test('pipeAll() can pipe stderr to streams', pipeToStream, 'noop-err.js', 'pipeAll', 'stderr');
 
 const pipeToFile = async (t, fixtureName, funcName, streamName) => {
-	const file = tempfile({extension: '.txt'});
+	const file = tempfile();
 	const result = await execa(fixtureName, ['test'], {all: true})[funcName](file);
 	t.is(result[streamName], 'test');
 	t.is(await readFile(file, 'utf8'), 'test\n');
+	await rm(file);
 };
 
 // `test.serial()` is due to a race condition: `execa(...).pipe*(file)` might resolve before the file stream has resolved

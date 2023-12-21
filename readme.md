@@ -253,9 +253,9 @@ Arguments are [automatically escaped](#shell-syntax). They can contain any chara
 This is the preferred method when executing Node.js files.
 
 Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
-  - the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
-  - the [`shell`](#shell) option cannot be used
-  - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
+- the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
+- the [`shell`](#shell) option cannot be used
+- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
 
 #### $\`command\`
 
@@ -274,8 +274,8 @@ For more information, please see [this section](#scripts-interface) and [this pa
 Returns a new instance of [`$`](#command) but with different default `options`. Consecutive calls are merged to previous ones.
 
 This can be used to either:
-  - Set options for a specific command: `` $(options)`command` ``
-  - Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand`; ``
+- Set options for a specific command: `` $(options)`command` ``
+- Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand`; ``
 
 #### execaCommand(command, options?)
 
@@ -311,8 +311,8 @@ For all the [methods above](#methods), no shell interpreter (Bash, cmd.exe, etc.
 ### childProcess
 
 The return value of all [asynchronous methods](#methods) is both:
-  - a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
-  - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
+- a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
+- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
 
 #### kill(signal?, options?)
 
@@ -336,15 +336,16 @@ Type: `ReadableStream | undefined`
 Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 This is `undefined` if either:
-  - the [`all` option](#all-2) is `false` (the default value)
-  - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `Stream` or `integer`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio)
+- the [`all` option](#all-2) is `false` (the default value)
+- the [synchronous methods](#execasyncfile-arguments-options) are used
+- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### pipeStdout(target)
 
 [Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
-  - Another [`execa()` return value](#pipe-multiple-processes)
-  - A [writable stream](#save-and-pipe-output-from-a-child-process)
-  - A [file path string](#redirect-output-to-a-file)
+- Another [`execa()` return value](#pipe-multiple-processes)
+- A [writable stream](#save-and-pipe-output-from-a-child-process)
+- A [file path string](#redirect-output-to-a-file)
 
 If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
 
@@ -400,15 +401,19 @@ The numeric exit code of the process that was run.
 
 #### stdout
 
-Type: `string | Uint8Array`
+Type: `string | Uint8Array | undefined`
 
-The output of the process on stdout.
+The output of the process on `stdout`.
+
+This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 
 #### stderr
 
-Type: `string | Uint8Array`
+Type: `string | Uint8Array | undefined`
 
-The output of the process on stderr.
+The output of the process on `stderr`.
+
+This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 
 #### all
 
@@ -417,8 +422,9 @@ Type: `string | Uint8Array | undefined`
 The output of the process with `stdout` and `stderr` interleaved.
 
 This is `undefined` if either:
-  - the [`all` option](#all-2) is `false` (the default value)
-  - `execaSync()` was used
+- the [`all` option](#all-2) is `false` (the default value)
+- the [synchronous methods](#execasyncfile-arguments-options) are used
+- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### failed
 
@@ -445,16 +451,16 @@ You can cancel the spawned process using the [`signal`](#signal-1) option.
 Type: `boolean`
 
 Whether the process was terminated using either:
-  - [`childProcess.kill()`](#killsignal-options).
-  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+- [`childProcess.kill()`](#killsignal-options).
+- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 #### signal
 
 Type: `string | undefined`
 
 The name of the signal (like `SIGFPE`) that terminated the process using either:
-  - [`childProcess.kill()`](#killsignal-options).
-  - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+- [`childProcess.kill()`](#killsignal-options).
+- A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
 
@@ -478,19 +484,19 @@ Type: `string`
 
 Error message when the child process failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the child process errored.
 
-The child process [stderr](#stderr) then [stdout](#stdout) are appended to the end, separated with newlines and not interleaved.
+The child process [`stderr`](#stderr) then [`stdout`](#stdout) are appended to the end, separated with newlines and not interleaved.
 
 #### shortMessage
 
 Type: `string`
 
-This is the same as the [`message` property](#message) except it does not include the child process stdout/stderr.
+This is the same as the [`message` property](#message) except it does not include the child process `stdout`/`stderr`.
 
 #### originalMessage
 
 Type: `string | undefined`
 
-Original error message. This is the same as the `message` property except it includes neither the child process stdout/stderr nor some additional information added by Execa.
+Original error message. This is the same as the `message` property excluding the child process `stdout`/`stderr` and some additional information added by Execa.
 
 This is `undefined` unless the child process exited due to an `error` event or a timeout.
 
@@ -548,45 +554,86 @@ If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stder
 
 Type: `string | Uint8Array | stream.Readable`
 
-Write some input to the `stdin` of your binary.\
-Streams are not allowed when using the synchronous methods.
+Write some input to the child process' `stdin`.\
+Streams are not allowed when using the [synchronous methods](#execasyncfile-arguments-options).
 
-If the input is a file, use the [`inputFile` option](#inputfile) instead.
+See also the [`inputFile`](#inputfile) and [`stdin`](#stdin) options.
 
 #### inputFile
 
 Type: `string | URL`
 
-Use a file as input to the the `stdin` of your binary.
+Use a file as input to the child process' `stdin`.
 
-If the input is not a file, use the [`input` option](#input) instead.
+See also the [`input`](#input) and [`stdin`](#stdin) options.
 
 #### stdin
 
-Type: `string | number | stream.Readable | ReadableStream | undefined | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
+Type: `string | number | stream.Readable | ReadableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>`\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
-Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
+- `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
+- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
+- `'ignore'`: Do not use `stdin`.
+- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
+- `'inherit'`: Re-use the current process' `stdin`.
+- an integer: Re-use a specific file descriptor from the current process.
+- a Node.js `Readable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
-It can also be a file path, a file URL, a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols), unless either [`execaSync()`](#execasyncfile-arguments-options), the [`input` option](#input) or the [`inputFile` option](#inputfile) is used. If the file path is relative, it must start with `.`.
+Unless either the [synchronous methods](#execasyncfile-arguments-options), the [`input` option](#input) or the [`inputFile` option](#inputfile) is used, the value can also be a:
+- file path. If relative, it must start with `.`.
+- file URL.
+- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
 #### stdout
 
-Type: `string | number | stream.Writable | WritableStream | undefined | URL`\
+Type: `string | number | stream.Writable | WritableStream | URL`\
 Default: `pipe`
 
-Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
+- `'pipe'`: Sets [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) stream.
+- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
+- `'ignore'`: Do not use `stdout`.
+- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
+- `'inherit'`: Re-use the current process' `stdout`.
+- an integer: Re-use a specific file descriptor from the current process.
+- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
-It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
+Unless either [synchronous methods](#execasyncfile-arguments-options), the value can also be a:
+- file path. If relative, it must start with `.`.
+- file URL.
+- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 #### stderr
 
-Type: `string | number | stream.Writable | WritableStream | undefined | URL`\
+Type: `string | number | stream.Writable | WritableStream | URL`\
 Default: `pipe`
 
-Same options as [`stdio`](https://nodejs.org/dist/latest-v6.x/docs/api/child_process.html#child_process_options_stdio).
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
+- `'pipe'`: Sets [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) stream.
+- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
+- `'ignore'`: Do not use `stderr`.
+- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
+- `'inherit'`: Re-use the current process' `stderr`.
+- an integer: Re-use a specific file descriptor from the current process.
+- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
 
-It can also be a file path, a file URL, a web stream ([`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)), unless [`execaSync()`](#execasyncfile-arguments-options) is used. If the file path is relative, it must start with `.`.
+Unless either [synchronous methods](#execasyncfile-arguments-options), the value can also be a:
+- file path. If relative, it must start with `.`.
+- file URL.
+- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+
+#### stdio
+
+Type: `string | [StdinOption, StdoutOption, StderrOption] | StdioOption[]`\
+Default: `pipe`
+
+Like the [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options but for all file descriptors at once.\
+The possible values are the same except it can also be:
+- a single string, to set the same value to each standard stream.
+- an array with more than 3 values, to create more than 3 file descriptors.
 
 #### all
 
@@ -639,13 +686,6 @@ Environment key-value pairs. Extends automatically from `process.env`. Set [`ext
 Type: `string`
 
 Explicitly set the value of `argv[0]` sent to the child process. This will be set to `file` if not specified.
-
-#### stdio
-
-Type: `string | string[]`\
-Default: `pipe`
-
-Child's [stdio](https://nodejs.org/api/child_process.html#child_process_options_stdio) configuration.
 
 #### serialization
 

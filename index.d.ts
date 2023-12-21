@@ -367,7 +367,7 @@ export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOpt
 
 	@default process.execPath
 	*/
-	readonly nodePath?: string;
+	readonly nodePath?: string | URL;
 
 	/**
 	List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.

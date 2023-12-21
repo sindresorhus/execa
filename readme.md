@@ -789,7 +789,7 @@ This can also be enabled by setting the `NODE_DEBUG=execa` environment variable 
 
 #### nodePath *(For `.node()` only)*
 
-Type: `string`\
+Type: `string | URL`\
 Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
 
 Node.js executable used to create the child process.

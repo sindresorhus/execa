@@ -63,7 +63,7 @@ const handleArguments = (file, args, options = {}) => {
 };
 
 const handleOutputSync = (options, value, error) => {
-	if (options.encoding === 'buffer' && Buffer.isBuffer(value)) {
+	if (Buffer.isBuffer(value)) {
 		value = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
 	}
 

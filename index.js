@@ -2,6 +2,7 @@ import {Buffer} from 'node:buffer';
 import path from 'node:path';
 import childProcess from 'node:child_process';
 import process from 'node:process';
+import {fileURLToPath} from 'node:url';
 import crossSpawn from 'cross-spawn';
 import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
@@ -27,6 +28,18 @@ const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) =>
 	}
 
 	return env;
+};
+
+const getFilePath = file => {
+	if (file instanceof URL) {
+		return fileURLToPath(file);
+	}
+
+	if (typeof file !== 'string') {
+		throw new TypeError('First argument must be a string or a file URL.');
+	}
+
+	return file;
 };
 
 const handleArguments = (file, args, options = {}) => {
@@ -84,12 +97,13 @@ const handleOutput = (options, value, error) => {
 };
 
 export function execa(file, args, options) {
-	const parsed = handleArguments(file, args, options);
+	const filePath = getFilePath(file);
+	const parsed = handleArguments(filePath, args, options);
 	const stdioStreams = handleInputAsync(parsed.options);
 	validateTimeout(parsed.options);
 
-	const command = joinCommand(file, args);
-	const escapedCommand = getEscapedCommand(file, args);
+	const command = joinCommand(filePath, args);
+	const escapedCommand = getEscapedCommand(filePath, args);
 	logCommand(escapedCommand, parsed.options);
 
 	let spawned;
@@ -176,11 +190,12 @@ export function execa(file, args, options) {
 }
 
 export function execaSync(file, args, options) {
-	const parsed = handleArguments(file, args, options);
+	const filePath = getFilePath(file);
+	const parsed = handleArguments(filePath, args, options);
 	const stdioStreams = handleInputSync(parsed.options);
 
-	const command = joinCommand(file, args);
-	const escapedCommand = getEscapedCommand(file, args);
+	const command = joinCommand(filePath, args);
+	const escapedCommand = getEscapedCommand(filePath, args);
 	logCommand(escapedCommand, parsed.options);
 
 	let result;
@@ -302,7 +317,7 @@ export function execaNode(scriptPath, args, options = {}) {
 		nodePath,
 		[
 			...nodeOptions,
-			scriptPath,
+			getFilePath(scriptPath),
 			...(Array.isArray(args) ? args : []),
 		],
 		{

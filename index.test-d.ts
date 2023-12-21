@@ -230,7 +230,9 @@ execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: false});
 execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: 42});
 execa('unicorns').kill('SIGKILL', {forceKillAfterTimeout: undefined});
 
+expectError(execa(['unicorns', 'arg']));
 expectType<ExecaChildProcess>(execa('unicorns'));
+expectType<ExecaChildProcess>(execa(new URL('file:///test')));
 expectType<ExecaReturnValue>(await execa('unicorns'));
 expectType<ExecaReturnValue>(
 	await execa('unicorns', {encoding: 'utf8'}),
@@ -243,7 +245,9 @@ expectType<ExecaReturnValue<Uint8Array>>(
 	await execa('unicorns', ['foo'], {encoding: 'buffer'}),
 );
 
+expectError(execaSync(['unicorns', 'arg']));
 expectType<ExecaSyncReturnValue>(execaSync('unicorns'));
+expectType<ExecaSyncReturnValue>(execaSync(new URL('file:///test')));
 expectType<ExecaSyncReturnValue>(
 	execaSync('unicorns', {encoding: 'utf8'}),
 );
@@ -270,8 +274,10 @@ expectType<ExecaSyncReturnValue<Uint8Array>>(execaCommandSync('unicorns', {encod
 expectType<ExecaSyncReturnValue>(execaCommandSync('unicorns foo', {encoding: 'utf8'}));
 expectType<ExecaSyncReturnValue<Uint8Array>>(execaCommandSync('unicorns foo', {encoding: 'buffer'}));
 
+expectError(execaNode(['unicorns', 'arg']));
 expectType<ExecaChildProcess>(execaNode('unicorns'));
 expectType<ExecaReturnValue>(await execaNode('unicorns'));
+expectType<ExecaReturnValue>(await execaNode(new URL('file:///test')));
 expectType<ExecaReturnValue>(
 	await execaNode('unicorns', {encoding: 'utf8'}),
 );

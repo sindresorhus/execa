@@ -552,13 +552,13 @@ ExecaChildPromise<StdoutStderrType> &
 Promise<ExecaReturnValue<StdoutStderrType>>;
 
 /**
-Executes a command using `file ...arguments`. `arguments` are specified as an array of strings. Returns a `childProcess`.
+Executes a command using `file ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a `childProcess`.
 
 Arguments are automatically escaped. They can contain any character, including spaces.
 
 This is the preferred method when executing single commands.
 
-@param file - The program/script to execute.
+@param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
 @returns An `ExecaChildProcess` that is both:
 	- a `Promise` resolving or rejecting with a `childProcessResult`.
@@ -663,18 +663,19 @@ setTimeout(() => {
 ```
 */
 export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	file: string,
+	file: string | URL,
 	arguments?: readonly string[],
 	options?: Options<EncodingType>
 ): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	file: string, options?: Options<EncodingType>
+	file: string | URL,
+	options?: Options<EncodingType>
 ): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 
 /**
 Same as `execa()` but synchronous.
 
-@param file - The program/script to execute.
+@param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
 @returns A `childProcessResult` object
 @throws A `childProcessResult` error
@@ -732,12 +733,13 @@ try {
 ```
 */
 export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	file: string,
+	file: string | URL,
 	arguments?: readonly string[],
 	options?: SyncOptions<EncodingType>
 ): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
 export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	file: string, options?: SyncOptions<EncodingType>
+	file: string | URL,
+	options?: SyncOptions<EncodingType>
 ): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
 
 /**
@@ -982,7 +984,7 @@ await $$`echo rainbows`;
 export const $: Execa$;
 
 /**
-Execute a Node.js script as a child process.
+Executes a Node.js file using `node scriptPath ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a `childProcess`.
 
 Arguments are automatically escaped. They can contain any character, including spaces.
 
@@ -993,7 +995,7 @@ Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_pr
   - the `shell` option cannot be used
   - an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to `stdio`
 
-@param scriptPath - Node.js script to execute.
+@param scriptPath - Node.js script to execute, as a string or file URL
 @param arguments - Arguments to pass to `scriptPath` on execution.
 @returns An `ExecaChildProcess` that is both:
 	- a `Promise` resolving or rejecting with a `childProcessResult`.
@@ -1008,10 +1010,11 @@ await execaNode('scriptPath', ['argument']);
 ```
 */
 export function execaNode<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	scriptPath: string,
+	scriptPath: string | URL,
 	arguments?: readonly string[],
 	options?: NodeOptions<EncodingType>
 ): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 export function execaNode<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	scriptPath: string, options?: NodeOptions<EncodingType>
+	scriptPath: string | URL,
+	options?: NodeOptions<EncodingType>
 ): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;

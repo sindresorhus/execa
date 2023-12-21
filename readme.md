@@ -238,7 +238,7 @@ setTimeout(() => {
 
 #### execa(file, arguments?, options?)
 
-Executes a command using `file ...arguments`. `arguments` are specified as an array of strings. Returns a [`childProcess`](#childprocess).
+Executes a command using `file ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a [`childProcess`](#childprocess).
 
 Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces.
 
@@ -246,7 +246,7 @@ This is the preferred method when executing single commands.
 
 #### execaNode(scriptPath, arguments?, options?)
 
-Executes a Node.js file using `node scriptPath ...arguments`. `arguments` are specified as an array of strings. Returns a [`childProcess`](#childprocess).
+Executes a Node.js file using `node scriptPath ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a [`childProcess`](#childprocess).
 
 Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces.
 

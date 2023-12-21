@@ -4,8 +4,8 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
 import getNode from 'get-node';
-import {execa, execaSync, $} from '../index.js';
-import {setFixtureDir, PATH_KEY} from './helpers/fixtures-dir.js';
+import {execa, execaSync, execaNode, $} from '../index.js';
+import {setFixtureDir, PATH_KEY, FIXTURES_DIR_URL} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
 process.env.FOO = 'foo';
@@ -261,3 +261,34 @@ test('detach child process', async t => {
 
 	process.kill(pid, 'SIGKILL');
 });
+
+const testFileUrl = async (t, execaMethod) => {
+	const command = new URL('noop.js', FIXTURES_DIR_URL);
+	const {stdout} = await execaMethod(command, ['foobar']);
+	t.is(stdout, 'foobar');
+};
+
+test('execa()\'s command argument can be a file URL', testFileUrl, execa);
+test('execaSync()\'s command argument can be a file URL', testFileUrl, execaSync);
+test('execaNode()\'s command argument can be a file URL', testFileUrl, execaNode);
+
+const testInvalidFileUrl = async (t, execaMethod) => {
+	const invalidUrl = new URL('https://invalid.com');
+	t.throws(() => {
+		execaMethod(invalidUrl);
+	}, {code: 'ERR_INVALID_URL_SCHEME'});
+};
+
+test('execa()\'s command argument cannot be a non-file URL', testInvalidFileUrl, execa);
+test('execaSync()\'s command argument cannot be a non-file URL', testInvalidFileUrl, execaSync);
+test('execaNode()\'s command argument cannot be a non-file URL', testInvalidFileUrl, execaNode);
+
+const testInvalidCommand = async (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod(['command', 'arg']);
+	}, {message: /must be a string or a file URL/});
+};
+
+test('execa()\'s command argument must be a string or file URL', testInvalidCommand, execa);
+test('execaSync()\'s command argument must be a string or file URL', testInvalidCommand, execaSync);
+test('execaNode()\'s command argument must be a string or file URL', testInvalidCommand, execaNode);

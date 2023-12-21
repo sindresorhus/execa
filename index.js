@@ -62,8 +62,16 @@ const handleArguments = (file, args, options = {}) => {
 	return {file, args, options};
 };
 
+const handleOutputSync = (options, value, error) => {
+	if (Buffer.isBuffer(value)) {
+		value = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+	}
+
+	return handleOutput(options, value, error);
+};
+
 const handleOutput = (options, value, error) => {
-	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
+	if (typeof value !== 'string' && !ArrayBuffer.isView(value)) {
 		// When `execaSync()` errors, we normalize it to '' to mimic `execa()`
 		return error === undefined ? undefined : '';
 	}
@@ -193,8 +201,8 @@ export function execaSync(file, args, options) {
 	}
 
 	pipeOutputSync(stdioStreams, result);
-	const stdout = handleOutput(parsed.options, result.stdout, result.error);
-	const stderr = handleOutput(parsed.options, result.stderr, result.error);
+	const stdout = handleOutputSync(parsed.options, result.stdout, result.error);
+	const stderr = handleOutputSync(parsed.options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError({

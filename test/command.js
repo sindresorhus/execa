@@ -131,13 +131,13 @@ test('$ allows execa return value array interpolation', async t => {
 });
 
 test('$ allows execa return value buffer interpolation', async t => {
-	const foo = await $({encoding: null})`echo.js foo`;
+	const foo = await $({encoding: 'buffer'})`echo.js foo`;
 	const {stdout} = await $`echo.js ${foo} bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$ allows execa return value buffer array interpolation', async t => {
-	const foo = await $({encoding: null})`echo.js foo`;
+	const foo = await $({encoding: 'buffer'})`echo.js foo`;
 	const {stdout} = await $`echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });
@@ -264,13 +264,13 @@ test('$.sync allows execa return value array interpolation', t => {
 });
 
 test('$.sync allows execa return value buffer interpolation', t => {
-	const foo = $({encoding: null}).sync`echo.js foo`;
+	const foo = $({encoding: 'buffer'}).sync`echo.js foo`;
 	const {stdout} = $.sync`echo.js ${foo} bar`;
 	t.is(stdout, 'foo\nbar');
 });
 
 test('$.sync allows execa return value buffer array interpolation', t => {
-	const foo = $({encoding: null}).sync`echo.js foo`;
+	const foo = $({encoding: 'buffer'}).sync`echo.js foo`;
 	const {stdout} = $.sync`echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
 });

@@ -333,7 +333,7 @@ Can be disabled with `false`.
 
 Type: `ReadableStream | undefined`
 
-Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
+Stream [combining/interleaving](#ensuring-all-output-is-interleaved) [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
@@ -419,7 +419,7 @@ This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, 
 
 Type: `string | Uint8Array | undefined`
 
-The output of the process with `stdout` and `stderr` interleaved.
+The output of the process with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
@@ -640,7 +640,7 @@ The possible values are the same except it can also be:
 Type: `boolean`\
 Default: `false`
 
-Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the process with `stdout` and `stderr` interleaved.
+Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the process with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
 
 #### reject
 
@@ -840,6 +840,8 @@ try {
 
 ### Execute the current package's binary
 
+Execa can be combined with [`get-bin-path`](https://github.com/ehmicky/get-bin-path) to test the current package's binary. As opposed to hard-coding the path to the binary, this validates that the `package.json` `bin` field is correctly set up.
+
 ```js
 import {getBinPath} from 'get-bin-path';
 
@@ -847,12 +849,43 @@ const binPath = await getBinPath();
 await execa(binPath);
 ```
 
-`execa` can be combined with [`get-bin-path`](https://github.com/ehmicky/get-bin-path) to test the current package's binary. As opposed to hard-coding the path to the binary, this validates that the `package.json` `bin` field is correctly set up.
+### Ensuring `all` output is interleaved
+
+The `all` [stream](#all) and [string/`Uint8Array`](#all-1) properties are guaranteed to interleave [`stdout`](#stdout) and [`stderr`](#stderr).
+
+However, for performance reasons, the child process might buffer and merge multiple simultaneous writes to `stdout` or `stderr`. This prevents proper interleaving.
+
+For example, this prints `1 3 2` instead of `1 2 3` because both `console.log()` are merged into a single write.
+
+```js
+import {execa} from 'execa';
+
+const {all} = await execa('node', ['example.js'], {all: true});
+console.log(all);
+```
+
+```js
+// example.js
+console.log('1'); // writes to stdout
+console.error('2'); // writes to stderr
+console.log('3'); // writes to stdout
+```
+
+This can be worked around by using `setTimeout()`.
+
+```js
+import {setTimeout} from 'timers/promises';
+
+console.log('1');
+console.error('2');
+await setTimeout(0);
+console.log('3');
+```
 
 ## Related
 
-- [gulp-execa](https://github.com/ehmicky/gulp-execa) - Gulp plugin for `execa`
-- [nvexeca](https://github.com/ehmicky/nvexeca) - Run `execa` using any Node.js version
+- [gulp-execa](https://github.com/ehmicky/gulp-execa) - Gulp plugin for Execa
+- [nvexeca](https://github.com/ehmicky/nvexeca) - Run Execa using any Node.js version
 - [sudo-prompt](https://github.com/jorangreef/sudo-prompt) - Run commands with elevated privileges.
 
 ## Maintainers

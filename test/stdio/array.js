@@ -216,7 +216,8 @@ test('stderr can be ["inherit", "pipe"]', testInheritStderr, ['inherit', 'pipe']
 test('stderr can be [2, "pipe"]', testInheritStderr, [2, 'pipe']);
 
 const testOverflowStream = async (t, stdio) => {
-	await t.notThrowsAsync(execa('empty.js', {stdio}));
+	const {stdout} = await execa('nested.js', [JSON.stringify({stdio}), 'empty.js'], {stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
+	t.is(stdout, '');
 };
 
 if (process.platform === 'linux') {

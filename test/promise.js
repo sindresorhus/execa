@@ -43,3 +43,11 @@ test('throw in finally bubbles up on error', async t => {
 	}));
 	t.is(message, 'called');
 });
+
+const testNoAwait = async (t, fixtureName, options, message) => {
+	const {stdout} = await execa('no-await.js', [JSON.stringify(options), fixtureName]);
+	t.true(stdout.includes(message));
+};
+
+test('Throws if promise is not awaited and process fails', testNoAwait, 'fail.js', {}, 'exit code 2');
+test('Throws if promise is not awaited and process times out', testNoAwait, 'forever.js', {timeout: 1}, 'timed out');

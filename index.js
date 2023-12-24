@@ -6,7 +6,6 @@ import {fileURLToPath} from 'node:url';
 import crossSpawn from 'cross-spawn';
 import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
-import onetime from 'onetime';
 import {makeError} from './lib/error.js';
 import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
@@ -127,27 +126,27 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		return dummySpawned;
 	}
 
-	const spawnedPromise = getSpawnedPromise(spawned);
-	const timedPromise = setupTimeout(spawned, options, spawnedPromise);
-	const processDone = setExitHandler(spawned, options, timedPromise);
-
 	const context = {isCanceled: false};
 
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
-
-	const handlePromiseOnce = onetime(handlePromise.bind(undefined, {spawned, options, context, stdioStreams, command, escapedCommand, processDone}));
 
 	pipeOutputAsync(spawned, stdioStreams);
 
 	spawned.all = makeAllStream(spawned, options);
 
 	addPipeMethods(spawned);
-	mergePromise(spawned, handlePromiseOnce);
+
+	const promise = handlePromise({spawned, options, context, stdioStreams, command, escapedCommand});
+	mergePromise(spawned, promise);
 	return spawned;
 }
 
-const handlePromise = async ({spawned, options, context, stdioStreams, command, escapedCommand, processDone}) => {
+const handlePromise = async ({spawned, options, context, stdioStreams, command, escapedCommand}) => {
+	const spawnedPromise = getSpawnedPromise(spawned);
+	const timedPromise = setupTimeout(spawned, options, spawnedPromise);
+	const processDone = setExitHandler(spawned, options, timedPromise);
+
 	const [
 		{error, exitCode, signal, timedOut},
 		stdoutResult,

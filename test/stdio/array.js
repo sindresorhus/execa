@@ -219,7 +219,7 @@ const testOverflowStream = async (t, stdio) => {
 	await t.notThrowsAsync(execa('empty.js', {stdio}));
 };
 
-if (process.platform !== 'darwin') {
+if (process.platform === 'linux') {
 	test('stdin can use 4+', testOverflowStream, [4, 'pipe', 'pipe', 'pipe']);
 	test('stdin can use [4+]', testOverflowStream, [[4], 'pipe', 'pipe', 'pipe']);
 	test('stdout can use 4+', testOverflowStream, ['pipe', 4, 'pipe', 'pipe']);

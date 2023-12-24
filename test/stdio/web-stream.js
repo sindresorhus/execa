@@ -1,4 +1,5 @@
 import {Readable} from 'node:stream';
+import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
@@ -41,6 +42,22 @@ test('stdio[*] cannot be a ReadableStream - sync', testWebStreamSync, ReadableSt
 test('stdout cannot be a WritableStream - sync', testWebStreamSync, WritableStream, getStdoutOption, 'stdout');
 test('stderr cannot be a WritableStream - sync', testWebStreamSync, WritableStream, getStderrOption, 'stderr');
 test('stdio[*] cannot be a WritableStream - sync', testWebStreamSync, WritableStream, getStdioOption, 'stdio[3]');
+
+const testLongWritableStream = async (t, getOptions) => {
+	let result = false;
+	const writableStream = new WritableStream({
+		async close() {
+			await setTimeout(0);
+			result = true;
+		},
+	});
+	await execa('empty.js', getOptions(writableStream));
+	t.true(result);
+};
+
+test('stdout waits for WritableStream completion', testLongWritableStream, getStdoutOption);
+test('stderr waits for WritableStream completion', testLongWritableStream, getStderrOption);
+test('stdio[*] waits for WritableStream completion', testLongWritableStream, getStdioOption);
 
 const testWritableStreamError = async (t, getOptions) => {
 	const writableStream = new WritableStream({

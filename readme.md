@@ -569,7 +569,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 
 #### stdin
 
-Type: `string | number | stream.Readable | ReadableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array> | StdioOption[]`\
+Type: `string | number | stream.Readable | ReadableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>` (or a tuple of those types)\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
@@ -591,7 +591,7 @@ This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destina
 
 #### stdout
 
-Type: `string | number | stream.Writable | WritableStream | URL | StdoutOption[]`\
+Type: `string | number | stream.Writable | WritableStream | URL` (or a tuple of those types)\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
@@ -612,7 +612,7 @@ This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destina
 
 #### stderr
 
-Type: `string | number | stream.Writable | WritableStream | URL | StderrOption[]`\
+Type: `string | number | stream.Writable | WritableStream | URL` (or a tuple of those types)`\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
@@ -633,13 +633,14 @@ This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destina
 
 #### stdio
 
-Type: `string | [StdinOption, StdoutOption, StderrOption] | StdioOption[]`\
+Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>>` (or a tuple of those types)\
 Default: `pipe`
 
-Like the [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options but for all file descriptors at once.\
-The possible values are the same except it can also be:
-- a single string, to set the same value to each standard stream.
-- an array with more than 3 values, to create more than 3 file descriptors.
+Like the [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options but for all file descriptors at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.
+
+A single string can be used as a shortcut. For example, `{stdio: 'pipe'}` is the same as `{stdin: 'pipe', stdout: 'pipe', stderr: 'pipe'}`.
+
+The array can have more than 3 items, to create additional file descriptors beyond `stdin`/`stdout`/`stderr`. For example, `{stdio: ['pipe', 'pipe', 'pipe', 'ipc']}` sets a fourth file descriptor `'ipc'`.
 
 #### all
 

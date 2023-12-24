@@ -70,6 +70,15 @@ test('result.all is undefined if ignored', async t => {
 	t.is(all, undefined);
 });
 
+const testAllIgnore = async (t, streamName, otherStreamName) => {
+	const childProcess = execa('noop.js', {[otherStreamName]: 'ignore', all: true});
+	t.is(childProcess.all, childProcess[streamName]);
+	await childProcess;
+};
+
+test('can use all: true with stdout: ignore', testAllIgnore, 'stderr', 'stdout');
+test('can use all: true with stderr: ignore', testAllIgnore, 'stdout', 'stderr');
+
 const testIgnore = async (t, streamName, execaMethod) => {
 	const result = await execaMethod('noop.js', {[streamName]: 'ignore'});
 	t.is(result[streamName], undefined);
@@ -143,14 +152,6 @@ test('buffer: false > promise rejects when process returns non-zero', async t =>
 test('buffer: false > emits end event when promise is rejected', async t => {
 	const subprocess = execa('wrong command', {buffer: false, reject: false});
 	await t.notThrowsAsync(Promise.all([subprocess, pEvent(subprocess.stdout, 'end')]));
-});
-
-test('can use all: true with stdout: ignore', async t => {
-	await t.notThrowsAsync(execa('max-buffer.js', {buffer: false, stdout: 'ignore', all: true}));
-});
-
-test('can use all: true with stderr: ignore', async t => {
-	await t.notThrowsAsync(execa('max-buffer.js', ['stderr'], {buffer: false, stderr: 'ignore', all: true}));
 });
 
 const BUFFER_TIMEOUT = 1e3;

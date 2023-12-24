@@ -830,7 +830,9 @@ When passing a Node.js stream to the [`stdin`](#stdin), [`stdout`](#stdout-1) or
 TypeError [ERR_INVALID_ARG_VALUE]: The argument 'stdio' is invalid.
 ```
 
-This limitation can be worked around by passing `[nodeStream, 'pipe']` instead of `nodeStream`.
+This limitation can be worked around by passing either:
+  - a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) or [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream))
+  - `[nodeStream, 'pipe']` instead of `nodeStream`
 
 ```diff
 - await execa(..., { stdout: nodeStream })

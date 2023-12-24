@@ -1,8 +1,9 @@
+import {once} from 'node:events';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption} from '../helpers/stdio.js';
-import {stringGenerator, binaryGenerator, asyncGenerator, throwingGenerator} from '../helpers/generator.js';
+import {stringGenerator, binaryGenerator, asyncGenerator, throwingGenerator, infiniteGenerator} from '../helpers/generator.js';
 
 setFixtureDir();
 
@@ -47,3 +48,16 @@ test('stdout option cannot be an iterable', testNoIterableOutput, getStdoutOptio
 test('stderr option cannot be an iterable', testNoIterableOutput, getStderrOption, execa);
 test('stdout option cannot be an iterable - sync', testNoIterableOutput, getStdoutOption, execaSync);
 test('stderr option cannot be an iterable - sync', testNoIterableOutput, getStderrOption, execaSync);
+
+test('stdin option can be an infinite iterable', async t => {
+	const {iterable, abort} = infiniteGenerator();
+	try {
+		const childProcess = execa('stdin.js', getStdinOption(iterable));
+		const stdout = await once(childProcess.stdout, 'data');
+		t.is(stdout.toString(), 'foo');
+		childProcess.kill('SIGKILL');
+		await t.throwsAsync(childProcess, {message: /SIGKILL/});
+	} finally {
+		abort();
+	}
+});

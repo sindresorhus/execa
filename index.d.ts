@@ -125,7 +125,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 	- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
-	This can be an array of values such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
@@ -146,7 +146,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
-	This can be an array of values such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
 	@default 'pipe'
 	*/
@@ -167,7 +167,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
-	This can be an array of values such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
 	@default 'pipe'
 	*/

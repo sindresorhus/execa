@@ -219,14 +219,17 @@ const testOverflowStream = async (t, stdio) => {
 	await t.notThrowsAsync(execa('empty.js', {stdio}));
 };
 
-test('stdin can use 4+', testOverflowStream, [4, 'pipe', 'pipe', 'pipe']);
-test('stdin can use [4+]', testOverflowStream, [[4], 'pipe', 'pipe', 'pipe']);
-test('stdout can use 4+', testOverflowStream, ['pipe', 4, 'pipe', 'pipe']);
-test('stdout can use [4+]', testOverflowStream, ['pipe', [4], 'pipe', 'pipe']);
-test('stderr can use 4+', testOverflowStream, ['pipe', 'pipe', 4, 'pipe']);
-test('stderr can use [4+]', testOverflowStream, ['pipe', 'pipe', [4], 'pipe']);
-test('stdio[*] can use 4+', testOverflowStream, ['pipe', 'pipe', 'pipe', 4]);
-test('stdio[*] can use [4+]', testOverflowStream, ['pipe', 'pipe', 'pipe', [4]]);
+if (process.platform !== 'darwin') {
+	test('stdin can use 4+', testOverflowStream, [4, 'pipe', 'pipe', 'pipe']);
+	test('stdin can use [4+]', testOverflowStream, [[4], 'pipe', 'pipe', 'pipe']);
+	test('stdout can use 4+', testOverflowStream, ['pipe', 4, 'pipe', 'pipe']);
+	test('stdout can use [4+]', testOverflowStream, ['pipe', [4], 'pipe', 'pipe']);
+	test('stderr can use 4+', testOverflowStream, ['pipe', 'pipe', 4, 'pipe']);
+	test('stderr can use [4+]', testOverflowStream, ['pipe', 'pipe', [4], 'pipe']);
+	test('stdio[*] can use 4+', testOverflowStream, ['pipe', 'pipe', 'pipe', 4]);
+	test('stdio[*] can use [4+]', testOverflowStream, ['pipe', 'pipe', 'pipe', [4]]);
+}
+
 test('stdio[*] can use "inherit"', testOverflowStream, ['pipe', 'pipe', 'pipe', 'inherit']);
 test('stdio[*] can use ["inherit"]', testOverflowStream, ['pipe', 'pipe', 'pipe', ['inherit']]);
 

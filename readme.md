@@ -815,7 +815,7 @@ The [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options c
 The following example redirects `stdout` to both the terminal and an `output.txt` file, while also retrieving its value programmatically.
 
 ```js
-const {stdout} = await execa('npm', ['install'], {stdout:['inherit', './output.txt', 'pipe']})
+const {stdout} = await execa('npm', ['install'], {stdout: ['inherit', './output.txt', 'pipe']})
 console.log(stdout);
 ```
 

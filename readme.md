@@ -31,6 +31,11 @@
 		</a>
 		<br>
 		<br>
+		<a href="https://coderabbit.ai?utm_source=sindre&utm_medium=execa">
+			<img width="300" src="https://sindresorhus.com/assets/thanks/coderabbit-logo.png" alt="CodeRabbit logo">
+		</a>
+		<br>
+		<br>
 	</p>
 </div>
 

@@ -579,7 +579,7 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 - `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
 - `'inherit'`: Re-use the current process' `stdin`.
 - an integer: Re-use a specific file descriptor from the current process.
-- a Node.js `Readable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
+- a [Node.js `Readable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
 
 Unless either the [synchronous methods](#execasyncfile-arguments-options), the [`input` option](#input) or the [`inputFile` option](#inputfile) is used, the value can also be a:
 - file path. If relative, it must start with `.`.
@@ -601,7 +601,7 @@ Default: `pipe`
 - `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
 - `'inherit'`: Re-use the current process' `stdout`.
 - an integer: Re-use a specific file descriptor from the current process.
-- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
+- a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
 
 Unless either [synchronous methods](#execasyncfile-arguments-options), the value can also be a:
 - file path. If relative, it must start with `.`.
@@ -622,7 +622,7 @@ Default: `pipe`
 - `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
 - `'inherit'`: Re-use the current process' `stderr`.
 - an integer: Re-use a specific file descriptor from the current process.
-- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
+- a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
 
 Unless either [synchronous methods](#execasyncfile-arguments-options), the value can also be a:
 - file path. If relative, it must start with `.`.
@@ -821,6 +821,23 @@ console.log(stdout);
 ```
 
 When combining `inherit` with other values, please note that the child process will not be an interactive TTY, even if the parent process is one.
+
+### Redirect a Node.js stream from/to stdin/stdout/stderr
+
+When passing a Node.js stream to the [`stdin`](#stdin), [`stdout`](#stdout-1) or [`stderr`](#stderr-1) option, Node.js requires that stream to have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules. Otherwise the following error is thrown.
+
+```
+TypeError [ERR_INVALID_ARG_VALUE]: The argument 'stdio' is invalid.
+```
+
+This limitation can be worked around by passing either:
+  - a web stream ([`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) or [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream))
+  - `[nodeStream, 'pipe']` instead of `nodeStream`
+
+```diff
+- await execa(..., { stdout: nodeStream })
++ await execa(..., { stdout: [nodeStream, 'pipe'] })
+```
 
 ### Retry on error
 

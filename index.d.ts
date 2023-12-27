@@ -117,7 +117,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
 	- `'inherit'`: Re-use the current process' `stdin`.
 	- an integer: Re-use a specific file descriptor from the current process.
-	- a Node.js `Readable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
+	- a Node.js `Readable` stream.
 
 	Unless either the synchronous methods, the `input` option or the `inputFile` option is used, the value can also be a:
 	- file path. If relative, it must start with `.`.
@@ -139,7 +139,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
 	- `'inherit'`: Re-use the current process' `stdout`.
 	- an integer: Re-use a specific file descriptor from the current process.
-	- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
+	- a Node.js `Writable` stream.
 
 	Unless either synchronous methods, the value can also be a:
 	- file path. If relative, it must start with `.`.
@@ -160,7 +160,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use `execaNode()` instead.
 	- `'inherit'`: Re-use the current process' `stderr`.
 	- an integer: Re-use a specific file descriptor from the current process.
-	- a Node.js `Writable` stream. It must have an underlying file or socket, such as the streams created by the `fs`, `net` or `http` core modules.
+	- a Node.js `Writable` stream.
 
 	Unless either synchronous methods, the value can also be a:
 	- file path. If relative, it must start with `.`.

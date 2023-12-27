@@ -25,9 +25,15 @@ type OutputStdioOption =
 	| Writable
 	| WritableStream;
 
-export type StdinOption = CommonStdioOption | InputStdioOption;
-export type StdoutStderrOption = CommonStdioOption | OutputStdioOption;
-export type StdioOption = CommonStdioOption | InputStdioOption | OutputStdioOption;
+export type StdinOption =
+	CommonStdioOption | InputStdioOption
+	| Array<CommonStdioOption | InputStdioOption>;
+export type StdoutStderrOption =
+	CommonStdioOption | OutputStdioOption
+	| Array<CommonStdioOption | OutputStdioOption>;
+export type StdioOption =
+	CommonStdioOption | InputStdioOption | OutputStdioOption
+	| Array<CommonStdioOption | InputStdioOption | OutputStdioOption>;
 
 type StdioOptions =
 	| BaseStdioOption
@@ -119,6 +125,8 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 	- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
+	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
 	readonly stdin?: StdinOption;
@@ -137,6 +145,8 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- file path. If relative, it must start with `.`.
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+
+	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
 	@default 'pipe'
 	*/
@@ -157,9 +167,22 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
+	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+
 	@default 'pipe'
 	*/
 	readonly stderr?: StdoutStderrOption;
+
+	/**
+	Like the `stdin`, `stdout` and `stderr` options but for all file descriptors at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.
+
+	A single string can be used as a shortcut. For example, `{stdio: 'pipe'}` is the same as `{stdin: 'pipe', stdout: 'pipe', stderr: 'pipe'}`.
+
+	The array can have more than 3 items, to create additional file descriptors beyond `stdin`/`stdout`/`stderr`. For example, `{stdio: ['pipe', 'pipe', 'pipe', 'ipc']}` sets a fourth file descriptor `'ipc'`.
+
+	@default 'pipe'
+	*/
+	readonly stdio?: StdioOptions;
 
 	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.
@@ -207,16 +230,6 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
 	*/
 	readonly argv0?: string;
-
-	/**
-	Like the `stdin`, `stdout` and `stderr` options but for all file descriptors at once.
-	The possible values are the same except it can also be:
-	- a single string, to set the same value to each standard stream.
-	- an array with more than 3 values, to create more than 3 file descriptors.
-
-	@default 'pipe'
-	*/
-	readonly stdio?: StdioOptions;
 
 	/**
 	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:

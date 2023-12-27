@@ -75,3 +75,31 @@ const testFileWritable = async (t, getOptions, fixtureName) => {
 test('stdout can be a Node.js Writable with a file descriptor', testFileWritable, getStdoutOption, 'noop.js');
 test('stderr can be a Node.js Writable with a file descriptor', testFileWritable, getStderrOption, 'noop-err.js');
 test('stdio[*] can be a Node.js Writable with a file descriptor', testFileWritable, getStdioOption, 'noop-fd3.js');
+
+const testLazyFileReadable = async (t, fixtureName, getOptions) => {
+	const filePath = tempfile();
+	await writeFile(filePath, 'foobar');
+	const stream = createReadStream(filePath);
+
+	const {stdout} = await execa(fixtureName, getOptions([stream, 'pipe']));
+	t.is(stdout, 'foobar');
+
+	await rm(filePath);
+};
+
+test('stdin can be [Readable, "pipe"] without a file descriptor', testLazyFileReadable, 'stdin.js', getStdinOption);
+test('stdio[*] can be [Readable, "pipe"] without a file descriptor', testLazyFileReadable, 'stdin-fd3.js', getStdioOption);
+
+const testLazyFileWritable = async (t, getOptions, fixtureName) => {
+	const filePath = tempfile();
+	const stream = createWriteStream(filePath);
+
+	await execa(fixtureName, ['foobar'], getOptions([stream, 'pipe']));
+	t.is(await readFile(filePath, 'utf8'), 'foobar\n');
+
+	await rm(filePath);
+};
+
+test('stdout can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, getStdoutOption, 'noop.js');
+test('stderr can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, getStderrOption, 'noop-err.js');
+test('stdio[*] can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, getStdioOption, 'noop-fd3.js');

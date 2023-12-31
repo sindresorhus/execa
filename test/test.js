@@ -1,5 +1,6 @@
 import path from 'node:path';
 import process from 'node:process';
+import {setTimeout} from 'node:timers/promises';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
@@ -124,10 +125,17 @@ const testExecPath = async (t, mapPath) => {
 test.serial('execPath option', testExecPath, identity);
 test.serial('execPath option can be a file URL', testExecPath, pathToFileURL);
 
-test('stdin errors are handled', async t => {
-	const subprocess = execa('noop.js');
+const emitStdinError = async subprocess => {
+	await setTimeout(0);
 	subprocess.stdin.emit('error', new Error('test'));
-	await t.throwsAsync(subprocess, {message: /test/});
+};
+
+test('stdin errors are handled', async t => {
+	const subprocess = execa('forever.js');
+	await Promise.all([
+		t.throwsAsync(subprocess, {message: /test/}),
+		emitStdinError(subprocess),
+	]);
 });
 
 test('child process errors are handled', async t => {

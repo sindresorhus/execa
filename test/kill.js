@@ -184,18 +184,13 @@ test('spawnAndKill cleanup detached SIGKILL', spawnAndKill, ['SIGKILL', true, tr
 // See #128
 test('removes exit handler on exit', async t => {
 	// @todo this relies on `signal-exit` internals
-	const emitter = globalThis[Symbol.for('signal-exit emitter')];
+	const exitListeners = globalThis[Symbol.for('signal-exit emitter')].listeners.exit;
 
 	const subprocess = execa('noop.js');
-	const listener = emitter.listeners.exit.at(-1);
+	const listener = exitListeners.at(-1);
 
-	await new Promise((resolve, reject) => {
-		subprocess.on('error', reject);
-		subprocess.on('exit', resolve);
-	});
-
-	const included = emitter.listeners.exit.includes(listener);
-	t.false(included);
+	await subprocess;
+	t.false(exitListeners.includes(listener));
 });
 
 test('cancel method kills the subprocess', async t => {

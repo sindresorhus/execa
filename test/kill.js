@@ -31,49 +31,37 @@ if (process.platform !== 'win32') {
 
 		t.true(isRunning(subprocess.pid));
 		subprocess.kill('SIGKILL');
-	});
-
-	test('`forceKillAfterTimeout: number` should kill after a timeout', async t => {
-		const subprocess = execa('no-killable.js', {stdio: ['ipc']});
-		await pEvent(subprocess, 'message');
-
-		subprocess.kill('SIGTERM', {forceKillAfterTimeout: 50});
 
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('`forceKillAfterTimeout: true` should kill after a timeout', async t => {
+	const testForceKill = async (t, killArguments) => {
 		const subprocess = execa('no-killable.js', {stdio: ['ipc']});
 		await pEvent(subprocess, 'message');
 
-		subprocess.kill('SIGTERM', {forceKillAfterTimeout: true});
+		subprocess.kill(...killArguments);
 
 		const {signal} = await t.throwsAsync(subprocess);
 		t.is(signal, 'SIGKILL');
-	});
+	};
 
-	test('kill() with no arguments should kill after a timeout', async t => {
-		const subprocess = execa('no-killable.js', {stdio: ['ipc']});
-		await pEvent(subprocess, 'message');
+	test('`forceKillAfterTimeout: number` should kill after a timeout', testForceKill, ['SIGTERM', {forceKillAfterTimeout: 50}]);
+	test('`forceKillAfterTimeout: true` should kill after a timeout', testForceKill, ['SIGTERM', {forceKillAfterTimeout: true}]);
+	test('kill("SIGTERM") should kill after a timeout', testForceKill, ['SIGTERM']);
+	test('kill() with no arguments should kill after a timeout', testForceKill, []);
 
-		subprocess.kill();
-
-		const {signal} = await t.throwsAsync(subprocess);
-		t.is(signal, 'SIGKILL');
-	});
-
-	test('`forceKillAfterTimeout` should not be NaN', t => {
+	const testInvalidForceKill = async (t, forceKillAfterTimeout) => {
+		const childProcess = execa('noop.js');
 		t.throws(() => {
-			execa('noop.js').kill('SIGTERM', {forceKillAfterTimeout: Number.NaN});
+			childProcess.kill('SIGTERM', {forceKillAfterTimeout});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
-	});
+		const {signal} = await t.throwsAsync(childProcess);
+		t.is(signal, 'SIGTERM');
+	};
 
-	test('`forceKillAfterTimeout` should not be negative', t => {
-		t.throws(() => {
-			execa('noop.js').kill('SIGTERM', {forceKillAfterTimeout: -1});
-		}, {instanceOf: TypeError, message: /non-negative integer/});
-	});
+	test('`forceKillAfterTimeout` should not be NaN', testInvalidForceKill, Number.NaN);
+	test('`forceKillAfterTimeout` should not be negative', testInvalidForceKill, -1);
 }
 
 test('execa() returns a promise with kill()', t => {

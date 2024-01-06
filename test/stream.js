@@ -102,6 +102,21 @@ const testMaxBuffer = async (t, streamName) => {
 test('maxBuffer affects stdout', testMaxBuffer, 'stdout');
 test('maxBuffer affects stderr', testMaxBuffer, 'stderr');
 
+test('maxBuffer works with encoding buffer', async t => {
+	const {stdout} = await t.throwsAsync(
+		execa('max-buffer.js', ['stdout', '11'], {maxBuffer: 10, encoding: 'buffer'}),
+	);
+	t.true(stdout instanceof Uint8Array);
+	t.is(Buffer.from(stdout).toString(), '.'.repeat(10));
+});
+
+test('maxBuffer works with other encodings', async t => {
+	const {stdout} = await t.throwsAsync(
+		execa('max-buffer.js', ['stdout', '11'], {maxBuffer: 10, encoding: 'hex'}),
+	);
+	t.is(stdout, Buffer.from('.'.repeat(10)).toString('hex'));
+});
+
 const testNoMaxBuffer = async (t, streamName) => {
 	const promise = execa('max-buffer.js', [streamName, '10'], {buffer: false});
 	const [result, output] = await Promise.all([

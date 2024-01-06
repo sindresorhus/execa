@@ -32,8 +32,8 @@ const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) =>
 
 const normalizeFileUrl = file => file instanceof URL ? fileURLToPath(file) : file;
 
-const getFilePath = file => {
-	const fileString = normalizeFileUrl(file);
+const getFilePath = rawFile => {
+	const fileString = normalizeFileUrl(rawFile);
 
 	if (typeof fileString !== 'string') {
 		throw new TypeError('First argument must be a string or a file URL.');
@@ -42,19 +42,20 @@ const getFilePath = file => {
 	return fileString;
 };
 
-const handleArguments = (file, args, options = {}) => {
-	const parsed = crossSpawn._parse(file, args, options);
-	file = parsed.command;
-	args = parsed.args;
-	options = parsed.options;
+const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
+	const filePath = getFilePath(rawFile);
+	const command = joinCommand(filePath, rawArgs);
+	const escapedCommand = getEscapedCommand(filePath, rawArgs);
 
-	options = {
+	const {command: file, args, options: initialOptions} = crossSpawn._parse(filePath, rawArgs, rawOptions);
+
+	const options = {
 		maxBuffer: DEFAULT_MAX_BUFFER,
 		buffer: true,
 		stripFinalNewline: true,
 		extendEnv: true,
 		preferLocal: false,
-		localDir: options.cwd || process.cwd(),
+		localDir: initialOptions.cwd || process.cwd(),
 		execPath: process.execPath,
 		encoding: 'utf8',
 		reject: true,
@@ -62,8 +63,8 @@ const handleArguments = (file, args, options = {}) => {
 		all: false,
 		windowsHide: true,
 		verbose: verboseDefault,
-		...options,
-		shell: normalizeFileUrl(options.shell),
+		...initialOptions,
+		shell: normalizeFileUrl(initialOptions.shell),
 	};
 
 	options.env = getEnv(options);
@@ -73,7 +74,9 @@ const handleArguments = (file, args, options = {}) => {
 		args.unshift('/q');
 	}
 
-	return {file, args, options};
+	logCommand(escapedCommand, options);
+
+	return {file, args, command, escapedCommand, options};
 };
 
 const handleOutputSync = (options, value, error) => {
@@ -97,19 +100,15 @@ const handleOutput = (options, value, error) => {
 	return value;
 };
 
-export function execa(file, args, options) {
-	const filePath = getFilePath(file);
-	const parsed = handleArguments(filePath, args, options);
-	const stdioStreams = handleInputAsync(parsed.options);
-	validateTimeout(parsed.options);
+export function execa(rawFile, rawArgs, rawOptions) {
+	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
+	validateTimeout(options);
 
-	const command = joinCommand(filePath, args);
-	const escapedCommand = getEscapedCommand(filePath, args);
-	logCommand(escapedCommand, parsed.options);
+	const stdioStreams = handleInputAsync(options);
 
 	let spawned;
 	try {
-		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
+		spawned = childProcess.spawn(file, args, options);
 	} catch (error) {
 		// Ensure the returned error is always both a promise and a child process
 		const dummySpawned = new childProcess.ChildProcess();
@@ -120,7 +119,7 @@ export function execa(file, args, options) {
 			all: '',
 			command,
 			escapedCommand,
-			parsed,
+			options,
 			timedOut: false,
 			isCanceled: false,
 		}));
@@ -129,8 +128,8 @@ export function execa(file, args, options) {
 	}
 
 	const spawnedPromise = getSpawnedPromise(spawned);
-	const timedPromise = setupTimeout(spawned, parsed.options, spawnedPromise);
-	const processDone = setExitHandler(spawned, parsed.options, timedPromise);
+	const timedPromise = setupTimeout(spawned, options, spawnedPromise);
+	const processDone = setExitHandler(spawned, options, timedPromise);
 
 	const context = {isCanceled: false};
 
@@ -138,10 +137,10 @@ export function execa(file, args, options) {
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
 	const handlePromise = async () => {
-		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, stdioStreams, processDone);
-		const stdout = handleOutput(parsed.options, stdoutResult);
-		const stderr = handleOutput(parsed.options, stderrResult);
-		const all = handleOutput(parsed.options, allResult);
+		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, options, stdioStreams, processDone);
+		const stdout = handleOutput(options, stdoutResult);
+		const stderr = handleOutput(options, stderrResult);
+		const all = handleOutput(options, allResult);
 
 		if (error || exitCode !== 0 || signal !== null) {
 			const returnedError = makeError({
@@ -153,12 +152,12 @@ export function execa(file, args, options) {
 				all,
 				command,
 				escapedCommand,
-				parsed,
+				options,
 				timedOut,
-				isCanceled: context.isCanceled || (parsed.options.signal ? parsed.options.signal.aborted : false),
+				isCanceled: context.isCanceled || (options.signal ? options.signal.aborted : false),
 			});
 
-			if (!parsed.options.reject) {
+			if (!options.reject) {
 				return returnedError;
 			}
 
@@ -183,25 +182,21 @@ export function execa(file, args, options) {
 
 	pipeOutputAsync(spawned, stdioStreams);
 
-	spawned.all = makeAllStream(spawned, parsed.options);
+	spawned.all = makeAllStream(spawned, options);
 
 	addPipeMethods(spawned);
 	mergePromise(spawned, handlePromiseOnce);
 	return spawned;
 }
 
-export function execaSync(file, args, options) {
-	const filePath = getFilePath(file);
-	const parsed = handleArguments(filePath, args, options);
-	const stdioStreams = handleInputSync(parsed.options);
+export function execaSync(rawFile, rawArgs, rawOptions) {
+	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
 
-	const command = joinCommand(filePath, args);
-	const escapedCommand = getEscapedCommand(filePath, args);
-	logCommand(escapedCommand, parsed.options);
+	const stdioStreams = handleInputSync(options);
 
 	let result;
 	try {
-		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
+		result = childProcess.spawnSync(file, args, options);
 	} catch (error) {
 		throw makeError({
 			error,
@@ -210,15 +205,15 @@ export function execaSync(file, args, options) {
 			all: '',
 			command,
 			escapedCommand,
-			parsed,
+			options,
 			timedOut: false,
 			isCanceled: false,
 		});
 	}
 
 	pipeOutputSync(stdioStreams, result);
-	const stdout = handleOutputSync(parsed.options, result.stdout, result.error);
-	const stderr = handleOutputSync(parsed.options, result.stderr, result.error);
+	const stdout = handleOutputSync(options, result.stdout, result.error);
+	const stderr = handleOutputSync(options, result.stderr, result.error);
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError({
@@ -229,12 +224,12 @@ export function execaSync(file, args, options) {
 			exitCode: result.status,
 			command,
 			escapedCommand,
-			parsed,
+			options,
 			timedOut: result.error && result.error.code === 'ETIMEDOUT',
 			isCanceled: false,
 		});
 
-		if (!parsed.options.reject) {
+		if (!options.reject) {
 			return error;
 		}
 

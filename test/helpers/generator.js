@@ -21,3 +21,14 @@ export const asyncGenerator = async function * () {
 export const throwingGenerator = function * () {
 	throw new Error('generator error');
 };
+
+export const infiniteGenerator = () => {
+	const controller = new AbortController();
+
+	const generator = async function * () {
+		yield 'foo';
+		await setTimeout(1e7, undefined, {signal: controller.signal});
+	};
+
+	return {iterable: generator(), abort: controller.abort.bind(controller)};
+};

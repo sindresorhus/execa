@@ -136,49 +136,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 
-	const handlePromise = async () => {
-		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, options, stdioStreams, processDone);
-		const stdout = handleOutput(options, stdoutResult);
-		const stderr = handleOutput(options, stderrResult);
-		const all = handleOutput(options, allResult);
-
-		if (error || exitCode !== 0 || signal !== null) {
-			const returnedError = makeError({
-				error,
-				exitCode,
-				signal,
-				stdout,
-				stderr,
-				all,
-				command,
-				escapedCommand,
-				options,
-				timedOut,
-				isCanceled: context.isCanceled || (options.signal ? options.signal.aborted : false),
-			});
-
-			if (!options.reject) {
-				return returnedError;
-			}
-
-			throw returnedError;
-		}
-
-		return {
-			command,
-			escapedCommand,
-			exitCode: 0,
-			stdout,
-			stderr,
-			all,
-			failed: false,
-			timedOut: false,
-			isCanceled: false,
-			isTerminated: false,
-		};
-	};
-
-	const handlePromiseOnce = onetime(handlePromise);
+	const handlePromiseOnce = onetime(handlePromise.bind(undefined, {spawned, options, context, stdioStreams, command, escapedCommand, processDone}));
 
 	pipeOutputAsync(spawned, stdioStreams);
 
@@ -188,6 +146,54 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	mergePromise(spawned, handlePromiseOnce);
 	return spawned;
 }
+
+const handlePromise = async ({spawned, options, context, stdioStreams, command, escapedCommand, processDone}) => {
+	const [
+		{error, exitCode, signal, timedOut},
+		stdoutResult,
+		stderrResult,
+		allResult,
+	] = await getSpawnedResult(spawned, options, stdioStreams, processDone);
+	const stdout = handleOutput(options, stdoutResult);
+	const stderr = handleOutput(options, stderrResult);
+	const all = handleOutput(options, allResult);
+
+	if (error || exitCode !== 0 || signal !== null) {
+		const isCanceled = context.isCanceled || Boolean(options.signal?.aborted);
+		const returnedError = makeError({
+			error,
+			exitCode,
+			signal,
+			stdout,
+			stderr,
+			all,
+			command,
+			escapedCommand,
+			options,
+			timedOut,
+			isCanceled,
+		});
+
+		if (!options.reject) {
+			return returnedError;
+		}
+
+		throw returnedError;
+	}
+
+	return {
+		command,
+		escapedCommand,
+		exitCode: 0,
+		stdout,
+		stderr,
+		all,
+		failed: false,
+		timedOut: false,
+		isCanceled: false,
+		isTerminated: false,
+	};
+};
 
 export function execaSync(rawFile, rawArgs, rawOptions) {
 	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);

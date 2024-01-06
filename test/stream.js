@@ -173,7 +173,7 @@ if (process.platform !== 'win32') {
 }
 
 test('Errors on streams should make the process exit', async t => {
-	const childProcess = execa('forever');
+	const childProcess = execa('forever.js');
 	childProcess.stdout.destroy();
 	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
 });

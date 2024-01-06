@@ -109,4 +109,7 @@ test('node\'s forked script has a communication channel', async t => {
 	t.is(message, 'pong');
 
 	subprocess.kill();
+
+	const {signal} = await t.throwsAsync(subprocess);
+	t.is(signal, 'SIGTERM');
 });

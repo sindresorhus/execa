@@ -1,5 +1,6 @@
 import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
+import {once} from 'node:events';
 import process from 'node:process';
 import {setTimeout} from 'node:timers/promises';
 import {promisify} from 'node:util';
@@ -131,10 +132,18 @@ const testNoMaxBuffer = async (t, streamName) => {
 test('do not buffer stdout when `buffer` set to `false`', testNoMaxBuffer, 'stdout');
 test('do not buffer stderr when `buffer` set to `false`', testNoMaxBuffer, 'stderr');
 
-test('do not buffer when streaming', async t => {
-	const {stdout} = execa('max-buffer.js', ['stdout', '21'], {maxBuffer: 10});
+test('do not buffer when streaming and `buffer` is `false`', async t => {
+	const {stdout} = execa('max-buffer.js', ['stdout', '21'], {maxBuffer: 10, buffer: false});
 	const result = await getStream(stdout);
 	t.is(result, '....................\n');
+});
+
+test('buffers when streaming and `buffer` is `true`', async t => {
+	const childProcess = execa('max-buffer.js', ['stdout', '21'], {maxBuffer: 10});
+	await Promise.all([
+		t.throwsAsync(childProcess, {message: /maxBuffer exceeded/}),
+		t.throwsAsync(getStream(childProcess.stdout), {code: 'ABORT_ERR'}),
+	]);
 });
 
 test('buffer: false > promise resolves', async t => {
@@ -208,18 +217,31 @@ test.serial('Processes buffer stdout before it is read', async t => {
 	t.is(stdout, 'foobar');
 });
 
-// This test is not the desired behavior, but is the current one.
-// I.e. this is mostly meant for documentation and regression testing.
-test.serial('Processes might successfully exit before their stdout is read', async t => {
+test.serial('Processes buffers stdout right away, on successfully exit', async t => {
 	const childProcess = execa('noop.js', ['foobar']);
 	await setTimeout(1e3);
 	const {stdout} = await childProcess;
-	t.is(stdout, '');
+	t.is(stdout, 'foobar');
 });
 
-test.serial('Processes might fail before their stdout is read', async t => {
+test.serial('Processes buffers stdout right away, on failure', async t => {
 	const childProcess = execa('noop-fail.js', ['foobar'], {reject: false});
 	await setTimeout(1e3);
 	const {stdout} = await childProcess;
-	t.is(stdout, '');
+	t.is(stdout, 'foobar');
+});
+
+test('Processes buffers stdout right away, even if directly read', async t => {
+	const childProcess = execa('noop.js', ['foobar']);
+	const data = await once(childProcess.stdout, 'data');
+	t.is(data.toString().trim(), 'foobar');
+	const {stdout} = await childProcess;
+	t.is(stdout, 'foobar');
+});
+
+test('childProcess.stdout|stderr must be read right away', async t => {
+	const childProcess = execa('noop.js', ['foobar']);
+	const {stdout} = await childProcess;
+	t.is(stdout, 'foobar');
+	t.true(childProcess.stdout.destroyed);
 });

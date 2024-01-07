@@ -81,7 +81,7 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 };
 
 const handleOutput = (options, value) => {
-	if (typeof value !== 'string' && !ArrayBuffer.isView(value)) {
+	if (value === undefined || value === null) {
 		return;
 	}
 
@@ -107,7 +107,6 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		const errorPromise = Promise.reject(makeError({
 			error,
 			stdio: Array.from({length: stdioLength}),
-			all: options.all ? '' : undefined,
 			command,
 			escapedCommand,
 			options,
@@ -202,7 +201,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 
 	pipeOutputSync(stdioStreams, result);
 
-	const output = result.output || [undefined, undefined, undefined];
+	const output = result.output || Array.from({length: 3});
 	const stdio = output.map(stdioOutput => handleOutput(options, stdioOutput));
 
 	if (result.error || result.status !== 0 || result.signal !== null) {

@@ -137,9 +137,16 @@ type StreamResult<OptionsType extends CommonOptions = CommonOptions> =
 				: string;
 
 // Type of `result.all`
-type AllOutput<OptionsType extends Options = Options> = IgnoresStreamOutput<'1', OptionsType> extends true
-	? StdioOutput<'2', OptionsType>
-	: StdioOutput<'1', OptionsType>;
+type AllOutput<OptionsType extends Options = Options> = AllOutputProperty<OptionsType['all'], OptionsType>;
+
+type AllOutputProperty<
+	AllOption extends Options['all'] = Options['all'],
+	OptionsType extends Options = Options,
+> = AllOption extends true
+	? IgnoresStreamOutput<'1', OptionsType> extends true
+		? StdioOutput<'2', OptionsType>
+		: StdioOutput<'1', OptionsType>
+	: undefined;
 
 // Type of `result.stdio`
 type StdioArrayOutput<OptionsType extends CommonOptions = CommonOptions> = MapStdioOptions<
@@ -584,7 +591,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	- the `all` option is `false` (default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
-	all?: AllOutput<OptionsType>;
+	all: AllOutput<OptionsType>;
 });
 
 export type ExecaReturnValue<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType>;

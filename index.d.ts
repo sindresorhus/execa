@@ -181,6 +181,13 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly stdio?: StdioOptions;
 
 	/**
+	Use a file as input to the child process' `stdin`.
+
+	See also the `input` and `stdin` options.
+	*/
+	readonly inputFile?: string | URL;
+
+	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.
 
 	@default true
@@ -352,29 +359,15 @@ export type Options<EncodingType extends EncodingOption = DefaultEncodingOption>
 	See also the `inputFile` and `stdin` options.
 	*/
 	readonly input?: string | Uint8Array | Readable;
-
-	/**
-	Use a file as input to the child process' `stdin`.
-
-	See also the `input` and `stdin` options.
-	*/
-	readonly inputFile?: string | URL;
 } & CommonOptions<EncodingType>;
 
 export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
-	Write some input to the `stdin` of your binary.
+	Write some input to the child process' `stdin`.
 
-	If the input is a file, use the `inputFile` option instead.
+	See also the `inputFile` and `stdin` options.
 	*/
 	readonly input?: string | Uint8Array;
-
-	/**
-	Use a file as input to the the `stdin` of your binary.
-
-	If the input is not a file, use the `input` option instead.
-	*/
-	readonly inputFile?: string;
 } & CommonOptions<EncodingType>;
 
 export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {

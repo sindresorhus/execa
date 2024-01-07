@@ -1,6 +1,8 @@
 import {type ChildProcess} from 'node:child_process';
 import {type Readable, type Writable} from 'node:stream';
 
+type IfAsync<IsSync extends boolean, AsyncValue> = IsSync extends true ? never : AsyncValue;
+
 type NoOutputStdioOption =
 	| 'ignore'
 	| 'inherit'
@@ -24,18 +26,17 @@ type CommonStdioOption =
 	| URL
 	| {file: string};
 
-type InputStdioOption<IsSync extends boolean = boolean> = IsSync extends true
-	? Uint8Array
-	: Iterable<string | Uint8Array>
-	| AsyncIterable<string | Uint8Array>
+type InputStdioOption<IsSync extends boolean = boolean> =
 	| Uint8Array
+	| IfAsync<IsSync,
+	| Iterable<string | Uint8Array>
+	| AsyncIterable<string | Uint8Array>
 	| Readable
-	| ReadableStream;
+	| ReadableStream>;
 
-type OutputStdioOption<IsSync extends boolean = boolean> = IsSync extends true
-	? never
-	: Writable
-	| WritableStream;
+type OutputStdioOption<IsSync extends boolean = boolean> = IfAsync<IsSync,
+| Writable
+| WritableStream>;
 
 export type StdinOption<IsSync extends boolean = boolean> =
 	CommonStdioOption | InputStdioOption<IsSync>
@@ -79,25 +80,21 @@ type BufferEncodingOption = 'buffer';
 type IgnoresStreamResult<
 	StreamIndex extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-	// `result.stdin` is always `undefined`
-> = StreamIndex extends '0' ? true
-	// When using `stdout|stderr: 'inherit'`, or `'ignore'`, etc. , `result.std*` is `undefined`
-	: IgnoresNormalPropertyResult<StreamIndex, OptionsType> extends true ? true
-	// Otherwise
-		: IgnoresStdioPropertyResult<StreamIndex, OptionsType['stdio']>;
+> = IgnoresNormalPropertyResult<StreamIndex, OptionsType> extends true
+	? true
+	: IgnoresStdioPropertyResult<StreamIndex, OptionsType['stdio']>;
 
 type IgnoresNormalPropertyResult<
 	StreamIndex extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = StreamIndex extends keyof StdioOptionNames
-	? StdioOptionNames[StreamIndex] extends keyof OptionsType
-		? OptionsType[StdioOptionNames[StreamIndex]] extends NoOutputStdioOption
-			? true
-			: false
-		: false
-	: false;
-
-type StdioOptionNames = ['stdin', 'stdout', 'stderr'];
+	// `result.stdin` is always `undefined`
+> = StreamIndex extends '0' ? true
+	// When using `stdout: 'inherit'`, or `'ignore'`, etc. , `result.stdout` is `undefined`
+	: StreamIndex extends '1' ? OptionsType['stdout'] extends NoOutputStdioOption ? true : false
+		// Same with `stderr`
+		: StreamIndex extends '2' ? OptionsType['stderr'] extends NoOutputStdioOption ? true : false
+			// Otherwise
+			: false;
 
 type IgnoresStdioPropertyResult<
 	StreamIndex extends string,
@@ -119,7 +116,6 @@ type IgnoresStdioResult<StdioOptionType extends StdioOption> =
 	// `result.stdio[3+]` is `undefined` when it is an input stream
 		: StdioOptionType extends StdinOption
 			? StdioOptionType extends StdoutStderrOption
-
 				? false
 				: true
 			: false;
@@ -128,15 +124,11 @@ type IgnoresStdioResult<StdioOptionType extends StdioOption> =
 type IgnoresStreamOutput<
 	StreamIndex extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = HasBuffer<OptionsType> extends false
+> = LacksBuffer<OptionsType['buffer']> extends true
 	? true
 	: IgnoresStreamResult<StreamIndex, OptionsType>;
 
-type HasBuffer<OptionsType extends CommonOptions> = OptionsType extends Options
-	? HasBufferOption<OptionsType['buffer']>
-	: true;
-
-type HasBufferOption<BufferOption extends Options['buffer']> = BufferOption extends false ? false : true;
+type LacksBuffer<BufferOption extends Options['buffer']> = BufferOption extends false ? true : false;
 
 // Type of `result.stdout|stderr`
 type StdioOutput<
@@ -223,7 +215,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	See also the `inputFile` and `stdin` options.
 	*/
-	readonly input?: IsSync extends true ? string | Uint8Array : string | Uint8Array | Readable;
+	readonly input?: string | Uint8Array | IfAsync<IsSync, Readable>;
 
 	/**
 	Use a file as input to the child process' `stdin`.
@@ -414,7 +406,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	@default false
 	*/
 	readonly verbose?: boolean;
-} & (IsSync extends true ? {} : {
+
 	/**
 	Kill the spawned process when the parent process exits unless either:
 	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
@@ -422,7 +414,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default true
 	*/
-	readonly cleanup?: boolean;
+	readonly cleanup?: IfAsync<IsSync, boolean>;
 
 	/**
 	Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.
@@ -431,14 +423,14 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default true
 	*/
-	readonly buffer?: boolean;
+	readonly buffer?: IfAsync<IsSync, boolean>;
 
 	/**
 	Add an `.all` property on the promise and the resolved value. The property contains the output of the process with `stdout` and `stderr` interleaved.
 
 	@default false
 	*/
-	readonly all?: boolean;
+	readonly all?: IfAsync<IsSync, boolean>;
 
 	/**
 	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:
@@ -449,14 +441,14 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'json'
 	*/
-	readonly serialization?: 'json' | 'advanced';
+	readonly serialization?: IfAsync<IsSync, 'json' | 'advanced'>;
 
 	/**
 	Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
 	@default false
 	*/
-	readonly detached?: boolean;
+	readonly detached?: IfAsync<IsSync, boolean>;
 
 	/**
 	You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
@@ -482,8 +474,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	}
 	```
 	*/
-	readonly signal?: AbortSignal;
-});
+	readonly signal?: IfAsync<IsSync, AbortSignal>;
+};
 
 export type Options = CommonOptions<false>;
 export type SyncOptions = CommonOptions<true>;
@@ -602,7 +594,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	You can cancel the spawned process using the [`signal`](https://github.com/sindresorhus/execa#signal-1) option.
 	*/
 	isCanceled: boolean;
-} & (IsSync extends true ? {} : {
+
 	/**
 	The output of the process with `stdout` and `stderr` interleaved.
 
@@ -610,8 +602,9 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	- the `all` option is `false` (default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
-	all: AllOutput<OptionsType>;
-});
+	all: IfAsync<IsSync, AllOutput<OptionsType>>;
+	// Workaround for a TypeScript bug: https://github.com/microsoft/TypeScript/issues/57062
+} & {};
 
 export type ExecaReturnValue<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
 export type ExecaSyncReturnValue<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;

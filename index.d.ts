@@ -83,7 +83,7 @@ type TupleItem<
 // Whether `result.stdout|stderr|all` is `undefined`, excluding the `buffer` option
 type IgnoresStreamResult<
 	StreamIndex extends string,
-	OptionsType extends Options = Options,
+	OptionsType extends CommonOptions = CommonOptions,
 	// `result.stdin` is always `undefined`
 > = StreamIndex extends '0' ? true
 	// When using `stdout|stderr: 'inherit'`, or `'ignore'`, etc. , `result.std*` is `undefined`
@@ -114,19 +114,19 @@ type IgnoresStdioResult<
 // Whether `result.stdout|stderr|all` is `undefined`
 type IgnoresStreamOutput<
 	StreamIndex extends string,
-	OptionsType extends Options = Options,
+	OptionsType extends CommonOptions = CommonOptions,
 > = OptionsType extends {buffer: false} ? true
 	: IgnoresStreamResult<StreamIndex, OptionsType> extends true ? true : false;
 
 // Type of `result.stdout|stderr`
 type StdioOutput<
 	StreamIndex extends string,
-	OptionsType extends Options = Options,
+	OptionsType extends CommonOptions = CommonOptions,
 > = IgnoresStreamOutput<StreamIndex, OptionsType> extends true
 	? undefined
 	: StreamResult<OptionsType>;
 
-type StreamResult<OptionsType extends Options = Options> =
+type StreamResult<OptionsType extends CommonOptions = CommonOptions> =
 	// Default value for `encoding`, when `OptionsType` is `{}`
 	unknown extends OptionsType['encoding'] ? string
 		// Any value for `encoding`, when `OptionsType` is `Options`
@@ -142,14 +142,14 @@ type AllOutput<OptionsType extends Options = Options> = IgnoresStreamOutput<'1',
 	: StdioOutput<'1', OptionsType>;
 
 // Type of `result.stdio`
-type StdioArrayOutput<OptionsType extends Options = Options> = MapStdioOptions<
+type StdioArrayOutput<OptionsType extends CommonOptions = CommonOptions> = MapStdioOptions<
 OptionsType['stdio'] extends StdioOptionsArray ? OptionsType['stdio'] : ['pipe', 'pipe', 'pipe'],
 OptionsType
 >;
 
 type MapStdioOptions<
 	StdioOptionsArrayType extends StdioOptionsArray,
-	OptionsType extends Options = Options,
+	OptionsType extends CommonOptions = CommonOptions,
 > = {
 	[StreamIndex in keyof StdioOptionsArrayType]: StdioOutput<
 	StreamIndex extends string ? StreamIndex : string,
@@ -157,7 +157,12 @@ type MapStdioOptions<
 	>
 };
 
-export type Options<IsSync extends boolean = boolean> = {
+type StricterOptions<
+	WideOptions extends CommonOptions,
+	StrictOptions extends CommonOptions,
+> = keyof WideOptions extends never ? {} : WideOptions & StrictOptions;
+
+type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Prefer locally installed binaries when looking for a binary to execute.
 
@@ -454,7 +459,8 @@ export type Options<IsSync extends boolean = boolean> = {
 	readonly signal?: AbortSignal;
 });
 
-export type SyncOptions = Options<true>;
+export type Options = CommonOptions<false>;
+export type SyncOptions = CommonOptions<true>;
 
 export type NodeOptions<OptionsType extends Options = Options> = {
 	/**
@@ -482,7 +488,7 @@ The child process fails when:
 - being canceled
 - there's not enough memory or there are already too many child processes
 */
-export type ExecaReturnValue<IsSync extends boolean = boolean, OptionsType extends Options = Options> = {
+type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extends CommonOptions = CommonOptions> = {
 	/**
 	The file and arguments that were run, for logging purposes.
 
@@ -581,9 +587,10 @@ export type ExecaReturnValue<IsSync extends boolean = boolean, OptionsType exten
 	all?: AllOutput<OptionsType>;
 });
 
-export type ExecaSyncReturnValue<OptionsType extends Options = Options> = ExecaReturnValue<true, OptionsType>;
+export type ExecaReturnValue<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType>;
+export type ExecaSyncReturnValue<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType>;
 
-export type ExecaError<IsSync extends boolean = boolean, OptionsType extends Options = Options> = {
+type ExecaCommonError = {
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -602,9 +609,10 @@ export type ExecaError<IsSync extends boolean = boolean, OptionsType extends Opt
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/
 	originalMessage?: string;
-} & Error & ExecaReturnValue<IsSync, OptionsType>;
+} & Error;
 
-export type ExecaSyncError<OptionsType extends Options = Options> = ExecaError<true, OptionsType>;
+export type ExecaError<OptionsType extends Options = Options> = ExecaCommonError & ExecaReturnValue<OptionsType>;
+export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonError & ExecaSyncReturnValue<OptionsType>;
 
 export type KillOptions = {
 	/**
@@ -628,8 +636,8 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	all?: Readable;
 
 	catch<ResultType = never>(
-		onRejected?: (reason: ExecaError<false, OptionsType>) => ResultType | PromiseLike<ResultType>
-	): Promise<ExecaReturnValue<false, OptionsType> | ResultType>;
+		onRejected?: (reason: ExecaError<OptionsType>) => ResultType | PromiseLike<ResultType>
+	): Promise<ExecaReturnValue<OptionsType> | ResultType>;
 
 	/**
 	Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`. Note that this graceful termination does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events) (`SIGKILL` and `SIGTERM` has the same effect of force-killing the process immediately.) If you want to achieve graceful termination on Windows, you have to use other means, such as [`taskkill`](https://github.com/sindresorhus/taskkill).
@@ -673,7 +681,7 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 
 export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &
 ExecaChildPromise<OptionsType> &
-Promise<ExecaReturnValue<false, OptionsType>>;
+Promise<ExecaReturnValue<OptionsType>>;
 
 /**
 Executes a command using `file ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a `childProcess`.
@@ -786,12 +794,12 @@ setTimeout(() => {
 }, 1000);
 ```
 */
-export function execa<OptionsType extends Options<false> = {}>(
+export function execa<OptionsType extends Options = {}>(
 	file: string | URL,
 	arguments?: readonly string[],
 	options?: OptionsType,
 ): ExecaChildProcess<OptionsType>;
-export function execa<OptionsType extends Options<false> = {}>(
+export function execa<OptionsType extends Options = {}>(
 	file: string | URL,
 	options?: OptionsType,
 ): ExecaChildProcess<OptionsType>;
@@ -858,15 +866,15 @@ try {
 }
 ```
 */
-export function execaSync<OptionsType extends Options<true> = {}>(
+export function execaSync<OptionsType extends SyncOptions = {}>(
 	file: string | URL,
 	arguments?: readonly string[],
 	options?: OptionsType,
-): ExecaReturnValue<true, OptionsType>;
-export function execaSync<OptionsType extends Options<true> = {}>(
+): ExecaSyncReturnValue<OptionsType>;
+export function execaSync<OptionsType extends SyncOptions = {}>(
 	file: string | URL,
 	options?: OptionsType,
-): ExecaReturnValue<true, OptionsType>;
+): ExecaSyncReturnValue<OptionsType>;
 
 /**
 Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
@@ -890,7 +898,7 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommand<OptionsType extends Options<false> = {}>(
+export function execaCommand<OptionsType extends Options = {}>(
 	command: string,
 	options?: OptionsType
 ): ExecaChildProcess<OptionsType>;
@@ -913,15 +921,15 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommandSync<OptionsType extends Options<true> = {}>(
+export function execaCommandSync<OptionsType extends SyncOptions = {}>(
 	command: string,
 	options?: OptionsType
-): ExecaReturnValue<true, OptionsType>;
+): ExecaSyncReturnValue<OptionsType>;
 
-type TemplateExpression = string | number | ExecaReturnValue
-| Array<string | number | ExecaReturnValue>;
+type TemplateExpression = string | number | ExecaCommonReturnValue
+| Array<string | number | ExecaCommonReturnValue>;
 
-type Execa$<OptionsType extends Options = {}> = {
+type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Returns a new instance of `$` but with different default `options`. Consecutive calls are merged to previous ones.
 
@@ -945,13 +953,12 @@ type Execa$<OptionsType extends Options = {}> = {
 	//=> 'rainbows'
 	```
 	*/
-	<NewOptionsType extends Options = {}>
+	<NewOptionsType extends CommonOptions = {}>
 	(options: NewOptionsType):
 	Execa$<OptionsType & NewOptionsType>;
 
-	<NewOptionsType extends Options = {}>
 	(templates: TemplateStringsArray, ...expressions: TemplateExpression[]):
-	ExecaChildProcess<OptionsType & NewOptionsType>;
+	ExecaChildProcess<StricterOptions<OptionsType, Options>>;
 
 	/**
 	Same as $\`command\` but synchronous.
@@ -1003,7 +1010,7 @@ type Execa$<OptionsType extends Options = {}> = {
 	sync(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaReturnValue<true, OptionsType>;
+	): ExecaSyncReturnValue<StricterOptions<OptionsType, SyncOptions>>;
 
 	/**
 	Same as $\`command\` but synchronous.
@@ -1055,7 +1062,7 @@ type Execa$<OptionsType extends Options = {}> = {
 	s(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaReturnValue<true, OptionsType>;
+	): ExecaSyncReturnValue<StricterOptions<OptionsType, SyncOptions>>;
 };
 
 /**
@@ -1139,12 +1146,12 @@ import {execa} from 'execa';
 await execaNode('scriptPath', ['argument']);
 ```
 */
-export function execaNode<OptionsType extends NodeOptions<Options<false>> = {}>(
+export function execaNode<OptionsType extends NodeOptions = {}>(
 	scriptPath: string | URL,
 	arguments?: readonly string[],
 	options?: OptionsType
 ): ExecaChildProcess<OptionsType>;
-export function execaNode<OptionsType extends NodeOptions<Options<false>> = {}>(
+export function execaNode<OptionsType extends NodeOptions = {}>(
 	scriptPath: string | URL,
 	options?: OptionsType
 ): ExecaChildProcess<OptionsType>;

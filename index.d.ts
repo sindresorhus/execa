@@ -118,12 +118,10 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'inherit'`: Re-use the current process' `stdin`.
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Readable` stream.
-
-	Unless the synchronous methods are used, the value can also be a:
-	- file path. If relative, it must start with `.`.
-	- file URL.
-	- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
-	- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+	- a file path. If relative, it must start with `.`.
+	- a file URL.
+	- a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+	- an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
@@ -140,11 +138,9 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'inherit'`: Re-use the current process' `stdout`.
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream.
-
-	Unless the synchronous methods are used, the value can also be a:
-	- file path. If relative, it must start with `.`.
-	- file URL.
-	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+	- a file path. If relative, it must start with `.`.
+	- a file URL.
+	- a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
@@ -161,11 +157,9 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'inherit'`: Re-use the current process' `stderr`.
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream.
-
-	Unless the synchronous methods are used, the value can also be a:
-	- file path. If relative, it must start with `.`.
-	- file URL.
-	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+	- a file path. If relative, it must start with `.`.
+	- a file URL.
+	- a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
@@ -351,8 +345,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 export type Options<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
-	Write some input to the child process' `stdin`.\
-	Streams are not allowed when using the synchronous methods.
+	Write some input to the child process' `stdin`.
 
 	See also the `inputFile` and `stdin` options.
 	*/
@@ -493,7 +486,6 @@ export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> 
 
 	This is `undefined` if either:
 	- the `all` option is `false` (default value)
-	- the synchronous methods are used
   - both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
 	all?: StdoutStderrType;
@@ -560,7 +552,6 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 
 	This is `undefined` if either:
 	- the `all` option is `false` (the default value)
-	- the synchronous methods are used
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
 	all?: Readable;
@@ -737,6 +728,8 @@ export function execa<EncodingType extends EncodingOption = DefaultEncodingOptio
 /**
 Same as `execa()` but synchronous.
 
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
+
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
 @returns A `childProcessResult` object
@@ -833,6 +826,8 @@ export function execaCommand<EncodingType extends EncodingOption = DefaultEncodi
 /**
 Same as `execaCommand()` but synchronous.
 
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
+
 @param command - The program/script to execute and its arguments.
 @returns A `childProcessResult` object
 @throws A `childProcessResult` error
@@ -892,6 +887,8 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	Same as $\`command\` but synchronous.
 
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
+
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error
 
@@ -941,6 +938,8 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 
 	/**
 	Same as $\`command\` but synchronous.
+
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
 
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error

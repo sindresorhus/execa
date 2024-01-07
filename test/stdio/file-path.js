@@ -10,6 +10,8 @@ import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption, getInp
 
 setFixtureDir();
 
+const textEncoder = new TextEncoder();
+const binaryFoobar = textEncoder.encode('foobar');
 const nonFileUrl = new URL('https://example.com');
 
 const getRelativePath = filePath => relative('.', filePath);
@@ -169,8 +171,29 @@ const testInputFileScript = async (t, getExecaMethod) => {
 test('inputFile can be set with $', testInputFileScript, identity);
 test('inputFile can be set with $.sync', testInputFileScript, getScriptSync);
 
-test('inputFile option cannot be set when stdin is set', t => {
-	t.throws(() => {
-		execa('stdin.js', {inputFile: '', stdin: 'ignore'});
-	}, {message: /`inputFile` and `stdin` options/});
-});
+const testMultipleInputs = async (t, allGetOptions, execaMethod) => {
+	const filePath = tempfile();
+	await writeFile(filePath, 'foobar');
+	const options = Object.assign({}, ...allGetOptions.map(getOptions => getOptions(filePath)));
+	const {stdout} = await execaMethod('stdin.js', options);
+	t.is(stdout, 'foobar'.repeat(allGetOptions.length));
+	await rm(filePath);
+};
+
+const getStringInput = () => ({input: 'foobar'});
+const getBinaryInput = () => ({input: binaryFoobar});
+
+test('input String and inputFile can be both set', testMultipleInputs, [getInputFileOption, getStringInput], execa);
+test('input String and stdin can be both set', testMultipleInputs, [getStdinOption, getStringInput], execa);
+test('input Uint8Array and inputFile can be both set', testMultipleInputs, [getInputFileOption, getBinaryInput], execa);
+test('input Uint8Array and stdin can be both set', testMultipleInputs, [getStdinOption, getBinaryInput], execa);
+test('stdin and inputFile can be both set', testMultipleInputs, [getStdinOption, getInputFileOption], execa);
+test('input String, stdin and inputFile can be all set', testMultipleInputs, [getInputFileOption, getStdinOption, getStringInput], execa);
+test('input Uint8Array, stdin and inputFile can be all set', testMultipleInputs, [getInputFileOption, getStdinOption, getBinaryInput], execa);
+test('input String and inputFile can be both set - sync', testMultipleInputs, [getInputFileOption, getStringInput], execaSync);
+test('input String and stdin can be both set - sync', testMultipleInputs, [getStdinOption, getStringInput], execaSync);
+test('input Uint8Array and inputFile can be both set - sync', testMultipleInputs, [getInputFileOption, getBinaryInput], execaSync);
+test('input Uint8Array and stdin can be both set - sync', testMultipleInputs, [getStdinOption, getBinaryInput], execaSync);
+test('stdin and inputFile can be both set - sync', testMultipleInputs, [getStdinOption, getInputFileOption], execaSync);
+test('input String, stdin and inputFile can be all set - sync', testMultipleInputs, [getInputFileOption, getStdinOption, getStringInput], execaSync);
+test('input Uint8Array, stdin and inputFile can be all set - sync', testMultipleInputs, [getInputFileOption, getStdinOption, getBinaryInput], execaSync);

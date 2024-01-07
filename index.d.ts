@@ -119,7 +119,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Readable` stream.
 
-	Unless either the synchronous methods, the `input` option or the `inputFile` option is used, the value can also be a:
+	Unless the synchronous methods are used, the value can also be a:
 	- file path. If relative, it must start with `.`.
 	- file URL.
 	- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
@@ -141,7 +141,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream.
 
-	Unless either synchronous methods, the value can also be a:
+	Unless the synchronous methods are used, the value can also be a:
 	- file path. If relative, it must start with `.`.
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
@@ -162,7 +162,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream.
 
-	Unless either synchronous methods, the value can also be a:
+	Unless the synchronous methods are used, the value can also be a:
 	- file path. If relative, it must start with `.`.
 	- file URL.
 	- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).

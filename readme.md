@@ -583,7 +583,7 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 - `'inherit'`: Re-use the current process' `stdin`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Readable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
-- a file path. If relative, it must start with `.`.
+- `{ file: 'path' }` object.
 - a file URL.
 - a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 - an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
@@ -604,7 +604,7 @@ Default: `pipe`
 - `'inherit'`: Re-use the current process' `stdout`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
-- a file path. If relative, it must start with `.`.
+- `{ file: 'path' }` object.
 - a file URL.
 - a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
@@ -623,7 +623,7 @@ Default: `pipe`
 - `'inherit'`: Re-use the current process' `stderr`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
-- a file path. If relative, it must start with `.`.
+- `{ file: 'path' }` object.
 - a file URL.
 - a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 

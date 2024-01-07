@@ -14,7 +14,9 @@ const textEncoder = new TextEncoder();
 const binaryFoobar = textEncoder.encode('foobar');
 const nonFileUrl = new URL('https://example.com');
 
-const getRelativePath = filePath => relative('.', filePath);
+const getAbsolutePath = file => ({file});
+const getRelativePath = filePath => ({file: relative('.', filePath)});
+const getStdinFilePath = file => ({stdin: {file}});
 
 const testStdinFile = async (t, mapFilePath, getOptions, execaMethod) => {
 	const filePath = tempfile();
@@ -27,14 +29,14 @@ const testStdinFile = async (t, mapFilePath, getOptions, execaMethod) => {
 test('inputFile can be a file URL', testStdinFile, pathToFileURL, getInputFileOption, execa);
 test('stdin can be a file URL', testStdinFile, pathToFileURL, getStdinOption, execa);
 test('inputFile can be an absolute file path', testStdinFile, identity, getInputFileOption, execa);
-test('stdin can be an absolute file path', testStdinFile, identity, getStdinOption, execa);
-test('inputFile can be a relative file path', testStdinFile, getRelativePath, getInputFileOption, execa);
+test('stdin can be an absolute file path', testStdinFile, getAbsolutePath, getStdinOption, execa);
+test('inputFile can be a relative file path', testStdinFile, identity, getInputFileOption, execa);
 test('stdin can be a relative file path', testStdinFile, getRelativePath, getStdinOption, execa);
 test('inputFile can be a file URL - sync', testStdinFile, pathToFileURL, getInputFileOption, execaSync);
 test('stdin can be a file URL - sync', testStdinFile, pathToFileURL, getStdinOption, execaSync);
 test('inputFile can be an absolute file path - sync', testStdinFile, identity, getInputFileOption, execaSync);
-test('stdin can be an absolute file path - sync', testStdinFile, identity, getStdinOption, execaSync);
-test('inputFile can be a relative file path - sync', testStdinFile, getRelativePath, getInputFileOption, execaSync);
+test('stdin can be an absolute file path - sync', testStdinFile, getAbsolutePath, getStdinOption, execaSync);
+test('inputFile can be a relative file path - sync', testStdinFile, identity, getInputFileOption, execaSync);
 test('stdin can be a relative file path - sync', testStdinFile, getRelativePath, getStdinOption, execaSync);
 
 // eslint-disable-next-line max-params
@@ -48,18 +50,18 @@ const testOutputFile = async (t, mapFile, fixtureName, getOptions, execaMethod) 
 test('stdout can be a file URL', testOutputFile, pathToFileURL, 'noop.js', getStdoutOption, execa);
 test('stderr can be a file URL', testOutputFile, pathToFileURL, 'noop-err.js', getStderrOption, execa);
 test('stdio[*] can be a file URL', testOutputFile, pathToFileURL, 'noop-fd3.js', getStdioOption, execa);
-test('stdout can be an absolute file path', testOutputFile, identity, 'noop.js', getStdoutOption, execa);
-test('stderr can be an absolute file path', testOutputFile, identity, 'noop-err.js', getStderrOption, execa);
-test('stdio[*] can be an absolute file path', testOutputFile, identity, 'noop-fd3.js', getStdioOption, execa);
+test('stdout can be an absolute file path', testOutputFile, getAbsolutePath, 'noop.js', getStdoutOption, execa);
+test('stderr can be an absolute file path', testOutputFile, getAbsolutePath, 'noop-err.js', getStderrOption, execa);
+test('stdio[*] can be an absolute file path', testOutputFile, getAbsolutePath, 'noop-fd3.js', getStdioOption, execa);
 test('stdout can be a relative file path', testOutputFile, getRelativePath, 'noop.js', getStdoutOption, execa);
 test('stderr can be a relative file path', testOutputFile, getRelativePath, 'noop-err.js', getStderrOption, execa);
 test('stdio[*] can be a relative file path', testOutputFile, getRelativePath, 'noop-fd3.js', getStdioOption, execa);
 test('stdout can be a file URL - sync', testOutputFile, pathToFileURL, 'noop.js', getStdoutOption, execaSync);
 test('stderr can be a file URL - sync', testOutputFile, pathToFileURL, 'noop-err.js', getStderrOption, execaSync);
 test('stdio[*] can be a file URL - sync', testOutputFile, pathToFileURL, 'noop-fd3.js', getStdioOption, execaSync);
-test('stdout can be an absolute file path - sync', testOutputFile, identity, 'noop.js', getStdoutOption, execaSync);
-test('stderr can be an absolute file path - sync', testOutputFile, identity, 'noop-err.js', getStderrOption, execaSync);
-test('stdio[*] can be an absolute file path - sync', testOutputFile, identity, 'noop-fd3.js', getStdioOption, execaSync);
+test('stdout can be an absolute file path - sync', testOutputFile, getAbsolutePath, 'noop.js', getStdoutOption, execaSync);
+test('stderr can be an absolute file path - sync', testOutputFile, getAbsolutePath, 'noop-err.js', getStderrOption, execaSync);
+test('stdio[*] can be an absolute file path - sync', testOutputFile, getAbsolutePath, 'noop-fd3.js', getStdioOption, execaSync);
 test('stdout can be a relative file path - sync', testOutputFile, getRelativePath, 'noop.js', getStdoutOption, execaSync);
 test('stderr can be a relative file path - sync', testOutputFile, getRelativePath, 'noop-err.js', getStderrOption, execaSync);
 test('stdio[*] can be a relative file path - sync', testOutputFile, getRelativePath, 'noop-fd3.js', getStdioOption, execaSync);
@@ -81,14 +83,23 @@ test('stdout cannot be a non-file URL - sync', testStdioNonFileUrl, getStdoutOpt
 test('stderr cannot be a non-file URL - sync', testStdioNonFileUrl, getStderrOption, execaSync);
 test('stdio[*] cannot be a non-file URL - sync', testStdioNonFileUrl, getStdioOption, execaSync);
 
-const testInputFileValidUrl = async (t, execaMethod) => {
+const testInvalidInputFile = (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('noop.js', getInputFileOption(false));
+	}, {message: /a file path string or a file URL/});
+};
+
+test('inputFile must be a file URL or string', testInvalidInputFile, execa);
+test('inputFile must be a file URL or string - sync', testInvalidInputFile, execaSync);
+
+const testInputFileValidUrl = async (t, getOptions, execaMethod) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
 	const currentCwd = process.cwd();
 	process.chdir(dirname(filePath));
 
 	try {
-		const {stdout} = await execaMethod('stdin.js', {inputFile: basename(filePath)});
+		const {stdout} = await execaMethod('stdin.js', getOptions(basename(filePath)));
 		t.is(stdout, 'foobar');
 	} finally {
 		process.chdir(currentCwd);
@@ -96,23 +107,25 @@ const testInputFileValidUrl = async (t, execaMethod) => {
 	}
 };
 
-test.serial('inputFile does not need to start with . when being a relative file path', testInputFileValidUrl, execa);
-test.serial('inputFile does not need to start with . when being a relative file path - sync', testInputFileValidUrl, execaSync);
+test.serial('inputFile does not need to start with . when being a relative file path', testInputFileValidUrl, getInputFileOption, execa);
+test.serial('stdin does not need to start with . when being a relative file path', testInputFileValidUrl, getStdinFilePath, execa);
+test.serial('inputFile does not need to start with . when being a relative file path - sync', testInputFileValidUrl, getInputFileOption, execaSync);
+test.serial('stdin does not need to start with . when being a relative file path - sync', testInputFileValidUrl, getStdinFilePath, execaSync);
 
-const testStdioValidUrl = (t, getOptions, execaMethod) => {
+const testFilePathObject = (t, getOptions, execaMethod) => {
 	t.throws(() => {
 		execaMethod('noop.js', getOptions('foobar'));
-	}, {message: /absolute file path/});
+	}, {message: /must be used/});
 };
 
-test('stdin must start with . when being a relative file path', testStdioValidUrl, getStdinOption, execa);
-test('stdout must start with . when being a relative file path', testStdioValidUrl, getStdoutOption, execa);
-test('stderr must start with . when being a relative file path', testStdioValidUrl, getStderrOption, execa);
-test('stdio[*] must start with . when being a relative file path', testStdioValidUrl, getStdioOption, execa);
-test('stdin must start with . when being a relative file path - sync', testStdioValidUrl, getStdinOption, execaSync);
-test('stdout must start with . when being a relative file path - sync', testStdioValidUrl, getStdoutOption, execaSync);
-test('stderr must start with . when being a relative file path - sync', testStdioValidUrl, getStderrOption, execaSync);
-test('stdio[*] must start with . when being a relative file path - sync', testStdioValidUrl, getStdioOption, execaSync);
+test('stdin must be an object when it is a file path string', testFilePathObject, getStdinOption, execa);
+test('stdout must be an object when it is a file path string', testFilePathObject, getStdoutOption, execa);
+test('stderr must be an object when it is a file path string', testFilePathObject, getStderrOption, execa);
+test('stdio[*] must be an object when it is a file path string', testFilePathObject, getStdioOption, execa);
+test('stdin be an object when it is a file path string - sync', testFilePathObject, getStdinOption, execaSync);
+test('stdout be an object when it is a file path string - sync', testFilePathObject, getStdoutOption, execaSync);
+test('stderr be an object when it is a file path string - sync', testFilePathObject, getStderrOption, execaSync);
+test('stdio[*] must be an object when it is a file path string - sync', testFilePathObject, getStdioOption, execaSync);
 
 const testFileError = async (t, mapFile, getOptions) => {
 	await t.throwsAsync(
@@ -127,10 +140,10 @@ test('stdout file URL errors should be handled', testFileError, pathToFileURL, g
 test('stderr file URL errors should be handled', testFileError, pathToFileURL, getStderrOption);
 test('stdio[*] file URL errors should be handled', testFileError, pathToFileURL, getStdioOption);
 test('inputFile file path errors should be handled', testFileError, identity, getInputFileOption);
-test('stdin file path errors should be handled', testFileError, identity, getStdinOption);
-test('stdout file path errors should be handled', testFileError, identity, getStdoutOption);
-test('stderr file path errors should be handled', testFileError, identity, getStderrOption);
-test('stdio[*] file path errors should be handled', testFileError, identity, getStdioOption);
+test('stdin file path errors should be handled', testFileError, getAbsolutePath, getStdinOption);
+test('stdout file path errors should be handled', testFileError, getAbsolutePath, getStdoutOption);
+test('stderr file path errors should be handled', testFileError, getAbsolutePath, getStderrOption);
+test('stdio[*] file path errors should be handled', testFileError, getAbsolutePath, getStdioOption);
 
 const testFileErrorSync = (t, mapFile, getOptions) => {
 	t.throws(() => {
@@ -144,10 +157,10 @@ test('stdout file URL errors should be handled - sync', testFileErrorSync, pathT
 test('stderr file URL errors should be handled - sync', testFileErrorSync, pathToFileURL, getStderrOption);
 test('stdio[*] file URL errors should be handled - sync', testFileErrorSync, pathToFileURL, getStdioOption);
 test('inputFile file path errors should be handled - sync', testFileErrorSync, identity, getInputFileOption);
-test('stdin file path errors should be handled - sync', testFileErrorSync, identity, getStdinOption);
-test('stdout file path errors should be handled - sync', testFileErrorSync, identity, getStdoutOption);
-test('stderr file path errors should be handled - sync', testFileErrorSync, identity, getStderrOption);
-test('stdio[*] file path errors should be handled - sync', testFileErrorSync, identity, getStdioOption);
+test('stdin file path errors should be handled - sync', testFileErrorSync, getAbsolutePath, getStdinOption);
+test('stdout file path errors should be handled - sync', testFileErrorSync, getAbsolutePath, getStdoutOption);
+test('stderr file path errors should be handled - sync', testFileErrorSync, getAbsolutePath, getStderrOption);
+test('stdio[*] file path errors should be handled - sync', testFileErrorSync, getAbsolutePath, getStdioOption);
 
 const testInputFile = async (t, execaMethod) => {
 	const inputFile = tempfile();
@@ -184,16 +197,16 @@ const getStringInput = () => ({input: 'foobar'});
 const getBinaryInput = () => ({input: binaryFoobar});
 
 test('input String and inputFile can be both set', testMultipleInputs, [getInputFileOption, getStringInput], execa);
-test('input String and stdin can be both set', testMultipleInputs, [getStdinOption, getStringInput], execa);
+test('input String and stdin can be both set', testMultipleInputs, [getStdinFilePath, getStringInput], execa);
 test('input Uint8Array and inputFile can be both set', testMultipleInputs, [getInputFileOption, getBinaryInput], execa);
-test('input Uint8Array and stdin can be both set', testMultipleInputs, [getStdinOption, getBinaryInput], execa);
-test('stdin and inputFile can be both set', testMultipleInputs, [getStdinOption, getInputFileOption], execa);
-test('input String, stdin and inputFile can be all set', testMultipleInputs, [getInputFileOption, getStdinOption, getStringInput], execa);
-test('input Uint8Array, stdin and inputFile can be all set', testMultipleInputs, [getInputFileOption, getStdinOption, getBinaryInput], execa);
+test('input Uint8Array and stdin can be both set', testMultipleInputs, [getStdinFilePath, getBinaryInput], execa);
+test('stdin and inputFile can be both set', testMultipleInputs, [getStdinFilePath, getInputFileOption], execa);
+test('input String, stdin and inputFile can be all set', testMultipleInputs, [getInputFileOption, getStdinFilePath, getStringInput], execa);
+test('input Uint8Array, stdin and inputFile can be all set', testMultipleInputs, [getInputFileOption, getStdinFilePath, getBinaryInput], execa);
 test('input String and inputFile can be both set - sync', testMultipleInputs, [getInputFileOption, getStringInput], execaSync);
-test('input String and stdin can be both set - sync', testMultipleInputs, [getStdinOption, getStringInput], execaSync);
+test('input String and stdin can be both set - sync', testMultipleInputs, [getStdinFilePath, getStringInput], execaSync);
 test('input Uint8Array and inputFile can be both set - sync', testMultipleInputs, [getInputFileOption, getBinaryInput], execaSync);
-test('input Uint8Array and stdin can be both set - sync', testMultipleInputs, [getStdinOption, getBinaryInput], execaSync);
-test('stdin and inputFile can be both set - sync', testMultipleInputs, [getStdinOption, getInputFileOption], execaSync);
-test('input String, stdin and inputFile can be all set - sync', testMultipleInputs, [getInputFileOption, getStdinOption, getStringInput], execaSync);
-test('input Uint8Array, stdin and inputFile can be all set - sync', testMultipleInputs, [getInputFileOption, getStdinOption, getBinaryInput], execaSync);
+test('input Uint8Array and stdin can be both set - sync', testMultipleInputs, [getStdinFilePath, getBinaryInput], execaSync);
+test('stdin and inputFile can be both set - sync', testMultipleInputs, [getStdinFilePath, getInputFileOption], execaSync);
+test('input String, stdin and inputFile can be all set - sync', testMultipleInputs, [getInputFileOption, getStdinFilePath, getStringInput], execaSync);
+test('input Uint8Array, stdin and inputFile can be all set - sync', testMultipleInputs, [getInputFileOption, getStdinFilePath, getBinaryInput], execaSync);

@@ -190,8 +190,8 @@ expectError(execa('unicorns', {stdin: numberGenerator()}));
 expectError(execa('unicorns', {stdin: [numberGenerator()]}));
 execa('unicorns', {stdin: fileUrl});
 execa('unicorns', {stdin: [fileUrl]});
-execa('unicorns', {stdin: './test'});
-execa('unicorns', {stdin: ['./test']});
+execa('unicorns', {stdin: {file: './test'}});
+execa('unicorns', {stdin: [{file: './test'}]});
 execa('unicorns', {stdin: 1});
 execa('unicorns', {stdin: [1]});
 execa('unicorns', {stdin: undefined});
@@ -219,8 +219,8 @@ expectError(execa('unicorns', {stdout: new ReadableStream()}));
 expectError(execa('unicorn', {stdout: [new ReadableStream()]}));
 execa('unicorns', {stdout: fileUrl});
 execa('unicorns', {stdout: [fileUrl]});
-execa('unicorns', {stdout: './test'});
-execa('unicorns', {stdout: ['./test']});
+execa('unicorns', {stdout: {file: './test'}});
+execa('unicorns', {stdout: [{file: './test'}]});
 execa('unicorns', {stdout: 1});
 execa('unicorns', {stdout: [1]});
 execa('unicorns', {stdout: undefined});
@@ -248,8 +248,8 @@ expectError(execa('unicorns', {stderr: new ReadableStream()}));
 expectError(execa('unicorns', {stderr: [new ReadableStream()]}));
 execa('unicorns', {stderr: fileUrl});
 execa('unicorns', {stderr: [fileUrl]});
-execa('unicorns', {stderr: './test'});
-execa('unicorns', {stderr: ['./test']});
+execa('unicorns', {stderr: {file: './test'}});
+execa('unicorns', {stderr: [{file: './test'}]});
 execa('unicorns', {stderr: 1});
 execa('unicorns', {stderr: [1]});
 execa('unicorns', {stderr: undefined});
@@ -271,7 +271,7 @@ execa('unicorns', {stdio: 'inherit'});
 expectError(execa('unicorns', {stdio: 'ipc'}));
 expectError(execa('unicorns', {stdio: 1}));
 expectError(execa('unicorns', {stdio: fileUrl}));
-expectError(execa('unicorns', {stdio: './test'}));
+expectError(execa('unicorns', {stdio: {file: './test'}}));
 expectError(execa('unicorns', {stdio: new Writable()}));
 expectError(execa('unicorns', {stdio: new Readable()}));
 expectError(execa('unicorns', {stdio: new WritableStream()}));
@@ -302,7 +302,7 @@ execa('unicorns', {
 		1,
 		undefined,
 		fileUrl,
-		'./test',
+		{file: './test'},
 		new Writable(),
 		new Readable(),
 		new WritableStream(),
@@ -324,7 +324,7 @@ execa('unicorns', {
 		[1],
 		[undefined],
 		[fileUrl],
-		['./test'],
+		[{file: './test'}],
 		[new Writable()],
 		[new Readable()],
 		[new WritableStream()],

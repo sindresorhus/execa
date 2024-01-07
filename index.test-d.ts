@@ -78,6 +78,7 @@ try {
 	expectType<string>(unicornsResult.stderr);
 	expectType<string>(unicornsResult.stdio[2]);
 	expectType<string | undefined>(unicornsResult.all);
+	expectType<string | undefined>(unicornsResult.stdio[3 as number]);
 
 	const bufferResult = await execaBufferPromise;
 	expectType<Uint8Array>(bufferResult.stdout);

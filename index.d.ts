@@ -150,7 +150,12 @@ OptionsType
 type MapStdioOptions<
 	StdioOptionsArrayType extends StdioOptionsArray,
 	OptionsType extends Options = Options,
-> = {[StreamIndex in keyof StdioOptionsArrayType & string]: StdioOutput<StreamIndex, OptionsType>};
+> = {
+	[StreamIndex in keyof StdioOptionsArrayType]: StdioOutput<
+	StreamIndex extends string ? StreamIndex : string,
+	OptionsType
+	>
+};
 
 export type Options<IsSync extends boolean = boolean> = {
 	/**

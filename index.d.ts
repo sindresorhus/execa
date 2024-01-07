@@ -15,30 +15,32 @@ type CommonStdioOption =
 	| URL
 	| {file: string};
 
-type InputStdioOption =
-	| Iterable<string | Uint8Array>
+type InputStdioOption<IsSync extends boolean = boolean> = IsSync extends true
+	? Uint8Array
+	: Iterable<string | Uint8Array>
 	| AsyncIterable<string | Uint8Array>
 	| Uint8Array
 	| Readable
 	| ReadableStream;
 
-type OutputStdioOption =
-	| Writable
+type OutputStdioOption<IsSync extends boolean = boolean> = IsSync extends true
+	? never
+	: Writable
 	| WritableStream;
 
-export type StdinOption =
-	CommonStdioOption | InputStdioOption
-	| Array<CommonStdioOption | InputStdioOption>;
-export type StdoutStderrOption =
-	CommonStdioOption | OutputStdioOption
-	| Array<CommonStdioOption | OutputStdioOption>;
-export type StdioOption =
-	CommonStdioOption | InputStdioOption | OutputStdioOption
-	| Array<CommonStdioOption | InputStdioOption | OutputStdioOption>;
+export type StdinOption<IsSync extends boolean = boolean> =
+	CommonStdioOption | InputStdioOption<IsSync>
+	| Array<CommonStdioOption | InputStdioOption<IsSync>>;
+export type StdoutStderrOption<IsSync extends boolean = boolean> =
+	CommonStdioOption | OutputStdioOption<IsSync>
+	| Array<CommonStdioOption | OutputStdioOption<IsSync>>;
+export type StdioOption<IsSync extends boolean = boolean> =
+	CommonStdioOption | InputStdioOption | OutputStdioOption<IsSync>
+	| Array<CommonStdioOption | InputStdioOption | OutputStdioOption<IsSync>>;
 
-type StdioOptions =
+type StdioOptions<IsSync extends boolean = boolean> =
 	| BaseStdioOption
-	| readonly [StdinOption, StdoutStderrOption, StdoutStderrOption, ...StdioOption[]];
+	| readonly [StdinOption<IsSync>, StdoutStderrOption<IsSync>, StdoutStderrOption<IsSync>, ...Array<StdioOption<IsSync>>];
 
 type EncodingOption =
   | 'utf8'
@@ -62,16 +64,7 @@ type BufferEncodingOption = 'buffer';
 type GetStdoutStderrType<EncodingType extends EncodingOption> =
   EncodingType extends DefaultEncodingOption ? string : Uint8Array;
 
-export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
-	/**
-	Kill the spawned process when the parent process exits unless either:
-	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
-
-	@default true
-	*/
-	readonly cleanup?: boolean;
-
+export type Options<IsSync extends boolean = boolean, EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
 	Prefer locally installed binaries when looking for a binary to execute.
 
@@ -102,13 +95,18 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly execPath?: string | URL;
 
 	/**
-	Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.
+	Write some input to the child process' `stdin`.
 
-	If the spawned process fails, `error.stdout`, `error.stderr`, and `error.all` will contain the buffered data.
-
-	@default true
+	See also the `inputFile` and `stdin` options.
 	*/
-	readonly buffer?: boolean;
+	readonly input?: IsSync extends true ? string | Uint8Array : string | Uint8Array | Readable;
+
+	/**
+	Use a file as input to the child process' `stdin`.
+
+	See also the `input` and `stdin` options.
+	*/
+	readonly inputFile?: string | URL;
 
 	/**
 	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
@@ -129,7 +127,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
-	readonly stdin?: StdinOption;
+	readonly stdin?: StdinOption<IsSync>;
 
 	/**
 	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
@@ -148,7 +146,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default 'pipe'
 	*/
-	readonly stdout?: StdoutStderrOption;
+	readonly stdout?: StdoutStderrOption<IsSync>;
 
 	/**
 	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
@@ -167,7 +165,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default 'pipe'
 	*/
-	readonly stderr?: StdoutStderrOption;
+	readonly stderr?: StdoutStderrOption<IsSync>;
 
 	/**
 	Like the `stdin`, `stdout` and `stderr` options but for all file descriptors at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.
@@ -178,7 +176,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 
 	@default 'pipe'
 	*/
-	readonly stdio?: StdioOptions;
+	readonly stdio?: StdioOptions<IsSync>;
 
 	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.
@@ -186,13 +184,6 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	@default true
 	*/
 	readonly reject?: boolean;
-
-	/**
-	Add an `.all` property on the promise and the resolved value. The property contains the output of the process with `stdout` and `stderr` interleaved.
-
-	@default false
-	*/
-	readonly all?: boolean;
 
 	/**
 	Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
@@ -226,24 +217,6 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
 	*/
 	readonly argv0?: string;
-
-	/**
-	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:
-	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
-	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
-
-	[More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization)
-
-	@default 'json'
-	*/
-	readonly serialization?: 'json' | 'advanced';
-
-	/**
-	Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
-
-	@default false
-	*/
-	readonly detached?: boolean;
 
 	/**
 	Sets the user identity of the process.
@@ -296,6 +269,72 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	readonly killSignal?: string | number;
 
 	/**
+	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
+
+	@default false
+	*/
+	readonly windowsVerbatimArguments?: boolean;
+
+	/**
+	On Windows, do not create a new console window. Please note this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
+
+	@default true
+	*/
+	readonly windowsHide?: boolean;
+
+	/**
+	Print each command on `stderr` before executing it.
+
+	This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
+
+	@default false
+	*/
+	readonly verbose?: boolean;
+} & (IsSync extends true ? {} : {
+	/**
+	Kill the spawned process when the parent process exits unless either:
+	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+
+	@default true
+	*/
+	readonly cleanup?: boolean;
+
+	/**
+	Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.
+
+	If the spawned process fails, `error.stdout`, `error.stderr`, and `error.all` will contain the buffered data.
+
+	@default true
+	*/
+	readonly buffer?: boolean;
+
+	/**
+	Add an `.all` property on the promise and the resolved value. The property contains the output of the process with `stdout` and `stderr` interleaved.
+
+	@default false
+	*/
+	readonly all?: boolean;
+
+	/**
+	Specify the kind of serialization used for sending messages between processes when using the `stdio: 'ipc'` option or `execaNode()`:
+	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
+	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
+
+	[More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization)
+
+	@default 'json'
+	*/
+	readonly serialization?: 'json' | 'advanced';
+
+	/**
+	Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
+
+	@default false
+	*/
+	readonly detached?: boolean;
+
+	/**
 	You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
 	When `AbortController.abort()` is called, [`.isCanceled`](https://github.com/sindresorhus/execa#iscanceled) becomes `true`.
@@ -320,62 +359,9 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	```
 	*/
 	readonly signal?: AbortSignal;
+});
 
-	/**
-	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
-
-	@default false
-	*/
-	readonly windowsVerbatimArguments?: boolean;
-
-	/**
-	On Windows, do not create a new console window. Please note this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
-
-	@default true
-	*/
-	readonly windowsHide?: boolean;
-
-	/**
-	Print each command on `stderr` before executing it.
-
-	This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
-
-	@default false
-	*/
-	readonly verbose?: boolean;
-};
-
-export type Options<EncodingType extends EncodingOption = DefaultEncodingOption> = {
-	/**
-	Write some input to the child process' `stdin`.
-
-	See also the `inputFile` and `stdin` options.
-	*/
-	readonly input?: string | Uint8Array | Readable;
-
-	/**
-	Use a file as input to the child process' `stdin`.
-
-	See also the `input` and `stdin` options.
-	*/
-	readonly inputFile?: string | URL;
-} & CommonOptions<EncodingType>;
-
-export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
-	/**
-	Write some input to the `stdin` of your binary.
-
-	If the input is a file, use the `inputFile` option instead.
-	*/
-	readonly input?: string | Uint8Array;
-
-	/**
-	Use a file as input to the the `stdin` of your binary.
-
-	If the input is not a file, use the `input` option instead.
-	*/
-	readonly inputFile?: string;
-} & CommonOptions<EncodingType>;
+export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = Options<true, EncodingType>;
 
 export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
 	/**
@@ -391,11 +377,21 @@ export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOpt
 	@default process.execArgv
 	*/
 	readonly nodeOptions?: string[];
-} & Options<EncodingType>;
+} & Options<false, EncodingType>;
 
 type StdoutStderrAll = string | Uint8Array | undefined;
 
-export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
+/**
+Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
+
+The child process fails when:
+- its exit code is not `0`
+- it was terminated with a signal
+- timing out
+- being canceled
+- there's not enough memory or there are already too many child processes
+*/
+export type ExecaReturnValue<IsSync extends boolean, StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	The file and arguments that were run, for logging purposes.
 
@@ -469,30 +465,6 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 	The `cwd` of the command if provided in the command options. Otherwise it is `process.cwd()`.
 	*/
 	cwd: string;
-};
-
-export type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
-} & ExecaReturnBase<StdoutStderrType>;
-
-/**
-Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
-
-The child process fails when:
-- its exit code is not `0`
-- it was terminated with a signal
-- timing out
-- being canceled
-- there's not enough memory or there are already too many child processes
-*/
-export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> = {
-	/**
-	The output of the process with `stdout` and `stderr` interleaved.
-
-	This is `undefined` if either:
-	- the `all` option is `false` (default value)
-  - both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
-	*/
-	all?: StdoutStderrType;
 
 	/**
 	Whether the process was canceled.
@@ -500,9 +472,20 @@ export type ExecaReturnValue<StdoutStderrType extends StdoutStderrAll = string> 
 	You can cancel the spawned process using the [`signal`](https://github.com/sindresorhus/execa#signal-1) option.
 	*/
 	isCanceled: boolean;
-} & ExecaSyncReturnValue<StdoutStderrType>;
+} & (IsSync extends true ? {} : {
+	/**
+	The output of the process with `stdout` and `stderr` interleaved.
 
-export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = {
+	This is `undefined` if either:
+	- the `all` option is `false` (default value)
+	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+	*/
+	all?: StdoutStderrType;
+});
+
+type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = ExecaReturnValue<true, StdoutStderrType>;
+
+export type ExecaError<IsSync extends boolean = boolean, StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -521,23 +504,9 @@ export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = 
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/
 	originalMessage?: string;
-} & Error & ExecaReturnBase<StdoutStderrType>;
+} & Error & ExecaReturnValue<IsSync, StdoutStderrType>;
 
-export type ExecaError<StdoutStderrType extends StdoutStderrAll = string> = {
-	/**
-	The output of the process with `stdout` and `stderr` interleaved.
-
-	This is `undefined` if either:
-	- the `all` option is `false` (default value)
-	- `execaSync()` was used
-	*/
-	all?: StdoutStderrType;
-
-	/**
-	Whether the process was canceled.
-	*/
-	isCanceled: boolean;
-} & ExecaSyncError<StdoutStderrType>;
+export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = ExecaError<true, StdoutStderrType>;
 
 export type KillOptions = {
 	/**
@@ -561,8 +530,8 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	all?: Readable;
 
 	catch<ResultType = never>(
-		onRejected?: (reason: ExecaError<StdoutStderrType>) => ResultType | PromiseLike<ResultType>
-	): Promise<ExecaReturnValue<StdoutStderrType> | ResultType>;
+		onRejected?: (reason: ExecaError<false, StdoutStderrType>) => ResultType | PromiseLike<ResultType>
+	): Promise<ExecaReturnValue<false, StdoutStderrType> | ResultType>;
 
 	/**
 	Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`. Note that this graceful termination does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events) (`SIGKILL` and `SIGTERM` has the same effect of force-killing the process immediately.) If you want to achieve graceful termination on Windows, you have to use other means, such as [`taskkill`](https://github.com/sindresorhus/taskkill).
@@ -606,7 +575,7 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 
 export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &
 ExecaChildPromise<StdoutStderrType> &
-Promise<ExecaReturnValue<StdoutStderrType>>;
+Promise<ExecaReturnValue<false, StdoutStderrType>>;
 
 /**
 Executes a command using `file ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a `childProcess`.
@@ -722,11 +691,11 @@ setTimeout(() => {
 export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string | URL,
 	arguments?: readonly string[],
-	options?: Options<EncodingType>
+	options?: Options<false, EncodingType>
 ): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string | URL,
-	options?: Options<EncodingType>
+	options?: Options<false, EncodingType>
 ): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 
 /**
@@ -794,12 +763,12 @@ try {
 export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string | URL,
 	arguments?: readonly string[],
-	options?: SyncOptions<EncodingType>
-): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
+	options?: Options<true, EncodingType>
+): ExecaReturnValue<true, GetStdoutStderrType<EncodingType>>;
 export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
 	file: string | URL,
-	options?: SyncOptions<EncodingType>
-): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
+	options?: Options<true, EncodingType>
+): ExecaReturnValue<true, GetStdoutStderrType<EncodingType>>;
 
 /**
 Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
@@ -824,7 +793,7 @@ console.log(stdout);
 ```
 */
 export function execaCommand<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	command: string, options?: Options<EncodingType>
+	command: string, options?: Options<false, EncodingType>
 ): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
 
 /**
@@ -846,15 +815,14 @@ console.log(stdout);
 ```
 */
 export function execaCommandSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	command: string, options?: SyncOptions<EncodingType>
-): ExecaSyncReturnValue<GetStdoutStderrType<EncodingType>>;
+	command: string, options?: Options<true, EncodingType>
+): ExecaReturnValue<true, GetStdoutStderrType<EncodingType>>;
 
 type TemplateExpression =
 	| string
 	| number
-	| ExecaReturnValue<string | Uint8Array>
-	| ExecaSyncReturnValue<string | Uint8Array>
-	| Array<string | number | ExecaReturnValue<string | Uint8Array> | ExecaSyncReturnValue<string | Uint8Array>>;
+	| ExecaReturnValue<boolean, string | Uint8Array>
+	| Array<string | number | ExecaReturnValue<boolean, string | Uint8Array>>;
 
 type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	/**
@@ -880,9 +848,9 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	//=> 'rainbows'
 	```
 	*/
-	(options: Options<undefined>): Execa$<StdoutStderrType>;
-	(options: Options): Execa$;
-	(options: Options<BufferEncodingOption>): Execa$<Uint8Array>;
+	(options: Options<false, undefined>): Execa$<StdoutStderrType>;
+	(options: Options<false>): Execa$;
+	(options: Options<false, BufferEncodingOption>): Execa$<Uint8Array>;
 	(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
@@ -938,7 +906,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	sync(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaSyncReturnValue<StdoutStderrType>;
+	): ExecaReturnValue<true, StdoutStderrType>;
 
 	/**
 	Same as $\`command\` but synchronous.
@@ -990,7 +958,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	s(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaSyncReturnValue<StdoutStderrType>;
+	): ExecaReturnValue<true, StdoutStderrType>;
 };
 
 /**

@@ -413,8 +413,10 @@ export type ExecaReturnBase<StdoutStderrType extends StdoutStderrAll> = {
 
 	/**
 	The numeric exit code of the process that was run.
+
+	This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal-1).
 	*/
-	exitCode: number;
+	exitCode?: number;
 
 	/**
 	The output of the process on `stdout`.

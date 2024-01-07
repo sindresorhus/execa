@@ -255,3 +255,15 @@ test('stdin can be ["overlapped", "pipe"]', testOverlapped, getStdinOption);
 test('stdout can be ["overlapped", "pipe"]', testOverlapped, getStdoutOption);
 test('stderr can be ["overlapped", "pipe"]', testOverlapped, getStderrOption);
 test('stdio[*] can be ["overlapped", "pipe"]', testOverlapped, getStdioOption);
+
+const testDestroyStandard = async (t, optionName) => {
+	await t.throwsAsync(
+		execa('forever.js', {timeout: 1, [optionName]: [process[optionName], 'pipe']}),
+		{message: /timed out/},
+	);
+	t.false(process[optionName].destroyed);
+};
+
+test('Does not destroy process.stdin on errors', testDestroyStandard, 'stdin');
+test('Does not destroy process.stdout on errors', testDestroyStandard, 'stdout');
+test('Does not destroy process.stderr on errors', testDestroyStandard, 'stderr');

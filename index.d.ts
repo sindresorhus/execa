@@ -587,8 +587,12 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	all?: AllOutput<OptionsType>;
 });
 
-export type ExecaReturnValue<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType>;
-export type ExecaSyncReturnValue<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType>;
+export type ExecaReturnValue<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
+export type ExecaSyncReturnValue<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
+
+type ErrorUnlessReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false
+	? Partial<ExecaCommonError>
+	: {};
 
 type ExecaCommonError = {
 	/**
@@ -611,8 +615,8 @@ type ExecaCommonError = {
 	originalMessage?: string;
 } & Error;
 
-export type ExecaError<OptionsType extends Options = Options> = ExecaCommonError & ExecaReturnValue<OptionsType>;
-export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonError & ExecaSyncReturnValue<OptionsType>;
+export type ExecaError<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType> & ExecaCommonError;
+export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType> & ExecaCommonError;
 
 export type KillOptions = {
 	/**

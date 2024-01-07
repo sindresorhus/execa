@@ -9,44 +9,44 @@ import {setFixtureDir} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-const pipeToProcess = async (t, fixtureName, funcName) => {
-	const {stdout} = await execa(fixtureName, ['test'], {all: true})[funcName](execa('stdin.js'));
+const pipeToProcess = async (t, index, funcName) => {
+	const {stdout} = await execa('noop-fd.js', [`${index}`, 'test'], {all: true})[funcName](execa('stdin.js'));
 	t.is(stdout, 'test');
 };
 
-test('pipeStdout() can pipe to Execa child processes', pipeToProcess, 'noop.js', 'pipeStdout');
-test('pipeStderr() can pipe to Execa child processes', pipeToProcess, 'noop-err.js', 'pipeStderr');
-test('pipeAll() can pipe stdout to Execa child processes', pipeToProcess, 'noop.js', 'pipeAll');
-test('pipeAll() can pipe stderr to Execa child processes', pipeToProcess, 'noop-err.js', 'pipeAll');
+test('pipeStdout() can pipe to Execa child processes', pipeToProcess, 1, 'pipeStdout');
+test('pipeStderr() can pipe to Execa child processes', pipeToProcess, 2, 'pipeStderr');
+test('pipeAll() can pipe stdout to Execa child processes', pipeToProcess, 1, 'pipeAll');
+test('pipeAll() can pipe stderr to Execa child processes', pipeToProcess, 2, 'pipeAll');
 
-const pipeToStream = async (t, fixtureName, funcName, streamName) => {
+const pipeToStream = async (t, index, funcName) => {
 	const stream = new PassThrough();
-	const result = await execa(fixtureName, ['test'], {all: true})[funcName](stream);
-	t.is(result[streamName], 'test');
-	t.is(await getStream(stream), 'test\n');
+	const result = await execa('noop-fd.js', [`${index}`, 'test'], {all: true})[funcName](stream);
+	t.is(result.stdio[index], 'test');
+	t.is(await getStream(stream), 'test');
 };
 
-test('pipeStdout() can pipe to streams', pipeToStream, 'noop.js', 'pipeStdout', 'stdout');
-test('pipeStderr() can pipe to streams', pipeToStream, 'noop-err.js', 'pipeStderr', 'stderr');
-test('pipeAll() can pipe stdout to streams', pipeToStream, 'noop.js', 'pipeAll', 'stdout');
-test('pipeAll() can pipe stderr to streams', pipeToStream, 'noop-err.js', 'pipeAll', 'stderr');
+test('pipeStdout() can pipe to streams', pipeToStream, 1, 'pipeStdout');
+test('pipeStderr() can pipe to streams', pipeToStream, 2, 'pipeStderr');
+test('pipeAll() can pipe stdout to streams', pipeToStream, 1, 'pipeAll');
+test('pipeAll() can pipe stderr to streams', pipeToStream, 2, 'pipeAll');
 
-const pipeToFile = async (t, fixtureName, funcName, streamName) => {
+const pipeToFile = async (t, index, funcName) => {
 	const file = tempfile();
-	const result = await execa(fixtureName, ['test'], {all: true})[funcName](file);
-	t.is(result[streamName], 'test');
-	t.is(await readFile(file, 'utf8'), 'test\n');
+	const result = await execa('noop-fd.js', [`${index}`, 'test'], {all: true})[funcName](file);
+	t.is(result.stdio[index], 'test');
+	t.is(await readFile(file, 'utf8'), 'test');
 	await rm(file);
 };
 
 // `test.serial()` is due to a race condition: `execa(...).pipe*(file)` might resolve before the file stream has resolved
-test.serial('pipeStdout() can pipe to files', pipeToFile, 'noop.js', 'pipeStdout', 'stdout');
-test.serial('pipeStderr() can pipe to files', pipeToFile, 'noop-err.js', 'pipeStderr', 'stderr');
-test.serial('pipeAll() can pipe stdout to files', pipeToFile, 'noop.js', 'pipeAll', 'stdout');
-test.serial('pipeAll() can pipe stderr to files', pipeToFile, 'noop-err.js', 'pipeAll', 'stderr');
+test.serial('pipeStdout() can pipe to files', pipeToFile, 1, 'pipeStdout');
+test.serial('pipeStderr() can pipe to files', pipeToFile, 2, 'pipeStderr');
+test.serial('pipeAll() can pipe stdout to files', pipeToFile, 1, 'pipeAll');
+test.serial('pipeAll() can pipe stderr to files', pipeToFile, 2, 'pipeAll');
 
 const invalidTarget = (t, funcName, getTarget) => {
-	t.throws(() => execa('noop.js', {all: true})[funcName](getTarget()), {
+	t.throws(() => execa('empty.js', {all: true})[funcName](getTarget()), {
 		message: /a stream or an Execa child process/,
 	});
 };
@@ -69,12 +69,12 @@ test('Must set "stdout" option to "pipe" to use pipeStdout()', invalidSource, 'p
 test('Must set "stderr" option to "pipe" to use pipeStderr()', invalidSource, 'pipeStderr');
 test('Must set "stdout" or "stderr" option to "pipe" to use pipeAll()', invalidSource, 'pipeAll');
 
-const invalidPipeToProcess = async (t, fixtureName, funcName) => {
-	t.throws(() => execa(fixtureName, ['test'], {all: true})[funcName](execa('stdin.js', {stdin: 'ignore'})), {
+const invalidPipeToProcess = async (t, index, funcName) => {
+	t.throws(() => execa('noop-fd.js', [`${index}`, 'test'], {all: true})[funcName](execa('stdin.js', {stdin: 'ignore'})), {
 		message: /stdin must be available/,
 	});
 };
 
-test('Must set target "stdin" option to "pipe" to use pipeStdout()', invalidPipeToProcess, 'noop.js', 'pipeStdout');
-test('Must set target "stdin" option to "pipe" to use pipeStderr()', invalidPipeToProcess, 'noop-err.js', 'pipeStderr');
-test('Must set target "stdin" option to "pipe" to use pipeAll()', invalidPipeToProcess, 'noop.js', 'pipeAll');
+test('Must set target "stdin" option to "pipe" to use pipeStdout()', invalidPipeToProcess, 1, 'pipeStdout');
+test('Must set target "stdin" option to "pipe" to use pipeStderr()', invalidPipeToProcess, 2, 'pipeStderr');
+test('Must set target "stdin" option to "pipe" to use pipeAll()', invalidPipeToProcess, 1, 'pipeAll');

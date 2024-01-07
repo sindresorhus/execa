@@ -255,7 +255,7 @@ This is the preferred method when executing Node.js files.
 Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
 - the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
 - the [`shell`](#shell) option cannot be used
-- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio)
+- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio-1)
 
 #### $\`command\`
 
@@ -289,7 +289,7 @@ This is the preferred method when executing a user-supplied `command` string, su
 
 Same as [`execa()`](#execacommandcommand-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio) and [`input`](#input) options cannot be a stream nor an iterable.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be a stream nor an iterable.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -298,7 +298,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [$\`command\`](#command) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio) and [`input`](#input) options cannot be a stream nor an iterable.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be a stream nor an iterable.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -306,7 +306,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio) and [`input`](#input) options cannot be a stream nor an iterable.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be a stream nor an iterable.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -432,6 +432,14 @@ This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
+#### stdio
+
+Type: `Array<string | Uint8Array | undefined>`
+
+The output of the process on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [other file descriptors](#stdio-1).
+
+Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+
 #### failed
 
 Type: `boolean`
@@ -490,19 +498,19 @@ Type: `string`
 
 Error message when the child process failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the child process errored.
 
-The child process [`stderr`](#stderr) then [`stdout`](#stdout) are appended to the end, separated with newlines and not interleaved.
+The child process [`stderr`](#stderr), [`stdout`](#stdout) and other [file descriptors' output](#stdio) are appended to the end, separated with newlines and not interleaved.
 
 #### shortMessage
 
 Type: `string`
 
-This is the same as the [`message` property](#message) except it does not include the child process `stdout`/`stderr`.
+This is the same as the [`message` property](#message) except it does not include the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio).
 
 #### originalMessage
 
 Type: `string | undefined`
 
-Original error message. This is the same as the `message` property excluding the child process `stdout`/`stderr` and some additional information added by Execa.
+Original error message. This is the same as the `message` property excluding the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio) and some additional information added by Execa.
 
 This is `undefined` unless the child process exited due to an `error` event or a timeout.
 
@@ -554,7 +562,7 @@ Default: `true`
 
 Buffer the output from the spawned process. When set to `false`, you must read the output of [`stdout`](#stdout-1) and [`stderr`](#stderr-1) (or [`all`](#all) if the [`all`](#all-2) option is `true`). Otherwise the returned promise will not be resolved/rejected.
 
-If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stderr), and [`error.all`](#all) will contain the buffered data.
+If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stderr), [`error.all`](#all) and [`error.stdio`](#stdio) will contain the buffered data.
 
 #### input
 
@@ -699,7 +707,7 @@ Explicitly set the value of `argv[0]` sent to the child process. This will be se
 Type: `string`\
 Default: `'json'`
 
-Specify the kind of serialization used for sending messages between processes when using the [`stdio: 'ipc'`](#stdio) option or [`execaNode()`](#execanodescriptpath-arguments-options):
+Specify the kind of serialization used for sending messages between processes when using the [`stdio: 'ipc'`](#stdio-1) option or [`execaNode()`](#execanodescriptpath-arguments-options):
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 
@@ -740,7 +748,7 @@ We recommend against using this option since it is:
 Type: `string`\
 Default: `utf8`
 
-Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'`, then `stdout` and `stderr` will be a `Uint8Array` instead of a string.
+Specify the character encoding used to decode the [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio) output. If set to `'buffer'`, then `stdout`, `stderr` and `stdio` will be `Uint8Array`s instead of strings.
 
 #### timeout
 
@@ -754,7 +762,7 @@ If timeout is greater than `0`, the parent will send the signal identified by th
 Type: `number`\
 Default: `100_000_000` (100 MB)
 
-Largest amount of data in bytes allowed on `stdout` or `stderr`.
+Largest amount of data in bytes allowed on [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio).
 
 #### killSignal
 

@@ -1,6 +1,5 @@
 import path from 'node:path';
 import process from 'node:process';
-import {setTimeout} from 'node:timers/promises';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
@@ -8,17 +7,43 @@ import getNode from 'get-node';
 import which from 'which';
 import {execa, execaSync, execaNode, $} from '../index.js';
 import {setFixtureDir, PATH_KEY, FIXTURES_DIR_URL} from './helpers/fixtures-dir.js';
+import {identity, fullStdio} from './helpers/stdio.js';
+import {stringGenerator} from './helpers/generator.js';
 
 setFixtureDir();
 process.env.FOO = 'foo';
 
 const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;
 
-const identity = value => value;
+const testOutput = async (t, index, execaCommand) => {
+	const {stdout, stderr, stdio} = await execaCommand('noop-fd.js', [`${index}`, 'foobar'], fullStdio);
+	t.is(stdio[index], 'foobar');
 
-test('execa()', async t => {
-	const {stdout} = await execa('noop.js', ['foo']);
-	t.is(stdout, 'foo');
+	if (index === 1) {
+		t.is(stdio[index], stdout);
+	} else if (index === 2) {
+		t.is(stdio[index], stderr);
+	}
+};
+
+test('can return stdout', testOutput, 1, execa);
+test('can return stderr', testOutput, 2, execa);
+test('can return output stdio[*]', testOutput, 3, execa);
+test('can return stdout - sync', testOutput, 1, execaSync);
+test('can return stderr - sync', testOutput, 2, execaSync);
+test('can return output stdio[*] - sync', testOutput, 3, execaSync);
+
+const testNoStdin = async (t, execaCommand) => {
+	const {stdio} = await execaCommand('noop.js', ['foobar']);
+	t.is(stdio[0], undefined);
+};
+
+test('cannot return stdin', testNoStdin, execa);
+test('cannot return stdin - sync', testNoStdin, execaSync);
+
+test('cannot return input stdio[*]', async t => {
+	const {stdio} = await execa('stdin-fd.js', ['3'], {stdio: ['pipe', 'pipe', 'pipe', stringGenerator()]});
+	t.is(stdio[3], undefined);
 });
 
 if (process.platform === 'win32') {
@@ -33,12 +58,7 @@ if (process.platform === 'win32') {
 	});
 }
 
-test('execaSync()', t => {
-	const {stdout} = execaSync('noop.js', ['foo']);
-	t.is(stdout, 'foo');
-});
-
-test('execaSync() throws error if written to stderr', t => {
+test('execaSync() throws error if ENOENT', t => {
 	t.throws(() => {
 		execaSync('foo');
 	}, {message: ENOENT_REGEXP});
@@ -54,32 +74,23 @@ test('skip throwing when using reject option in sync mode', t => {
 	t.is(exitCode, 2);
 });
 
-test('stripFinalNewline: true', async t => {
-	const {stdout} = await execa('noop.js', ['foo']);
-	t.is(stdout, 'foo');
-});
+const testStripFinalNewline = async (t, index, stripFinalNewline, execaCommand) => {
+	const {stdio} = await execaCommand('noop-fd.js', [`${index}`, 'foobar\n'], {...fullStdio, stripFinalNewline});
+	t.is(stdio[index], `foobar${stripFinalNewline ? '' : '\n'}`);
+};
 
-test('stripFinalNewline: false', async t => {
-	const {stdout} = await execa('noop.js', ['foo'], {stripFinalNewline: false});
-	t.is(stdout, 'foo\n');
-});
-
-test('stripFinalNewline on failure', async t => {
-	const {stderr} = await t.throwsAsync(execa('noop-throw.js', ['foo'], {stripFinalNewline: true}));
-	t.is(stderr, 'foo');
-});
-
-test('stripFinalNewline in sync mode', t => {
-	const {stdout} = execaSync('noop.js', ['foo'], {stripFinalNewline: true});
-	t.is(stdout, 'foo');
-});
-
-test('stripFinalNewline in sync mode on failure', t => {
-	const {stderr} = t.throws(() => {
-		execaSync('noop-throw.js', ['foo'], {stripFinalNewline: true});
-	});
-	t.is(stderr, 'foo');
-});
+test('stripFinalNewline: true with stdout', testStripFinalNewline, 1, undefined, execa);
+test('stripFinalNewline: false with stdout', testStripFinalNewline, 1, false, execa);
+test('stripFinalNewline: true with stderr', testStripFinalNewline, 2, undefined, execa);
+test('stripFinalNewline: false with stderr', testStripFinalNewline, 2, false, execa);
+test('stripFinalNewline: true with stdio[*]', testStripFinalNewline, 3, undefined, execa);
+test('stripFinalNewline: false with stdio[*]', testStripFinalNewline, 3, false, execa);
+test('stripFinalNewline: true with stdout - sync', testStripFinalNewline, 1, undefined, execaSync);
+test('stripFinalNewline: false with stdout - sync', testStripFinalNewline, 1, false, execaSync);
+test('stripFinalNewline: true with stderr - sync', testStripFinalNewline, 2, undefined, execaSync);
+test('stripFinalNewline: false with stderr - sync', testStripFinalNewline, 2, false, execaSync);
+test('stripFinalNewline: true with stdio[*] - sync', testStripFinalNewline, 3, undefined, execaSync);
+test('stripFinalNewline: false with stdio[*] - sync', testStripFinalNewline, 3, false, execaSync);
 
 const getPathWithoutLocalDir = () => {
 	const newPath = process.env[PATH_KEY].split(path.delimiter).filter(pathDir => !BIN_DIR_REGEXP.test(pathDir)).join(path.delimiter);
@@ -125,34 +136,16 @@ const testExecPath = async (t, mapPath) => {
 test.serial('execPath option', testExecPath, identity);
 test.serial('execPath option can be a file URL', testExecPath, pathToFileURL);
 
-const emitStdinError = async subprocess => {
-	await setTimeout(0);
-	subprocess.stdin.emit('error', new Error('test'));
-};
-
-test('stdin errors are handled', async t => {
-	const subprocess = execa('forever.js');
-	await Promise.all([
-		t.throwsAsync(subprocess, {message: /test/}),
-		emitStdinError(subprocess),
-	]);
-});
-
 test('child process errors are handled', async t => {
 	const subprocess = execa('noop.js');
 	subprocess.emit('error', new Error('test'));
 	await t.throwsAsync(subprocess, {message: /test/});
 });
 
-test('child process errors rejects promise right away', async t => {
-	const subprocess = execa('noop.js');
-	subprocess.emit('error', new Error('test'));
-	await t.throwsAsync(subprocess, {message: /test/});
-});
-
-test('execa() returns a promise with pid', t => {
-	const {pid} = execa('noop.js', ['foo']);
-	t.is(typeof pid, 'number');
+test('execa() returns a promise with pid', async t => {
+	const subprocess = execa('noop.js', ['foo']);
+	t.is(typeof subprocess.pid, 'number');
+	await subprocess;
 });
 
 test('child_process.spawn() propagated errors have correct shape', t => {
@@ -192,8 +185,7 @@ test('use relative path with \'..\' chars', async t => {
 
 if (process.platform !== 'win32') {
 	test('execa() rejects if running non-executable', async t => {
-		const subprocess = execa('non-executable.js');
-		await t.throwsAsync(subprocess);
+		await t.throwsAsync(execa('non-executable.js'));
 	});
 
 	test('execa() rejects with correct error and doesn\'t throw if running non-executable with input', async t => {

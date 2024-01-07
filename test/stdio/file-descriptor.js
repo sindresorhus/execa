@@ -3,34 +3,32 @@ import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption} from '../helpers/stdio.js';
+import {getStdio} from '../helpers/stdio.js';
 
 setFixtureDir();
 
-const getStdinProp = ({stdin}) => stdin;
-const getStdioProp = ({stdio}) => stdio[3];
-
-const testFileDescriptorOption = async (t, fixtureName, getOptions, execaMethod) => {
+const testFileDescriptorOption = async (t, index, execaMethod) => {
 	const filePath = tempfile();
 	const fileDescriptor = await open(filePath, 'w');
-	await execaMethod(fixtureName, ['foobar'], getOptions(fileDescriptor));
-	t.is(await readFile(filePath, 'utf8'), 'foobar\n');
+	await execaMethod('noop-fd.js', [`${index}`, 'foobar'], getStdio(index, fileDescriptor));
+	t.is(await readFile(filePath, 'utf8'), 'foobar');
 	await rm(filePath);
+	await fileDescriptor.close();
 };
 
-test('pass `stdout` to a file descriptor', testFileDescriptorOption, 'noop.js', getStdoutOption, execa);
-test('pass `stderr` to a file descriptor', testFileDescriptorOption, 'noop-err.js', getStderrOption, execa);
-test('pass `stdio[*]` to a file descriptor', testFileDescriptorOption, 'noop-fd3.js', getStdioOption, execa);
-test('pass `stdout` to a file descriptor - sync', testFileDescriptorOption, 'noop.js', getStdoutOption, execaSync);
-test('pass `stderr` to a file descriptor - sync', testFileDescriptorOption, 'noop-err.js', getStderrOption, execaSync);
-test('pass `stdio[*]` to a file descriptor - sync', testFileDescriptorOption, 'noop-fd3.js', getStdioOption, execaSync);
+test('pass `stdout` to a file descriptor', testFileDescriptorOption, 1, execa);
+test('pass `stderr` to a file descriptor', testFileDescriptorOption, 2, execa);
+test('pass `stdio[*]` to a file descriptor', testFileDescriptorOption, 3, execa);
+test('pass `stdout` to a file descriptor - sync', testFileDescriptorOption, 1, execaSync);
+test('pass `stderr` to a file descriptor - sync', testFileDescriptorOption, 2, execaSync);
+test('pass `stdio[*]` to a file descriptor - sync', testFileDescriptorOption, 3, execaSync);
 
-const testStdinWrite = async (t, getStreamProp, fixtureName, getOptions) => {
-	const subprocess = execa(fixtureName, getOptions('pipe'));
-	getStreamProp(subprocess).end('unicorns');
+const testStdinWrite = async (t, index) => {
+	const subprocess = execa('stdin-fd.js', [`${index}`], getStdio(index, 'pipe'));
+	subprocess.stdio[index].end('unicorns');
 	const {stdout} = await subprocess;
 	t.is(stdout, 'unicorns');
 };
 
-test('you can write to child.stdin', testStdinWrite, getStdinProp, 'stdin.js', getStdinOption);
-test('you can write to child.stdio[*]', testStdinWrite, getStdioProp, 'stdin-fd3.js', getStdioOption);
+test('you can write to child.stdin', testStdinWrite, 0);
+test('you can write to child.stdio[*]', testStdinWrite, 3);

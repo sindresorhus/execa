@@ -1,9 +1,9 @@
 import {Buffer} from 'node:buffer';
 import {Writable} from 'node:stream';
 import test from 'ava';
-import {execa, execaSync, $} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getScriptSync, identity} from '../helpers/stdio.js';
+import {runExeca, runExecaSync, runScript, runScriptSync} from '../helpers/run.js';
 
 setFixtureDir();
 
@@ -19,22 +19,16 @@ const testInput = async (t, input, execaMethod) => {
 	t.is(stdout, 'foobar');
 };
 
-test('input option can be a String', testInput, 'foobar', execa);
-test('input option can be a String - sync', testInput, 'foobar', execaSync);
-test('input option can be a Uint8Array', testInput, binaryFoobar, execa);
-test('input option can be a Uint8Array - sync', testInput, binaryFoobar, execaSync);
-
-const testInputScript = async (t, getExecaMethod) => {
-	const {stdout} = await getExecaMethod($({input: 'foobar'}))`stdin.js`;
-	t.is(stdout, 'foobar');
-};
-
-test('input option can be used with $', testInputScript, identity);
-test('input option can be used with $.sync', testInputScript, getScriptSync);
+test('input option can be a String', testInput, 'foobar', runExeca);
+test('input option can be a Uint8Array', testInput, binaryFoobar, runExeca);
+test('input option can be a String - sync', testInput, 'foobar', runExecaSync);
+test('input option can be a Uint8Array - sync', testInput, binaryFoobar, runExecaSync);
+test('input option can be used with $', testInput, 'foobar', runScript);
+test('input option can be used with $.sync', testInput, 'foobar', runScriptSync);
 
 const testInvalidInput = async (t, input, execaMethod) => {
 	t.throws(() => {
-		execaMethod('noop.js', {input});
+		execaMethod('empty.js', {input});
 	}, {message: /a string, a Uint8Array/});
 };
 

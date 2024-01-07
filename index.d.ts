@@ -241,7 +241,7 @@ export type Options<IsSync extends boolean = boolean, EncodingType extends Encod
 	readonly shell?: boolean | string | URL;
 
 	/**
-	Specify the character encoding used to decode the `stdout` and `stderr` output. If set to `'buffer'`, then `stdout` and `stderr` will be a `Uint8Array` instead of a string.
+	Specify the character encoding used to decode the `stdout`, `stderr` and `stdio` output. If set to `'buffer'`, then `stdout`, `stderr` and `stdio` will be `Uint8Array`s instead of strings.
 
 	@default 'utf8'
 	*/
@@ -255,7 +255,7 @@ export type Options<IsSync extends boolean = boolean, EncodingType extends Encod
 	readonly timeout?: number;
 
 	/**
-	Largest amount of data in bytes allowed on `stdout` or `stderr`. Default: 100 MB.
+	Largest amount of data in bytes allowed on `stdout`, `stderr` and `stdio`. Default: 100 MB.
 
 	@default 100_000_000
 	*/
@@ -429,6 +429,13 @@ export type ExecaReturnValue<IsSync extends boolean, StdoutStderrType extends St
 	stderr: StdoutStderrType;
 
 	/**
+	The output of the process on `stdin`, `stdout`, `stderr` and other file descriptors.
+
+	Items are `undefined` when their corresponding `stdio` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+	*/
+	stdio: [undefined, StdoutStderrType, StdoutStderrType, ...Array<StdoutStderrType | undefined>];
+
+	/**
 	Whether the process failed to run.
 	*/
 	failed: boolean;
@@ -489,17 +496,17 @@ export type ExecaError<IsSync extends boolean = boolean, StdoutStderrType extend
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
-	The child process `stderr` then `stdout` are appended to the end, separated with newlines and not interleaved.
+	The child process `stderr`, `stdout` and other file descriptors' output are appended to the end, separated with newlines and not interleaved.
 	*/
 	message: string;
 
 	/**
-	This is the same as the `message` property except it does not include the child process `stdout`/`stderr`.
+	This is the same as the `message` property except it does not include the child process `stdout`/`stderr`/`stdio`.
 	*/
 	shortMessage: string;
 
 	/**
-	Original error message. This is the same as the `message` property excluding the child process `stdout`/`stderr` and some additional information added by Execa.
+	Original error message. This is the same as the `message` property excluding the child process `stdout`/`stderr`/`stdio` and some additional information added by Execa.
 
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/

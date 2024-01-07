@@ -63,8 +63,12 @@ try {
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number | undefined>(unicornsResult.exitCode);
+	expectType<undefined>(unicornsResult.stdio[0]);
 	expectType<string>(unicornsResult.stdout);
+	expectType<string>(unicornsResult.stdio[1]);
 	expectType<string>(unicornsResult.stderr);
+	expectType<string>(unicornsResult.stdio[2]);
+	expectType<string | undefined>(unicornsResult.stdio[3]);
 	expectType<string | undefined>(unicornsResult.all);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
@@ -78,8 +82,12 @@ try {
 
 	expectType<string>(execaError.message);
 	expectType<number | undefined>(execaError.exitCode);
+	expectType<undefined>(execaError.stdio[0]);
 	expectType<string>(execaError.stdout);
+	expectType<string>(execaError.stdio[1]);
 	expectType<string>(execaError.stderr);
+	expectType<string>(execaError.stdio[2]);
+	expectType<string | undefined>(execaError.stdio[3]);
 	expectType<string | undefined>(execaError.all);
 	expectType<boolean>(execaError.failed);
 	expectType<boolean>(execaError.timedOut);
@@ -98,8 +106,12 @@ try {
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number | undefined>(unicornsResult.exitCode);
+	expectType<undefined>(unicornsResult.stdio[0]);
 	expectType<string>(unicornsResult.stdout);
+	expectType<string>(unicornsResult.stdio[1]);
 	expectType<string>(unicornsResult.stderr);
+	expectType<string>(unicornsResult.stdio[2]);
+	expectType<string | undefined>(unicornsResult.stdio[3]);
 	expectError(unicornsResult.all);
 	expectError(unicornsResult.pipeStdout);
 	expectError(unicornsResult.pipeStderr);
@@ -117,8 +129,12 @@ try {
 	expectType<ExecaSyncError>(execaError);
 	expectType<string>(execaError.message);
 	expectType<number | undefined>(execaError.exitCode);
+	expectType<undefined>(execaError.stdio[0]);
 	expectType<string>(execaError.stdout);
+	expectType<string>(execaError.stdio[1]);
 	expectType<string>(execaError.stderr);
+	expectType<string>(execaError.stdio[2]);
+	expectType<string | undefined>(execaError.stdio[3]);
 	expectError(execaError.all);
 	expectType<boolean>(execaError.failed);
 	expectType<boolean>(execaError.timedOut);

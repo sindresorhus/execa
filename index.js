@@ -80,32 +80,23 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	return {file, args, command, escapedCommand, options};
 };
 
-const handleOutputSync = (options, value, error) => {
+const handleOutput = (options, value) => {
+	if (typeof value !== 'string' && !ArrayBuffer.isView(value)) {
+		return;
+	}
+
 	if (Buffer.isBuffer(value)) {
 		value = bufferToUint8Array(value);
 	}
 
-	return handleOutput(options, value, error);
-};
-
-const handleOutput = (options, value, error) => {
-	if (typeof value !== 'string' && !ArrayBuffer.isView(value)) {
-		// When `execaSync()` errors, we normalize it to '' to mimic `execa()`
-		return error === undefined ? undefined : '';
-	}
-
-	if (options.stripFinalNewline) {
-		return stripFinalNewline(value);
-	}
-
-	return value;
+	return options.stripFinalNewline ? stripFinalNewline(value) : value;
 };
 
 export function execa(rawFile, rawArgs, rawOptions) {
 	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
 	validateTimeout(options);
 
-	const stdioStreams = handleInputAsync(options);
+	const {stdioStreams, stdioLength} = handleInputAsync(options);
 
 	let spawned;
 	try {
@@ -115,9 +106,8 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		const dummySpawned = new childProcess.ChildProcess();
 		const errorPromise = Promise.reject(makeError({
 			error,
-			stdout: '',
-			stderr: '',
-			all: '',
+			stdio: Array.from({length: stdioLength}),
+			all: options.all ? '' : undefined,
 			command,
 			escapedCommand,
 			options,
@@ -147,12 +137,10 @@ export function execa(rawFile, rawArgs, rawOptions) {
 const handlePromise = async ({spawned, options, context, stdioStreams, command, escapedCommand}) => {
 	const [
 		[exitCode, signal, error],
-		stdoutResult,
-		stderrResult,
+		stdioResults,
 		allResult,
 	] = await getSpawnedResult(spawned, options, context, stdioStreams);
-	const stdout = handleOutput(options, stdoutResult);
-	const stderr = handleOutput(options, stderrResult);
+	const stdio = stdioResults.map(stdioResult => handleOutput(options, stdioResult));
 	const all = handleOutput(options, allResult);
 
 	if (error || exitCode !== 0 || signal !== null) {
@@ -161,8 +149,7 @@ const handlePromise = async ({spawned, options, context, stdioStreams, command, 
 			error,
 			exitCode,
 			signal,
-			stdout,
-			stderr,
+			stdio,
 			all,
 			command,
 			escapedCommand,
@@ -182,8 +169,9 @@ const handlePromise = async ({spawned, options, context, stdioStreams, command, 
 		command,
 		escapedCommand,
 		exitCode: 0,
-		stdout,
-		stderr,
+		stdio,
+		stdout: stdio[1],
+		stderr: stdio[2],
 		all,
 		failed: false,
 		timedOut: false,
@@ -195,7 +183,7 @@ const handlePromise = async ({spawned, options, context, stdioStreams, command, 
 export function execaSync(rawFile, rawArgs, rawOptions) {
 	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
 
-	const stdioStreams = handleInputSync(options);
+	const {stdioStreams, stdioLength} = handleInputSync(options);
 
 	let result;
 	try {
@@ -203,9 +191,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	} catch (error) {
 		throw makeError({
 			error,
-			stdout: '',
-			stderr: '',
-			all: '',
+			stdio: Array.from({length: stdioLength}),
 			command,
 			escapedCommand,
 			options,
@@ -215,13 +201,13 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	}
 
 	pipeOutputSync(stdioStreams, result);
-	const stdout = handleOutputSync(options, result.stdout, result.error);
-	const stderr = handleOutputSync(options, result.stderr, result.error);
+
+	const output = result.output || [undefined, undefined, undefined];
+	const stdio = output.map(stdioOutput => handleOutput(options, stdioOutput));
 
 	if (result.error || result.status !== 0 || result.signal !== null) {
 		const error = makeError({
-			stdout,
-			stderr,
+			stdio,
 			error: result.error,
 			signal: result.signal,
 			exitCode: result.status,
@@ -243,8 +229,9 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 		command,
 		escapedCommand,
 		exitCode: 0,
-		stdout,
-		stderr,
+		stdio,
+		stdout: stdio[1],
+		stderr: stdio[2],
 		failed: false,
 		timedOut: false,
 		isCanceled: false,

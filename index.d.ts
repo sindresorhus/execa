@@ -1,6 +1,15 @@
 import {type ChildProcess} from 'node:child_process';
 import {type Readable, type Writable} from 'node:stream';
 
+type NoOutputStdioOption =
+	| 'ignore'
+	| 'inherit'
+	| 'ipc'
+	| number
+	| Readable
+	| Writable
+	| [NoOutputStdioOption];
+
 type BaseStdioOption =
 	| 'pipe'
 	| 'overlapped'
@@ -38,9 +47,14 @@ export type StdioOption<IsSync extends boolean = boolean> =
 	CommonStdioOption | InputStdioOption | OutputStdioOption<IsSync>
 	| Array<CommonStdioOption | InputStdioOption | OutputStdioOption<IsSync>>;
 
-type StdioOptions<IsSync extends boolean = boolean> =
-	| BaseStdioOption
-	| readonly [StdinOption<IsSync>, StdoutStderrOption<IsSync>, StdoutStderrOption<IsSync>, ...Array<StdioOption<IsSync>>];
+type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
+	StdinOption<IsSync>,
+	StdoutStderrOption<IsSync>,
+	StdoutStderrOption<IsSync>,
+	...Array<StdioOption<IsSync>>,
+];
+
+type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption | StdioOptionsArray<IsSync>;
 
 type EncodingOption =
   | 'utf8'
@@ -61,10 +75,84 @@ type EncodingOption =
 type DefaultEncodingOption = 'utf8';
 type BufferEncodingOption = 'buffer';
 
-type GetStdoutStderrType<EncodingType extends EncodingOption> =
-  EncodingType extends DefaultEncodingOption ? string : Uint8Array;
+type TupleItem<
+	Tuple extends readonly unknown[],
+	Index extends string,
+> = Tuple[Index extends keyof Tuple ? Index : number];
 
-export type Options<IsSync extends boolean = boolean, EncodingType extends EncodingOption = DefaultEncodingOption> = {
+// Whether `result.stdout|stderr|all` is `undefined`, excluding the `buffer` option
+type IgnoresStreamResult<
+	StreamIndex extends string,
+	OptionsType extends Options = Options,
+	// `result.stdin` is always `undefined`
+> = StreamIndex extends '0' ? true
+	// When using `stdout|stderr: 'inherit'`, or `'ignore'`, etc. , `result.std*` is `undefined`
+	: OptionsType[TupleItem<StdioOptionNames, StreamIndex>] extends NoOutputStdioOption ? true
+		// Same but with `stdio: 'ignore'`
+		: OptionsType['stdio'] extends NoOutputStdioOption ? true
+			// Same but with `stdio: ['ignore', 'ignore', 'ignore', ...]`
+			: OptionsType['stdio'] extends StdioOptionsArray
+				? TupleItem<OptionsType['stdio'], StreamIndex> extends StdioOptionsArray[number]
+					? IgnoresStdioResult<TupleItem<OptionsType['stdio'], StreamIndex>>
+					: false
+				: false;
+
+type StdioOptionNames = ['stdin', 'stdout', 'stderr'];
+
+// Whether `result.stdio[*]` is `undefined`
+type IgnoresStdioResult<
+	StdioOption extends StdioOptionsArray[number],
+> = StdioOption extends NoOutputStdioOption
+	? true
+	// `result.stdio[3+]` is `undefined` when it is an input stream
+	: StdioOption extends StdinOption
+		? StdioOption extends StdoutStderrOption
+			? false
+			: true
+		: false;
+
+// Whether `result.stdout|stderr|all` is `undefined`
+type IgnoresStreamOutput<
+	StreamIndex extends string,
+	OptionsType extends Options = Options,
+> = OptionsType extends {buffer: false} ? true
+	: IgnoresStreamResult<StreamIndex, OptionsType> extends true ? true : false;
+
+// Type of `result.stdout|stderr`
+type StdioOutput<
+	StreamIndex extends string,
+	OptionsType extends Options = Options,
+> = IgnoresStreamOutput<StreamIndex, OptionsType> extends true
+	? undefined
+	: StreamResult<OptionsType>;
+
+type StreamResult<OptionsType extends Options = Options> =
+	// Default value for `encoding`, when `OptionsType` is `{}`
+	unknown extends OptionsType['encoding'] ? string
+		// Any value for `encoding`, when `OptionsType` is `Options`
+		: EncodingOption extends OptionsType['encoding'] ? Uint8Array | string
+			// `encoding: buffer`
+			: OptionsType['encoding'] extends 'buffer' ? Uint8Array
+				// `encoding: not buffer`
+				: string;
+
+// Type of `result.all`
+type AllOutput<OptionsType extends Options = Options> = IgnoresStreamOutput<'1', OptionsType> extends true
+	? StdioOutput<'2', OptionsType>
+	: StdioOutput<'1', OptionsType>;
+
+// Type of `result.stdio`
+type StdioArrayOutput<OptionsType extends Options = Options> = MapStdioOptions<
+OptionsType['stdio'] extends StdioOptionsArray ? OptionsType['stdio'] : ['pipe', 'pipe', 'pipe'],
+OptionsType
+>;
+
+type MapStdioOptions<
+	StdioOptionsArrayType extends StdioOptionsArray,
+	OptionsType extends Options = Options,
+> = {[StreamIndex in keyof StdioOptionsArrayType & string]: StdioOutput<StreamIndex, OptionsType>};
+
+export type Options<IsSync extends boolean = boolean> = {
 	/**
 	Prefer locally installed binaries when looking for a binary to execute.
 
@@ -245,7 +333,7 @@ export type Options<IsSync extends boolean = boolean, EncodingType extends Encod
 
 	@default 'utf8'
 	*/
-	readonly encoding?: EncodingType;
+	readonly encoding?: EncodingOption;
 
 	/**
 	If `timeout` is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than `timeout` milliseconds.
@@ -361,9 +449,9 @@ export type Options<IsSync extends boolean = boolean, EncodingType extends Encod
 	readonly signal?: AbortSignal;
 });
 
-export type SyncOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = Options<true, EncodingType>;
+export type SyncOptions = Options<true>;
 
-export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOption> = {
+export type NodeOptions<OptionsType extends Options = Options> = {
 	/**
 	The Node.js executable to use.
 
@@ -377,9 +465,7 @@ export type NodeOptions<EncodingType extends EncodingOption = DefaultEncodingOpt
 	@default process.execArgv
 	*/
 	readonly nodeOptions?: string[];
-} & Options<false, EncodingType>;
-
-type StdoutStderrAll = string | Uint8Array | undefined;
+} & OptionsType;
 
 /**
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
@@ -391,7 +477,7 @@ The child process fails when:
 - being canceled
 - there's not enough memory or there are already too many child processes
 */
-export type ExecaReturnValue<IsSync extends boolean, StdoutStderrType extends StdoutStderrAll = string> = {
+export type ExecaReturnValue<IsSync extends boolean = boolean, OptionsType extends Options = Options> = {
 	/**
 	The file and arguments that were run, for logging purposes.
 
@@ -419,21 +505,21 @@ export type ExecaReturnValue<IsSync extends boolean, StdoutStderrType extends St
 
 	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 	*/
-	stdout: StdoutStderrType;
+	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the process on `stderr`.
 
 	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 	*/
-	stderr: StdoutStderrType;
+	stderr: StdioOutput<'2', OptionsType>;
 
 	/**
 	The output of the process on `stdin`, `stdout`, `stderr` and other file descriptors.
 
 	Items are `undefined` when their corresponding `stdio` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
 	*/
-	stdio: [undefined, StdoutStderrType, StdoutStderrType, ...Array<StdoutStderrType | undefined>];
+	stdio: StdioArrayOutput<OptionsType>;
 
 	/**
 	Whether the process failed to run.
@@ -487,12 +573,12 @@ export type ExecaReturnValue<IsSync extends boolean, StdoutStderrType extends St
 	- the `all` option is `false` (default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
-	all?: StdoutStderrType;
+	all?: AllOutput<OptionsType>;
 });
 
-type ExecaSyncReturnValue<StdoutStderrType extends StdoutStderrAll = string> = ExecaReturnValue<true, StdoutStderrType>;
+export type ExecaSyncReturnValue<OptionsType extends Options = Options> = ExecaReturnValue<true, OptionsType>;
 
-export type ExecaError<IsSync extends boolean = boolean, StdoutStderrType extends StdoutStderrAll = string> = {
+export type ExecaError<IsSync extends boolean = boolean, OptionsType extends Options = Options> = {
 	/**
 	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
 
@@ -511,9 +597,9 @@ export type ExecaError<IsSync extends boolean = boolean, StdoutStderrType extend
 	This is `undefined` unless the child process exited due to an `error` event or a timeout.
 	*/
 	originalMessage?: string;
-} & Error & ExecaReturnValue<IsSync, StdoutStderrType>;
+} & Error & ExecaReturnValue<IsSync, OptionsType>;
 
-export type ExecaSyncError<StdoutStderrType extends StdoutStderrAll = string> = ExecaError<true, StdoutStderrType>;
+export type ExecaSyncError<OptionsType extends Options = Options> = ExecaError<true, OptionsType>;
 
 export type KillOptions = {
 	/**
@@ -526,7 +612,7 @@ export type KillOptions = {
 	forceKillAfterTimeout?: number | false;
 };
 
-export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
+export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	/**
 	Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 
@@ -537,8 +623,8 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 	all?: Readable;
 
 	catch<ResultType = never>(
-		onRejected?: (reason: ExecaError<false, StdoutStderrType>) => ResultType | PromiseLike<ResultType>
-	): Promise<ExecaReturnValue<false, StdoutStderrType> | ResultType>;
+		onRejected?: (reason: ExecaError<false, OptionsType>) => ResultType | PromiseLike<ResultType>
+	): Promise<ExecaReturnValue<false, OptionsType> | ResultType>;
 
 	/**
 	Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`. Note that this graceful termination does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events) (`SIGKILL` and `SIGTERM` has the same effect of force-killing the process immediately.) If you want to achieve graceful termination on Windows, you have to use other means, such as [`taskkill`](https://github.com/sindresorhus/taskkill).
@@ -560,29 +646,29 @@ export type ExecaChildPromise<StdoutStderrType extends StdoutStderrAll> = {
 
 	The `stdout` option] must be kept as `pipe`, its default value.
 	*/
-	pipeStdout?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeStdout?(target: Writable | string): ExecaChildProcess<StdoutStderrType>;
+	pipeStdout?<Target extends ExecaChildProcess>(target: Target): Target;
+	pipeStdout?(target: Writable | string): ExecaChildProcess<OptionsType>;
 
 	/**
 	Like `pipeStdout()` but piping the child process's `stderr` instead.
 
 	The `stderr` option must be kept as `pipe`, its default value.
 	*/
-	pipeStderr?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeStderr?(target: Writable | string): ExecaChildProcess<StdoutStderrType>;
+	pipeStderr?<Target extends ExecaChildProcess>(target: Target): Target;
+	pipeStderr?(target: Writable | string): ExecaChildProcess<OptionsType>;
 
 	/**
 	Combines both `pipeStdout()` and `pipeStderr()`.
 
 	Either the `stdout` option or the `stderr` option must be kept as `pipe`, their default value. Also, the `all` option must be set to `true`.
 	*/
-	pipeAll?<Target extends ExecaChildPromise<StdoutStderrAll>>(target: Target): Target;
-	pipeAll?(target: Writable | string): ExecaChildProcess<StdoutStderrType>;
+	pipeAll?<Target extends ExecaChildProcess>(target: Target): Target;
+	pipeAll?(target: Writable | string): ExecaChildProcess<OptionsType>;
 };
 
-export type ExecaChildProcess<StdoutStderrType extends StdoutStderrAll = string> = ChildProcess &
-ExecaChildPromise<StdoutStderrType> &
-Promise<ExecaReturnValue<false, StdoutStderrType>>;
+export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &
+ExecaChildPromise<OptionsType> &
+Promise<ExecaReturnValue<false, OptionsType>>;
 
 /**
 Executes a command using `file ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a `childProcess`.
@@ -695,15 +781,15 @@ setTimeout(() => {
 }, 1000);
 ```
 */
-export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
+export function execa<OptionsType extends Options<false> = {}>(
 	file: string | URL,
 	arguments?: readonly string[],
-	options?: Options<false, EncodingType>
-): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
-export function execa<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	options?: OptionsType,
+): ExecaChildProcess<OptionsType>;
+export function execa<OptionsType extends Options<false> = {}>(
 	file: string | URL,
-	options?: Options<false, EncodingType>
-): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
+	options?: OptionsType,
+): ExecaChildProcess<OptionsType>;
 
 /**
 Same as `execa()` but synchronous.
@@ -767,15 +853,15 @@ try {
 }
 ```
 */
-export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
+export function execaSync<OptionsType extends Options<true> = {}>(
 	file: string | URL,
 	arguments?: readonly string[],
-	options?: Options<true, EncodingType>
-): ExecaReturnValue<true, GetStdoutStderrType<EncodingType>>;
-export function execaSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	options?: OptionsType,
+): ExecaReturnValue<true, OptionsType>;
+export function execaSync<OptionsType extends Options<true> = {}>(
 	file: string | URL,
-	options?: Options<true, EncodingType>
-): ExecaReturnValue<true, GetStdoutStderrType<EncodingType>>;
+	options?: OptionsType,
+): ExecaReturnValue<true, OptionsType>;
 
 /**
 Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
@@ -799,9 +885,10 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommand<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	command: string, options?: Options<false, EncodingType>
-): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
+export function execaCommand<OptionsType extends Options<false> = {}>(
+	command: string,
+	options?: OptionsType
+): ExecaChildProcess<OptionsType>;
 
 /**
 Same as `execaCommand()` but synchronous.
@@ -821,17 +908,15 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommandSync<EncodingType extends EncodingOption = DefaultEncodingOption>(
-	command: string, options?: Options<true, EncodingType>
-): ExecaReturnValue<true, GetStdoutStderrType<EncodingType>>;
+export function execaCommandSync<OptionsType extends Options<true> = {}>(
+	command: string,
+	options?: OptionsType
+): ExecaReturnValue<true, OptionsType>;
 
-type TemplateExpression =
-	| string
-	| number
-	| ExecaReturnValue<boolean, string | Uint8Array>
-	| Array<string | number | ExecaReturnValue<boolean, string | Uint8Array>>;
+type TemplateExpression = string | number | ExecaReturnValue
+| Array<string | number | ExecaReturnValue>;
 
-type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
+type Execa$<OptionsType extends Options = {}> = {
 	/**
 	Returns a new instance of `$` but with different default `options`. Consecutive calls are merged to previous ones.
 
@@ -855,13 +940,13 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	//=> 'rainbows'
 	```
 	*/
-	(options: Options<false, undefined>): Execa$<StdoutStderrType>;
-	(options: Options<false>): Execa$;
-	(options: Options<false, BufferEncodingOption>): Execa$<Uint8Array>;
-	(
-		templates: TemplateStringsArray,
-		...expressions: TemplateExpression[]
-	): ExecaChildProcess<StdoutStderrType>;
+	<NewOptionsType extends Options = {}>
+	(options: NewOptionsType):
+	Execa$<OptionsType & NewOptionsType>;
+
+	<NewOptionsType extends Options = {}>
+	(templates: TemplateStringsArray, ...expressions: TemplateExpression[]):
+	ExecaChildProcess<OptionsType & NewOptionsType>;
 
 	/**
 	Same as $\`command\` but synchronous.
@@ -913,7 +998,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	sync(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaReturnValue<true, StdoutStderrType>;
+	): ExecaReturnValue<true, OptionsType>;
 
 	/**
 	Same as $\`command\` but synchronous.
@@ -965,7 +1050,7 @@ type Execa$<StdoutStderrType extends StdoutStderrAll = string> = {
 	s(
 		templates: TemplateStringsArray,
 		...expressions: TemplateExpression[]
-	): ExecaReturnValue<true, StdoutStderrType>;
+	): ExecaReturnValue<true, OptionsType>;
 };
 
 /**
@@ -1049,12 +1134,12 @@ import {execa} from 'execa';
 await execaNode('scriptPath', ['argument']);
 ```
 */
-export function execaNode<EncodingType extends EncodingOption = DefaultEncodingOption>(
+export function execaNode<OptionsType extends NodeOptions<Options<false>> = {}>(
 	scriptPath: string | URL,
 	arguments?: readonly string[],
-	options?: NodeOptions<EncodingType>
-): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
-export function execaNode<EncodingType extends EncodingOption = DefaultEncodingOption>(
+	options?: OptionsType
+): ExecaChildProcess<OptionsType>;
+export function execaNode<OptionsType extends NodeOptions<Options<false>> = {}>(
 	scriptPath: string | URL,
-	options?: NodeOptions<EncodingType>
-): ExecaChildProcess<GetStdoutStderrType<EncodingType>>;
+	options?: OptionsType
+): ExecaChildProcess<OptionsType>;

@@ -10,10 +10,10 @@ import {makeError} from './lib/error.js';
 import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {normalizeStdioNode} from './lib/stdio/normalize.js';
-import {spawnedKill, spawnedCancel, setupTimeout, validateTimeout, setExitHandler} from './lib/kill.js';
+import {spawnedKill, spawnedCancel, validateTimeout} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
-import {mergePromise, getSpawnedPromise} from './lib/promise.js';
+import {mergePromise} from './lib/promise.js';
 import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
 import {logCommand, verboseDefault} from './lib/verbose.js';
 
@@ -62,6 +62,7 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 		all: false,
 		windowsHide: true,
 		verbose: verboseDefault,
+		killSignal: 'SIGTERM',
 		...initialOptions,
 		shell: normalizeFileUrl(initialOptions.shell),
 	};
@@ -126,7 +127,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		return dummySpawned;
 	}
 
-	const context = {isCanceled: false};
+	const context = {isCanceled: false, timedOut: false};
 
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
@@ -143,16 +144,12 @@ export function execa(rawFile, rawArgs, rawOptions) {
 }
 
 const handlePromise = async ({spawned, options, context, stdioStreams, command, escapedCommand}) => {
-	const spawnedPromise = getSpawnedPromise(spawned);
-	const timedPromise = setupTimeout(spawned, options, spawnedPromise);
-	const processDone = setExitHandler(spawned, options, timedPromise);
-
 	const [
-		{error, exitCode, signal, timedOut},
+		[exitCode, signal, error],
 		stdoutResult,
 		stderrResult,
 		allResult,
-	] = await getSpawnedResult(spawned, options, stdioStreams, processDone);
+	] = await getSpawnedResult(spawned, options, context, stdioStreams);
 	const stdout = handleOutput(options, stdoutResult);
 	const stderr = handleOutput(options, stderrResult);
 	const all = handleOutput(options, allResult);
@@ -169,7 +166,7 @@ const handlePromise = async ({spawned, options, context, stdioStreams, command, 
 			command,
 			escapedCommand,
 			options,
-			timedOut,
+			timedOut: context.timedOut,
 			isCanceled,
 		});
 

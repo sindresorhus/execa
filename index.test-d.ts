@@ -21,6 +21,16 @@ import {
 	type ExecaSyncError,
 } from './index.js';
 
+expectType<Readable | null>({} as ExecaChildProcess['stdout']);
+expectType<Readable | null>({} as ExecaChildProcess['stderr']);
+expectType<string | Uint8Array | undefined>({} as ExecaReturnValue['stdout']);
+expectType<string | Uint8Array | undefined>({} as ExecaReturnValue['stderr']);
+expectType<string | Uint8Array | undefined>({} as ExecaReturnValue['all']);
+expectType<[undefined, string | Uint8Array | undefined, string | Uint8Array | undefined]>({} as ExecaReturnValue['stdio']);
+expectType<string | Uint8Array | undefined>({} as ExecaSyncReturnValue['stdout']);
+expectType<string | Uint8Array | undefined>({} as ExecaSyncReturnValue['stderr']);
+expectType<[undefined, string | Uint8Array | undefined, string | Uint8Array | undefined]>({} as ExecaSyncReturnValue['stdio']);
+
 try {
 	const execaPromise = execa('unicorns');
 	execaPromise.cancel();

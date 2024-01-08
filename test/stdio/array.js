@@ -1,10 +1,10 @@
 import {readFile, writeFile, rm} from 'node:fs/promises';
 import process from 'node:process';
-import {PassThrough} from 'node:stream';
 import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption} from '../helpers/stdio.js';
+import {stringGenerator} from '../helpers/generator.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -124,20 +124,16 @@ const testAmbiguousDirection = async (t, execaMethod) => {
 test('stdio[*] default direction is output', testAmbiguousDirection, execa);
 test('stdio[*] default direction is output - sync', testAmbiguousDirection, execaSync);
 
-const testAmbiguousMultiple = async (t, stdioOptions) => {
+const testAmbiguousMultiple = async (t, fixtureName, getOptions) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
-	const {stdout} = await execa('stdin-fd3.js', getStdioOption([filePath, ...stdioOptions]));
-	t.is(stdout, 'foobar');
+	const {stdout} = await execa(fixtureName, getOptions([filePath, stringGenerator()]));
+	t.is(stdout, 'foobarfoobar');
 	await rm(filePath);
 };
 
-test('stdio[*] ambiguous direction is influenced by other values like ReadableStream', testAmbiguousMultiple, [new ReadableStream()]);
-test('stdio[*] ambiguous direction is influenced by other values like 0', testAmbiguousMultiple, [0]);
-test('stdio[*] ambiguous direction is influenced by other values like process.stdin', testAmbiguousMultiple, [process.stdin]);
-test('stdio[*] Duplex has an ambiguous direction like ReadableStream', testAmbiguousMultiple, [new PassThrough(), new ReadableStream()]);
-test('stdio[*] Duplex has an ambiguous direction like 0', testAmbiguousMultiple, [new PassThrough(), 0]);
-test('stdio[*] Duplex has an ambiguous direction like process.stdin', testAmbiguousMultiple, [new PassThrough(), process.stdin]);
+test('stdin ambiguous direction is influenced by other values', testAmbiguousMultiple, 'stdin.js', getStdinOption);
+test('stdio[*] ambiguous direction is influenced by other values', testAmbiguousMultiple, 'stdin-fd3.js', getStdioOption);
 
 const testRedirectInput = async (t, stdioOption, index, fixtureName) => {
 	const {stdout} = await execa('nested-stdio.js', [JSON.stringify(stdioOption), String(index), fixtureName], {input: 'foobar'});

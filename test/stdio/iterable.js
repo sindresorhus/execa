@@ -61,3 +61,11 @@ test('stdin option can be an infinite iterable', async t => {
 		abort();
 	}
 });
+
+const testMultipleIterable = async (t, fixtureName, getOptions) => {
+	const {stdout} = await execa(fixtureName, getOptions([stringGenerator(), asyncGenerator()]));
+	t.is(stdout, 'foobarfoobar');
+};
+
+test('stdin option can be multiple iterables', testMultipleIterable, 'stdin.js', getStdinOption);
+test('stdio[*] option can be multiple iterables', testMultipleIterable, 'stdin-fd3.js', getStdioOption);

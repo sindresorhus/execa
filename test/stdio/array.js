@@ -27,7 +27,7 @@ test('Cannot pass an empty array to stdio[*] - sync', testEmptyArray, getStdioOp
 const testNoPipeOption = async (t, stdioOption, streamName) => {
 	const childProcess = execa('empty.js', {[streamName]: stdioOption});
 	t.is(childProcess[streamName], null);
-	await execa;
+	await childProcess;
 };
 
 test('stdin can be "ignore"', testNoPipeOption, 'ignore', 'stdin');
@@ -61,7 +61,7 @@ test('stderr can be [2]', testNoPipeOption, [2], 'stderr');
 const testNoPipeStdioOption = async (t, stdioOption) => {
 	const childProcess = execa('empty.js', {stdio: ['pipe', 'pipe', 'pipe', stdioOption]});
 	t.is(childProcess.stdio[3], null);
-	await execa;
+	await childProcess;
 };
 
 test('stdio[*] can be "ignore"', testNoPipeStdioOption, 'ignore');

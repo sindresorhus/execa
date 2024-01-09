@@ -581,7 +581,7 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Readable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
 
-Unless either the [synchronous methods](#execasyncfile-arguments-options), the [`input` option](#input) or the [`inputFile` option](#inputfile) is used, the value can also be a:
+Unless the [synchronous methods](#execasyncfile-arguments-options) are used, the value can also be a:
 - file path. If relative, it must start with `.`.
 - file URL.
 - web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
@@ -603,7 +603,7 @@ Default: `pipe`
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
 
-Unless either [synchronous methods](#execasyncfile-arguments-options), the value can also be a:
+Unless the [synchronous methods](#execasyncfile-arguments-options) are used, the value can also be a:
 - file path. If relative, it must start with `.`.
 - file URL.
 - web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
@@ -624,7 +624,7 @@ Default: `pipe`
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
 
-Unless either [synchronous methods](#execasyncfile-arguments-options), the value can also be a:
+Unless the [synchronous methods](#execasyncfile-arguments-options) are used, the value can also be a:
 - file path. If relative, it must start with `.`.
 - file URL.
 - web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).

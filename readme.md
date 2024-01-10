@@ -572,7 +572,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 
 #### stdin
 
-Type: `string | number | stream.Readable | ReadableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>` (or a tuple of those types)\
+Type: `string | number | stream.Readable | ReadableStream | URL | Uint8Array | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>` (or a tuple of those types)\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
@@ -587,6 +587,7 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 - a file URL.
 - a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 - an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+- an `Uint8Array`.
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
@@ -630,7 +631,7 @@ This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destina
 
 #### stdio
 
-Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | URL | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>>` (or a tuple of those types)\
+Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | URL | Uint8Array | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>>` (or a tuple of those types)\
 Default: `pipe`
 
 Like the [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options but for all file descriptors at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.

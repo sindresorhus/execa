@@ -18,6 +18,7 @@ type CommonStdioOption =
 type InputStdioOption =
 	| Iterable<string | Uint8Array>
 	| AsyncIterable<string | Uint8Array>
+	| Uint8Array
 	| Readable
 	| ReadableStream;
 
@@ -122,6 +123,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- a file URL.
 	- a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 	- an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+	- an `Uint8Array`.
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 

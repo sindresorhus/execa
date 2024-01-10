@@ -179,6 +179,7 @@ execa('unicorns', {stdin: new ReadableStream()});
 execa('unicorns', {stdin: [new ReadableStream()]});
 expectError(execa('unicorns', {stdin: new WritableStream()}));
 expectError(execa('unicorns', {stdin: [new WritableStream()]}));
+execa('unicorns', {stdin: new Uint8Array()});
 execa('unicorns', {stdin: stringGenerator()});
 execa('unicorns', {stdin: [stringGenerator()]});
 execa('unicorns', {stdin: binaryGenerator()});
@@ -306,6 +307,7 @@ execa('unicorns', {
 		new Readable(),
 		new WritableStream(),
 		new ReadableStream(),
+		new Uint8Array(),
 		stringGenerator(),
 		asyncStringGenerator(),
 	],

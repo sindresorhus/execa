@@ -178,22 +178,28 @@ test('buffer: false > emits end event when promise is rejected', async t => {
 	await t.notThrowsAsync(Promise.all([subprocess, pEvent(subprocess.stdout, 'end')]));
 });
 
-const BUFFER_TIMEOUT = 1e3;
-
-// On Unix (not Windows), a process won't exit if stdout has not been read.
-if (process.platform !== 'win32') {
-	test.serial('buffer: false > promise does not resolve when output is big and is not read', async t => {
-		const {timedOut} = await t.throwsAsync(execa('max-buffer.js', {buffer: false, timeout: BUFFER_TIMEOUT}));
+// This specific behavior does not happen on Windows.
+// Also, on macOS, it randomly happens, which would make those tests randomly fail.
+if (process.platform === 'linux') {
+	const testBufferNotRead = async (t, streamArgument, all) => {
+		const {timedOut} = await t.throwsAsync(execa('max-buffer.js', [streamArgument], {buffer: false, all, timeout: 1e3}));
 		t.true(timedOut);
-	});
+	};
 
-	test.serial('buffer: false > promise does not resolve when output is big and "all" is used but not read', async t => {
-		const subprocess = execa('max-buffer.js', {buffer: false, all: true, timeout: BUFFER_TIMEOUT});
-		subprocess.stdout.resume();
-		subprocess.stderr.resume();
-		const {timedOut} = await t.throwsAsync(subprocess);
-		t.true(timedOut);
-	});
+	test.serial('Process buffers stdout, which prevents exit if not read and buffer is false', testBufferNotRead, 'stdout', false);
+	test.serial('Process buffers stderr, which prevents exit if not read and buffer is false', testBufferNotRead, 'stderr', false);
+	test.serial('Process buffers all, which prevents exit if not read and buffer is false', testBufferNotRead, 'stdout', true);
+
+	const testBufferRead = async (t, streamName, streamArgument, all) => {
+		const subprocess = execa('max-buffer.js', [streamArgument], {buffer: false, all, timeout: 1e4});
+		subprocess[streamName].resume();
+		const {timedOut} = await subprocess;
+		t.false(timedOut);
+	};
+
+	test.serial('Process buffers stdout, which does not prevent exit if read and buffer is false', testBufferRead, 'stdout', 'stdout', false);
+	test.serial('Process buffers stderr, which does not prevent exit if read and buffer is false', testBufferRead, 'stderr', 'stderr', false);
+	test.serial('Process buffers all, which does not prevent exit if read and buffer is false', testBufferRead, 'all', 'stdout', true);
 }
 
 test('Errors on streams should make the process exit', async t => {
@@ -202,7 +208,7 @@ test('Errors on streams should make the process exit', async t => {
 	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
 });
 
-test.serial('Processes wait on stdin before exiting', async t => {
+test.serial('Process waits on stdin before exiting', async t => {
 	const childProcess = execa('stdin.js');
 	await setTimeout(1e3);
 	childProcess.stdin.end('foobar');
@@ -210,28 +216,28 @@ test.serial('Processes wait on stdin before exiting', async t => {
 	t.is(stdout, 'foobar');
 });
 
-test.serial('Processes buffer stdout before it is read', async t => {
+test.serial('Process buffers stdout before it is read', async t => {
 	const childProcess = execa('noop-delay.js', ['foobar']);
 	await setTimeout(5e2);
 	const {stdout} = await childProcess;
 	t.is(stdout, 'foobar');
 });
 
-test.serial('Processes buffers stdout right away, on successfully exit', async t => {
+test.serial('Process buffers stdout right away, on successfully exit', async t => {
 	const childProcess = execa('noop.js', ['foobar']);
 	await setTimeout(1e3);
 	const {stdout} = await childProcess;
 	t.is(stdout, 'foobar');
 });
 
-test.serial('Processes buffers stdout right away, on failure', async t => {
+test.serial('Process buffers stdout right away, on failure', async t => {
 	const childProcess = execa('noop-fail.js', ['foobar'], {reject: false});
 	await setTimeout(1e3);
 	const {stdout} = await childProcess;
 	t.is(stdout, 'foobar');
 });
 
-test('Processes buffers stdout right away, even if directly read', async t => {
+test('Process buffers stdout right away, even if directly read', async t => {
 	const childProcess = execa('noop.js', ['foobar']);
 	const data = await once(childProcess.stdout, 'data');
 	t.is(data.toString().trim(), 'foobar');

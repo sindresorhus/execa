@@ -16,6 +16,7 @@ import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
 import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
 import {logCommand, verboseDefault} from './lib/verbose.js';
+import {bufferToUint8Array} from './lib/stdio/utils.js';
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
@@ -81,7 +82,7 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 
 const handleOutputSync = (options, value, error) => {
 	if (Buffer.isBuffer(value)) {
-		value = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+		value = bufferToUint8Array(value);
 	}
 
 	return handleOutput(options, value, error);

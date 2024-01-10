@@ -289,6 +289,8 @@ This is the preferred method when executing a user-supplied `command` string, su
 
 Same as [`execa()`](#execacommandcommand-options) but synchronous.
 
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio) and [`input`](#input) options cannot be a stream nor an iterable.
+
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### $.sync\`command\`
@@ -296,11 +298,15 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [$\`command\`](#command) but synchronous.
 
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio) and [`input`](#input) options cannot be a stream nor an iterable.
+
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
 ### execaCommandSync(command, options?)
 
 Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
+
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio) and [`input`](#input) options cannot be a stream nor an iterable.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -337,7 +343,6 @@ Stream [combining/interleaving](#ensuring-all-output-is-interleaved) [`stdout`](
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
-- the [synchronous methods](#execasyncfile-arguments-options) are used
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### pipeStdout(target)
@@ -423,7 +428,6 @@ The output of the process with `stdout` and `stderr` [interleaved](#ensuring-all
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
-- the [synchronous methods](#execasyncfile-arguments-options) are used
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### failed
@@ -554,8 +558,7 @@ If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stder
 
 Type: `string | Uint8Array | stream.Readable`
 
-Write some input to the child process' `stdin`.\
-Streams are not allowed when using the [synchronous methods](#execasyncfile-arguments-options).
+Write some input to the child process' `stdin`.
 
 See also the [`inputFile`](#inputfile) and [`stdin`](#stdin) options.
 
@@ -580,12 +583,10 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 - `'inherit'`: Re-use the current process' `stdin`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Readable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
-
-Unless the [synchronous methods](#execasyncfile-arguments-options) are used, the value can also be a:
-- file path. If relative, it must start with `.`.
-- file URL.
-- web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
-- [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+- a file path. If relative, it must start with `.`.
+- a file URL.
+- a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+- an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
@@ -602,11 +603,9 @@ Default: `pipe`
 - `'inherit'`: Re-use the current process' `stdout`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
-
-Unless the [synchronous methods](#execasyncfile-arguments-options) are used, the value can also be a:
-- file path. If relative, it must start with `.`.
-- file URL.
-- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+- a file path. If relative, it must start with `.`.
+- a file URL.
+- a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
@@ -623,11 +622,9 @@ Default: `pipe`
 - `'inherit'`: Re-use the current process' `stderr`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
-
-Unless the [synchronous methods](#execasyncfile-arguments-options) are used, the value can also be a:
-- file path. If relative, it must start with `.`.
-- file URL.
-- web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+- a file path. If relative, it must start with `.`.
+- a file URL.
+- a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 

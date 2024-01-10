@@ -13,7 +13,7 @@ type CommonStdioOption =
 	| number
 	| undefined
 	| URL
-	| string;
+	| {file: string};
 
 type InputStdioOption =
 	| Iterable<string | Uint8Array>
@@ -119,7 +119,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'inherit'`: Re-use the current process' `stdin`.
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Readable` stream.
-	- a file path. If relative, it must start with `.`.
+	- `{ file: 'path' }` object.
 	- a file URL.
 	- a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 	- an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol) or an [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
@@ -140,7 +140,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'inherit'`: Re-use the current process' `stdout`.
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream.
-	- a file path. If relative, it must start with `.`.
+	- `{ file: 'path' }` object.
 	- a file URL.
 	- a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
@@ -159,7 +159,7 @@ export type CommonOptions<EncodingType extends EncodingOption = DefaultEncodingO
 	- `'inherit'`: Re-use the current process' `stderr`.
 	- an integer: Re-use a specific file descriptor from the current process.
 	- a Node.js `Writable` stream.
-	- a file path. If relative, it must start with `.`.
+	- `{ file: 'path' }` object.
 	- a file URL.
 	- a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 

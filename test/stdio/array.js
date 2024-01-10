@@ -116,7 +116,7 @@ test('Cannot pass both readable and writable values to stdio[*] - process.stderr
 
 const testAmbiguousDirection = async (t, execaMethod) => {
 	const [filePathOne, filePathTwo] = [tempfile(), tempfile()];
-	await execaMethod('noop-fd3.js', ['foobar'], getStdioOption([filePathOne, filePathTwo]));
+	await execaMethod('noop-fd3.js', ['foobar'], getStdioOption([{file: filePathOne}, {file: filePathTwo}]));
 	t.deepEqual(await Promise.all([readFile(filePathOne, 'utf8'), readFile(filePathTwo, 'utf8')]), ['foobar\n', 'foobar\n']);
 	await Promise.all([rm(filePathOne), rm(filePathTwo)]);
 };
@@ -127,7 +127,7 @@ test('stdio[*] default direction is output - sync', testAmbiguousDirection, exec
 const testAmbiguousMultiple = async (t, fixtureName, getOptions) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
-	const {stdout} = await execa(fixtureName, getOptions([filePath, stringGenerator()]));
+	const {stdout} = await execa(fixtureName, getOptions([{file: filePath}, stringGenerator()]));
 	t.is(stdout, 'foobarfoobar');
 	await rm(filePath);
 };

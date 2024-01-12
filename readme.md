@@ -400,9 +400,11 @@ Since the escaping is fairly basic, this should not be executed directly as a pr
 
 #### exitCode
 
-Type: `number`
+Type: `number | undefined`
 
 The numeric exit code of the process that was run.
+
+This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal-1).
 
 #### stdout
 

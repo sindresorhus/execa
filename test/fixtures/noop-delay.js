@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import process from 'node:process';
+import {writeSync} from 'node:fs';
 import {setTimeout} from 'node:timers/promises';
 
-console.log(process.argv[2]);
-await setTimeout((Number(process.argv[3]) || 1) * 1e3);
+writeSync(Number(process.argv[2]), 'foobar');
+await setTimeout(100);

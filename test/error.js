@@ -2,6 +2,7 @@ import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
 import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
+import {fullStdio} from './helpers/stdio.js';
 
 const isWindows = process.platform === 'win32';
 
@@ -9,33 +10,64 @@ setFixtureDir();
 
 const TIMEOUT_REGEXP = /timed out after/;
 
-const getExitRegExp = exitMessage => new RegExp(`failed with exit code ${exitMessage}`);
+test('empty error.stdout/stderr/stdio', async t => {
+	const {stdout, stderr, stdio} = await t.throwsAsync(execa('fail.js'));
+	t.is(stdout, '');
+	t.is(stderr, '');
+	t.deepEqual(stdio, ['', '', '']);
+});
 
-test('stdout/stderr/all available on errors', async t => {
-	const {stdout, stderr, all} = await t.throwsAsync(execa('exit.js', ['2'], {all: true}), {message: getExitRegExp('2')});
-	t.is(typeof stdout, 'string');
-	t.is(typeof stderr, 'string');
-	t.is(typeof all, 'string');
+test('empty error.all', async t => {
+	const {all} = await t.throwsAsync(execa('fail.js', {all: true}));
+	t.is(all, '');
+});
+
+test('undefined error.all', async t => {
+	const {all} = await t.throwsAsync(execa('fail.js'));
+	t.is(all, undefined);
+});
+
+test('empty error.stdio[0] even with input', async t => {
+	const {stdio} = await t.throwsAsync(execa('fail.js', {input: 'test'}));
+	t.is(stdio[0], '');
 });
 
 const WRONG_COMMAND = isWindows
 	? '\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.'
 	: '';
 
-test('stdout/stderr/all on process errors', async t => {
-	const {stdout, stderr, all} = await t.throwsAsync(execa('wrong command', {all: true}));
+test('stdout/stderr/all/stdio on process errors', async t => {
+	const {stdout, stderr, all, stdio} = await t.throwsAsync(execa('wrong command', {all: true}));
 	t.is(stdout, '');
 	t.is(stderr, WRONG_COMMAND);
 	t.is(all, WRONG_COMMAND);
+	t.deepEqual(stdio, ['', '', WRONG_COMMAND]);
 });
 
-test('stdout/stderr/all on process errors, in sync mode', t => {
-	const {stdout, stderr, all} = t.throws(() => {
+test('stdout/stderr/all/stdio on process errors, in sync mode', t => {
+	const {stdout, stderr, all, stdio} = t.throws(() => {
 		execaSync('wrong command');
 	});
 	t.is(stdout, '');
 	t.is(stderr, WRONG_COMMAND);
 	t.is(all, undefined);
+	t.deepEqual(stdio, ['', '', WRONG_COMMAND]);
+});
+
+test('error.stdout/stderr/stdio is defined', async t => {
+	const {stdout, stderr, stdio} = await t.throwsAsync(execa('echo-fail.js', fullStdio));
+	t.is(stdout, 'stdout');
+	t.is(stderr, 'stderr');
+	t.deepEqual(stdio, ['', 'stdout', 'stderr', 'fd3']);
+});
+
+test('error.stdout/stderr/stdio is defined, in sync mode', t => {
+	const {stdout, stderr, stdio} = t.throws(() => {
+		execaSync('echo-fail.js', fullStdio);
+	});
+	t.is(stdout, 'stdout');
+	t.is(stderr, 'stderr');
+	t.deepEqual(stdio, ['', 'stdout', 'stderr', 'fd3']);
 });
 
 test('exitCode is 0 on success', async t => {
@@ -44,7 +76,7 @@ test('exitCode is 0 on success', async t => {
 });
 
 const testExitCode = async (t, number) => {
-	const {exitCode} = await t.throwsAsync(execa('exit.js', [`${number}`]), {message: getExitRegExp(number)});
+	const {exitCode} = await t.throwsAsync(execa('exit.js', [`${number}`]), {message: new RegExp(`failed with exit code ${number}`)});
 	t.is(exitCode, number);
 };
 
@@ -56,22 +88,33 @@ test('error.message contains the command', async t => {
 	await t.throwsAsync(execa('exit.js', ['2', 'foo', 'bar']), {message: /exit.js 2 foo bar/});
 });
 
-test('error.message contains stdout/stderr if available', async t => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js'));
-	t.true(message.includes('stderr'));
-	t.true(message.includes('stdout'));
+test('error.message contains stdout/stderr/stdio if available', async t => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', fullStdio));
+	t.true(message.endsWith('stderr\nstdout\nfd3'));
 });
 
-test('error.message does not contain stdout/stderr if not available', async t => {
+test('error.message does not contain stdout if not available', async t => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', {stdio: ['pipe', 'ignore', 'pipe', 'pipe']}));
+	t.true(message.endsWith('stderr\nfd3'));
+});
+
+test('error.message does not contain stderr if not available', async t => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', {stdio: ['pipe', 'pipe', 'ignore', 'pipe']}));
+	t.true(message.endsWith('stdout\nfd3'));
+});
+
+test('error.message does not contain stdout/stderr/stdio if not available', async t => {
 	const {message} = await t.throwsAsync(execa('echo-fail.js', {stdio: 'ignore'}));
 	t.false(message.includes('stderr'));
 	t.false(message.includes('stdout'));
+	t.false(message.includes('fd3'));
 });
 
-test('error.shortMessage does not contain stdout/stderr', async t => {
-	const {shortMessage} = await t.throwsAsync(execa('echo-fail.js'));
+test('error.shortMessage does not contain stdout/stderr/stdio', async t => {
+	const {shortMessage} = await t.throwsAsync(execa('echo-fail.js', fullStdio));
 	t.false(shortMessage.includes('stderr'));
 	t.false(shortMessage.includes('stdout'));
+	t.false(shortMessage.includes('fd3'));
 });
 
 test('Original error.message is kept', async t => {
@@ -85,7 +128,7 @@ test('failed is false on success', async t => {
 });
 
 test('failed is true on failure', async t => {
-	const {failed} = await t.throwsAsync(execa('exit.js', ['2']));
+	const {failed} = await t.throwsAsync(execa('fail.js'));
 	t.true(failed);
 });
 
@@ -188,7 +231,7 @@ test('result.signal is undefined for successful execution', async t => {
 });
 
 test('result.signal is undefined if process failed, but was not killed', async t => {
-	const {signal} = await t.throwsAsync(execa('exit.js', [2]), {message: getExitRegExp('2')});
+	const {signal} = await t.throwsAsync(execa('fail.js'));
 	t.is(signal, undefined);
 });
 
@@ -208,12 +251,12 @@ test('error.code is defined on failure if applicable', async t => {
 });
 
 test('error.cwd is defined on failure if applicable', async t => {
-	const {cwd} = await t.throwsAsync(execa('noop-throw.js', [], {cwd: FIXTURES_DIR}));
+	const {cwd} = await t.throwsAsync(execa('fail.js', [], {cwd: FIXTURES_DIR}));
 	t.is(cwd, FIXTURES_DIR);
 });
 
 test('error.cwd is undefined on failure if not passed as options', async t => {
 	const expectedCwd = process.cwd();
-	const {cwd} = await t.throwsAsync(execa('noop-throw.js'));
+	const {cwd} = await t.throwsAsync(execa('fail.js'));
 	t.is(cwd, expectedCwd);
 });

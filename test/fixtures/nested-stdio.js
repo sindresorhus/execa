@@ -10,7 +10,7 @@ optionValue = Array.isArray(optionValue) && typeof optionValue[0] === 'string'
 	: optionValue;
 const stdio = ['ignore', 'inherit', 'inherit'];
 stdio[index] = optionValue;
-const childProcess = execa(file, args, {stdio});
+const childProcess = execa(file, [`${index}`, ...args], {stdio});
 
 const shouldPipe = Array.isArray(optionValue) && optionValue.includes('pipe');
 const hasPipe = childProcess.stdio[index] !== null;

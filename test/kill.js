@@ -64,9 +64,10 @@ if (process.platform !== 'win32') {
 	test('`forceKillAfterTimeout` should not be negative', testInvalidForceKill, -1);
 }
 
-test('execa() returns a promise with kill()', t => {
-	const {kill} = execa('noop.js', ['foo']);
-	t.is(typeof kill, 'function');
+test('execa() returns a promise with kill()', async t => {
+	const subprocess = execa('noop.js', ['foo']);
+	t.is(typeof subprocess.kill, 'function');
+	await subprocess;
 });
 
 test('timeout kills the process if it times out', async t => {

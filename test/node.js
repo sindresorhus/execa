@@ -37,6 +37,11 @@ test('node pipe stdout', async t => {
 	t.is(stdout, 'foo');
 });
 
+test('node does not return ipc channel\'s output', async t => {
+	const {stdio} = await execaNode('test/fixtures/noop.js', ['foo']);
+	t.deepEqual(stdio, [undefined, 'foo', '', undefined]);
+});
+
 test('node correctly use nodePath', async t => {
 	const {stdout} = await execaNode(process.platform === 'win32' ? 'hello.cmd' : 'hello.sh', {
 		stdout: 'pipe',

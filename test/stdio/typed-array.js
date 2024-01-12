@@ -1,29 +1,29 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdinOption, getStdoutOption, getStderrOption, getStdioOption} from '../helpers/stdio.js';
+import {getStdio} from '../helpers/stdio.js';
 
 setFixtureDir();
 
 const uint8ArrayFoobar = new TextEncoder().encode('foobar');
 
-const testUint8Array = async (t, fixtureName, getOptions) => {
-	const {stdout} = await execa(fixtureName, getOptions(uint8ArrayFoobar));
+const testUint8Array = async (t, index) => {
+	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, uint8ArrayFoobar));
 	t.is(stdout, 'foobar');
 };
 
-test('stdin option can be a Uint8Array', testUint8Array, 'stdin.js', getStdinOption);
-test('stdio[*] option can be a Uint8Array', testUint8Array, 'stdin-fd3.js', getStdioOption);
-test('stdin option can be a Uint8Array - sync', testUint8Array, 'stdin.js', getStdinOption);
-test('stdio[*] option can be a Uint8Array - sync', testUint8Array, 'stdin-fd3.js', getStdioOption);
+test('stdin option can be a Uint8Array', testUint8Array, 0);
+test('stdio[*] option can be a Uint8Array', testUint8Array, 3);
+test('stdin option can be a Uint8Array - sync', testUint8Array, 0);
+test('stdio[*] option can be a Uint8Array - sync', testUint8Array, 3);
 
-const testNoUint8ArrayOutput = (t, getOptions, execaMethod) => {
+const testNoUint8ArrayOutput = (t, index, execaMethod) => {
 	t.throws(() => {
-		execaMethod('noop.js', getOptions(uint8ArrayFoobar));
+		execaMethod('empty.js', getStdio(index, uint8ArrayFoobar));
 	}, {message: /cannot be a Uint8Array/});
 };
 
-test('stdout option cannot be a Uint8Array', testNoUint8ArrayOutput, getStdoutOption, execa);
-test('stderr option cannot be a Uint8Array', testNoUint8ArrayOutput, getStderrOption, execa);
-test('stdout option cannot be a Uint8Array - sync', testNoUint8ArrayOutput, getStdoutOption, execaSync);
-test('stderr option cannot be a Uint8Array - sync', testNoUint8ArrayOutput, getStderrOption, execaSync);
+test('stdout option cannot be a Uint8Array', testNoUint8ArrayOutput, 1, execa);
+test('stderr option cannot be a Uint8Array', testNoUint8ArrayOutput, 2, execa);
+test('stdout option cannot be a Uint8Array - sync', testNoUint8ArrayOutput, 1, execaSync);
+test('stderr option cannot be a Uint8Array - sync', testNoUint8ArrayOutput, 2, execaSync);

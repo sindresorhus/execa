@@ -30,46 +30,40 @@ try {
 	const writeStream = createWriteStream('output.txt');
 
 	expectAssignable<Function | undefined>(execaPromise.pipeStdout);
-	expectType<ExecaChildProcess>(execaPromise.pipeStdout!('file.txt'));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeStdout!('file.txt'));
-	expectType<ExecaChildProcess>(execaPromise.pipeStdout!(writeStream));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeStdout!(writeStream));
-	expectType<ExecaChildProcess>(execaPromise.pipeStdout!(execaPromise));
-	expectType<ExecaChildProcess<Uint8Array>>(execaPromise.pipeStdout!(execaBufferPromise));
-	expectType<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaPromise));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeStdout!(execaBufferPromise));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!('file.txt'));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!('file.txt'));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(writeStream));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(writeStream));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(execaPromise));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(execaBufferPromise));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaPromise));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaBufferPromise));
 
 	expectAssignable<Function | undefined>(execaPromise.pipeStderr);
-	expectType<ExecaChildProcess>(execaPromise.pipeStderr!('file.txt'));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeStderr!('file.txt'));
-	expectType<ExecaChildProcess>(execaPromise.pipeStderr!(writeStream));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeStderr!(writeStream));
-	expectType<ExecaChildProcess>(execaPromise.pipeStderr!(execaPromise));
-	expectType<ExecaChildProcess<Uint8Array>>(execaPromise.pipeStderr!(execaBufferPromise));
-	expectType<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaPromise));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeStderr!(execaBufferPromise));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!('file.txt'));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!('file.txt'));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(writeStream));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(writeStream));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(execaPromise));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(execaBufferPromise));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaPromise));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaBufferPromise));
 
 	expectAssignable<Function | undefined>(execaPromise.pipeAll);
-	expectType<ExecaChildProcess>(execaPromise.pipeAll!('file.txt'));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeAll!('file.txt'));
-	expectType<ExecaChildProcess>(execaPromise.pipeAll!(writeStream));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeAll!(writeStream));
-	expectType<ExecaChildProcess>(execaPromise.pipeAll!(execaPromise));
-	expectType<ExecaChildProcess<Uint8Array>>(execaPromise.pipeAll!(execaBufferPromise));
-	expectType<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaPromise));
-	expectType<ExecaChildProcess<Uint8Array>>(execaBufferPromise.pipeAll!(execaBufferPromise));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!('file.txt'));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!('file.txt'));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(writeStream));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(writeStream));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(execaPromise));
+	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(execaBufferPromise));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaPromise));
+	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaBufferPromise));
 
 	const unicornsResult = await execaPromise;
+
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number | undefined>(unicornsResult.exitCode);
-	expectType<undefined>(unicornsResult.stdio[0]);
-	expectType<string>(unicornsResult.stdout);
-	expectType<string>(unicornsResult.stdio[1]);
-	expectType<string>(unicornsResult.stderr);
-	expectType<string>(unicornsResult.stdio[2]);
-	expectType<string | undefined>(unicornsResult.stdio[3]);
-	expectType<string | undefined>(unicornsResult.all);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
 	expectType<boolean>(unicornsResult.isCanceled);
@@ -77,18 +71,178 @@ try {
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
+
+	expectType<undefined>(unicornsResult.stdio[0]);
+	expectType<string>(unicornsResult.stdout);
+	expectType<string>(unicornsResult.stdio[1]);
+	expectType<string>(unicornsResult.stderr);
+	expectType<string>(unicornsResult.stdio[2]);
+	expectType<string | undefined>(unicornsResult.all);
+
+	const bufferResult = await execaBufferPromise;
+	expectType<Uint8Array>(bufferResult.stdout);
+	expectType<Uint8Array>(bufferResult.stdio[1]);
+	expectType<Uint8Array>(bufferResult.stderr);
+	expectType<Uint8Array>(bufferResult.stdio[2]);
+	expectType<Uint8Array | undefined>(bufferResult.all);
+
+	const noBufferResult = await execa('unicorns', {buffer: false});
+	expectType<undefined>(noBufferResult.stdout);
+	expectType<undefined>(noBufferResult.stdio[1]);
+	expectType<undefined>(noBufferResult.stderr);
+	expectType<undefined>(noBufferResult.stdio[2]);
+	expectType<undefined>(noBufferResult.all);
+
+	const multipleStdoutResult = await execa('unicorns', {stdout: ['inherit', 'pipe'] as ['inherit', 'pipe']});
+	expectType<string>(multipleStdoutResult.stdout);
+	expectType<string>(multipleStdoutResult.stdio[1]);
+	expectType<string>(multipleStdoutResult.stderr);
+	expectType<string>(multipleStdoutResult.stdio[2]);
+	expectType<string | undefined>(multipleStdoutResult.all);
+
+	const ignoreBothResult = await execa('unicorns', {stdout: 'ignore', stderr: 'ignore'});
+	expectType<undefined>(ignoreBothResult.stdout);
+	expectType<undefined>(ignoreBothResult.stdio[1]);
+	expectType<undefined>(ignoreBothResult.stderr);
+	expectType<undefined>(ignoreBothResult.stdio[2]);
+	expectType<undefined>(ignoreBothResult.all);
+
+	const ignoreAllResult = await execa('unicorns', {stdio: 'ignore'});
+	expectType<undefined>(ignoreAllResult.stdout);
+	expectType<undefined>(ignoreAllResult.stdio[1]);
+	expectType<undefined>(ignoreAllResult.stderr);
+	expectType<undefined>(ignoreAllResult.stdio[2]);
+	expectType<undefined>(ignoreAllResult.all);
+
+	const ignoreStdioArrayResult = await execa('unicorns', {stdio: ['pipe', 'ignore', 'pipe']});
+	expectType<undefined>(ignoreStdioArrayResult.stdout);
+	expectType<undefined>(ignoreStdioArrayResult.stdio[1]);
+	expectType<string>(ignoreStdioArrayResult.stderr);
+	expectType<string>(ignoreStdioArrayResult.stdio[2]);
+	expectType<string | undefined>(ignoreStdioArrayResult.all);
+
+	const ignoreStdoutResult = await execa('unicorns', {stdout: 'ignore'});
+	expectType<undefined>(ignoreStdoutResult.stdout);
+	expectType<string>(ignoreStdoutResult.stderr);
+	expectType<string | undefined>(ignoreStdoutResult.all);
+
+	const ignoreArrayStdoutResult = await execa('unicorns', {stdout: ['ignore'] as ['ignore']});
+	expectType<undefined>(ignoreArrayStdoutResult.stdout);
+	expectType<string>(ignoreArrayStdoutResult.stderr);
+	expectType<string | undefined>(ignoreArrayStdoutResult.all);
+
+	const ignoreStderrResult = await execa('unicorns', {stderr: 'ignore'});
+	expectType<string>(ignoreStderrResult.stdout);
+	expectType<undefined>(ignoreStderrResult.stderr);
+	expectType<string | undefined>(ignoreStderrResult.all);
+
+	const ignoreArrayStderrResult = await execa('unicorns', {stderr: ['ignore'] as ['ignore']});
+	expectType<string>(ignoreArrayStderrResult.stdout);
+	expectType<undefined>(ignoreArrayStderrResult.stderr);
+	expectType<string | undefined>(ignoreArrayStderrResult.all);
+
+	const inheritStdoutResult = await execa('unicorns', {stdout: 'inherit'});
+	expectType<undefined>(inheritStdoutResult.stdout);
+	expectType<string>(inheritStdoutResult.stderr);
+	expectType<string | undefined>(inheritStdoutResult.all);
+
+	const inheritArrayStdoutResult = await execa('unicorns', {stdout: ['inherit'] as ['inherit']});
+	expectType<undefined>(inheritArrayStdoutResult.stdout);
+	expectType<string>(inheritArrayStdoutResult.stderr);
+	expectType<string | undefined>(inheritArrayStdoutResult.all);
+
+	const inheritStderrResult = await execa('unicorns', {stderr: 'inherit'});
+	expectType<string>(inheritStderrResult.stdout);
+	expectType<undefined>(inheritStderrResult.stderr);
+	expectType<string | undefined>(inheritStderrResult.all);
+
+	const inheritArrayStderrResult = await execa('unicorns', {stderr: ['inherit'] as ['inherit']});
+	expectType<string>(inheritArrayStderrResult.stdout);
+	expectType<undefined>(inheritArrayStderrResult.stderr);
+	expectType<string | undefined>(inheritArrayStderrResult.all);
+
+	const ipcStdoutResult = await execa('unicorns', {stdout: 'ipc'});
+	expectType<undefined>(ipcStdoutResult.stdout);
+	expectType<string>(ipcStdoutResult.stderr);
+	expectType<string | undefined>(ipcStdoutResult.all);
+
+	const ipcArrayStdoutResult = await execa('unicorns', {stdout: ['ipc'] as ['ipc']});
+	expectType<undefined>(ipcArrayStdoutResult.stdout);
+	expectType<string>(ipcArrayStdoutResult.stderr);
+	expectType<string | undefined>(ipcArrayStdoutResult.all);
+
+	const ipcStderrResult = await execa('unicorns', {stderr: 'ipc'});
+	expectType<string>(ipcStderrResult.stdout);
+	expectType<undefined>(ipcStderrResult.stderr);
+	expectType<string | undefined>(ipcStderrResult.all);
+
+	const ipcArrayStderrResult = await execa('unicorns', {stderr: ['ipc'] as ['ipc']});
+	expectType<string>(ipcArrayStderrResult.stdout);
+	expectType<undefined>(ipcArrayStderrResult.stderr);
+	expectType<string | undefined>(ipcArrayStderrResult.all);
+
+	const numberStdoutResult = await execa('unicorns', {stdout: 1});
+	expectType<undefined>(numberStdoutResult.stdout);
+	expectType<string>(numberStdoutResult.stderr);
+	expectType<string | undefined>(numberStdoutResult.all);
+
+	const numberArrayStdoutResult = await execa('unicorns', {stdout: [1] as [1]});
+	expectType<undefined>(numberArrayStdoutResult.stdout);
+	expectType<string>(numberArrayStdoutResult.stderr);
+	expectType<string | undefined>(numberArrayStdoutResult.all);
+
+	const numberStderrResult = await execa('unicorns', {stderr: 1});
+	expectType<string>(numberStderrResult.stdout);
+	expectType<undefined>(numberStderrResult.stderr);
+	expectType<string | undefined>(numberStderrResult.all);
+
+	const numberArrayStderrResult = await execa('unicorns', {stderr: [1] as [1]});
+	expectType<string>(numberArrayStderrResult.stdout);
+	expectType<undefined>(numberArrayStderrResult.stderr);
+	expectType<string | undefined>(numberArrayStderrResult.all);
+
+	const streamStdoutResult = await execa('unicorns', {stdout: process.stdout});
+	expectType<undefined>(streamStdoutResult.stdout);
+	expectType<string>(streamStdoutResult.stderr);
+	expectType<string | undefined>(streamStdoutResult.all);
+
+	const streamArrayStdoutResult = await execa('unicorns', {stdout: [process.stdout] as [typeof process.stdout]});
+	expectType<undefined>(streamArrayStdoutResult.stdout);
+	expectType<string>(streamArrayStdoutResult.stderr);
+	expectType<string | undefined>(streamArrayStdoutResult.all);
+
+	const streamStderrResult = await execa('unicorns', {stderr: process.stdout});
+	expectType<string>(streamStderrResult.stdout);
+	expectType<undefined>(streamStderrResult.stderr);
+	expectType<string | undefined>(streamStderrResult.all);
+
+	const streamArrayStderrResult = await execa('unicorns', {stderr: [process.stdout] as [typeof process.stdout]});
+	expectType<string>(streamArrayStderrResult.stdout);
+	expectType<undefined>(streamArrayStderrResult.stderr);
+	expectType<string | undefined>(streamArrayStderrResult.all);
+
+	const fd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
+	expectType<string>(fd3Result.stdio[3]);
+
+	const inputFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['pipe', new Readable()]]});
+	expectType<undefined>(inputFd3Result.stdio[3]);
+
+	const outputFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['pipe', new Writable()]]});
+	expectType<string>(outputFd3Result.stdio[3]);
+
+	const bufferFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], encoding: 'buffer'});
+	expectType<Uint8Array>(bufferFd3Result.stdio[3]);
+
+	const noBufferFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], buffer: false});
+	expectType<undefined>(noBufferFd3Result.stdio[3]);
+
+	const ignoreFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
+	expectType<undefined>(ignoreFd3Result.stdio[3]);
 } catch (error: unknown) {
 	const execaError = error as ExecaError<false>;
 
 	expectType<string>(execaError.message);
 	expectType<number | undefined>(execaError.exitCode);
-	expectType<undefined>(execaError.stdio[0]);
-	expectType<string>(execaError.stdout);
-	expectType<string>(execaError.stdio[1]);
-	expectType<string>(execaError.stderr);
-	expectType<string>(execaError.stdio[2]);
-	expectType<string | undefined>(execaError.stdio[3]);
-	expectType<string | undefined>(execaError.all);
 	expectType<boolean>(execaError.failed);
 	expectType<boolean>(execaError.timedOut);
 	expectType<boolean>(execaError.isCanceled);
@@ -98,21 +252,90 @@ try {
 	expectType<string>(execaError.cwd);
 	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
+
+	expectType<undefined>(execaError.stdio[0]);
+
+	const execaStringError = error as ExecaError<false, {}>;
+	expectType<string>(execaStringError.stdout);
+	expectType<string>(execaStringError.stdio[1]);
+	expectType<string>(execaStringError.stderr);
+	expectType<string>(execaStringError.stdio[2]);
+	expectType<string | undefined>(execaStringError.all);
+
+	const execaBufferError = error as ExecaError<false, {encoding: 'buffer'}>;
+	expectType<Uint8Array>(execaBufferError.stdout);
+	expectType<Uint8Array>(execaBufferError.stdio[1]);
+	expectType<Uint8Array>(execaBufferError.stderr);
+	expectType<Uint8Array>(execaBufferError.stdio[2]);
+	expectType<Uint8Array | undefined>(execaBufferError.all);
+
+	const noBufferError = error as ExecaError<false, {buffer: false}>;
+	expectType<undefined>(noBufferError.stdout);
+	expectType<undefined>(noBufferError.stdio[1]);
+	expectType<undefined>(noBufferError.stderr);
+	expectType<undefined>(noBufferError.stdio[2]);
+	expectType<undefined>(noBufferError.all);
+
+	const ignoreStdoutError = error as ExecaError<false, {stdout: 'ignore'}>;
+	expectType<undefined>(ignoreStdoutError.stdout);
+	expectType<undefined>(ignoreStdoutError.stdio[1]);
+	expectType<string>(ignoreStdoutError.stderr);
+	expectType<string>(ignoreStdoutError.stdio[2]);
+	expectType<string | undefined>(ignoreStdoutError.all);
+
+	const ignoreStderrError = error as ExecaError<false, {stderr: 'ignore'}>;
+	expectType<string>(ignoreStderrError.stdout);
+	expectType<undefined>(ignoreStderrError.stderr);
+	expectType<string | undefined>(ignoreStderrError.all);
+
+	const inheritStdoutError = error as ExecaError<false, {stdout: 'inherit'}>;
+	expectType<undefined>(inheritStdoutError.stdout);
+	expectType<string>(inheritStdoutError.stderr);
+	expectType<string | undefined>(inheritStdoutError.all);
+
+	const inheritStderrError = error as ExecaError<false, {stderr: 'inherit'}>;
+	expectType<string>(inheritStderrError.stdout);
+	expectType<undefined>(inheritStderrError.stderr);
+	expectType<string | undefined>(inheritStderrError.all);
+
+	const ipcStdoutError = error as ExecaError<false, {stdout: 'ipc'}>;
+	expectType<undefined>(ipcStdoutError.stdout);
+	expectType<string>(ipcStdoutError.stderr);
+	expectType<string | undefined>(ipcStdoutError.all);
+
+	const ipcStderrError = error as ExecaError<false, {stderr: 'ipc'}>;
+	expectType<string>(ipcStderrError.stdout);
+	expectType<undefined>(ipcStderrError.stderr);
+	expectType<string | undefined>(ipcStderrError.all);
+
+	const numberStdoutError = error as ExecaError<false, {stdout: 1}>;
+	expectType<undefined>(numberStdoutError.stdout);
+	expectType<string>(numberStdoutError.stderr);
+	expectType<string | undefined>(numberStdoutError.all);
+
+	const numberStderrError = error as ExecaError<false, {stderr: 1}>;
+	expectType<string>(numberStderrError.stdout);
+	expectType<undefined>(numberStderrError.stderr);
+	expectType<string | undefined>(numberStderrError.all);
+
+	const streamStdoutError = error as ExecaError<false, {stdout: typeof process.stdout}>;
+	expectType<undefined>(streamStdoutError.stdout);
+	expectType<string>(streamStdoutError.stderr);
+	expectType<string | undefined>(streamStdoutError.all);
+
+	const streamStderrError = error as ExecaError<false, {stderr: typeof process.stdout}>;
+	expectType<string>(streamStderrError.stdout);
+	expectType<undefined>(streamStderrError.stderr);
+	expectType<string | undefined>(streamStderrError.all);
 }
 
 try {
 	const unicornsResult = execaSync('unicorns');
-	expectType<ExecaSyncReturnValue>(unicornsResult);
+
+	expectAssignable<ExecaSyncReturnValue>(unicornsResult);
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number | undefined>(unicornsResult.exitCode);
-	expectType<undefined>(unicornsResult.stdio[0]);
-	expectType<string>(unicornsResult.stdout);
-	expectType<string>(unicornsResult.stdio[1]);
-	expectType<string>(unicornsResult.stderr);
-	expectType<string>(unicornsResult.stdio[2]);
-	expectType<string | undefined>(unicornsResult.stdio[3]);
-	expectError(unicornsResult.all);
 	expectError(unicornsResult.pipeStdout);
 	expectError(unicornsResult.pipeStderr);
 	expectError(unicornsResult.pipeAll);
@@ -123,19 +346,68 @@ try {
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
+
+	expectType<undefined>(unicornsResult.stdio[0]);
+	expectType<string>(unicornsResult.stdout);
+	expectType<string>(unicornsResult.stdio[1]);
+	expectType<string>(unicornsResult.stderr);
+	expectType<string>(unicornsResult.stdio[2]);
+	expectError(unicornsResult.all);
+
+	const bufferResult = execaSync('unicorns', {encoding: 'buffer'});
+	expectType<Uint8Array>(bufferResult.stdout);
+	expectType<Uint8Array>(bufferResult.stdio[1]);
+	expectType<Uint8Array>(bufferResult.stderr);
+	expectType<Uint8Array>(bufferResult.stdio[2]);
+	expectError(bufferResult.all);
+
+	const ignoreStdoutResult = execaSync('unicorns', {stdout: 'ignore'});
+	expectType<undefined>(ignoreStdoutResult.stdout);
+	expectType<undefined>(ignoreStdoutResult.stdio[1]);
+	expectType<string>(ignoreStdoutResult.stderr);
+	expectType<string>(ignoreStdoutResult.stdio[2]);
+	expectError(ignoreStdoutResult.all);
+
+	const ignoreStderrResult = execaSync('unicorns', {stderr: 'ignore'});
+	expectType<string>(ignoreStderrResult.stdout);
+	expectType<undefined>(ignoreStderrResult.stderr);
+	expectError(ignoreStderrResult.all);
+
+	const inheritStdoutResult = execaSync('unicorns', {stdout: 'inherit'});
+	expectType<undefined>(inheritStdoutResult.stdout);
+	expectType<string>(inheritStdoutResult.stderr);
+	expectError(inheritStdoutResult.all);
+
+	const inheritStderrResult = execaSync('unicorns', {stderr: 'inherit'});
+	expectType<string>(inheritStderrResult.stdout);
+	expectType<undefined>(inheritStderrResult.stderr);
+	expectError(inheritStderrResult.all);
+
+	const ipcStdoutResult = execaSync('unicorns', {stdout: 'ipc'});
+	expectType<undefined>(ipcStdoutResult.stdout);
+	expectType<string>(ipcStdoutResult.stderr);
+	expectError(ipcStdoutResult.all);
+
+	const ipcStderrResult = execaSync('unicorns', {stderr: 'ipc'});
+	expectType<string>(ipcStderrResult.stdout);
+	expectType<undefined>(ipcStderrResult.stderr);
+	expectError(ipcStderrResult.all);
+
+	const numberStdoutResult = execaSync('unicorns', {stdout: 1});
+	expectType<undefined>(numberStdoutResult.stdout);
+	expectType<string>(numberStdoutResult.stderr);
+	expectError(numberStdoutResult.all);
+
+	const numberStderrResult = execaSync('unicorns', {stderr: 1});
+	expectType<string>(numberStderrResult.stdout);
+	expectType<undefined>(numberStderrResult.stderr);
+	expectError(numberStderrResult.all);
 } catch (error: unknown) {
 	const execaError = error as ExecaError<true>;
 
 	expectType<ExecaSyncError>(execaError);
 	expectType<string>(execaError.message);
 	expectType<number | undefined>(execaError.exitCode);
-	expectType<undefined>(execaError.stdio[0]);
-	expectType<string>(execaError.stdout);
-	expectType<string>(execaError.stdio[1]);
-	expectType<string>(execaError.stderr);
-	expectType<string>(execaError.stdio[2]);
-	expectType<string | undefined>(execaError.stdio[3]);
-	expectError(execaError.all);
 	expectType<boolean>(execaError.failed);
 	expectType<boolean>(execaError.timedOut);
 	expectType<boolean>(execaError.isCanceled);
@@ -145,6 +417,64 @@ try {
 	expectType<string>(execaError.cwd);
 	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
+
+	expectType<undefined>(execaError.stdio[0]);
+
+	const execaStringError = error as ExecaError<true, {}>;
+	expectType<string>(execaStringError.stdout);
+	expectType<string>(execaStringError.stdio[1]);
+	expectType<string>(execaStringError.stderr);
+	expectType<string>(execaStringError.stdio[2]);
+	expectError(execaStringError.all);
+
+	const execaBufferError = error as ExecaError<true, {encoding: 'buffer'}>;
+	expectType<Uint8Array>(execaBufferError.stdout);
+	expectType<Uint8Array>(execaBufferError.stdio[1]);
+	expectType<Uint8Array>(execaBufferError.stderr);
+	expectType<Uint8Array>(execaBufferError.stdio[2]);
+	expectError(execaBufferError.all);
+
+	const ignoreStdoutError = error as ExecaError<true, {stdout: 'ignore'}>;
+	expectType<undefined>(ignoreStdoutError.stdout);
+	expectType<undefined>(ignoreStdoutError.stdio[1]);
+	expectType<string>(ignoreStdoutError.stderr);
+	expectType<string>(ignoreStdoutError.stdio[2]);
+	expectError(ignoreStdoutError.all);
+
+	const ignoreStderrError = error as ExecaError<true, {stderr: 'ignore'}>;
+	expectType<string>(ignoreStderrError.stdout);
+	expectType<undefined>(ignoreStderrError.stderr);
+	expectError(ignoreStderrError.all);
+
+	const inheritStdoutError = error as ExecaError<true, {stdout: 'inherit'}>;
+	expectType<undefined>(inheritStdoutError.stdout);
+	expectType<string>(inheritStdoutError.stderr);
+	expectError(inheritStdoutError.all);
+
+	const inheritStderrError = error as ExecaError<true, {stderr: 'inherit'}>;
+	expectType<string>(inheritStderrError.stdout);
+	expectType<undefined>(inheritStderrError.stderr);
+	expectError(inheritStderrError.all);
+
+	const ipcStdoutError = error as ExecaError<true, {stdout: 'ipc'}>;
+	expectType<undefined>(ipcStdoutError.stdout);
+	expectType<string>(ipcStdoutError.stderr);
+	expectError(ipcStdoutError.all);
+
+	const ipcStderrError = error as ExecaError<true, {stderr: 'ipc'}>;
+	expectType<string>(ipcStderrError.stdout);
+	expectType<undefined>(ipcStderrError.stderr);
+	expectError(ipcStderrError.all);
+
+	const numberStdoutError = error as ExecaError<true, {stdout: 1}>;
+	expectType<undefined>(numberStdoutError.stdout);
+	expectType<string>(numberStdoutError.stderr);
+	expectError(numberStdoutError.all);
+
+	const numberStderrError = error as ExecaError<true, {stderr: 1}>;
+	expectType<string>(numberStderrError.stdout);
+	expectType<undefined>(numberStderrError.stderr);
+	expectError(numberStderrError.all);
 }
 
 const stringGenerator = function * () {
@@ -589,125 +919,101 @@ expectError(execa(['unicorns', 'arg']));
 expectType<ExecaChildProcess>(execa('unicorns'));
 expectType<ExecaChildProcess>(execa(fileUrl));
 expectType<ExecaReturnValue<false>>(await execa('unicorns'));
-expectType<ExecaReturnValue<false>>(
-	await execa('unicorns', {encoding: 'utf8'}),
-);
-expectType<ExecaReturnValue<false, Uint8Array>>(await execa('unicorns', {encoding: 'buffer'}));
-expectType<ExecaReturnValue<false>>(
-	await execa('unicorns', ['foo'], {encoding: 'utf8'}),
-);
-expectType<ExecaReturnValue<false, Uint8Array>>(
-	await execa('unicorns', ['foo'], {encoding: 'buffer'}),
-);
+expectAssignable<{stdout: string}>(await execa('unicorns'));
+expectAssignable<{stdout: Uint8Array}>(await execa('unicorns', {encoding: 'buffer'}));
+expectAssignable<{stdout: string}>(await execa('unicorns', ['foo']));
+expectAssignable<{stdout: Uint8Array}>(await execa('unicorns', ['foo'], {encoding: 'buffer'}));
 
 expectError(execaSync(['unicorns', 'arg']));
-expectType<ExecaReturnValue<true>>(execaSync('unicorns'));
-expectType<ExecaReturnValue<true>>(execaSync(fileUrl));
-expectType<ExecaReturnValue<true>>(
-	execaSync('unicorns', {encoding: 'utf8'}),
-);
-expectType<ExecaReturnValue<true, Uint8Array>>(
-	execaSync('unicorns', {encoding: 'buffer'}),
-);
-expectType<ExecaReturnValue<true>>(
-	execaSync('unicorns', ['foo'], {encoding: 'utf8'}),
-);
-expectType<ExecaReturnValue<true, Uint8Array>>(
-	execaSync('unicorns', ['foo'], {encoding: 'buffer'}),
-);
+expectAssignable<ExecaReturnValue<true>>(execaSync('unicorns'));
+expectAssignable<ExecaReturnValue<true>>(execaSync(fileUrl));
+expectAssignable<{stdout: string}>(execaSync('unicorns'));
+expectAssignable<{stdout: Uint8Array}>(execaSync('unicorns', {encoding: 'buffer'}));
+expectAssignable<{stdout: string}>(execaSync('unicorns', ['foo']));
+expectAssignable<{stdout: Uint8Array}>(execaSync('unicorns', ['foo'], {encoding: 'buffer'}));
 
 expectType<ExecaChildProcess>(execaCommand('unicorns'));
 expectType<ExecaReturnValue<false>>(await execaCommand('unicorns'));
-expectType<ExecaReturnValue<false>>(await execaCommand('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<false, Uint8Array>>(await execaCommand('unicorns', {encoding: 'buffer'}));
-expectType<ExecaReturnValue<false>>(await execaCommand('unicorns foo', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<false, Uint8Array>>(await execaCommand('unicorns foo', {encoding: 'buffer'}));
+expectAssignable<{stdout: string}>(await execaCommand('unicorns'));
+expectAssignable<{stdout: Uint8Array}>(await execaCommand('unicorns', {encoding: 'buffer'}));
+expectAssignable<{stdout: string}>(await execaCommand('unicorns foo'));
+expectAssignable<{stdout: Uint8Array}>(await execaCommand('unicorns foo', {encoding: 'buffer'}));
 
-expectType<ExecaReturnValue<true>>(execaCommandSync('unicorns'));
-expectType<ExecaReturnValue<true>>(execaCommandSync('unicorns', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<true, Uint8Array>>(execaCommandSync('unicorns', {encoding: 'buffer'}));
-expectType<ExecaReturnValue<true>>(execaCommandSync('unicorns foo', {encoding: 'utf8'}));
-expectType<ExecaReturnValue<true, Uint8Array>>(execaCommandSync('unicorns foo', {encoding: 'buffer'}));
+expectAssignable<ExecaReturnValue<true>>(execaCommandSync('unicorns'));
+expectAssignable<{stdout: string}>(execaCommandSync('unicorns'));
+expectAssignable<{stdout: Uint8Array}>(execaCommandSync('unicorns', {encoding: 'buffer'}));
+expectAssignable<{stdout: string}>(execaCommandSync('unicorns foo'));
+expectAssignable<{stdout: Uint8Array}>(execaCommandSync('unicorns foo', {encoding: 'buffer'}));
 
 expectError(execaNode(['unicorns', 'arg']));
 expectType<ExecaChildProcess>(execaNode('unicorns'));
 expectType<ExecaReturnValue<false>>(await execaNode('unicorns'));
 expectType<ExecaReturnValue<false>>(await execaNode(fileUrl));
-expectType<ExecaReturnValue<false>>(
-	await execaNode('unicorns', {encoding: 'utf8'}),
-);
-expectType<ExecaReturnValue<false, Uint8Array>>(await execaNode('unicorns', {encoding: 'buffer'}));
-expectType<ExecaReturnValue<false>>(
-	await execaNode('unicorns', ['foo'], {encoding: 'utf8'}),
-);
-expectType<ExecaReturnValue<false, Uint8Array>>(
-	await execaNode('unicorns', ['foo'], {encoding: 'buffer'}),
-);
+expectAssignable<{stdout: string}>(await execaNode('unicorns'));
+expectAssignable<{stdout: Uint8Array}>(await execaNode('unicorns', {encoding: 'buffer'}));
+expectAssignable<{stdout: string}>(await execaNode('unicorns', ['foo']));
+expectAssignable<{stdout: Uint8Array}>(await execaNode('unicorns', ['foo'], {encoding: 'buffer'}));
 
-expectType<ExecaChildProcess>(execaNode('unicorns', {nodePath: './node'}));
-expectType<ExecaChildProcess>(execaNode('unicorns', {nodePath: fileUrl}));
+expectAssignable<ExecaChildProcess>(execaNode('unicorns', {nodePath: './node'}));
+expectAssignable<ExecaChildProcess>(execaNode('unicorns', {nodePath: fileUrl}));
 
-expectType<ExecaChildProcess>(execaNode('unicorns', {nodeOptions: ['--async-stack-traces']}));
-expectType<ExecaChildProcess>(execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces']}));
-expectType<ExecaChildProcess<Uint8Array>>(
-	execaNode('unicorns', {nodeOptions: ['--async-stack-traces'], encoding: 'buffer'}),
-);
-expectType<ExecaChildProcess<Uint8Array>>(
-	execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces'], encoding: 'buffer'}),
-);
+expectAssignable<{stdout: string}>(await execaNode('unicorns', {nodeOptions: ['--async-stack-traces']}));
+expectAssignable<{stdout: Uint8Array}>(await execaNode('unicorns', {nodeOptions: ['--async-stack-traces'], encoding: 'buffer'}));
+expectAssignable<{stdout: string}>(await execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces']}));
+expectAssignable<{stdout: Uint8Array}>(await execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces'], encoding: 'buffer'}));
 
 expectType<ExecaChildProcess>($`unicorns`);
 expectType<ExecaReturnValue<false>>(await $`unicorns`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns`);
-expectType<ExecaReturnValue<true>>($.s`unicorns`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns`);
+expectAssignable<ExecaReturnValue<true>>($.s`unicorns`);
 
-expectType<ExecaChildProcess>($({encoding: 'utf8'})`unicorns`);
-expectType<ExecaReturnValue<false>>(await $({encoding: 'utf8'})`unicorns`);
-expectType<ExecaReturnValue<true>>($({encoding: 'utf8'}).sync`unicorns`);
+expectAssignable<ExecaChildProcess>($({})`unicorns`);
+expectAssignable<{stdout: string}>(await $({})`unicorns`);
+expectAssignable<{stdout: string}>($({}).sync`unicorns`);
 
-expectType<ExecaChildProcess>($({encoding: 'utf8'})`unicorns foo`);
-expectType<ExecaReturnValue<false>>(await $({encoding: 'utf8'})`unicorns foo`);
-expectType<ExecaReturnValue<true>>($({encoding: 'utf8'}).sync`unicorns foo`);
+expectAssignable<ExecaChildProcess>($({})`unicorns foo`);
+expectAssignable<{stdout: string}>(await $({})`unicorns foo`);
+expectAssignable<{stdout: string}>($({}).sync`unicorns foo`);
 
-expectType<ExecaChildProcess<Uint8Array>>($({encoding: 'buffer'})`unicorns`);
-expectType<ExecaReturnValue<false, Uint8Array>>(await $({encoding: 'buffer'})`unicorns`);
-expectType<ExecaReturnValue<true, Uint8Array>>($({encoding: 'buffer'}).sync`unicorns`);
+expectAssignable<ExecaChildProcess>($({encoding: 'buffer'})`unicorns`);
+expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})`unicorns`);
+expectAssignable<{stdout: Uint8Array}>($({encoding: 'buffer'}).sync`unicorns`);
 
-expectType<ExecaChildProcess<Uint8Array>>($({encoding: 'buffer'})`unicorns foo`);
-expectType<ExecaReturnValue<false, Uint8Array>>(await $({encoding: 'buffer'})`unicorns foo`);
-expectType<ExecaReturnValue<true, Uint8Array>>($({encoding: 'buffer'}).sync`unicorns foo`);
+expectAssignable<ExecaChildProcess>($({encoding: 'buffer'})`unicorns foo`);
+expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})`unicorns foo`);
+expectAssignable<{stdout: Uint8Array}>($({encoding: 'buffer'}).sync`unicorns foo`);
 
-expectType<ExecaChildProcess>($({encoding: 'buffer'})({encoding: 'utf8'})`unicorns`);
-expectType<ExecaReturnValue<false>>(await $({encoding: 'buffer'})({encoding: 'utf8'})`unicorns`);
-expectType<ExecaReturnValue<true>>($({encoding: 'buffer'})({encoding: 'utf8'}).sync`unicorns`);
+expectAssignable<ExecaChildProcess>($({encoding: 'buffer'})({})`unicorns`);
+expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})({})`unicorns`);
+expectAssignable<{stdout: Uint8Array}>($({encoding: 'buffer'})({}).sync`unicorns`);
 
-expectType<ExecaChildProcess>($({encoding: 'buffer'})({encoding: 'utf8'})`unicorns foo`);
-expectType<ExecaReturnValue<false>>(await $({encoding: 'buffer'})({encoding: 'utf8'})`unicorns foo`);
-expectType<ExecaReturnValue<true>>($({encoding: 'buffer'})({encoding: 'utf8'}).sync`unicorns foo`);
+expectAssignable<ExecaChildProcess>($({encoding: 'buffer'})({})`unicorns foo`);
+expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})({})`unicorns foo`);
+expectAssignable<{stdout: Uint8Array}>($({encoding: 'buffer'})({}).sync`unicorns foo`);
 
-expectType<ExecaChildProcess<Uint8Array>>($({encoding: 'buffer'})({})`unicorns`);
-expectType<ExecaReturnValue<false, Uint8Array>>(await $({encoding: 'buffer'})({})`unicorns`);
-expectType<ExecaReturnValue<true, Uint8Array>>($({encoding: 'buffer'})({}).sync`unicorns`);
+expectAssignable<ExecaChildProcess>($({})({encoding: 'buffer'})`unicorns`);
+expectAssignable<{stdout: Uint8Array}>(await $({})({encoding: 'buffer'})`unicorns`);
+expectAssignable<{stdout: Uint8Array}>($({})({encoding: 'buffer'}).sync`unicorns`);
 
-expectType<ExecaChildProcess<Uint8Array>>($({encoding: 'buffer'})({})`unicorns foo`);
-expectType<ExecaReturnValue<false, Uint8Array>>(await $({encoding: 'buffer'})({})`unicorns foo`);
-expectType<ExecaReturnValue<true, Uint8Array>>($({encoding: 'buffer'})({}).sync`unicorns foo`);
+expectAssignable<ExecaChildProcess>($({})({encoding: 'buffer'})`unicorns foo`);
+expectAssignable<{stdout: Uint8Array}>(await $({})({encoding: 'buffer'})`unicorns foo`);
+expectAssignable<{stdout: Uint8Array}>($({})({encoding: 'buffer'}).sync`unicorns foo`);
 
-expectType<ExecaReturnValue<false>>(await $`unicorns ${'foo'}`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns ${'foo'}`);
-expectType<ExecaReturnValue<false>>(await $`unicorns ${1}`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns ${1}`);
-expectType<ExecaReturnValue<false>>(await $`unicorns ${['foo', 'bar']}`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns ${['foo', 'bar']}`);
-expectType<ExecaReturnValue<false>>(await $`unicorns ${[1, 2]}`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns ${[1, 2]}`);
-expectType<ExecaReturnValue<false>>(await $`unicorns ${await $`echo foo`}`);
+expectAssignable<ExecaReturnValue<false>>(await $`unicorns ${'foo'}`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns ${'foo'}`);
+expectAssignable<ExecaReturnValue<false>>(await $`unicorns ${1}`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns ${1}`);
+expectAssignable<ExecaReturnValue<false>>(await $`unicorns ${['foo', 'bar']}`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns ${['foo', 'bar']}`);
+expectAssignable<ExecaReturnValue<false>>(await $`unicorns ${[1, 2]}`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns ${[1, 2]}`);
+expectAssignable<ExecaReturnValue<false>>(await $`unicorns ${await $`echo foo`}`);
 expectError<ExecaReturnValue<false>>(await $`unicorns ${$`echo foo`}`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns ${$.sync`echo foo`}`);
-expectType<ExecaReturnValue<false>>(await $`unicorns ${[await $`echo foo`, 'bar']}`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns ${$.sync`echo foo`}`);
+expectAssignable<ExecaReturnValue<false>>(await $`unicorns ${[await $`echo foo`, 'bar']}`);
 expectError<ExecaReturnValue<false>>(await $`unicorns ${[$`echo foo`, 'bar']}`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns ${[$.sync`echo foo`, 'bar']}`);
-expectType<ExecaReturnValue<false>>(await $`unicorns ${true.toString()}`);
-expectType<ExecaReturnValue<true>>($.sync`unicorns ${false.toString()}`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns ${[$.sync`echo foo`, 'bar']}`);
+expectAssignable<ExecaReturnValue<false>>(await $`unicorns ${true.toString()}`);
+expectAssignable<ExecaReturnValue<true>>($.sync`unicorns ${false.toString()}`);
 expectError<ExecaReturnValue<false>>(await $`unicorns ${true}`);
 expectError<ExecaReturnValue<true>>($.sync`unicorns ${false}`);

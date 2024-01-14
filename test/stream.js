@@ -46,6 +46,38 @@ test('stdout is undefined if ignored - sync', testIgnore, 1, execaSync);
 test('stderr is undefined if ignored - sync', testIgnore, 2, execaSync);
 test('stdio[*] is undefined if ignored - sync', testIgnore, 3, execaSync);
 
+const testIterationBuffer = async (t, index, buffer, expectedValue) => {
+	const subprocess = execa('noop-fd.js', [`${index}`], {...fullStdio, buffer});
+	const [output] = await Promise.all([
+		getStream(subprocess.stdio[index]),
+		subprocess,
+	]);
+	t.is(output, expectedValue);
+};
+
+test('Can iterate stdout when `buffer` set to `false`', testIterationBuffer, 1, false, 'foobar');
+test('Can iterate stderr when `buffer` set to `false`', testIterationBuffer, 2, false, 'foobar');
+test('Can iterate stdio[*] when `buffer` set to `false`', testIterationBuffer, 3, false, 'foobar');
+test('Cannot iterate stdout when `buffer` set to `true`', testIterationBuffer, 1, true, '');
+test('Cannot iterate stderr when `buffer` set to `true`', testIterationBuffer, 2, true, '');
+test('Cannot iterate stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, '');
+
+const testDataEventsBuffer = async (t, index, buffer) => {
+	const subprocess = execa('noop-fd.js', [`${index}`], {...fullStdio, buffer});
+	const [[output]] = await Promise.all([
+		once(subprocess.stdio[index], 'data'),
+		subprocess,
+	]);
+	t.is(output.toString(), 'foobar');
+};
+
+test('Can listen to `data` events on stdout when `buffer` set to `false`', testDataEventsBuffer, 1, false);
+test('Can listen to `data` events on stderr when `buffer` set to `false`', testDataEventsBuffer, 2, false);
+test('Can listen to `data` events on stdio[*] when `buffer` set to `false`', testDataEventsBuffer, 3, false);
+test('Can listen to `data` events on stdout when `buffer` set to `true`', testDataEventsBuffer, 1, true);
+test('Can listen to `data` events on stderr when `buffer` set to `true`', testDataEventsBuffer, 2, true);
+test('Can listen to `data` events on stdio[*] when `buffer` set to `true`', testDataEventsBuffer, 3, true);
+
 const maxBuffer = 10;
 
 const testMaxBufferSuccess = async (t, index, all) => {

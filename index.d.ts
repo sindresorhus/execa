@@ -664,6 +664,26 @@ type ChildProcessStream<StreamResultIgnored extends boolean> = StreamResultIgnor
 	? null
 	: Readable;
 
+type AllStream<OptionsType extends Options = Options> = AllStreamProperty<OptionsType['all'], OptionsType>;
+
+type AllStreamProperty<
+	AllOption extends Options['all'] = Options['all'],
+	OptionsType extends Options = Options,
+> = AllOption extends true
+	? AllIfStdout<IgnoresStreamResult<'1', OptionsType>, OptionsType>
+	: undefined;
+
+type AllIfStdout<
+	StdoutResultIgnored extends boolean,
+	OptionsType extends Options = Options,
+> = StdoutResultIgnored extends true
+	? AllIfStderr<IgnoresStreamResult<'2', OptionsType>>
+	: Readable;
+
+type AllIfStderr<StderrResultIgnored extends boolean> = StderrResultIgnored extends true
+	? undefined
+	: Readable;
+
 export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	stdout: StreamUnlessIgnored<'1', OptionsType>;
 
@@ -676,7 +696,7 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	- the `all` option is `false` (the default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 	*/
-	all?: Readable;
+	all: AllStream<OptionsType>;
 
 	catch<ResultType = never>(
 		onRejected?: (reason: ExecaError<OptionsType>) => ResultType | PromiseLike<ResultType>

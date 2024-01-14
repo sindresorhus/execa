@@ -625,7 +625,16 @@ export type KillOptions = {
 	forceKillAfterTimeout?: number | false;
 };
 
+type StreamUnlessIgnored<
+	StreamIndex extends string,
+	OptionsType extends Options = Options,
+> = IgnoresStreamResult<StreamIndex, OptionsType> extends true ? null : Readable;
+
 export type ExecaChildPromise<OptionsType extends Options = Options> = {
+	stdout: StreamUnlessIgnored<'1', OptionsType>;
+
+	stderr: StreamUnlessIgnored<'2', OptionsType>;
+
 	/**
 	Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
 

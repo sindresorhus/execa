@@ -2,5 +2,5 @@
 import process from 'node:process';
 import {writeSync} from 'node:fs';
 
-writeSync(Number(process.argv[2]), 'foobar');
+writeSync(Number(process.argv[2]), process.argv[3] || 'foobar');
 process.exit(2);

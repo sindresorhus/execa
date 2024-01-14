@@ -18,13 +18,14 @@ type BaseStdioOption =
 	| 'ignore'
 	| 'inherit';
 
-type CommonStdioOption =
+type CommonStdioOption<IsSync extends boolean = boolean> =
 	| BaseStdioOption
 	| 'ipc'
 	| number
 	| undefined
 	| URL
-	| {file: string};
+	| {file: string}
+	| IfAsync<IsSync, ((chunks: Iterable<string | Uint8Array>) => AsyncGenerator<string | Uint8Array, void, void>)>;
 
 type InputStdioOption<IsSync extends boolean = boolean> =
 	| Uint8Array
@@ -39,14 +40,14 @@ type OutputStdioOption<IsSync extends boolean = boolean> = IfAsync<IsSync,
 | WritableStream>;
 
 export type StdinOption<IsSync extends boolean = boolean> =
-	CommonStdioOption | InputStdioOption<IsSync>
-	| Array<CommonStdioOption | InputStdioOption<IsSync>>;
+	CommonStdioOption<IsSync> | InputStdioOption<IsSync>
+	| Array<CommonStdioOption<IsSync> | InputStdioOption<IsSync>>;
 export type StdoutStderrOption<IsSync extends boolean = boolean> =
-	CommonStdioOption | OutputStdioOption<IsSync>
-	| Array<CommonStdioOption | OutputStdioOption<IsSync>>;
+	CommonStdioOption<IsSync> | OutputStdioOption<IsSync>
+	| Array<CommonStdioOption<IsSync> | OutputStdioOption<IsSync>>;
 export type StdioOption<IsSync extends boolean = boolean> =
-	CommonStdioOption | InputStdioOption | OutputStdioOption<IsSync>
-	| Array<CommonStdioOption | InputStdioOption | OutputStdioOption<IsSync>>;
+	CommonStdioOption<IsSync> | InputStdioOption | OutputStdioOption<IsSync>
+	| Array<CommonStdioOption<IsSync> | InputStdioOption | OutputStdioOption<IsSync>>;
 
 type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 	StdinOption<IsSync>,
@@ -241,6 +242,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
+	This can also be an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to transform the input. Please see the [full documentation here](https://github.com/sindresorhus/execa/tree/main/docs/transform.md).
+
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
 	readonly stdin?: StdinOption<IsSync>;
@@ -260,6 +263,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
+	This can also be an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to transform the output. Please see the [full documentation here](https://github.com/sindresorhus/execa/tree/main/docs/transform.md).
+
 	@default 'pipe'
 	*/
 	readonly stdout?: StdoutStderrOption<IsSync>;
@@ -278,6 +283,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	- a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
+
+	This can also be an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to transform the output. Please see the [full documentation here](https://github.com/sindresorhus/execa/tree/main/docs/transform.md).
 
 	@default 'pipe'
 	*/

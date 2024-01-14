@@ -25,6 +25,8 @@ type CommonStdioOption<IsSync extends boolean = boolean> =
 	| undefined
 	| URL
 	| {file: string}
+	// TODO: Use either `Iterable<string>` or `Iterable<Uint8Array>` based on whether `encoding: 'buffer'` is used.
+	// See https://github.com/sindresorhus/execa/issues/694
 	| IfAsync<IsSync, ((chunks: Iterable<string | Uint8Array>) => AsyncGenerator<string | Uint8Array, void, void>)>;
 
 type InputStdioOption<IsSync extends boolean = boolean> =

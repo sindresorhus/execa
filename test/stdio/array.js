@@ -4,7 +4,6 @@ import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {fullStdio, getStdio, STANDARD_STREAMS} from '../helpers/stdio.js';
-import {stringGenerator} from '../helpers/generator.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -123,7 +122,7 @@ test('stdio[*] default direction is output - sync', testAmbiguousDirection, exec
 const testAmbiguousMultiple = async (t, index) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [{file: filePath}, stringGenerator()]));
+	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [{file: filePath}, ['foo', 'bar']]));
 	t.is(stdout, 'foobarfoobar');
 	await rm(filePath);
 };

@@ -2,13 +2,12 @@ import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
+import {foobarUint8Array} from '../helpers/input.js';
 
 setFixtureDir();
 
-const uint8ArrayFoobar = new TextEncoder().encode('foobar');
-
 const testUint8Array = async (t, index) => {
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, uint8ArrayFoobar));
+	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, foobarUint8Array));
 	t.is(stdout, 'foobar');
 };
 
@@ -19,7 +18,7 @@ test('stdio[*] option can be a Uint8Array - sync', testUint8Array, 3);
 
 const testNoUint8ArrayOutput = (t, index, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(index, uint8ArrayFoobar));
+		execaMethod('empty.js', getStdio(index, foobarUint8Array));
 	}, {message: /cannot be a Uint8Array/});
 };
 

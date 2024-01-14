@@ -47,7 +47,7 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - Improved [Windows support](https://github.com/IndigoUnited/node-cross-spawn#why), including [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries.
 - Executes [locally installed binaries](#preferlocal) without `npx`.
 - [Cleans up](#cleanup) child processes when the parent process ends.
-- Redirect [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1) to files, streams, iterables, strings or `Uint8Array`.
+- Redirect [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1) from/to files, streams, iterables, strings, `Uint8Array` or [objects](docs/transform.md#object-mode).
 - [Transform](docs/transform.md) `stdin`/`stdout`/`stderr` with simple functions.
 - Iterate over [each text line](docs/transform.md#binary-data) output by the process.
 - [Graceful termination](#optionsforcekillaftertimeout).
@@ -411,23 +411,23 @@ This is `undefined` when the process could not be spawned or was terminated by a
 
 #### stdout
 
-Type: `string | Uint8Array | undefined`
+Type: `string | Uint8Array | unknown[] | undefined`
 
 The output of the process on `stdout`.
 
-This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### stderr
 
-Type: `string | Uint8Array | undefined`
+Type: `string | Uint8Array | unknown[] | undefined`
 
 The output of the process on `stderr`.
 
-This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### all
 
-Type: `string | Uint8Array | undefined`
+Type: `string | Uint8Array | unknown[] | undefined`
 
 The output of the process with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
 
@@ -435,13 +435,15 @@ This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
+This is an array if either the `stdout` or `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
+
 #### stdio
 
-Type: `Array<string | Uint8Array | undefined>`
+Type: `Array<string | Uint8Array | unknown[] | undefined>`
 
 The output of the process on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [other file descriptors](#stdio-1).
 
-Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### failed
 

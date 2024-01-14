@@ -56,6 +56,36 @@ This is more efficient and recommended if the data is either:
 	- Binary: Which does not have lines.
 	- Text: But the transform works even if a line or word is split across multiple chunks.
 
+## Object mode
+
+By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`. However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead. The process' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.
+
+```js
+const transform = async function * (lines) {
+	for await (const line of lines) {
+		yield JSON.parse(line)
+	}
+}
+
+const {stdout} = await execa('./jsonlines-output.js', {stdout: {transform, objectMode: true}});
+for (const data of stdout) {
+	console.log(stdout) // {...}
+}
+```
+
+`stdin` can also use `objectMode: true`.
+
+```js
+const transform = async function * (lines) {
+	for await (const line of lines) {
+		yield JSON.stringify(line)
+	}
+}
+
+const input = [{event: 'example'}, {event: 'otherExample'}]
+await execa('./jsonlines-input.js', {stdin: [input, {transform, objectMode: true}]});
+```
+
 ## Combining
 
 The [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) and [`stdio`](../readme.md#stdio-1) options can accept an array of values. While this is not specific to transforms, this can be useful with them too. For example, the following transform impacts the value printed by `inherit`.

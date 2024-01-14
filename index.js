@@ -85,6 +85,10 @@ const handleOutput = (options, value) => {
 		return;
 	}
 
+	if (Array.isArray(value)) {
+		return value;
+	}
+
 	if (Buffer.isBuffer(value)) {
 		value = bufferToUint8Array(value);
 	}

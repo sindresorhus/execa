@@ -47,6 +47,9 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - Improved [Windows support](https://github.com/IndigoUnited/node-cross-spawn#why), including [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries.
 - Executes [locally installed binaries](#preferlocal) without `npx`.
 - [Cleans up](#cleanup) child processes when the parent process ends.
+- Redirect [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1) to files, streams, iterables, strings or `Uint8Array`.
+- [Transform](docs/transform.md) `stdin`/`stdout`/`stderr` with simple functions.
+- Iterate over [each text line](docs/transform.md#binary-data) output by the process.
 - [Graceful termination](#optionsforcekillaftertimeout).
 - Get [interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.

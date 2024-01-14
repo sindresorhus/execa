@@ -10,65 +10,72 @@ setFixtureDir();
 
 const TIMEOUT_REGEXP = /timed out after/;
 
-test('empty error.stdout/stderr/stdio', async t => {
-	const {stdout, stderr, stdio} = await t.throwsAsync(execa('fail.js'));
+const testEmptyErrorStdio = async (t, execaMethod) => {
+	const {failed, stdout, stderr, stdio} = await execaMethod('fail.js', {reject: false});
+	t.true(failed);
 	t.is(stdout, '');
 	t.is(stderr, '');
-	t.deepEqual(stdio, ['', '', '']);
-});
+	t.deepEqual(stdio, [undefined, '', '']);
+};
 
-test('empty error.all', async t => {
-	const {all} = await t.throwsAsync(execa('fail.js', {all: true}));
-	t.is(all, '');
-});
+test('empty error.stdout/stderr/stdio', testEmptyErrorStdio, execa);
+test('empty error.stdout/stderr/stdio - sync', testEmptyErrorStdio, execaSync);
 
-test('undefined error.all', async t => {
-	const {all} = await t.throwsAsync(execa('fail.js'));
-	t.is(all, undefined);
-});
+const testUndefinedErrorStdio = async (t, execaMethod) => {
+	const {stdout, stderr, stdio} = await execaMethod('empty.js', {stdio: 'ignore'});
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.deepEqual(stdio, [undefined, undefined, undefined]);
+};
+
+test('undefined error.stdout/stderr/stdio', testUndefinedErrorStdio, execa);
+test('undefined error.stdout/stderr/stdio - sync', testUndefinedErrorStdio, execaSync);
+
+const testEmptyAll = async (t, options, expectedValue) => {
+	const {all} = await t.throwsAsync(execa('fail.js', options));
+	t.is(all, expectedValue);
+};
+
+test('empty error.all', testEmptyAll, {all: true}, '');
+test('undefined error.all', testEmptyAll, {}, undefined);
+test('ignored error.all', testEmptyAll, {all: true, stdio: 'ignore'}, undefined);
 
 test('empty error.stdio[0] even with input', async t => {
 	const {stdio} = await t.throwsAsync(execa('fail.js', {input: 'test'}));
-	t.is(stdio[0], '');
+	t.is(stdio[0], undefined);
 });
 
-const WRONG_COMMAND = isWindows
-	? '\'wrong\' is not recognized as an internal or external command,\r\noperable program or batch file.'
-	: '';
+// `error.code` is OS-specific here
+const SPAWN_ERROR_CODES = new Set(['EINVAL', 'ENOTSUP', 'EPERM']);
 
-test('stdout/stderr/all/stdio on process errors', async t => {
-	const {stdout, stderr, all, stdio} = await t.throwsAsync(execa('wrong command', {all: true}));
-	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND);
-	t.is(all, WRONG_COMMAND);
-	t.deepEqual(stdio, ['', '', WRONG_COMMAND]);
+test('stdout/stderr/stdio on process spawning errors', async t => {
+	const {code, stdout, stderr, stdio} = await t.throwsAsync(execa('noop.js', {uid: -1}));
+	t.true(SPAWN_ERROR_CODES.has(code));
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.deepEqual(stdio, [undefined, undefined, undefined]);
 });
 
-test('stdout/stderr/all/stdio on process errors, in sync mode', t => {
-	const {stdout, stderr, all, stdio} = t.throws(() => {
-		execaSync('wrong command');
+test('stdout/stderr/all/stdio on process spawning errors - sync', t => {
+	const {code, stdout, stderr, stdio} = t.throws(() => {
+		execaSync('noop.js', {uid: -1});
 	});
-	t.is(stdout, '');
-	t.is(stderr, WRONG_COMMAND);
-	t.is(all, undefined);
-	t.deepEqual(stdio, ['', '', WRONG_COMMAND]);
+	t.true(SPAWN_ERROR_CODES.has(code));
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.deepEqual(stdio, [undefined, undefined, undefined]);
 });
 
-test('error.stdout/stderr/stdio is defined', async t => {
-	const {stdout, stderr, stdio} = await t.throwsAsync(execa('echo-fail.js', fullStdio));
+const testErrorOutput = async (t, execaMethod) => {
+	const {failed, stdout, stderr, stdio} = await execaMethod('echo-fail.js', {...fullStdio, reject: false});
+	t.true(failed);
 	t.is(stdout, 'stdout');
 	t.is(stderr, 'stderr');
-	t.deepEqual(stdio, ['', 'stdout', 'stderr', 'fd3']);
-});
+	t.deepEqual(stdio, [undefined, 'stdout', 'stderr', 'fd3']);
+};
 
-test('error.stdout/stderr/stdio is defined, in sync mode', t => {
-	const {stdout, stderr, stdio} = t.throws(() => {
-		execaSync('echo-fail.js', fullStdio);
-	});
-	t.is(stdout, 'stdout');
-	t.is(stderr, 'stderr');
-	t.deepEqual(stdio, ['', 'stdout', 'stderr', 'fd3']);
-});
+test('error.stdout/stderr/stdio is defined', testErrorOutput, execa);
+test('error.stdout/stderr/stdio is defined - sync', testErrorOutput, execaSync);
 
 test('exitCode is 0 on success', async t => {
 	const {exitCode} = await execa('noop.js', ['foo']);
@@ -76,7 +83,10 @@ test('exitCode is 0 on success', async t => {
 });
 
 const testExitCode = async (t, number) => {
-	const {exitCode} = await t.throwsAsync(execa('exit.js', [`${number}`]), {message: new RegExp(`failed with exit code ${number}`)});
+	const {exitCode} = await t.throwsAsync(
+		execa('exit.js', [`${number}`]),
+		{message: new RegExp(`failed with exit code ${number}`)},
+	);
 	t.is(exitCode, number);
 };
 

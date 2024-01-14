@@ -22,11 +22,10 @@ import {
 } from './index.js';
 
 try {
-	const execaPromise = execa('unicorns');
+	const execaPromise = execa('unicorns', {all: true});
 	execaPromise.cancel();
-	expectType<Readable | undefined>(execaPromise.all);
 
-	const execaBufferPromise = execa('unicorns', {encoding: 'buffer'});
+	const execaBufferPromise = execa('unicorns', {encoding: 'buffer', all: true});
 	const writeStream = createWriteStream('output.txt');
 
 	expectAssignable<Function | undefined>(execaPromise.pipeStdout);
@@ -59,8 +58,13 @@ try {
 	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaPromise));
 	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaBufferPromise));
 
-	const unicornsResult = await execaPromise;
+	expectType<Readable | undefined>(execaPromise.all);
+	const noAllPromise = execa('unicorns');
+	expectType<Readable | undefined>(noAllPromise.all);
+	const noAllResult = await noAllPromise;
+	expectType<undefined>(noAllResult.all);
 
+	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number | undefined>(unicornsResult.exitCode);
@@ -77,7 +81,7 @@ try {
 	expectType<string>(unicornsResult.stdio[1]);
 	expectType<string>(unicornsResult.stderr);
 	expectType<string>(unicornsResult.stdio[2]);
-	expectType<string | undefined>(unicornsResult.all);
+	expectType<string>(unicornsResult.all);
 	expectType<string | undefined>(unicornsResult.stdio[3 as number]);
 
 	expectType<Readable>(execaBufferPromise.stdout);
@@ -87,9 +91,9 @@ try {
 	expectType<Uint8Array>(bufferResult.stdio[1]);
 	expectType<Uint8Array>(bufferResult.stderr);
 	expectType<Uint8Array>(bufferResult.stdio[2]);
-	expectType<Uint8Array | undefined>(bufferResult.all);
+	expectType<Uint8Array>(bufferResult.all);
 
-	const noBufferPromise = execa('unicorns', {buffer: false});
+	const noBufferPromise = execa('unicorns', {buffer: false, all: true});
 	expectType<Readable>(noBufferPromise.stdout);
 	expectType<Readable>(noBufferPromise.stderr);
 	const noBufferResult = await noBufferPromise;
@@ -99,7 +103,7 @@ try {
 	expectType<undefined>(noBufferResult.stdio[2]);
 	expectType<undefined>(noBufferResult.all);
 
-	const multipleStdoutPromise = execa('unicorns', {stdout: ['inherit', 'pipe'] as ['inherit', 'pipe']});
+	const multipleStdoutPromise = execa('unicorns', {stdout: ['inherit', 'pipe'] as ['inherit', 'pipe'], all: true});
 	expectType<Readable>(multipleStdoutPromise.stdout);
 	expectType<Readable>(multipleStdoutPromise.stderr);
 	const multipleStdoutResult = await multipleStdoutPromise;
@@ -107,9 +111,9 @@ try {
 	expectType<string>(multipleStdoutResult.stdio[1]);
 	expectType<string>(multipleStdoutResult.stderr);
 	expectType<string>(multipleStdoutResult.stdio[2]);
-	expectType<string | undefined>(multipleStdoutResult.all);
+	expectType<string>(multipleStdoutResult.all);
 
-	const ignoreBothPromise = execa('unicorns', {stdout: 'ignore', stderr: 'ignore'});
+	const ignoreBothPromise = execa('unicorns', {stdout: 'ignore', stderr: 'ignore', all: true});
 	expectType<null>(ignoreBothPromise.stdout);
 	expectType<null>(ignoreBothPromise.stderr);
 	const ignoreBothResult = await ignoreBothPromise;
@@ -119,7 +123,7 @@ try {
 	expectType<undefined>(ignoreBothResult.stdio[2]);
 	expectType<undefined>(ignoreBothResult.all);
 
-	const ignoreAllPromise = execa('unicorns', {stdio: 'ignore'});
+	const ignoreAllPromise = execa('unicorns', {stdio: 'ignore', all: true});
 	expectType<null>(ignoreAllPromise.stdout);
 	expectType<null>(ignoreAllPromise.stderr);
 	const ignoreAllResult = await ignoreAllPromise;
@@ -129,7 +133,7 @@ try {
 	expectType<undefined>(ignoreAllResult.stdio[2]);
 	expectType<undefined>(ignoreAllResult.all);
 
-	const ignoreStdioArrayPromise = execa('unicorns', {stdio: ['pipe', 'ignore', 'pipe']});
+	const ignoreStdioArrayPromise = execa('unicorns', {stdio: ['pipe', 'ignore', 'pipe'], all: true});
 	expectType<null>(ignoreStdioArrayPromise.stdout);
 	expectType<Readable>(ignoreStdioArrayPromise.stderr);
 	const ignoreStdioArrayResult = await ignoreStdioArrayPromise;
@@ -137,113 +141,113 @@ try {
 	expectType<undefined>(ignoreStdioArrayResult.stdio[1]);
 	expectType<string>(ignoreStdioArrayResult.stderr);
 	expectType<string>(ignoreStdioArrayResult.stdio[2]);
-	expectType<string | undefined>(ignoreStdioArrayResult.all);
+	expectType<string>(ignoreStdioArrayResult.all);
 
-	const ignoreStdoutPromise = execa('unicorns', {stdout: 'ignore'});
+	const ignoreStdoutPromise = execa('unicorns', {stdout: 'ignore', all: true});
 	expectType<null>(ignoreStdoutPromise.stdout);
 	expectType<Readable>(ignoreStdoutPromise.stderr);
 	const ignoreStdoutResult = await ignoreStdoutPromise;
 	expectType<undefined>(ignoreStdoutResult.stdout);
 	expectType<string>(ignoreStdoutResult.stderr);
-	expectType<string | undefined>(ignoreStdoutResult.all);
+	expectType<string>(ignoreStdoutResult.all);
 
-	const ignoreArrayStdoutResult = await execa('unicorns', {stdout: ['ignore'] as ['ignore']});
+	const ignoreArrayStdoutResult = await execa('unicorns', {stdout: ['ignore'] as ['ignore'], all: true});
 	expectType<undefined>(ignoreArrayStdoutResult.stdout);
 	expectType<string>(ignoreArrayStdoutResult.stderr);
-	expectType<string | undefined>(ignoreArrayStdoutResult.all);
+	expectType<string>(ignoreArrayStdoutResult.all);
 
-	const ignoreStderrPromise = execa('unicorns', {stderr: 'ignore'});
+	const ignoreStderrPromise = execa('unicorns', {stderr: 'ignore', all: true});
 	expectType<Readable>(ignoreStderrPromise.stdout);
 	expectType<null>(ignoreStderrPromise.stderr);
 	const ignoreStderrResult = await ignoreStderrPromise;
 	expectType<string>(ignoreStderrResult.stdout);
 	expectType<undefined>(ignoreStderrResult.stderr);
-	expectType<string | undefined>(ignoreStderrResult.all);
+	expectType<string>(ignoreStderrResult.all);
 
-	const ignoreArrayStderrResult = await execa('unicorns', {stderr: ['ignore'] as ['ignore']});
+	const ignoreArrayStderrResult = await execa('unicorns', {stderr: ['ignore'] as ['ignore'], all: true});
 	expectType<string>(ignoreArrayStderrResult.stdout);
 	expectType<undefined>(ignoreArrayStderrResult.stderr);
-	expectType<string | undefined>(ignoreArrayStderrResult.all);
+	expectType<string>(ignoreArrayStderrResult.all);
 
-	const inheritStdoutResult = await execa('unicorns', {stdout: 'inherit'});
+	const inheritStdoutResult = await execa('unicorns', {stdout: 'inherit', all: true});
 	expectType<undefined>(inheritStdoutResult.stdout);
 	expectType<string>(inheritStdoutResult.stderr);
-	expectType<string | undefined>(inheritStdoutResult.all);
+	expectType<string>(inheritStdoutResult.all);
 
-	const inheritArrayStdoutResult = await execa('unicorns', {stdout: ['inherit'] as ['inherit']});
+	const inheritArrayStdoutResult = await execa('unicorns', {stdout: ['inherit'] as ['inherit'], all: true});
 	expectType<undefined>(inheritArrayStdoutResult.stdout);
 	expectType<string>(inheritArrayStdoutResult.stderr);
-	expectType<string | undefined>(inheritArrayStdoutResult.all);
+	expectType<string>(inheritArrayStdoutResult.all);
 
-	const inheritStderrResult = await execa('unicorns', {stderr: 'inherit'});
+	const inheritStderrResult = await execa('unicorns', {stderr: 'inherit', all: true});
 	expectType<string>(inheritStderrResult.stdout);
 	expectType<undefined>(inheritStderrResult.stderr);
-	expectType<string | undefined>(inheritStderrResult.all);
+	expectType<string>(inheritStderrResult.all);
 
-	const inheritArrayStderrResult = await execa('unicorns', {stderr: ['inherit'] as ['inherit']});
+	const inheritArrayStderrResult = await execa('unicorns', {stderr: ['inherit'] as ['inherit'], all: true});
 	expectType<string>(inheritArrayStderrResult.stdout);
 	expectType<undefined>(inheritArrayStderrResult.stderr);
-	expectType<string | undefined>(inheritArrayStderrResult.all);
+	expectType<string>(inheritArrayStderrResult.all);
 
-	const ipcStdoutResult = await execa('unicorns', {stdout: 'ipc'});
+	const ipcStdoutResult = await execa('unicorns', {stdout: 'ipc', all: true});
 	expectType<undefined>(ipcStdoutResult.stdout);
 	expectType<string>(ipcStdoutResult.stderr);
-	expectType<string | undefined>(ipcStdoutResult.all);
+	expectType<string>(ipcStdoutResult.all);
 
-	const ipcArrayStdoutResult = await execa('unicorns', {stdout: ['ipc'] as ['ipc']});
+	const ipcArrayStdoutResult = await execa('unicorns', {stdout: ['ipc'] as ['ipc'], all: true});
 	expectType<undefined>(ipcArrayStdoutResult.stdout);
 	expectType<string>(ipcArrayStdoutResult.stderr);
-	expectType<string | undefined>(ipcArrayStdoutResult.all);
+	expectType<string>(ipcArrayStdoutResult.all);
 
-	const ipcStderrResult = await execa('unicorns', {stderr: 'ipc'});
+	const ipcStderrResult = await execa('unicorns', {stderr: 'ipc', all: true});
 	expectType<string>(ipcStderrResult.stdout);
 	expectType<undefined>(ipcStderrResult.stderr);
-	expectType<string | undefined>(ipcStderrResult.all);
+	expectType<string>(ipcStderrResult.all);
 
-	const ipcArrayStderrResult = await execa('unicorns', {stderr: ['ipc'] as ['ipc']});
+	const ipcArrayStderrResult = await execa('unicorns', {stderr: ['ipc'] as ['ipc'], all: true});
 	expectType<string>(ipcArrayStderrResult.stdout);
 	expectType<undefined>(ipcArrayStderrResult.stderr);
-	expectType<string | undefined>(ipcArrayStderrResult.all);
+	expectType<string>(ipcArrayStderrResult.all);
 
-	const numberStdoutResult = await execa('unicorns', {stdout: 1});
+	const numberStdoutResult = await execa('unicorns', {stdout: 1, all: true});
 	expectType<undefined>(numberStdoutResult.stdout);
 	expectType<string>(numberStdoutResult.stderr);
-	expectType<string | undefined>(numberStdoutResult.all);
+	expectType<string>(numberStdoutResult.all);
 
-	const numberArrayStdoutResult = await execa('unicorns', {stdout: [1] as [1]});
+	const numberArrayStdoutResult = await execa('unicorns', {stdout: [1] as [1], all: true});
 	expectType<undefined>(numberArrayStdoutResult.stdout);
 	expectType<string>(numberArrayStdoutResult.stderr);
-	expectType<string | undefined>(numberArrayStdoutResult.all);
+	expectType<string>(numberArrayStdoutResult.all);
 
-	const numberStderrResult = await execa('unicorns', {stderr: 1});
+	const numberStderrResult = await execa('unicorns', {stderr: 1, all: true});
 	expectType<string>(numberStderrResult.stdout);
 	expectType<undefined>(numberStderrResult.stderr);
-	expectType<string | undefined>(numberStderrResult.all);
+	expectType<string>(numberStderrResult.all);
 
-	const numberArrayStderrResult = await execa('unicorns', {stderr: [1] as [1]});
+	const numberArrayStderrResult = await execa('unicorns', {stderr: [1] as [1], all: true});
 	expectType<string>(numberArrayStderrResult.stdout);
 	expectType<undefined>(numberArrayStderrResult.stderr);
-	expectType<string | undefined>(numberArrayStderrResult.all);
+	expectType<string>(numberArrayStderrResult.all);
 
-	const streamStdoutResult = await execa('unicorns', {stdout: process.stdout});
+	const streamStdoutResult = await execa('unicorns', {stdout: process.stdout, all: true});
 	expectType<undefined>(streamStdoutResult.stdout);
 	expectType<string>(streamStdoutResult.stderr);
-	expectType<string | undefined>(streamStdoutResult.all);
+	expectType<string>(streamStdoutResult.all);
 
-	const streamArrayStdoutResult = await execa('unicorns', {stdout: [process.stdout] as [typeof process.stdout]});
+	const streamArrayStdoutResult = await execa('unicorns', {stdout: [process.stdout] as [typeof process.stdout], all: true});
 	expectType<undefined>(streamArrayStdoutResult.stdout);
 	expectType<string>(streamArrayStdoutResult.stderr);
-	expectType<string | undefined>(streamArrayStdoutResult.all);
+	expectType<string>(streamArrayStdoutResult.all);
 
-	const streamStderrResult = await execa('unicorns', {stderr: process.stdout});
+	const streamStderrResult = await execa('unicorns', {stderr: process.stdout, all: true});
 	expectType<string>(streamStderrResult.stdout);
 	expectType<undefined>(streamStderrResult.stderr);
-	expectType<string | undefined>(streamStderrResult.all);
+	expectType<string>(streamStderrResult.all);
 
-	const streamArrayStderrResult = await execa('unicorns', {stderr: [process.stdout] as [typeof process.stdout]});
+	const streamArrayStderrResult = await execa('unicorns', {stderr: [process.stdout] as [typeof process.stdout], all: true});
 	expectType<string>(streamArrayStderrResult.stdout);
 	expectType<undefined>(streamArrayStderrResult.stderr);
-	expectType<string | undefined>(streamArrayStderrResult.all);
+	expectType<string>(streamArrayStderrResult.all);
 
 	const fd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
 	expectType<string>(fd3Result.stdio[3]);
@@ -279,78 +283,81 @@ try {
 
 	expectType<undefined>(execaError.stdio[0]);
 
-	const execaStringError = error as ExecaError<{}>;
+	const noAllError = error as ExecaError<{}>;
+	expectType<undefined>(noAllError.all);
+
+	const execaStringError = error as ExecaError<{all: true}>;
 	expectType<string>(execaStringError.stdout);
 	expectType<string>(execaStringError.stdio[1]);
 	expectType<string>(execaStringError.stderr);
 	expectType<string>(execaStringError.stdio[2]);
-	expectType<string | undefined>(execaStringError.all);
+	expectType<string>(execaStringError.all);
 
-	const execaBufferError = error as ExecaError<{encoding: 'buffer'}>;
+	const execaBufferError = error as ExecaError<{encoding: 'buffer'; all: true}>;
 	expectType<Uint8Array>(execaBufferError.stdout);
 	expectType<Uint8Array>(execaBufferError.stdio[1]);
 	expectType<Uint8Array>(execaBufferError.stderr);
 	expectType<Uint8Array>(execaBufferError.stdio[2]);
-	expectType<Uint8Array | undefined>(execaBufferError.all);
+	expectType<Uint8Array>(execaBufferError.all);
 
-	const noBufferError = error as ExecaError<{buffer: false}>;
+	const noBufferError = error as ExecaError<{buffer: false; all: true}>;
 	expectType<undefined>(noBufferError.stdout);
 	expectType<undefined>(noBufferError.stdio[1]);
 	expectType<undefined>(noBufferError.stderr);
 	expectType<undefined>(noBufferError.stdio[2]);
 	expectType<undefined>(noBufferError.all);
 
-	const ignoreStdoutError = error as ExecaError<{stdout: 'ignore'}>;
+	const ignoreStdoutError = error as ExecaError<{stdout: 'ignore'; all: true}>;
 	expectType<undefined>(ignoreStdoutError.stdout);
 	expectType<undefined>(ignoreStdoutError.stdio[1]);
 	expectType<string>(ignoreStdoutError.stderr);
 	expectType<string>(ignoreStdoutError.stdio[2]);
-	expectType<string | undefined>(ignoreStdoutError.all);
+	expectType<string>(ignoreStdoutError.all);
 
-	const ignoreStderrError = error as ExecaError<{stderr: 'ignore'}>;
+	const ignoreStderrError = error as ExecaError<{stderr: 'ignore'; all: true}>;
 	expectType<string>(ignoreStderrError.stdout);
 	expectType<undefined>(ignoreStderrError.stderr);
-	expectType<string | undefined>(ignoreStderrError.all);
+	expectType<string>(ignoreStderrError.all);
 
-	const inheritStdoutError = error as ExecaError<{stdout: 'inherit'}>;
+	const inheritStdoutError = error as ExecaError<{stdout: 'inherit'; all: true}>;
 	expectType<undefined>(inheritStdoutError.stdout);
 	expectType<string>(inheritStdoutError.stderr);
-	expectType<string | undefined>(inheritStdoutError.all);
+	expectType<string>(inheritStdoutError.all);
 
-	const inheritStderrError = error as ExecaError<{stderr: 'inherit'}>;
+	const inheritStderrError = error as ExecaError<{stderr: 'inherit'; all: true}>;
 	expectType<string>(inheritStderrError.stdout);
 	expectType<undefined>(inheritStderrError.stderr);
-	expectType<string | undefined>(inheritStderrError.all);
+	expectType<string>(inheritStderrError.all);
 
-	const ipcStdoutError = error as ExecaError<{stdout: 'ipc'}>;
+	const ipcStdoutError = error as ExecaError<{stdout: 'ipc'; all: true}>;
 	expectType<undefined>(ipcStdoutError.stdout);
 	expectType<string>(ipcStdoutError.stderr);
-	expectType<string | undefined>(ipcStdoutError.all);
+	expectType<string>(ipcStdoutError.all);
 
-	const ipcStderrError = error as ExecaError<{stderr: 'ipc'}>;
+	const ipcStderrError = error as ExecaError<{stderr: 'ipc'; all: true}>;
 	expectType<string>(ipcStderrError.stdout);
 	expectType<undefined>(ipcStderrError.stderr);
-	expectType<string | undefined>(ipcStderrError.all);
+	expectType<string>(ipcStderrError.all);
 
-	const numberStdoutError = error as ExecaError<{stdout: 1}>;
+	const numberStdoutError = error as ExecaError<{stdout: 1; all: true}>;
 	expectType<undefined>(numberStdoutError.stdout);
 	expectType<string>(numberStdoutError.stderr);
-	expectType<string | undefined>(numberStdoutError.all);
+	expectType<string>(numberStdoutError.all);
 
-	const numberStderrError = error as ExecaError<{stderr: 1}>;
+	const numberStderrError = error as ExecaError<{stderr: 1; all: true}>;
 	expectType<string>(numberStderrError.stdout);
 	expectType<undefined>(numberStderrError.stderr);
-	expectType<string | undefined>(numberStderrError.all);
+	expectType<string>(numberStderrError.all);
 
-	const streamStdoutError = error as ExecaError<{stdout: typeof process.stdout}>;
+	const streamStdoutError = error as ExecaError<{stdout: typeof process.stdout; all: true}>;
 	expectType<undefined>(streamStdoutError.stdout);
 	expectType<string>(streamStdoutError.stderr);
-	expectType<string | undefined>(streamStdoutError.all);
+	expectType<string>(streamStdoutError.all);
 
-	const streamStderrError = error as ExecaError<{stderr: typeof process.stdout}>;
+	const streamStderrError = error as ExecaError<{stderr: typeof process.stdout; all: true}>;
 	expectType<string>(streamStderrError.stdout);
 	expectType<undefined>(streamStderrError.stderr);
-	expectType<string | undefined>(streamStderrError.all);
+	expectType<string>(streamStderrError.all);
 }
 
 try {

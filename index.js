@@ -96,7 +96,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
 	validateTimeout(options);
 
-	const {stdioStreams, stdioLength} = handleInputAsync(options);
+	const stdioStreamsGroups = handleInputAsync(options);
 
 	let spawned;
 	try {
@@ -106,7 +106,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		const dummySpawned = new childProcess.ChildProcess();
 		const errorPromise = Promise.reject(makeError({
 			error,
-			stdio: Array.from({length: stdioLength}),
+			stdio: Array.from({length: stdioStreamsGroups.length}),
 			command,
 			escapedCommand,
 			options,
@@ -117,28 +117,27 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		return dummySpawned;
 	}
 
+	pipeOutputAsync(spawned, stdioStreamsGroups);
+
 	const context = {isCanceled: false, timedOut: false};
 
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
 	spawned.cancel = spawnedCancel.bind(null, spawned, context);
-
-	pipeOutputAsync(spawned, stdioStreams);
-
 	spawned.all = makeAllStream(spawned, options);
 
 	addPipeMethods(spawned);
 
-	const promise = handlePromise({spawned, options, context, stdioStreams, command, escapedCommand});
+	const promise = handlePromise({spawned, options, context, stdioStreamsGroups, command, escapedCommand});
 	mergePromise(spawned, promise);
 	return spawned;
 }
 
-const handlePromise = async ({spawned, options, context, stdioStreams, command, escapedCommand}) => {
+const handlePromise = async ({spawned, options, context, stdioStreamsGroups, command, escapedCommand}) => {
 	const [
 		[exitCode, signal, error],
 		stdioResults,
 		allResult,
-	] = await getSpawnedResult(spawned, options, context, stdioStreams);
+	] = await getSpawnedResult(spawned, options, context, stdioStreamsGroups);
 	const stdio = stdioResults.map(stdioResult => handleOutput(options, stdioResult));
 	const all = handleOutput(options, allResult);
 
@@ -182,7 +181,7 @@ const handlePromise = async ({spawned, options, context, stdioStreams, command, 
 export function execaSync(rawFile, rawArgs, rawOptions) {
 	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
 
-	const {stdioStreams, stdioLength} = handleInputSync(options);
+	const stdioStreamsGroups = handleInputSync(options);
 
 	let result;
 	try {
@@ -190,7 +189,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	} catch (error) {
 		throw makeError({
 			error,
-			stdio: Array.from({length: stdioLength}),
+			stdio: Array.from({length: stdioStreamsGroups.stdioLength}),
 			command,
 			escapedCommand,
 			options,
@@ -199,7 +198,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 		});
 	}
 
-	pipeOutputSync(stdioStreams, result);
+	pipeOutputSync(stdioStreamsGroups, result);
 
 	const output = result.output || Array.from({length: 3});
 	const stdio = output.map(stdioOutput => handleOutput(options, stdioOutput));

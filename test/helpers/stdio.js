@@ -2,7 +2,7 @@ import process from 'node:process';
 
 export const identity = value => value;
 
-export const getStdio = (indexOrName, stdioOption, length) => {
+export const getStdio = (indexOrName, stdioOption, length = 3) => {
 	if (typeof indexOrName === 'string') {
 		return {[indexOrName]: stdioOption};
 	}

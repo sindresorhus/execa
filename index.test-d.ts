@@ -629,7 +629,7 @@ execaSync('unicorns', {input: ''});
 execa('unicorns', {input: new Uint8Array()});
 execaSync('unicorns', {input: new Uint8Array()});
 execa('unicorns', {input: process.stdin});
-expectError(execaSync('unicorns', {input: process.stdin}));
+execaSync('unicorns', {input: process.stdin});
 execa('unicorns', {inputFile: ''});
 execaSync('unicorns', {inputFile: ''});
 execa('unicorns', {inputFile: fileUrl});
@@ -655,13 +655,13 @@ execaSync('unicorns', {stdin: 'inherit'});
 execa('unicorns', {stdin: ['inherit']});
 execaSync('unicorns', {stdin: ['inherit']});
 execa('unicorns', {stdin: process.stdin});
-expectError(execaSync('unicorns', {stdin: process.stdin}));
+execaSync('unicorns', {stdin: process.stdin});
 execa('unicorns', {stdin: [process.stdin]});
-expectError(execaSync('unicorns', {stdin: [process.stdin]}));
+execaSync('unicorns', {stdin: [process.stdin]});
 execa('unicorns', {stdin: new Readable()});
-expectError(execaSync('unicorns', {stdin: new Readable()}));
+execaSync('unicorns', {stdin: new Readable()});
 execa('unicorns', {stdin: [new Readable()]});
-expectError(execaSync('unicorns', {stdin: [new Readable()]}));
+execaSync('unicorns', {stdin: [new Readable()]});
 expectError(execa('unicorns', {stdin: new Writable()}));
 expectError(execaSync('unicorns', {stdin: new Writable()}));
 expectError(execa('unicorns', {stdin: [new Writable()]}));
@@ -751,13 +751,13 @@ execaSync('unicorns', {stdout: 'inherit'});
 execa('unicorns', {stdout: ['inherit']});
 execaSync('unicorns', {stdout: ['inherit']});
 execa('unicorns', {stdout: process.stdout});
-expectError(execaSync('unicorns', {stdout: process.stdout}));
+execaSync('unicorns', {stdout: process.stdout});
 execa('unicorns', {stdout: [process.stdout]});
-expectError(execaSync('unicorns', {stdout: [process.stdout]}));
+execaSync('unicorns', {stdout: [process.stdout]});
 execa('unicorns', {stdout: new Writable()});
-expectError(execaSync('unicorns', {stdout: new Writable()}));
+execaSync('unicorns', {stdout: new Writable()});
 execa('unicorns', {stdout: [new Writable()]});
-expectError(execaSync('unicorns', {stdout: [new Writable()]}));
+execaSync('unicorns', {stdout: [new Writable()]});
 expectError(execa('unicorns', {stdout: new Readable()}));
 expectError(execaSync('unicorns', {stdout: new Readable()}));
 expectError(execa('unicorn', {stdout: [new Readable()]}));
@@ -829,13 +829,13 @@ execaSync('unicorns', {stderr: 'inherit'});
 execa('unicorns', {stderr: ['inherit']});
 execaSync('unicorns', {stderr: ['inherit']});
 execa('unicorns', {stderr: process.stderr});
-expectError(execaSync('unicorns', {stderr: process.stderr}));
+execaSync('unicorns', {stderr: process.stderr});
 execa('unicorns', {stderr: [process.stderr]});
-expectError(execaSync('unicorns', {stderr: [process.stderr]}));
+execaSync('unicorns', {stderr: [process.stderr]});
 execa('unicorns', {stderr: new Writable()});
-expectError(execaSync('unicorns', {stderr: new Writable()}));
+execaSync('unicorns', {stderr: new Writable()});
 execa('unicorns', {stderr: [new Writable()]});
-expectError(execaSync('unicorns', {stderr: [new Writable()]}));
+execaSync('unicorns', {stderr: [new Writable()]});
 expectError(execa('unicorns', {stderr: new Readable()}));
 expectError(execaSync('unicorns', {stderr: new Readable()}));
 expectError(execa('unicorns', {stderr: [new Readable()]}));
@@ -939,17 +939,17 @@ expectError(execaSync('unicorns', {stdio: asyncStringGenerator()}));
 expectError(execa('unicorns', {stdio: ['pipe', 'pipe']}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe']}));
 execa('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});
-expectError(execaSync('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']}));
+execaSync('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});
 execa('unicorns', {stdio: [[new Readable()], ['pipe'], ['pipe']]});
-expectError(execaSync('unicorns', {stdio: [[new Readable()], ['pipe'], ['pipe']]}));
+execaSync('unicorns', {stdio: [[new Readable()], ['pipe'], ['pipe']]});
 execa('unicorns', {stdio: ['pipe', new Writable(), 'pipe']});
-expectError(execaSync('unicorns', {stdio: ['pipe', new Writable(), 'pipe']}));
+execaSync('unicorns', {stdio: ['pipe', new Writable(), 'pipe']});
 execa('unicorns', {stdio: [['pipe'], [new Writable()], ['pipe']]});
-expectError(execaSync('unicorns', {stdio: [['pipe'], [new Writable()], ['pipe']]}));
+execaSync('unicorns', {stdio: [['pipe'], [new Writable()], ['pipe']]});
 execa('unicorns', {stdio: ['pipe', 'pipe', new Writable()]});
-expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', new Writable()]}));
+execaSync('unicorns', {stdio: ['pipe', 'pipe', new Writable()]});
 execa('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]});
-expectError(execaSync('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]}));
+execaSync('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]});
 expectError(execa('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
 expectError(execaSync('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
 expectError(execa('unicorns', {stdio: [[new Writable()], ['pipe'], ['pipe']]}));
@@ -998,13 +998,13 @@ execaSync('unicorns', {
 		undefined,
 		fileUrl,
 		{file: './test'},
+		new Writable(),
+		new Readable(),
 		new Uint8Array(),
 	],
 });
 expectError(execaSync('unicorns', {stdio: [stringOrUint8ArrayGenerator]}));
 expectError(execaSync('unicorns', {stdio: [{transform: stringOrUint8ArrayGenerator}]}));
-expectError(execaSync('unicorns', {stdio: [new Writable()]}));
-expectError(execaSync('unicorns', {stdio: [new Readable()]}));
 expectError(execaSync('unicorns', {stdio: [new WritableStream()]}));
 expectError(execaSync('unicorns', {stdio: [new ReadableStream()]}));
 expectError(execaSync('unicorns', {stdio: [emptyStringGenerator()]}));
@@ -1047,13 +1047,13 @@ execaSync('unicorns', {
 		[undefined],
 		[fileUrl],
 		[{file: './test'}],
+		[new Writable()],
+		[new Readable()],
 		[new Uint8Array()],
 	],
 });
 expectError(execaSync('unicorns', {stdio: [[stringOrUint8ArrayGenerator]]}));
 expectError(execaSync('unicorns', {stdio: [[{transform: stringOrUint8ArrayGenerator}]]}));
-expectError(execaSync('unicorns', {stdio: [[new Writable()]]}));
-expectError(execaSync('unicorns', {stdio: [[new Readable()]]}));
 expectError(execaSync('unicorns', {stdio: [[new WritableStream()]]}));
 expectError(execaSync('unicorns', {stdio: [[new ReadableStream()]]}));
 expectError(execaSync('unicorns', {stdio: [[emptyStringGenerator()]]}));

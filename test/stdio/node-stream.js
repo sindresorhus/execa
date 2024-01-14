@@ -17,22 +17,27 @@ const createNoFileReadable = value => {
 	return stream;
 };
 
-const testNodeStreamSync = (t, StreamClass, index, optionName) => {
+const testNoFileStreamSync = async (t, index, StreamClass) => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(index, new StreamClass()));
-	}, {message: `The \`${optionName}\` option cannot be a Node.js stream in sync mode.`});
+	}, {code: 'ERR_INVALID_ARG_VALUE'});
 };
 
-test('input cannot be a Node.js Readable - sync', testNodeStreamSync, Readable, 'input', 'input');
-test('stdin cannot be a Node.js Readable - sync', testNodeStreamSync, Readable, 0, 'stdin');
-test('stdio[*] cannot be a Node.js Readable - sync', testNodeStreamSync, Readable, 3, 'stdio[3]');
-test('stdout cannot be a Node.js Writable - sync', testNodeStreamSync, Writable, 1, 'stdout');
-test('stderr cannot be a Node.js Writable - sync', testNodeStreamSync, Writable, 2, 'stderr');
-test('stdio[*] cannot be a Node.js Writable - sync', testNodeStreamSync, Writable, 3, 'stdio[3]');
+test('stdin cannot be a Node.js Readable without a file descriptor - sync', testNoFileStreamSync, 0, Readable);
+test('stdout cannot be a Node.js Writable without a file descriptor - sync', testNoFileStreamSync, 1, Writable);
+test('stderr cannot be a Node.js Writable without a file descriptor - sync', testNoFileStreamSync, 2, Writable);
+test('stdio[*] cannot be a Node.js Readable without a file descriptor - sync', testNoFileStreamSync, 3, Readable);
+test('stdio[*] cannot be a Node.js Writable without a file descriptor - sync', testNoFileStreamSync, 3, Writable);
 
 test('input can be a Node.js Readable without a file descriptor', async t => {
 	const {stdout} = await execa('stdin.js', {input: createNoFileReadable('foobar')});
 	t.is(stdout, 'foobar');
+});
+
+test('input cannot be a Node.js Readable without a file descriptor - sync', t => {
+	t.throws(() => {
+		execaSync('empty.js', {input: createNoFileReadable('foobar')});
+	}, {message: 'The `input` option cannot be a Node.js stream in sync mode.'});
 });
 
 const testNoFileStream = async (t, index, StreamClass) => {
@@ -45,37 +50,42 @@ test('stderr cannot be a Node.js Writable without a file descriptor', testNoFile
 test('stdio[*] cannot be a Node.js Readable without a file descriptor', testNoFileStream, 3, Readable);
 test('stdio[*] cannot be a Node.js Writable without a file descriptor', testNoFileStream, 3, Writable);
 
-const testFileReadable = async (t, index) => {
+const testFileReadable = async (t, index, execaMethod) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
 	const stream = createReadStream(filePath);
 	await once(stream, 'open');
 
 	const indexString = index === 'input' ? '0' : `${index}`;
-	const {stdout} = await execa('stdin-fd.js', [indexString], getStdio(index, stream));
+	const {stdout} = await execaMethod('stdin-fd.js', [indexString], getStdio(index, stream));
 	t.is(stdout, 'foobar');
 
 	await rm(filePath);
 };
 
-test('input can be a Node.js Readable with a file descriptor', testFileReadable, 'input');
-test('stdin can be a Node.js Readable with a file descriptor', testFileReadable, 0);
-test('stdio[*] can be a Node.js Readable with a file descriptor', testFileReadable, 3);
+test('input can be a Node.js Readable with a file descriptor', testFileReadable, 'input', execa);
+test('stdin can be a Node.js Readable with a file descriptor', testFileReadable, 0, execa);
+test('stdio[*] can be a Node.js Readable with a file descriptor', testFileReadable, 3, execa);
+test('stdin can be a Node.js Readable with a file descriptor - sync', testFileReadable, 0, execaSync);
+test('stdio[*] can be a Node.js Readable with a file descriptor - sync', testFileReadable, 3, execaSync);
 
-const testFileWritable = async (t, index) => {
+const testFileWritable = async (t, index, execaMethod) => {
 	const filePath = tempfile();
 	const stream = createWriteStream(filePath);
 	await once(stream, 'open');
 
-	await execa('noop-fd.js', [`${index}`, 'foobar'], getStdio(index, stream));
+	await execaMethod('noop-fd.js', [`${index}`, 'foobar'], getStdio(index, stream));
 	t.is(await readFile(filePath, 'utf8'), 'foobar');
 
 	await rm(filePath);
 };
 
-test('stdout can be a Node.js Writable with a file descriptor', testFileWritable, 1);
-test('stderr can be a Node.js Writable with a file descriptor', testFileWritable, 2);
-test('stdio[*] can be a Node.js Writable with a file descriptor', testFileWritable, 3);
+test('stdout can be a Node.js Writable with a file descriptor', testFileWritable, 1, execa);
+test('stderr can be a Node.js Writable with a file descriptor', testFileWritable, 2, execa);
+test('stdio[*] can be a Node.js Writable with a file descriptor', testFileWritable, 3, execa);
+test('stdout can be a Node.js Writable with a file descriptor - sync', testFileWritable, 1, execaSync);
+test('stderr can be a Node.js Writable with a file descriptor - sync', testFileWritable, 2, execaSync);
+test('stdio[*] can be a Node.js Writable with a file descriptor - sync', testFileWritable, 3, execaSync);
 
 const testLazyFileReadable = async (t, index) => {
 	const filePath = tempfile();

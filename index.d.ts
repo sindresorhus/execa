@@ -38,25 +38,35 @@ type CommonStdioOption<IsSync extends boolean = boolean> =
 
 type InputStdioOption<IsSync extends boolean = boolean> =
 	| Uint8Array
+	| Readable
 	| IfAsync<IsSync,
 	| Iterable<string | Uint8Array>
 	| AsyncIterable<string | Uint8Array>
-	| Readable
 	| ReadableStream>;
 
-type OutputStdioOption<IsSync extends boolean = boolean> = IfAsync<IsSync,
-| Writable
-| WritableStream>;
+type OutputStdioOption<IsSync extends boolean = boolean> =
+	| Writable
+	| IfAsync<IsSync, WritableStream>;
 
+type StdinSingleOption<IsSync extends boolean = boolean> =
+	| CommonStdioOption<IsSync>
+	| InputStdioOption<IsSync>;
 export type StdinOption<IsSync extends boolean = boolean> =
-	CommonStdioOption<IsSync> | InputStdioOption<IsSync>
-	| Array<CommonStdioOption<IsSync> | InputStdioOption<IsSync>>;
+	| StdinSingleOption<IsSync>
+	| Array<StdinSingleOption<IsSync>>;
+type StdoutStderrSingleOption<IsSync extends boolean = boolean> =
+  | CommonStdioOption<IsSync>
+  | OutputStdioOption<IsSync>;
 export type StdoutStderrOption<IsSync extends boolean = boolean> =
-	CommonStdioOption<IsSync> | OutputStdioOption<IsSync>
-	| Array<CommonStdioOption<IsSync> | OutputStdioOption<IsSync>>;
+	| StdoutStderrSingleOption<IsSync>
+	| Array<StdoutStderrSingleOption<IsSync>>;
+type StdioSingleOption<IsSync extends boolean = boolean> =
+	| CommonStdioOption<IsSync>
+	| InputStdioOption<IsSync>
+	| OutputStdioOption<IsSync>;
 export type StdioOption<IsSync extends boolean = boolean> =
-	CommonStdioOption<IsSync> | InputStdioOption | OutputStdioOption<IsSync>
-	| Array<CommonStdioOption<IsSync> | InputStdioOption | OutputStdioOption<IsSync>>;
+	| StdioSingleOption<IsSync>
+	| Array<StdioSingleOption<IsSync>>;
 
 type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 	StdinOption<IsSync>,
@@ -225,7 +235,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	See also the `inputFile` and `stdin` options.
 	*/
-	readonly input?: string | Uint8Array | IfAsync<IsSync, Readable>;
+	readonly input?: string | Uint8Array | Readable;
 
 	/**
 	Use a file as input to the child process' `stdin`.
@@ -879,7 +889,7 @@ export function execa<OptionsType extends Options = {}>(
 /**
 Same as `execa()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -978,7 +988,7 @@ export function execaCommand<OptionsType extends Options = {}>(
 /**
 Same as `execaCommand()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `childProcessResult` object
@@ -1035,7 +1045,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error
@@ -1087,7 +1097,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be a stream nor an iterable.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error

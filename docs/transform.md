@@ -7,9 +7,10 @@ Transforms map or filter the input or output of a child process. They are define
 ```js
 import {execa} from 'execa';
 
-const transform = async function * (chunks) {
-	for await (const chunk of chunks) {
-		yield chunk.toUpperCase();
+const transform = async function * (lines) {
+	for await (const line of lines) {
+		const prefix = line.includes('error') ? 'ERROR' : 'INFO'
+		yield `${prefix}: ${line}`
 	}
 };
 
@@ -17,23 +18,29 @@ const {stdout} = await execa('echo', ['hello'], {stdout: transform});
 console.log(stdout); // HELLO
 ```
 
+Alternatively, a `{ transform }` plain object can also be passed.
+
+```js
+await execa('echo', ['hello'], {stdout: {transform}});
+```
+
 ## Encoding
 
-The `chunks` argument passed to the transform is an [`AsyncIterable<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols). If the [`encoding`](../readme.md#encoding) option is `buffer`, it is an `AsyncIterable<Uint8Array>` instead.
+The `lines` argument passed to the transform is an [`AsyncIterable<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols). If the [`encoding`](../readme.md#encoding) option is `buffer`, it is an `AsyncIterable<Uint8Array>` instead.
 
-The transform can `yield` either a `string` or an `Uint8Array`, regardless of the `chunks` argument's type.
+The transform can `yield` either a `string` or an `Uint8Array`, regardless of the `lines` argument's type.
 
 ## Filtering
 
-`yield` can be called 0, 1 or multiple times. Not calling `yield` enables filtering a specific chunk.
+`yield` can be called 0, 1 or multiple times. Not calling `yield` enables filtering a specific line.
 
 ```js
 import {execa} from 'execa';
 
-const transform = async function * (chunks) {
-	for await (const chunk of chunks) {
-		if (!chunk.includes('secret')) {
-			yield chunk;
+const transform = async function * (lines) {
+	for await (const line of lines) {
+		if (!line.includes('secret')) {
+			yield line;
 		}
 	}
 };
@@ -41,6 +48,19 @@ const transform = async function * (chunks) {
 const {stdout} = await execa('echo', ['This is a secret.'], {stdout: transform});
 console.log(stdout); // ''
 ```
+
+## Binary data
+
+The transform iterates over lines by default.\
+However, if the `binary` transform option is `true`, it iterates over arbitrary chunks of data instead.
+
+```js
+await execa('./binary.js', {stdout: {transform, binary: true}});
+```
+
+This is more efficient and recommended if the data is either:
+  - Binary, i.e. it does not have lines.
+	- Text, but the transform works even if a line or word is split across multiple chunks.
 
 ## Combining
 

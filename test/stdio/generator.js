@@ -339,6 +339,11 @@ const testAppendOutput = async (t, reversed) => {
 test('Can use multiple generators as output', testAppendOutput, false);
 test('Can use multiple generators as output, reversed', testAppendOutput, true);
 
+test('Can use multiple identical generators', async t => {
+	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: [appendGenerator, appendGenerator]});
+	t.is(stdout, `${foobarString}${casedSuffix}${casedSuffix}`);
+});
+
 const maxBuffer = 10;
 
 test('Generators take "maxBuffer" into account', async t => {

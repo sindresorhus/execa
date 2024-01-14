@@ -370,6 +370,18 @@ try {
 	expectType<string>(streamStderrError.all);
 }
 
+const rejectsResult = await execa('unicorns');
+expectError(rejectsResult.stack);
+expectError(rejectsResult.message);
+expectError(rejectsResult.shortMessage);
+expectError(rejectsResult.originalMessage);
+
+const noRejectsResult = await execa('unicorns', {reject: false});
+expectType<string | undefined>(noRejectsResult.stack);
+expectType<string | undefined>(noRejectsResult.message);
+expectType<string | undefined>(noRejectsResult.shortMessage);
+expectType<string | undefined>(noRejectsResult.originalMessage);
+
 try {
 	const unicornsResult = execaSync('unicorns');
 
@@ -517,6 +529,18 @@ try {
 	expectType<undefined>(numberStderrError.stderr);
 	expectError(numberStderrError.all);
 }
+
+const rejectsSyncResult = execaSync('unicorns');
+expectError(rejectsSyncResult.stack);
+expectError(rejectsSyncResult.message);
+expectError(rejectsSyncResult.shortMessage);
+expectError(rejectsSyncResult.originalMessage);
+
+const noRejectsSyncResult = execaSync('unicorns', {reject: false});
+expectType<string | undefined>(noRejectsSyncResult.stack);
+expectType<string | undefined>(noRejectsSyncResult.message);
+expectType<string | undefined>(noRejectsSyncResult.shortMessage);
+expectType<string | undefined>(noRejectsSyncResult.originalMessage);
 
 const stringGenerator = function * () {
 	yield '';

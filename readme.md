@@ -601,7 +601,7 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-This can also be an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to transform the input. Please see the [full documentation here](docs/transform.md).
+This can also be an async generator function to transform the input. [Learn more.](docs/transform.md)
 
 #### stdout
 
@@ -622,7 +622,7 @@ Default: `pipe`
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-This can also be an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to transform the output. Please see the [full documentation here](docs/transform.md).
+This can also be an async generator function to transform the output. [Learn more.](docs/transform.md)
 
 #### stderr
 
@@ -643,7 +643,7 @@ Default: `pipe`
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-This can also be an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to transform the output. Please see the [full documentation here](docs/transform.md).
+This can also be an async generator function to transform the output. [Learn more.](docs/transform.md)
 
 #### stdio
 

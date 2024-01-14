@@ -1,7 +1,9 @@
 import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
+import {setTimeout} from 'node:timers/promises';
 import {promisify} from 'node:util';
 import test from 'ava';
+import getStream, {getStreamAsBuffer} from 'get-stream';
 import {execa, execaSync} from '../index.js';
 import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
 import {fullStdio} from './helpers/stdio.js';
@@ -13,6 +15,14 @@ setFixtureDir();
 const checkEncoding = async (t, encoding, index, execaMethod) => {
 	const {stdio} = await execaMethod('noop-fd.js', [`${index}`, STRING_TO_ENCODE], {...fullStdio, encoding});
 	compareValues(t, stdio[index], encoding);
+
+	if (execaMethod !== execaSync) {
+		const childProcess = execaMethod('noop-fd.js', [`${index}`, STRING_TO_ENCODE], {...fullStdio, encoding, buffer: false});
+		const getStreamMethod = encoding === 'buffer' ? getStreamAsBuffer : getStream;
+		const result = await getStreamMethod(childProcess.stdio[index]);
+		compareValues(t, result, encoding);
+		await childProcess;
+	}
 
 	if (index === 3) {
 		return;
@@ -118,4 +128,24 @@ test('can pass encoding "base64url" to stdio[*] - sync', checkEncoding, 'base64u
 
 test('validate unknown encodings', async t => {
 	await t.throwsAsync(execa('noop.js', {encoding: 'unknownEncoding'}), {code: 'ERR_UNKNOWN_ENCODING'});
+});
+
+const foobarArray = ['fo', 'ob', 'ar', '..'];
+
+const delayedGenerator = async function * (chunks) {
+	// eslint-disable-next-line no-unused-vars
+	for await (const chunk of chunks) {
+		yield foobarArray[0];
+		await setTimeout(0);
+		yield foobarArray[1];
+		await setTimeout(0);
+		yield foobarArray[2];
+		await setTimeout(0);
+		yield foobarArray[3];
+	}
+};
+
+test('Handle multibyte characters', async t => {
+	const {stdout} = await execa('noop.js', {stdout: delayedGenerator, encoding: 'base64'});
+	t.is(stdout, btoa(foobarArray.join('')));
 });

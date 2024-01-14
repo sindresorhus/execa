@@ -117,10 +117,11 @@ test('maxBuffer works with encoding buffer and stderr', testMaxBufferEncoding, 2
 test('maxBuffer works with encoding buffer and stdio[*]', testMaxBufferEncoding, 3);
 
 const testMaxBufferHex = async (t, index) => {
+	const halfMaxBuffer = maxBuffer / 2;
 	const {stdio} = await t.throwsAsync(
-		execa('max-buffer.js', [`${index}`, `${maxBuffer + 1}`], {...fullStdio, maxBuffer, encoding: 'hex'}),
+		execa('max-buffer.js', [`${index}`, `${halfMaxBuffer + 1}`], {...fullStdio, maxBuffer, encoding: 'hex'}),
 	);
-	t.is(stdio[index], Buffer.from('.'.repeat(maxBuffer)).toString('hex'));
+	t.is(stdio[index], Buffer.from('.'.repeat(halfMaxBuffer)).toString('hex'));
 };
 
 test('maxBuffer works with other encodings and stdout', testMaxBufferHex, 1);

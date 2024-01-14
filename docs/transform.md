@@ -18,12 +18,6 @@ const {stdout} = await execa('echo', ['hello'], {stdout: transform});
 console.log(stdout); // HELLO
 ```
 
-Alternatively, a `{ transform }` plain object can also be passed.
-
-```js
-await execa('echo', ['hello'], {stdout: {transform}});
-```
-
 ## Encoding
 
 The `lines` argument passed to the transform is an [`AsyncIterable<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols). If the [`encoding`](../readme.md#encoding) option is `buffer`, it is an `AsyncIterable<Uint8Array>` instead.
@@ -52,7 +46,7 @@ console.log(stdout); // ''
 ## Binary data
 
 The transform iterates over lines by default.\
-However, if the `binary` transform option is `true`, it iterates over arbitrary chunks of data instead.
+However, if a `{transform, binary: true}` plain object is passed, it iterates over arbitrary chunks of data instead.
 
 ```js
 await execa('./binary.js', {stdout: {transform, binary: true}});

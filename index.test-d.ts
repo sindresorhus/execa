@@ -551,7 +551,7 @@ expectType<string | undefined>(noRejectsSyncResult.message);
 expectType<string | undefined>(noRejectsSyncResult.shortMessage);
 expectType<string | undefined>(noRejectsSyncResult.originalMessage);
 
-const stringGenerator = function * () {
+const emptyStringGenerator = function * () {
 	yield '';
 };
 
@@ -568,6 +568,40 @@ const asyncStringGenerator = async function * () {
 };
 
 const fileUrl = new URL('file:///test');
+
+const stringOrUint8ArrayGenerator = async function * (chunks: Iterable<string | Uint8Array>) {
+	for await (const chunk of chunks) {
+		yield chunk;
+	}
+};
+
+const booleanGenerator = async function * (chunks: Iterable<boolean>) {
+	for await (const chunk of chunks) {
+		yield chunk;
+	}
+};
+
+const arrayGenerator = async function * (chunks: string[]) {
+	for await (const chunk of chunks) {
+		yield chunk;
+	}
+};
+
+const invalidReturnGenerator = async function * (chunks: Iterable<string>) {
+	for await (const chunk of chunks) {
+		yield chunk;
+	}
+
+	return false;
+};
+
+const syncGenerator = function * (chunks: Iterable<string>) {
+	for (const chunk of chunks) {
+		yield chunk;
+	}
+
+	return false;
+};
 
 expectAssignable<Options>({cleanup: false});
 expectNotAssignable<SyncOptions>({cleanup: false});
@@ -642,10 +676,10 @@ expectError(execa('unicorns', {stdin: [new WritableStream()]}));
 expectError(execaSync('unicorns', {stdin: [new WritableStream()]}));
 execa('unicorns', {stdin: new Uint8Array()});
 execaSync('unicorns', {stdin: new Uint8Array()});
-execa('unicorns', {stdin: stringGenerator()});
-expectError(execaSync('unicorns', {stdin: stringGenerator()}));
-execa('unicorns', {stdin: [stringGenerator()]});
-expectError(execaSync('unicorns', {stdin: [stringGenerator()]}));
+execa('unicorns', {stdin: emptyStringGenerator()});
+expectError(execaSync('unicorns', {stdin: emptyStringGenerator()}));
+execa('unicorns', {stdin: [emptyStringGenerator()]});
+expectError(execaSync('unicorns', {stdin: [emptyStringGenerator()]}));
 execa('unicorns', {stdin: binaryGenerator()});
 expectError(execaSync('unicorns', {stdin: binaryGenerator()}));
 execa('unicorns', {stdin: [binaryGenerator()]});
@@ -670,6 +704,14 @@ execa('unicorns', {stdin: 1});
 execaSync('unicorns', {stdin: 1});
 execa('unicorns', {stdin: [1]});
 execaSync('unicorns', {stdin: [1]});
+execa('unicorns', {stdin: stringOrUint8ArrayGenerator});
+expectError(execaSync('unicorns', {stdin: stringOrUint8ArrayGenerator}));
+execa('unicorns', {stdin: [stringOrUint8ArrayGenerator]});
+expectError(execaSync('unicorns', {stdin: [stringOrUint8ArrayGenerator]}));
+expectError(execa('unicorns', {stdin: booleanGenerator}));
+expectError(execa('unicorns', {stdin: arrayGenerator}));
+expectError(execa('unicorns', {stdin: invalidReturnGenerator}));
+expectError(execa('unicorns', {stdin: syncGenerator}));
 execa('unicorns', {stdin: undefined});
 execaSync('unicorns', {stdin: undefined});
 execa('unicorns', {stdin: [undefined]});
@@ -728,6 +770,14 @@ execa('unicorns', {stdout: 1});
 execaSync('unicorns', {stdout: 1});
 execa('unicorns', {stdout: [1]});
 execaSync('unicorns', {stdout: [1]});
+execa('unicorns', {stdout: stringOrUint8ArrayGenerator});
+expectError(execaSync('unicorns', {stdout: stringOrUint8ArrayGenerator}));
+execa('unicorns', {stdout: [stringOrUint8ArrayGenerator]});
+expectError(execaSync('unicorns', {stdout: [stringOrUint8ArrayGenerator]}));
+expectError(execa('unicorns', {stdout: booleanGenerator}));
+expectError(execa('unicorns', {stdout: arrayGenerator}));
+expectError(execa('unicorns', {stdout: invalidReturnGenerator}));
+expectError(execa('unicorns', {stdout: syncGenerator}));
 execa('unicorns', {stdout: undefined});
 execaSync('unicorns', {stdout: undefined});
 execa('unicorns', {stdout: [undefined]});
@@ -786,6 +836,14 @@ execa('unicorns', {stderr: 1});
 execaSync('unicorns', {stderr: 1});
 execa('unicorns', {stderr: [1]});
 execaSync('unicorns', {stderr: [1]});
+execa('unicorns', {stderr: stringOrUint8ArrayGenerator});
+expectError(execaSync('unicorns', {stderr: stringOrUint8ArrayGenerator}));
+execa('unicorns', {stderr: [stringOrUint8ArrayGenerator]});
+expectError(execaSync('unicorns', {stderr: [stringOrUint8ArrayGenerator]}));
+expectError(execa('unicorns', {stderr: booleanGenerator}));
+expectError(execa('unicorns', {stderr: arrayGenerator}));
+expectError(execa('unicorns', {stderr: invalidReturnGenerator}));
+expectError(execa('unicorns', {stderr: syncGenerator}));
 execa('unicorns', {stderr: undefined});
 execaSync('unicorns', {stderr: undefined});
 execa('unicorns', {stderr: [undefined]});
@@ -822,6 +880,8 @@ expectError(execa('unicorns', {stdio: 'ipc'}));
 expectError(execaSync('unicorns', {stdio: 'ipc'}));
 expectError(execa('unicorns', {stdio: 1}));
 expectError(execaSync('unicorns', {stdio: 1}));
+expectError(execa('unicorns', {stdio: stringOrUint8ArrayGenerator}));
+expectError(execaSync('unicorns', {stdio: stringOrUint8ArrayGenerator}));
 expectError(execa('unicorns', {stdio: fileUrl}));
 expectError(execaSync('unicorns', {stdio: fileUrl}));
 expectError(execa('unicorns', {stdio: {file: './test'}}));
@@ -834,8 +894,8 @@ expectError(execa('unicorns', {stdio: new WritableStream()}));
 expectError(execaSync('unicorns', {stdio: new WritableStream()}));
 expectError(execa('unicorns', {stdio: new ReadableStream()}));
 expectError(execaSync('unicorns', {stdio: new ReadableStream()}));
-expectError(execa('unicorns', {stdio: stringGenerator()}));
-expectError(execaSync('unicorns', {stdio: stringGenerator()}));
+expectError(execa('unicorns', {stdio: emptyStringGenerator()}));
+expectError(execaSync('unicorns', {stdio: emptyStringGenerator()}));
 expectError(execa('unicorns', {stdio: asyncStringGenerator()}));
 expectError(execaSync('unicorns', {stdio: asyncStringGenerator()}));
 expectError(execa('unicorns', {stdio: ['pipe', 'pipe']}));
@@ -873,6 +933,7 @@ execa('unicorns', {
 		'inherit',
 		process.stdin,
 		1,
+		stringOrUint8ArrayGenerator,
 		undefined,
 		fileUrl,
 		{file: './test'},
@@ -881,7 +942,7 @@ execa('unicorns', {
 		new WritableStream(),
 		new ReadableStream(),
 		new Uint8Array(),
-		stringGenerator(),
+		emptyStringGenerator(),
 		asyncStringGenerator(),
 	],
 });
@@ -900,11 +961,12 @@ execaSync('unicorns', {
 		new Uint8Array(),
 	],
 });
+expectError(execaSync('unicorns', {stdio: [stringOrUint8ArrayGenerator]}));
 expectError(execaSync('unicorns', {stdio: [new Writable()]}));
 expectError(execaSync('unicorns', {stdio: [new Readable()]}));
 expectError(execaSync('unicorns', {stdio: [new WritableStream()]}));
 expectError(execaSync('unicorns', {stdio: [new ReadableStream()]}));
-expectError(execaSync('unicorns', {stdio: [stringGenerator()]}));
+expectError(execaSync('unicorns', {stdio: [emptyStringGenerator()]}));
 expectError(execaSync('unicorns', {stdio: [asyncStringGenerator()]}));
 execa('unicorns', {
 	stdio: [
@@ -916,6 +978,7 @@ execa('unicorns', {
 		['inherit'],
 		[process.stdin],
 		[1],
+		[stringOrUint8ArrayGenerator],
 		[undefined],
 		[fileUrl],
 		[{file: './test'}],
@@ -924,7 +987,7 @@ execa('unicorns', {
 		[new WritableStream()],
 		[new ReadableStream()],
 		[new Uint8Array()],
-		[stringGenerator()],
+		[emptyStringGenerator()],
 		[asyncStringGenerator()],
 	],
 });
@@ -944,11 +1007,12 @@ execaSync('unicorns', {
 		[new Uint8Array()],
 	],
 });
+expectError(execaSync('unicorns', {stdio: [[stringOrUint8ArrayGenerator]]}));
 expectError(execaSync('unicorns', {stdio: [[new Writable()]]}));
 expectError(execaSync('unicorns', {stdio: [[new Readable()]]}));
 expectError(execaSync('unicorns', {stdio: [[new WritableStream()]]}));
 expectError(execaSync('unicorns', {stdio: [[new ReadableStream()]]}));
-expectError(execaSync('unicorns', {stdio: [[stringGenerator()]]}));
+expectError(execaSync('unicorns', {stdio: [[emptyStringGenerator()]]}));
 expectError(execaSync('unicorns', {stdio: [[asyncStringGenerator()]]}));
 execa('unicorns', {serialization: 'advanced'});
 expectError(execaSync('unicorns', {serialization: 'advanced'}));

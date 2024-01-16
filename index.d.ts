@@ -244,7 +244,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to transform the input. Please see the [full documentation here](https://github.com/sindresorhus/execa/tree/main/docs/transform.md).
+	This can also be an async generator function to transform the input. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/

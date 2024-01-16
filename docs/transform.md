@@ -28,6 +28,8 @@ The transform can `yield` either a `string` or an `Uint8Array`, regardless of th
 `yield` can be called 0, 1 or multiple times. Not calling `yield` enables filtering a specific chunk.
 
 ```js
+import {execa} from 'execa';
+
 const transform = async function * (chunks) {
 	for await (const chunk of chunks) {
 		if (!chunk.includes('secret')) {

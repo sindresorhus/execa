@@ -4,9 +4,9 @@ import {setTimeout} from 'node:timers/promises';
 import {promisify} from 'node:util';
 import test from 'ava';
 import getStream, {getStreamAsBuffer} from 'get-stream';
-import {execa, execaSync} from '../index.js';
-import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
-import {fullStdio} from './helpers/stdio.js';
+import {execa, execaSync} from '../../index.js';
+import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {fullStdio} from '../helpers/stdio.js';
 
 const pExec = promisify(exec);
 

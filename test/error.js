@@ -98,10 +98,13 @@ test('error.message contains the command', async t => {
 	await t.throwsAsync(execa('exit.js', ['2', 'foo', 'bar']), {message: /exit.js 2 foo bar/});
 });
 
-test('error.message contains stdout/stderr/stdio if available', async t => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', fullStdio));
+const testStdioMessage = async (t, encoding) => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', {...fullStdio, encoding}));
 	t.true(message.endsWith('stderr\nstdout\nfd3'));
-});
+};
+
+test('error.message contains stdout/stderr/stdio if available', testStdioMessage, 'utf8');
+test('error.message contains stdout/stderr/stdio even with encoding "buffer"', testStdioMessage, 'buffer');
 
 test('error.message does not contain stdout if not available', async t => {
 	const {message} = await t.throwsAsync(execa('echo-fail.js', {stdio: ['pipe', 'ignore', 'pipe', 'pipe']}));

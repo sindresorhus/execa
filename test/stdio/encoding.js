@@ -132,9 +132,9 @@ test('validate unknown encodings', async t => {
 
 const foobarArray = ['fo', 'ob', 'ar', '..'];
 
-const delayedGenerator = async function * (chunks) {
+const delayedGenerator = async function * (lines) {
 	// eslint-disable-next-line no-unused-vars
-	for await (const chunk of chunks) {
+	for await (const line of lines) {
 		yield foobarArray[0];
 		await setTimeout(0);
 		yield foobarArray[1];

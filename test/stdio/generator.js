@@ -16,9 +16,9 @@ const foobarUppercase = foobarString.toUpperCase();
 const foobarBuffer = Buffer.from(foobarString);
 const foobarUint8Array = new TextEncoder().encode(foobarString);
 
-const uppercaseGenerator = async function * (chunks) {
-	for await (const chunk of chunks) {
-		yield chunk.toUpperCase();
+const uppercaseGenerator = async function * (lines) {
+	for await (const line of lines) {
+		yield line.toUpperCase();
 	}
 };
 
@@ -99,16 +99,35 @@ test('Can use generators with input option', async t => {
 
 const syncGenerator = function * () {};
 
-const testSyncGenerator = (t, index) => {
+const testInvalidGenerator = (t, index, stdioOption) => {
 	t.throws(() => {
-		execa('empty.js', getStdio(index, syncGenerator));
+		execa('empty.js', getStdio(index, stdioOption));
 	}, {message: /asynchronous generator/});
 };
 
-test('Cannot use sync generators with stdin', testSyncGenerator, 0);
-test('Cannot use sync generators with stdout', testSyncGenerator, 1);
-test('Cannot use sync generators with stderr', testSyncGenerator, 2);
-test('Cannot use sync generators with stdio[*]', testSyncGenerator, 3);
+test('Cannot use sync generators with stdin', testInvalidGenerator, 0, syncGenerator);
+test('Cannot use sync generators with stdout', testInvalidGenerator, 1, syncGenerator);
+test('Cannot use sync generators with stderr', testInvalidGenerator, 2, syncGenerator);
+test('Cannot use sync generators with stdio[*]', testInvalidGenerator, 3, syncGenerator);
+test('Cannot use sync generators with stdin, with options', testInvalidGenerator, 0, {transform: syncGenerator});
+test('Cannot use sync generators with stdout, with options', testInvalidGenerator, 1, {transform: syncGenerator});
+test('Cannot use sync generators with stderr, with options', testInvalidGenerator, 2, {transform: syncGenerator});
+test('Cannot use sync generators with stdio[*], with options', testInvalidGenerator, 3, {transform: syncGenerator});
+test('Cannot use invalid "transform" with stdin', testInvalidGenerator, 0, {transform: true});
+test('Cannot use invalid "transform" with stdout', testInvalidGenerator, 1, {transform: true});
+test('Cannot use invalid "transform" with stderr', testInvalidGenerator, 2, {transform: true});
+test('Cannot use invalid "transform" with stdio[*]', testInvalidGenerator, 3, {transform: true});
+
+const testInvalidBinary = (t, index) => {
+	t.throws(() => {
+		execa('empty.js', getStdio(index, {transform: uppercaseGenerator, binary: 'true'}));
+	}, {message: /a boolean/});
+};
+
+test('Cannot use invalid "binary" with stdin', testInvalidBinary, 0);
+test('Cannot use invalid "binary" with stdout', testInvalidBinary, 1);
+test('Cannot use invalid "binary" with stderr', testInvalidBinary, 2);
+test('Cannot use invalid "binary" with stdio[*]', testInvalidBinary, 3);
 
 const testSyncMethods = (t, index) => {
 	t.throws(() => {
@@ -123,30 +142,42 @@ test('Cannot use generators with sync methods and stdio[*]', testSyncMethods, 3)
 
 const repeatHighWaterMark = 10;
 
-const writerGenerator = async function * (chunks) {
+const writerGenerator = async function * (lines) {
 	// eslint-disable-next-line no-unused-vars
-	for await (const chunk of chunks) {
+	for await (const line of lines) {
 		for (let index = 0; index < getDefaultHighWaterMark() * repeatHighWaterMark; index += 1) {
-			yield '.';
+			yield '\n';
 		}
 	}
 };
 
 const passThroughGenerator = async function * (chunks) {
+	yield * chunks;
+};
+
+const getLengthGenerator = async function * (chunks) {
 	for await (const chunk of chunks) {
 		yield `${chunk.length}`;
 	}
 };
 
-test('Stream respects highWaterMark', async t => {
+const testHighWaterMark = async (t, passThrough) => {
 	const index = 1;
-	const {stdout} = await execa('noop-fd.js', [`${index}`], getStdio(index, [writerGenerator, passThroughGenerator]));
+	const {stdout} = await execa('noop-fd.js', [`${index}`], getStdio(index, [
+		writerGenerator,
+		...passThrough,
+		{transform: getLengthGenerator, binary: true},
+	]));
 	t.is(stdout, `${getDefaultHighWaterMark()}`.repeat(repeatHighWaterMark));
-});
+};
 
-const typeofGenerator = async function * (chunks) {
-	for await (const chunk of chunks) {
-		yield Object.prototype.toString.call(chunk);
+test('Stream respects highWaterMark, no passThrough', testHighWaterMark, []);
+test('Stream respects highWaterMark, line-wise passThrough', testHighWaterMark, [passThroughGenerator]);
+test('Stream respects highWaterMark, binary passThrough', testHighWaterMark, [{transform: passThroughGenerator, binary: true}]);
+
+const typeofGenerator = async function * (lines) {
+	for await (const line of lines) {
+		yield Object.prototype.toString.call(line);
 	}
 };
 
@@ -168,9 +199,9 @@ test('First generator argument is Uint8Array with encoding "hex", with string wr
 test('First generator argument is Uint8Array with encoding "hex", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'hex');
 test('First generator argument is Uint8Array with encoding "hex", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'hex');
 
-const outputGenerator = async function * (input, chunks) {
+const outputGenerator = async function * (input, lines) {
 	// eslint-disable-next-line no-unused-vars
-	for await (const chunk of chunks) {
+	for await (const line of lines) {
 		yield input;
 	}
 };
@@ -210,10 +241,8 @@ const multibyteUint8Array = new TextEncoder().encode(multibyteString);
 const breakingLength = multibyteUint8Array.length * 0.75;
 const brokenSymbol = '\uFFFD';
 
-const noopGenerator = async function * (chunks) {
-	for await (const chunk of chunks) {
-		yield chunk;
-	}
+const noopGenerator = async function * (lines) {
+	yield * lines;
 };
 
 test('Generator handles multibyte characters with Uint8Array', async t => {
@@ -231,9 +260,9 @@ test('Generator handles partial multibyte characters with Uint8Array', async t =
 });
 
 // eslint-disable-next-line require-yield
-const noYieldGenerator = async function * (chunks) {
+const noYieldGenerator = async function * (lines) {
 	// eslint-disable-next-line no-empty, no-unused-vars
-	for await (const chunk of chunks) {}
+	for await (const line of lines) {}
 };
 
 test('Generator can filter by not calling yield', async t => {
@@ -244,11 +273,11 @@ test('Generator can filter by not calling yield', async t => {
 const prefix = '> ';
 const suffix = ' <';
 
-const multipleYieldGenerator = async function * (chunks) {
-	for await (const chunk of chunks) {
+const multipleYieldGenerator = async function * (lines) {
+	for await (const line of lines) {
 		yield prefix;
 		await setTimeout(0);
-		yield chunk;
+		yield line;
 		await setTimeout(0);
 		yield suffix;
 	}
@@ -311,9 +340,9 @@ test('Can use generators with "inherit"', async t => {
 
 const casedSuffix = 'k';
 
-const appendGenerator = async function * (chunks) {
-	for await (const chunk of chunks) {
-		yield `${chunk}${casedSuffix}`;
+const appendGenerator = async function * (lines) {
+	for await (const line of lines) {
+		yield `${line}${casedSuffix}`;
 	}
 };
 
@@ -354,10 +383,10 @@ test('Generators take "maxBuffer" into account', async t => {
 	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: outputGenerator.bind(undefined, `${bigString}.`)}));
 });
 
-const timeoutGenerator = async function * (timeout, chunks) {
-	for await (const chunk of chunks) {
+const timeoutGenerator = async function * (timeout, lines) {
+	for await (const line of lines) {
 		await setTimeout(timeout);
-		yield chunk;
+		yield line;
 	}
 };
 
@@ -367,10 +396,10 @@ test('Generators are awaited on success', async t => {
 });
 
 // eslint-disable-next-line require-yield
-const throwingGenerator = async function * (chunks) {
+const throwingGenerator = async function * (lines) {
 	// eslint-disable-next-line no-unreachable-loop
-	for await (const chunk of chunks) {
-		throw new Error(`Generator error ${chunk}`);
+	for await (const line of lines) {
+		throw new Error(`Generator error ${line}`);
 	}
 };
 
@@ -382,10 +411,10 @@ test('Generators errors make process fail', async t => {
 });
 
 // eslint-disable-next-line require-yield
-const errorHandlerGenerator = async function * (state, chunks) {
+const errorHandlerGenerator = async function * (state, lines) {
 	try {
 		// eslint-disable-next-line no-unused-vars
-		for await (const chunk of chunks) {
+		for await (const line of lines) {
 			await setTimeout(1e8);
 		}
 	} catch (error) {

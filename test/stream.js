@@ -26,13 +26,31 @@ test('result.all is undefined if ignored', async t => {
 });
 
 const testAllIgnore = async (t, streamName, otherStreamName) => {
-	const childProcess = execa('noop.js', {[otherStreamName]: 'ignore', all: true});
-	t.is(childProcess.all, childProcess[streamName]);
-	await childProcess;
+	const childProcess = execa('noop-both.js', {[otherStreamName]: 'ignore', all: true});
+	t.is(childProcess[otherStreamName], null);
+	t.not(childProcess[streamName], null);
+	t.not(childProcess.all, null);
+
+	const result = await childProcess;
+	t.is(result[otherStreamName], undefined);
+	t.is(result[streamName], 'foobar');
+	t.is(result.all, 'foobar');
 };
 
 test('can use all: true with stdout: ignore', testAllIgnore, 'stderr', 'stdout');
 test('can use all: true with stderr: ignore', testAllIgnore, 'stdout', 'stderr');
+
+test('can use all: true with stdout: ignore + stderr: ignore', async t => {
+	const childProcess = execa('noop-both.js', {stdout: 'ignore', stderr: 'ignore', all: true});
+	t.is(childProcess.stdout, null);
+	t.is(childProcess.stderr, null);
+	t.is(childProcess.all, undefined);
+
+	const {stdout, stderr, all} = await childProcess;
+	t.is(stdout, undefined);
+	t.is(stderr, undefined);
+	t.is(all, undefined);
+});
 
 const testIgnore = async (t, index, execaMethod) => {
 	const result = await execaMethod('noop.js', getStdio(index, 'ignore'));

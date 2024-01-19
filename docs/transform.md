@@ -53,8 +53,8 @@ await execa('./binary.js', {stdout: {transform, binary: true}});
 ```
 
 This is more efficient and recommended if the data is either:
-  - Binary, i.e. it does not have lines.
-	- Text, but the transform works even if a line or word is split across multiple chunks.
+	- Binary: Which does not have lines.
+	- Text: But the transform works even if a line or word is split across multiple chunks.
 
 ## Combining
 

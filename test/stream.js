@@ -10,6 +10,8 @@ import {fullStdio, getStdio} from './helpers/stdio.js';
 
 setFixtureDir();
 
+const foobarString = 'foobar';
+
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const {all} = await execa('noop-132.js', {all: true});
 	t.is(all, '132');
@@ -64,37 +66,49 @@ test('stdout is undefined if ignored - sync', testIgnore, 1, execaSync);
 test('stderr is undefined if ignored - sync', testIgnore, 2, execaSync);
 test('stdio[*] is undefined if ignored - sync', testIgnore, 3, execaSync);
 
-const testIterationBuffer = async (t, index, buffer, expectedValue) => {
-	const subprocess = execa('noop-fd.js', [`${index}`], {...fullStdio, buffer});
-	const [output] = await Promise.all([
-		getStream(subprocess.stdio[index]),
-		subprocess,
-	]);
-	t.is(output, expectedValue);
+const getFirstDataEvent = async stream => {
+	const [output] = await once(stream, 'data');
+	return output.toString();
 };
 
-test('Can iterate stdout when `buffer` set to `false`', testIterationBuffer, 1, false, 'foobar');
-test('Can iterate stderr when `buffer` set to `false`', testIterationBuffer, 2, false, 'foobar');
-test('Can iterate stdio[*] when `buffer` set to `false`', testIterationBuffer, 3, false, 'foobar');
-test('Cannot iterate stdout when `buffer` set to `true`', testIterationBuffer, 1, true, '');
-test('Cannot iterate stderr when `buffer` set to `true`', testIterationBuffer, 2, true, '');
-test('Cannot iterate stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, '');
-
-const testDataEventsBuffer = async (t, index, buffer) => {
-	const subprocess = execa('noop-fd.js', [`${index}`], {...fullStdio, buffer});
-	const [[output]] = await Promise.all([
-		once(subprocess.stdio[index], 'data'),
+// eslint-disable-next-line max-params
+const testIterationBuffer = async (t, index, buffer, useDataEvents, all) => {
+	const subprocess = execa('noop-fd.js', [`${index}`, foobarString], {...fullStdio, buffer, all});
+	const getOutput = useDataEvents ? getFirstDataEvent : getStream;
+	const [result, output, allOutput] = await Promise.all([
 		subprocess,
+		getOutput(subprocess.stdio[index]),
+		all ? getOutput(subprocess.all) : undefined,
 	]);
-	t.is(output.toString(), 'foobar');
+
+	const expectedProcessResult = buffer ? foobarString : undefined;
+	const expectedOutput = !buffer || useDataEvents ? foobarString : '';
+
+	t.is(result.stdio[index], expectedProcessResult);
+	t.is(output, expectedOutput);
+
+	if (all) {
+		t.is(result.all, expectedProcessResult);
+		t.is(allOutput, expectedOutput);
+	}
 };
 
-test('Can listen to `data` events on stdout when `buffer` set to `false`', testDataEventsBuffer, 1, false);
-test('Can listen to `data` events on stderr when `buffer` set to `false`', testDataEventsBuffer, 2, false);
-test('Can listen to `data` events on stdio[*] when `buffer` set to `false`', testDataEventsBuffer, 3, false);
-test('Can listen to `data` events on stdout when `buffer` set to `true`', testDataEventsBuffer, 1, true);
-test('Can listen to `data` events on stderr when `buffer` set to `true`', testDataEventsBuffer, 2, true);
-test('Can listen to `data` events on stdio[*] when `buffer` set to `true`', testDataEventsBuffer, 3, true);
+test('Can iterate stdout when `buffer` set to `false`', testIterationBuffer, 1, false, false, false);
+test('Can iterate stderr when `buffer` set to `false`', testIterationBuffer, 2, false, false, false);
+test('Can iterate stdio[*] when `buffer` set to `false`', testIterationBuffer, 3, false, false, false);
+test('Can iterate all when `buffer` set to `false`', testIterationBuffer, 1, false, false, true);
+test('Cannot iterate stdout when `buffer` set to `true`', testIterationBuffer, 1, true, false, false);
+test('Cannot iterate stderr when `buffer` set to `true`', testIterationBuffer, 2, true, false, false);
+test('Cannot iterate stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, false, false);
+test('Cannot iterate all when `buffer` set to `true`', testIterationBuffer, 1, true, false, true);
+test('Can listen to `data` events on stdout when `buffer` set to `false`', testIterationBuffer, 1, false, true, false);
+test('Can listen to `data` events on stderr when `buffer` set to `false`', testIterationBuffer, 2, false, true, false);
+test('Can listen to `data` events on stdio[*] when `buffer` set to `false`', testIterationBuffer, 3, false, true, false);
+test('Can listen to `data` events on all when `buffer` set to `false`', testIterationBuffer, 1, false, true, true);
+test('Can listen to `data` events on stdout when `buffer` set to `true`', testIterationBuffer, 1, true, true, false);
+test('Can listen to `data` events on stderr when `buffer` set to `true`', testIterationBuffer, 2, true, true, false);
+test('Can listen to `data` events on stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, true, false);
+test('Can listen to `data` events on all when `buffer` set to `true`', testIterationBuffer, 1, true, true, true);
 
 const maxBuffer = 10;
 

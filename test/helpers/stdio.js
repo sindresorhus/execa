@@ -2,12 +2,12 @@ import process from 'node:process';
 
 export const identity = value => value;
 
-export const getStdio = (indexOrName, stdioOption) => {
+export const getStdio = (indexOrName, stdioOption, length) => {
 	if (typeof indexOrName === 'string') {
 		return {[indexOrName]: stdioOption};
 	}
 
-	const stdio = ['pipe', 'pipe', 'pipe'];
+	const stdio = Array.from({length}).fill('pipe');
 	stdio[indexOrName] = stdioOption;
 	return {stdio};
 };

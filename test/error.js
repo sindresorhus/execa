@@ -2,7 +2,7 @@ import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
 import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
-import {fullStdio} from './helpers/stdio.js';
+import {fullStdio, getStdio} from './helpers/stdio.js';
 
 const isWindows = process.platform === 'win32';
 
@@ -98,37 +98,42 @@ test('error.message contains the command', async t => {
 	await t.throwsAsync(execa('exit.js', ['2', 'foo', 'bar']), {message: /exit.js 2 foo bar/});
 });
 
-const testStdioMessage = async (t, encoding) => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', {...fullStdio, encoding}));
-	t.true(message.endsWith('stderr\nstdout\nfd3'));
+const testStdioMessage = async (t, encoding, all) => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', {...fullStdio, encoding, all}));
+	const output = all ? 'stdout\nstderr' : 'stderr\n\nstdout';
+	t.true(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));
 };
 
-test('error.message contains stdout/stderr/stdio if available', testStdioMessage, 'utf8');
-test('error.message contains stdout/stderr/stdio even with encoding "buffer"', testStdioMessage, 'buffer');
+test('error.message contains stdout/stderr/stdio if available', testStdioMessage, 'utf8', false);
+test('error.message contains stdout/stderr/stdio even with encoding "buffer"', testStdioMessage, 'buffer', false);
+test('error.message contains all if available', testStdioMessage, 'utf8', true);
+test('error.message contains all even with encoding "buffer"', testStdioMessage, 'buffer', true);
 
-test('error.message does not contain stdout if not available', async t => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', {stdio: ['pipe', 'ignore', 'pipe', 'pipe']}));
-	t.true(message.endsWith('stderr\nfd3'));
-});
+const testPartialIgnoreMessage = async (t, index, stdioOption, output) => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', getStdio(index, stdioOption, 4)));
+	t.true(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));
+};
 
-test('error.message does not contain stderr if not available', async t => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', {stdio: ['pipe', 'pipe', 'ignore', 'pipe']}));
-	t.true(message.endsWith('stdout\nfd3'));
-});
+test('error.message does not contain stdout if not available', testPartialIgnoreMessage, 1, 'ignore', 'stderr');
+test('error.message does not contain stderr if not available', testPartialIgnoreMessage, 2, 'ignore', 'stdout');
 
-test('error.message does not contain stdout/stderr/stdio if not available', async t => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', {stdio: 'ignore'}));
+const testFullIgnoreMessage = async (t, options, resultProperty) => {
+	const {[resultProperty]: message} = await t.throwsAsync(execa('echo-fail.js', options));
 	t.false(message.includes('stderr'));
 	t.false(message.includes('stdout'));
 	t.false(message.includes('fd3'));
-});
+};
 
-test('error.shortMessage does not contain stdout/stderr/stdio', async t => {
-	const {shortMessage} = await t.throwsAsync(execa('echo-fail.js', fullStdio));
-	t.false(shortMessage.includes('stderr'));
-	t.false(shortMessage.includes('stdout'));
-	t.false(shortMessage.includes('fd3'));
-});
+test('error.message does not contain stdout/stderr/stdio if not available', testFullIgnoreMessage, {stdio: 'ignore'}, 'message');
+test('error.shortMessage does not contain stdout/stderr/stdio', testFullIgnoreMessage, fullStdio, 'shortMessage');
+
+const testErrorMessageConsistent = async (t, stdout) => {
+	const {message} = await t.throwsAsync(execa('noop-both-fail.js', [stdout, 'stderr']));
+	t.true(message.endsWith(`noop-both-fail.js ${stdout} stderr\n\nstderr\n\nstdout`));
+};
+
+test('error.message newlines are consistent - no newline', testErrorMessageConsistent, 'stdout');
+test('error.message newlines are consistent - newline', testErrorMessageConsistent, 'stdout\n');
 
 test('Original error.message is kept', async t => {
 	const {originalMessage} = await t.throwsAsync(execa('noop.js', {cwd: 1}));

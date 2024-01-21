@@ -79,24 +79,30 @@ const testGeneratorStdioInputPipe = async (t, objectMode) => {
 test('Can use generators with childProcess.stdio[*] as input', testGeneratorStdioInputPipe, false);
 test('Can use generators with childProcess.stdio[*] as input, objectMode', testGeneratorStdioInputPipe, true);
 
-const testGeneratorReturn = async (t, index, generators, fixtureName) => {
-	await t.throwsAsync(
-		execa(fixtureName, [`${index}`], getStdio(index, generators)),
-		{message: /a string or an Uint8Array/},
-	);
+// eslint-disable-next-line max-params
+const testGeneratorReturn = async (t, index, generators, fixtureName, isNull) => {
+	const childProcess = execa(fixtureName, [`${index}`], getStdio(index, generators));
+	const message = isNull ? /not return null/ : /a string or an Uint8Array/;
+	await t.throwsAsync(childProcess, {message});
 };
 
 const inputObjectGenerators = [foobarUint8Array, getOutputGenerator(foobarObject, false), serializeGenerator];
 const lastInputObjectGenerators = [foobarUint8Array, getOutputGenerator(foobarObject, true)];
 const invalidOutputObjectGenerator = getOutputGenerator(foobarObject, false);
+const inputNullGenerator = objectMode => [foobarUint8Array, getOutputGenerator(null, objectMode), serializeGenerator];
+const outputNullGenerator = objectMode => getOutputGenerator(null, objectMode);
 
-test('Generators with result.stdin cannot return an object if not in objectMode', testGeneratorReturn, 0, inputObjectGenerators, 'stdin-fd.js');
-test('Generators with result.stdio[*] as input cannot return an object if not in objectMode', testGeneratorReturn, 3, inputObjectGenerators, 'stdin-fd.js');
-test('The last generator with result.stdin cannot return an object even in objectMode', testGeneratorReturn, 0, lastInputObjectGenerators, 'stdin-fd.js');
-test('The last generator with result.stdio[*] as input cannot return an object even in objectMode', testGeneratorReturn, 3, lastInputObjectGenerators, 'stdin-fd.js');
-test('Generators with result.stdout cannot return an object if not in objectMode', testGeneratorReturn, 1, invalidOutputObjectGenerator, 'noop-fd.js');
-test('Generators with result.stderr cannot return an object if not in objectMode', testGeneratorReturn, 2, invalidOutputObjectGenerator, 'noop-fd.js');
-test('Generators with result.stdio[*] as output cannot return an object if not in objectMode', testGeneratorReturn, 3, invalidOutputObjectGenerator, 'noop-fd.js');
+test('Generators with result.stdin cannot return an object if not in objectMode', testGeneratorReturn, 0, inputObjectGenerators, 'stdin-fd.js', false);
+test('Generators with result.stdio[*] as input cannot return an object if not in objectMode', testGeneratorReturn, 3, inputObjectGenerators, 'stdin-fd.js', false);
+test('The last generator with result.stdin cannot return an object even in objectMode', testGeneratorReturn, 0, lastInputObjectGenerators, 'stdin-fd.js', false);
+test('The last generator with result.stdio[*] as input cannot return an object even in objectMode', testGeneratorReturn, 3, lastInputObjectGenerators, 'stdin-fd.js', false);
+test('Generators with result.stdout cannot return an object if not in objectMode', testGeneratorReturn, 1, invalidOutputObjectGenerator, 'noop-fd.js', false);
+test('Generators with result.stderr cannot return an object if not in objectMode', testGeneratorReturn, 2, invalidOutputObjectGenerator, 'noop-fd.js', false);
+test('Generators with result.stdio[*] as output cannot return an object if not in objectMode', testGeneratorReturn, 3, invalidOutputObjectGenerator, 'noop-fd.js', false);
+test('Generators with result.stdin cannot return null if not in objectMode', testGeneratorReturn, 0, inputNullGenerator(false), 'stdin-fd.js', false);
+test('Generators with result.stdin cannot return null if in objectMode', testGeneratorReturn, 0, inputNullGenerator(true), 'stdin-fd.js', true);
+test('Generators with result.stdout cannot return null if not in objectMode', testGeneratorReturn, 1, outputNullGenerator(false), 'noop-fd.js', false);
+test('Generators with result.stdout cannot return null if in objectMode', testGeneratorReturn, 1, outputNullGenerator(true), 'noop-fd.js', true);
 
 // eslint-disable-next-line max-params
 const testGeneratorOutput = async (t, index, reject, useShortcutProperty, objectMode) => {

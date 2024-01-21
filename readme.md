@@ -685,7 +685,8 @@ Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from 
 Type: `boolean`\
 Default: `true`
 
-Set to `false` if you don't want to extend the environment variables when providing the `env` property.
+If `true`, the child process uses both the [`env` option](#env) and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+If `false`, it uses only the `env` option is used, not `process.env`.
 
 ---
 
@@ -703,7 +704,9 @@ Current working directory of the child process.
 Type: `object`\
 Default: `process.env`
 
-Environment key-value pairs. Extends automatically from `process.env`. Set [`extendEnv`](#extendenv) to `false` if you don't want this.
+Environment key-value pairs.
+
+Unless the [`extendEnv` option](#extendenv) is `false`, the child process also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 
 #### argv0
 

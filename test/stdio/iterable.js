@@ -1,5 +1,5 @@
 import {once} from 'node:events';
-import {setTimeout} from 'node:timers/promises';
+import {setTimeout, setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
@@ -23,7 +23,7 @@ const binaryGenerator = function * () {
 };
 
 const asyncGenerator = async function * () {
-	await setTimeout(0);
+	await setImmediate();
 	yield * stringArray;
 };
 

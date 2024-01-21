@@ -1,5 +1,5 @@
 import {Readable} from 'node:stream';
-import {setTimeout} from 'node:timers/promises';
+import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
@@ -47,7 +47,7 @@ const testLongWritableStream = async (t, index) => {
 	let result = false;
 	const writableStream = new WritableStream({
 		async close() {
-			await setTimeout(0);
+			await setImmediate();
 			result = true;
 		},
 	});

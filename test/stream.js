@@ -2,7 +2,7 @@ import {Buffer} from 'node:buffer';
 import {once} from 'node:events';
 import process from 'node:process';
 import {getDefaultHighWaterMark} from 'node:stream';
-import {setTimeout} from 'node:timers/promises';
+import {setTimeout, setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../index.js';
@@ -296,7 +296,7 @@ test('Destroying stdio[*] should make the process exit', testStreamDestroy, 3);
 
 const testStreamError = async (t, index) => {
 	const childProcess = execa('forever.js', fullStdio);
-	await setTimeout(0);
+	await setImmediate();
 	const error = new Error('test');
 	childProcess.stdio[index].emit('error', error);
 	await t.throwsAsync(childProcess, {message: /test/});

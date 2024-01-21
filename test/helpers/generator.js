@@ -39,7 +39,7 @@ export const getOutputGenerator = (input, objectMode) => ({
 
 export const outputObjectGenerator = getOutputGenerator(foobarObject, true);
 
-export const getChunksGenerator = (chunks, objectMode) => ({
+export const getChunksGenerator = (chunks, objectMode, binary) => ({
 	async * transform(lines) {
 	// eslint-disable-next-line no-unused-vars
 		for await (const line of lines) {
@@ -51,4 +51,5 @@ export const getChunksGenerator = (chunks, objectMode) => ({
 		}
 	},
 	objectMode,
+	binary,
 });

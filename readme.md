@@ -278,7 +278,7 @@ This is the preferred method when executing a user-supplied `command` string, su
 
 Same as [`execa()`](#execacommandcommand-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -287,7 +287,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [$\`command\`](#command) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -295,7 +295,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -382,23 +382,23 @@ This is `undefined` when the process could not be spawned or was terminated by a
 
 #### stdout
 
-Type: `string | Uint8Array | unknown[] | undefined`
+Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stdout`.
 
-This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### stderr
 
-Type: `string | Uint8Array | unknown[] | undefined`
+Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stderr`.
 
-This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### all
 
-Type: `string | Uint8Array | unknown[] | undefined`
+Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
 
@@ -406,11 +406,11 @@ This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-This is an array if either the `stdout` or `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
+This is an array if the [`lines` option](#lines) is `true, or if either the `stdout` or `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### stdio
 
-Type: `Array<string | Uint8Array | unknown[] | undefined>`
+Type: `Array<string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined>`
 
 The output of the process on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [other file descriptors](#stdio-1).
 
@@ -636,6 +636,16 @@ Type: `boolean`\
 Default: `false`
 
 Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the process with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
+
+#### lines
+
+Type: `boolean`\
+Default: `false`
+
+Split `stdout` and `stderr` into lines.
+- [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) are arrays of lines.
+- [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`childProcess.all`](#all) and [`childProcess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) iterate over lines instead of arbitrary chunks.
+- Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
 
 #### reject
 

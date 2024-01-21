@@ -173,7 +173,7 @@ test('timedOut is false if timeout is undefined and exit code is 0 in sync mode'
 
 // When child process exits before parent process
 const spawnAndExit = async (t, cleanup, detached) => {
-	await t.notThrowsAsync(execa('sub-process-exit.js', [cleanup, detached]));
+	await t.notThrowsAsync(execa('nested.js', [JSON.stringify({cleanup, detached}), 'noop.js']));
 };
 
 test('spawnAndExit', spawnAndExit, false, false);
@@ -192,18 +192,24 @@ const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 	process.kill(subprocess.pid, signal);
 
 	await t.throwsAsync(subprocess);
-
-	// The `cleanup` option can introduce a race condition in this test.
-	// This is especially true when run concurrently, so we use `test.serial()` and a manual timeout.
-	if (signal === 'SIGTERM' && cleanup && !detached) {
-		await setTimeout(1e3);
-	}
-
 	t.false(isRunning(subprocess.pid));
-	t.not(isRunning(pid), isKilled);
 
-	if (!isKilled) {
+	if (isKilled) {
+		await Promise.race([
+			setTimeout(1e4, undefined, {ref: false}),
+			pollForProcessExit(pid),
+		]);
+		t.is(isRunning(pid), false);
+	} else {
+		t.is(isRunning(pid), true);
 		process.kill(pid, 'SIGKILL');
+	}
+};
+
+const pollForProcessExit = async pid => {
+	while (isRunning(pid)) {
+		// eslint-disable-next-line no-await-in-loop
+		await setTimeout(100);
 	}
 };
 
@@ -216,7 +222,7 @@ const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 const exitIfWindows = process.platform === 'win32';
 test('spawnAndKill SIGTERM', spawnAndKill, ['SIGTERM', false, false, exitIfWindows]);
 test('spawnAndKill SIGKILL', spawnAndKill, ['SIGKILL', false, false, exitIfWindows]);
-test.serial('spawnAndKill cleanup SIGTERM', spawnAndKill, ['SIGTERM', true, false, true]);
+test('spawnAndKill cleanup SIGTERM', spawnAndKill, ['SIGTERM', true, false, true]);
 test('spawnAndKill cleanup SIGKILL', spawnAndKill, ['SIGKILL', true, false, exitIfWindows]);
 test('spawnAndKill detached SIGTERM', spawnAndKill, ['SIGTERM', false, true, false]);
 test('spawnAndKill detached SIGKILL', spawnAndKill, ['SIGKILL', false, true, false]);

@@ -10,7 +10,7 @@ import {makeError} from './lib/error.js';
 import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {normalizeStdioNode} from './lib/stdio/normalize.js';
-import {spawnedKill, validateTimeout, normalizeForceKillAfterTimeout} from './lib/kill.js';
+import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
@@ -53,7 +53,7 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	validateTimeout(options);
 	options.shell = normalizeFileUrl(options.shell);
 	options.env = getEnv(options);
-	options.forceKillAfterTimeout = normalizeForceKillAfterTimeout(options.forceKillAfterTimeout);
+	options.forceKillAfterDelay = normalizeForceKillAfterDelay(options.forceKillAfterDelay);
 
 	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
 		// #116
@@ -81,7 +81,7 @@ const addDefaultOptions = ({
 	windowsHide = true,
 	verbose = verboseDefault,
 	killSignal = 'SIGTERM',
-	forceKillAfterTimeout = true,
+	forceKillAfterDelay = true,
 	...options
 }) => ({
 	...options,
@@ -100,7 +100,7 @@ const addDefaultOptions = ({
 	windowsHide,
 	verbose,
 	killSignal,
-	forceKillAfterTimeout,
+	forceKillAfterDelay,
 });
 
 const handleOutput = (options, value) => {

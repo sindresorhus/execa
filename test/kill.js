@@ -10,10 +10,10 @@ setFixtureDir();
 
 const TIMEOUT_REGEXP = /timed out after/;
 
-const spawnNoKillable = async (forceKillAfterTimeout, options) => {
+const spawnNoKillable = async (forceKillAfterDelay, options) => {
 	const subprocess = execa('no-killable.js', {
 		stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-		forceKillAfterTimeout,
+		forceKillAfterDelay,
 		...options,
 	});
 	await pEvent(subprocess, 'message');
@@ -33,8 +33,8 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
-	const testNoForceKill = async (t, forceKillAfterTimeout, killArgument) => {
-		const {subprocess} = await spawnNoKillable(forceKillAfterTimeout);
+	const testNoForceKill = async (t, forceKillAfterDelay, killArgument) => {
+		const {subprocess} = await spawnNoKillable(forceKillAfterDelay);
 
 		subprocess.kill(killArgument);
 
@@ -47,11 +47,11 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGKILL');
 	};
 
-	test('`forceKillAfterTimeout: false` should not kill after a timeout', testNoForceKill, false);
-	test('`forceKillAfterTimeout` should not kill after a timeout with other signals', testNoForceKill, true, 'SIGINT');
+	test('`forceKillAfterDelay: false` should not kill after a timeout', testNoForceKill, false);
+	test('`forceKillAfterDelay` should not kill after a timeout with other signals', testNoForceKill, true, 'SIGINT');
 
-	const testForceKill = async (t, forceKillAfterTimeout, killArgument) => {
-		const {subprocess} = await spawnNoKillable(forceKillAfterTimeout);
+	const testForceKill = async (t, forceKillAfterDelay, killArgument) => {
+		const {subprocess} = await spawnNoKillable(forceKillAfterDelay);
 
 		subprocess.kill(killArgument);
 
@@ -60,21 +60,21 @@ if (process.platform !== 'win32') {
 		t.is(signal, 'SIGKILL');
 	};
 
-	test('`forceKillAfterTimeout: number` should kill after a timeout', testForceKill, 50);
-	test('`forceKillAfterTimeout: true` should kill after a timeout', testForceKill, true);
-	test('`forceKillAfterTimeout: undefined` should kill after a timeout', testForceKill, undefined);
-	test('`forceKillAfterTimeout` should kill after a timeout with the killSignal', testForceKill, 50, 'SIGTERM');
+	test('`forceKillAfterDelay: number` should kill after a timeout', testForceKill, 50);
+	test('`forceKillAfterDelay: true` should kill after a timeout', testForceKill, true);
+	test('`forceKillAfterDelay: undefined` should kill after a timeout', testForceKill, undefined);
+	test('`forceKillAfterDelay` should kill after a timeout with the killSignal', testForceKill, 50, 'SIGTERM');
 
-	const testInvalidForceKill = async (t, forceKillAfterTimeout) => {
+	const testInvalidForceKill = async (t, forceKillAfterDelay) => {
 		t.throws(() => {
-			execa('empty.js', {forceKillAfterTimeout});
+			execa('empty.js', {forceKillAfterDelay});
 		}, {instanceOf: TypeError, message: /non-negative integer/});
 	};
 
-	test('`forceKillAfterTimeout` should not be NaN', testInvalidForceKill, Number.NaN);
-	test('`forceKillAfterTimeout` should not be negative', testInvalidForceKill, -1);
+	test('`forceKillAfterDelay` should not be NaN', testInvalidForceKill, Number.NaN);
+	test('`forceKillAfterDelay` should not be negative', testInvalidForceKill, -1);
 
-	test('`forceKillAfterTimeout` works with the "signal" option', async t => {
+	test('`forceKillAfterDelay` works with the "signal" option', async t => {
 		const abortController = new AbortController();
 		const {subprocess} = await spawnNoKillable(1, {signal: abortController.signal});
 		abortController.abort();
@@ -84,7 +84,7 @@ if (process.platform !== 'win32') {
 		t.true(isCanceled);
 	});
 
-	test.serial('`forceKillAfterTimeout` works with the "timeout" option', async t => {
+	test.serial('`forceKillAfterDelay` works with the "timeout" option', async t => {
 		const {subprocess} = await spawnNoKillable(1, {timeout: 2e3});
 		const {isTerminated, signal, timedOut} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
@@ -92,14 +92,14 @@ if (process.platform !== 'win32') {
 		t.true(timedOut);
 	});
 
-	test('`forceKillAfterTimeout` works with the "maxBuffer" option', async t => {
+	test('`forceKillAfterDelay` works with the "maxBuffer" option', async t => {
 		const {subprocess} = await spawnNoKillable(1, {maxBuffer: 1});
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
 		t.false(isTerminated);
 		t.is(signal, undefined);
 	});
 
-	test('`forceKillAfterTimeout` works with "error" events on childProcess', async t => {
+	test('`forceKillAfterDelay` works with "error" events on childProcess', async t => {
 		const {subprocess} = await spawnNoKillable(1);
 		subprocess.emit('error', new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
@@ -107,7 +107,7 @@ if (process.platform !== 'win32') {
 		t.is(signal, undefined);
 	});
 
-	test('`forceKillAfterTimeout` works with "error" events on childProcess.stdout', async t => {
+	test('`forceKillAfterDelay` works with "error" events on childProcess.stdout', async t => {
 		const {subprocess} = await spawnNoKillable(1);
 		subprocess.stdout.destroy(new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);

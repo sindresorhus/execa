@@ -124,6 +124,18 @@ test('Can listen to `data` events on stderr when `buffer` set to `true`', testIt
 test('Can listen to `data` events on stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, true, false);
 test('Can listen to `data` events on all when `buffer` set to `true`', testIterationBuffer, 1, true, true, true);
 
+const testNoBufferStreamError = async (t, index, all) => {
+	const subprocess = execa('noop-fd.js', [`${index}`], {...fullStdio, buffer: false, all});
+	const stream = all ? subprocess.all : subprocess.stdio[index];
+	stream.destroy(new Error('test'));
+	await t.throwsAsync(subprocess, {message: /test/});
+};
+
+test('Listen to stdout errors even when `buffer` is `false`', testNoBufferStreamError, 1, false);
+test('Listen to stderr errors even when `buffer` is `false`', testNoBufferStreamError, 2, false);
+test('Listen to stdio[*] errors even when `buffer` is `false`', testNoBufferStreamError, 3, false);
+test('Listen to all errors even when `buffer` is `false`', testNoBufferStreamError, 1, true);
+
 const maxBuffer = 10;
 
 const testMaxBufferSuccess = async (t, index, all) => {
@@ -260,14 +272,15 @@ test('Process buffers all, which does not prevent exit if ignored', testBufferIg
 // Also, on macOS, it randomly happens, which would make those tests randomly fail.
 if (process.platform === 'linux') {
 	const testBufferNotRead = async (t, index, all) => {
-		const {timedOut} = await t.throwsAsync(execa('max-buffer.js', [`${index}`], {...fullStdio, buffer: false, all, timeout: 1e3}));
+		const subprocess = execa('max-buffer.js', [`${index}`], {...fullStdio, buffer: false, all, timeout: 1e3});
+		const {timedOut} = await t.throwsAsync(subprocess);
 		t.true(timedOut);
 	};
 
-	test.serial('Process buffers stdout, which prevents exit if not read and buffer is false', testBufferNotRead, 1, false);
-	test.serial('Process buffers stderr, which prevents exit if not read and buffer is false', testBufferNotRead, 2, false);
-	test.serial('Process buffers stdio[*], which prevents exit if not read and buffer is false', testBufferNotRead, 3, false);
-	test.serial('Process buffers all, which prevents exit if not read and buffer is false', testBufferNotRead, 1, true);
+	test('Process buffers stdout, which prevents exit if not read and buffer is false', testBufferNotRead, 1, false);
+	test('Process buffers stderr, which prevents exit if not read and buffer is false', testBufferNotRead, 2, false);
+	test('Process buffers stdio[*], which prevents exit if not read and buffer is false', testBufferNotRead, 3, false);
+	test('Process buffers all, which prevents exit if not read and buffer is false', testBufferNotRead, 1, true);
 
 	const testBufferRead = async (t, index, all) => {
 		const subprocess = execa('max-buffer.js', [`${index}`], {...fullStdio, buffer: false, all, timeout: 1e4});

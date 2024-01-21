@@ -292,7 +292,7 @@ This is the preferred method when executing a user-supplied `command` string, su
 
 Same as [`execa()`](#execacommandcommand-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be a stream nor an iterable.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -301,7 +301,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [$\`command\`](#command) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be a stream nor an iterable.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -309,7 +309,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult).
 
 Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be a stream nor an iterable.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization) and [`signal`](#signal). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult).
 
@@ -833,7 +833,7 @@ The [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options c
 The following example redirects `stdout` to both the terminal and an `output.txt` file, while also retrieving its value programmatically.
 
 ```js
-const {stdout} = await execa('npm', ['install'], {stdout: ['inherit', './output.txt', 'pipe']})
+const {stdout} = await execa('npm', ['install'], {stdout: ['inherit', './output.txt', 'pipe']});
 console.log(stdout);
 ```
 
@@ -852,8 +852,8 @@ This limitation can be worked around by passing either:
   - `[nodeStream, 'pipe']` instead of `nodeStream`
 
 ```diff
-- await execa(..., { stdout: nodeStream })
-+ await execa(..., { stdout: [nodeStream, 'pipe'] })
+- await execa(..., {stdout: nodeStream});
++ await execa(..., {stdout: [nodeStream, 'pipe']});
 ```
 
 ### Retry on error

@@ -459,9 +459,7 @@ Whether the process timed out.
 
 Type: `boolean`
 
-Whether the process was canceled.
-
-You can cancel the spawned process using the [`signal`](#signal-1) option.
+Whether the process was canceled using the [`signal`](#signal-1) option.
 
 #### isTerminated
 

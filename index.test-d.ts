@@ -34,7 +34,6 @@ expectType<[undefined, string | Uint8Array | undefined, string | Uint8Array | un
 
 try {
 	const execaPromise = execa('unicorns', {all: true});
-	execaPromise.cancel();
 
 	const execaBufferPromise = execa('unicorns', {encoding: 'buffer', all: true});
 	const writeStream = createWriteStream('output.txt');

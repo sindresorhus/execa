@@ -534,9 +534,11 @@ For example, this can be used together with [`get-node`](https://github.com/ehmi
 Type: `boolean`\
 Default: `true`
 
-Buffer the output from the spawned process. When set to `false`, you must read the output of [`stdout`](#stdout-1) and [`stderr`](#stderr-1) (or [`all`](#all) if the [`all`](#all-2) option is `true`). Otherwise the returned promise will not be resolved/rejected.
+Whether to return the child process' output using the [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) properties.
 
-If the spawned process fails, [`error.stdout`](#stdout), [`error.stderr`](#stderr), [`error.all`](#all) and [`error.stdio`](#stdio) will contain the buffered data.
+On failure, the [`error.stdout`](#stdout), [`error.stderr`](#stderr), [`error.all`](#all-1) and [`error.stdio`](#stdio) properties are used instead.
+
+When `buffer` is `false`, the output can still be read using the [`childProcess.stdout`](#stdout-1), [`childProcess.stderr`](#stderr-1), [`childProcess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) and [`childProcess.all`](#all) streams. If the output is read, this should be done right away to avoid missing any data.
 
 #### input
 

@@ -85,8 +85,10 @@ if (process.platform !== 'win32') {
 		t.true(isCanceled);
 	});
 
+	// For this test to work, the process needs to spawn and setup its `SIGTERM` handler before `timeout` terminates it.
+	// This creates a race condition that we can only work around by using `test.serial()` and a higher timeout.
 	test.serial('`forceKillAfterDelay` works with the "timeout" option', async t => {
-		const {subprocess} = await spawnNoKillable(1, {timeout: 2e3});
+		const {subprocess} = await spawnNoKillable(1, {timeout: 5e3});
 		const {isTerminated, signal, timedOut} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');

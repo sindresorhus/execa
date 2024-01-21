@@ -322,8 +322,8 @@ test(invalidExpression, [Promise.resolve({stdout: 'foo'})], 'Unexpected "object"
 test('$`noop.js`', invalidExpression, $`noop.js`, 'Unexpected "object" in template expression');
 test('[ $`noop.js` ]', invalidExpression, [$`noop.js`], 'Unexpected "object" in template expression');
 
-test('$({stdio: \'inherit\'}).sync`noop.js`', invalidExpression, $({stdio: 'inherit'}).sync`noop.js`, 'Unexpected "undefined" stdout in template expression');
-test('[ $({stdio: \'inherit\'}).sync`noop.js` ]', invalidExpression, [$({stdio: 'inherit'}).sync`noop.js`], 'Unexpected "undefined" stdout in template expression');
+test('$({stdio: \'ignore\'}).sync`noop.js`', invalidExpression, $({stdio: 'ignore'}).sync`noop.js`, 'Unexpected "undefined" stdout in template expression');
+test('[ $({stdio: \'ignore\'}).sync`noop.js` ]', invalidExpression, [$({stdio: 'ignore'}).sync`noop.js`], 'Unexpected "undefined" stdout in template expression');
 
 test('$ stdin defaults to "inherit"', async t => {
 	const {stdout} = await $({input: 'foo'})`stdin-script.js`;

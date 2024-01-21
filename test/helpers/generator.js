@@ -1,3 +1,4 @@
+import {setImmediate} from 'node:timers/promises';
 import {foobarObject} from './input.js';
 
 export const noopGenerator = objectMode => ({
@@ -37,3 +38,17 @@ export const getOutputGenerator = (input, objectMode) => ({
 });
 
 export const outputObjectGenerator = getOutputGenerator(foobarObject, true);
+
+export const getChunksGenerator = (chunks, objectMode) => ({
+	async * transform(lines) {
+	// eslint-disable-next-line no-unused-vars
+		for await (const line of lines) {
+			for (const chunk of chunks) {
+				yield chunk;
+				// eslint-disable-next-line no-await-in-loop
+				await setImmediate();
+			}
+		}
+	},
+	objectMode,
+});

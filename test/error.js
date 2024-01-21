@@ -236,7 +236,7 @@ if (!isWindows) {
 	});
 
 	test('custom error.signal', async t => {
-		const {signal} = await t.throwsAsync(execa('noop.js', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
+		const {signal} = await t.throwsAsync(execa('forever.js', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
 		t.is(signal, 'SIGHUP');
 	});
 

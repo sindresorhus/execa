@@ -175,7 +175,7 @@ test('child_process.spawn() errors are propagated', async t => {
 
 test('child_process.spawnSync() errors are propagated with a correct shape', t => {
 	const {failed} = t.throws(() => {
-		execaSync('noop.js', {timeout: -1});
+		execaSync('noop.js', {uid: -1});
 	});
 	t.true(failed);
 });

@@ -242,13 +242,24 @@ test('stderr can be ["overlapped", "pipe"]', testOverlapped, 2);
 test('stdio[*] can be ["overlapped", "pipe"]', testOverlapped, 3);
 
 const testDestroyStandard = async (t, index) => {
-	await t.throwsAsync(
-		execa('forever.js', {...getStdio(index, [STANDARD_STREAMS[index], 'pipe']), timeout: 1}),
-		{message: /timed out/},
-	);
+	const childProcess = execa('forever.js', {...getStdio(index, [STANDARD_STREAMS[index], 'pipe']), timeout: 1});
+	await t.throwsAsync(childProcess, {message: /timed out/});
 	t.false(STANDARD_STREAMS[index].destroyed);
 };
 
-test('Does not destroy process.stdin on errors', testDestroyStandard, 0);
-test('Does not destroy process.stdout on errors', testDestroyStandard, 1);
-test('Does not destroy process.stderr on errors', testDestroyStandard, 2);
+test('Does not destroy process.stdin on child process errors', testDestroyStandard, 0);
+test('Does not destroy process.stdout on child process errors', testDestroyStandard, 1);
+test('Does not destroy process.stderr on child process errors', testDestroyStandard, 2);
+
+const testDestroyStandardStream = async (t, index) => {
+	const childProcess = execa('forever.js', getStdio(index, [STANDARD_STREAMS[index], 'pipe']));
+	const error = new Error('test');
+	childProcess.stdio[index].destroy(error);
+	const thrownError = await t.throwsAsync(childProcess);
+	t.is(thrownError, error);
+	t.false(STANDARD_STREAMS[index].destroyed);
+};
+
+test('Does not destroy process.stdin on stream process errors', testDestroyStandardStream, 0);
+test('Does not destroy process.stdout on stream process errors', testDestroyStandardStream, 1);
+test('Does not destroy process.stderr on stream process errors', testDestroyStandardStream, 2);

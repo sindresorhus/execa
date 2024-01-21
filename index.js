@@ -10,7 +10,7 @@ import {makeError} from './lib/error.js';
 import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {normalizeStdioNode} from './lib/stdio/normalize.js';
-import {spawnedKill, validateTimeout} from './lib/kill.js';
+import {spawnedKill, validateTimeout, normalizeForceKillAfterTimeout} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
@@ -53,6 +53,7 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	validateTimeout(options);
 	options.shell = normalizeFileUrl(options.shell);
 	options.env = getEnv(options);
+	options.forceKillAfterTimeout = normalizeForceKillAfterTimeout(options.forceKillAfterTimeout);
 
 	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
 		// #116
@@ -80,6 +81,7 @@ const addDefaultOptions = ({
 	windowsHide = true,
 	verbose = verboseDefault,
 	killSignal = 'SIGTERM',
+	forceKillAfterTimeout = true,
 	...options
 }) => ({
 	...options,
@@ -98,6 +100,7 @@ const addDefaultOptions = ({
 	windowsHide,
 	verbose,
 	killSignal,
+	forceKillAfterTimeout,
 });
 
 const handleOutput = (options, value) => {
@@ -140,26 +143,28 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		return dummySpawned;
 	}
 
+	const controller = new AbortController();
+
 	pipeOutputAsync(spawned, stdioStreamsGroups);
 
-	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
+	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned), options, controller);
 	spawned.all = makeAllStream(spawned, options);
 
 	addPipeMethods(spawned);
 
-	const promise = handlePromise({spawned, options, stdioStreamsGroups, command, escapedCommand});
+	const promise = handlePromise({spawned, options, stdioStreamsGroups, command, escapedCommand, controller});
 	mergePromise(spawned, promise);
 	return spawned;
 }
 
-const handlePromise = async ({spawned, options, stdioStreamsGroups, command, escapedCommand}) => {
+const handlePromise = async ({spawned, options, stdioStreamsGroups, command, escapedCommand, controller}) => {
 	const context = {timedOut: false};
 
 	const [
 		[exitCode, signal, error],
 		stdioResults,
 		allResult,
-	] = await getSpawnedResult(spawned, options, context, stdioStreamsGroups);
+	] = await getSpawnedResult({spawned, options, context, stdioStreamsGroups, controller});
 	const stdio = stdioResults.map(stdioResult => handleOutput(options, stdioResult));
 	const all = handleOutput(options, allResult);
 

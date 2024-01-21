@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import process from 'node:process';
 
-process.on('SIGTERM', () => {
-	console.log('Received SIGTERM, but we ignore it');
-});
+const noop = () => {};
+
+process.on('SIGTERM', noop);
+process.on('SIGINT', noop);
 
 process.send('');
+console.log('.');
 
 setInterval(() => {
 	// Run forever

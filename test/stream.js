@@ -1,6 +1,7 @@
 import {Buffer} from 'node:buffer';
 import {once} from 'node:events';
 import process from 'node:process';
+import {getDefaultHighWaterMark} from 'node:stream';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import getStream from 'get-stream';
@@ -27,11 +28,24 @@ test('result.all is undefined if ignored', async t => {
 	t.is(all, undefined);
 });
 
+const testAllProperties = async (t, options) => {
+	const childProcess = execa('empty.js', {...options, all: true});
+	t.is(childProcess.all.readableObjectMode, false);
+	t.is(childProcess.all.readableHighWaterMark, getDefaultHighWaterMark(false));
+	await childProcess;
+};
+
+test('childProcess.all has the right objectMode and highWaterMark - stdout + stderr', testAllProperties, {});
+test('childProcess.all has the right objectMode and highWaterMark - stdout only', testAllProperties, {stderr: 'ignore'});
+test('childProcess.all has the right objectMode and highWaterMark - stderr only', testAllProperties, {stdout: 'ignore'});
+
 const testAllIgnore = async (t, streamName, otherStreamName) => {
 	const childProcess = execa('noop-both.js', {[otherStreamName]: 'ignore', all: true});
 	t.is(childProcess[otherStreamName], null);
 	t.not(childProcess[streamName], null);
 	t.not(childProcess.all, null);
+	t.is(childProcess.all.readableObjectMode, childProcess[streamName].readableObjectMode);
+	t.is(childProcess.all.readableHighWaterMark, childProcess[streamName].readableHighWaterMark);
 
 	const result = await childProcess;
 	t.is(result[otherStreamName], undefined);

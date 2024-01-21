@@ -738,7 +738,7 @@ Specify the character encoding used to decode the [`stdout`](#stdout), [`stderr`
 Type: `number`\
 Default: `0`
 
-If timeout is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than timeout milliseconds.
+If `timeout`` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
 #### maxBuffer
 
@@ -752,7 +752,11 @@ Largest amount of data in bytes allowed on [`stdout`](#stdout), [`stderr`](#stde
 Type: `string | number`\
 Default: `SIGTERM`
 
-Signal value to be used when the spawned process will be killed.
+Signal used to terminate the child process when:
+- using the [`signal`](#signal-1), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
+- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
+
+This can be either a name (like `"SIGTERM"`) or a number (like `9`).
 
 #### forceKillAfterDelay
 

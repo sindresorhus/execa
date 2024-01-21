@@ -134,7 +134,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	} catch (error) {
 		// Ensure the returned error is always both a promise and a child process
 		const dummySpawned = new childProcess.ChildProcess();
-		const errorPromise = Promise.reject(makeError({
+		const errorInstance = makeError({
 			error,
 			stdio: Array.from({length: stdioStreamsGroups.length}),
 			command,
@@ -142,7 +142,8 @@ export function execa(rawFile, rawArgs, rawOptions) {
 			options,
 			timedOut: false,
 			isCanceled: false,
-		}));
+		});
+		const errorPromise = options.reject ? Promise.reject(errorInstance) : Promise.resolve(errorInstance);
 		mergePromise(dummySpawned, errorPromise);
 		return dummySpawned;
 	}
@@ -219,7 +220,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	try {
 		result = childProcess.spawnSync(file, args, options);
 	} catch (error) {
-		throw makeError({
+		const errorInstance = makeError({
 			error,
 			stdio: Array.from({length: stdioStreamsGroups.stdioLength}),
 			command,
@@ -228,6 +229,12 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 			timedOut: false,
 			isCanceled: false,
 		});
+
+		if (!options.reject) {
+			return errorInstance;
+		}
+
+		throw errorInstance;
 	}
 
 	pipeOutputSync(stdioStreamsGroups, result);

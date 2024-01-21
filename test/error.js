@@ -50,7 +50,7 @@ test('empty error.stdio[0] even with input', async t => {
 const SPAWN_ERROR_CODES = new Set(['EINVAL', 'ENOTSUP', 'EPERM']);
 
 test('stdout/stderr/stdio on process spawning errors', async t => {
-	const {code, stdout, stderr, stdio} = await t.throwsAsync(execa('noop.js', {uid: -1}));
+	const {code, stdout, stderr, stdio} = await t.throwsAsync(execa('empty.js', {uid: -1}));
 	t.true(SPAWN_ERROR_CODES.has(code));
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
@@ -59,7 +59,7 @@ test('stdout/stderr/stdio on process spawning errors', async t => {
 
 test('stdout/stderr/all/stdio on process spawning errors - sync', t => {
 	const {code, stdout, stderr, stdio} = t.throws(() => {
-		execaSync('noop.js', {uid: -1});
+		execaSync('empty.js', {uid: -1});
 	});
 	t.true(SPAWN_ERROR_CODES.has(code));
 	t.is(stdout, undefined);

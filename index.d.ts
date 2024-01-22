@@ -18,9 +18,15 @@ type BaseStdioOption =
 	| 'ignore'
 	| 'inherit';
 
-// @todo Use either `Iterable<string>` or `Iterable<Uint8Array>` based on whether `encoding: 'buffer'` is used.
+// @todo Use `string`, `Uint8Array` or `unknown` for both the argument and the return type, based on whether `encoding: 'buffer'` and `objectMode: true` are used.
 // See https://github.com/sindresorhus/execa/issues/694
-type StdioTransform = ((chunks: Iterable<string | Uint8Array>) => AsyncGenerator<string | Uint8Array, void, void>);
+type StdioTransform = ((chunks: Iterable<unknown>) => AsyncGenerator<unknown, void, void>);
+
+type StdioTransformFull = {
+	transform: StdioTransform;
+	binary?: boolean;
+	objectMode?: boolean;
+};
 
 type CommonStdioOption<IsSync extends boolean = boolean> =
 	| BaseStdioOption
@@ -31,17 +37,14 @@ type CommonStdioOption<IsSync extends boolean = boolean> =
 	| {file: string}
 	| IfAsync<IsSync,
 	| StdioTransform
-	| {
-		transform: StdioTransform;
-		binary?: boolean;
-	}>;
+	| StdioTransformFull>;
 
 type InputStdioOption<IsSync extends boolean = boolean> =
 	| Uint8Array
 	| Readable
 	| IfAsync<IsSync,
-	| Iterable<string | Uint8Array>
-	| AsyncIterable<string | Uint8Array>
+	| Iterable<unknown>
+	| AsyncIterable<unknown>
 	| ReadableStream>;
 
 type OutputStdioOption<IsSync extends boolean = boolean> =
@@ -96,6 +99,41 @@ type EncodingOption =
 type DefaultEncodingOption = 'utf8';
 type BufferEncodingOption = 'buffer';
 
+// Whether `result.stdout|stderr|all` is an array of values due to `objectMode: true`
+type IsObjectStream<
+	StreamIndex extends string,
+	OptionsType extends CommonOptions = CommonOptions,
+> = IsObjectNormalStream<StreamIndex, OptionsType> extends true
+	? true
+	: IsObjectStdioStream<StreamIndex, OptionsType['stdio']>;
+
+type IsObjectNormalStream<
+	StreamIndex extends string,
+	OptionsType extends CommonOptions = CommonOptions,
+> = IsObjectOutputOptions<StreamOption<StreamIndex, OptionsType>>;
+
+type IsObjectStdioStream<
+	StreamIndex extends string,
+	StdioOptionType extends StdioOptions | undefined,
+> = StdioOptionType extends StdioOptionsArray
+	? StreamIndex extends keyof StdioOptionType
+		? StdioOptionType[StreamIndex] extends StdioOption
+			? IsObjectOutputOptions<StdioOptionType[StreamIndex]>
+			: false
+		: false
+	: false;
+
+type IsObjectOutputOptions<OutputOptions extends StdioOption> = IsObjectOutputOption<OutputOptions extends StdioSingleOption[]
+	? OutputOptions[number]
+	: OutputOptions
+>;
+
+type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends StdioTransformFull
+	? BooleanObjectMode<OutputOption['objectMode']>
+	: false;
+
+type BooleanObjectMode<ObjectModeOption extends StdioTransformFull['objectMode']> = ObjectModeOption extends true ? true : false;
+
 // Whether `result.stdout|stderr|all` is `undefined`, excluding the `buffer` option
 type IgnoresStreamResult<
 	StreamIndex extends string,
@@ -104,17 +142,25 @@ type IgnoresStreamResult<
 	? true
 	: IgnoresStdioPropertyResult<StreamIndex, OptionsType['stdio']>;
 
+// `result.stdin` is always `undefined`
+// When using `stdout: 'inherit'`, or `'ignore'`, etc. , `result.stdout` is `undefined`
+// Same with `stderr`
 type IgnoresNormalPropertyResult<
 	StreamIndex extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-	// `result.stdin` is always `undefined`
-> = StreamIndex extends '0' ? true
-	// When using `stdout: 'inherit'`, or `'ignore'`, etc. , `result.stdout` is `undefined`
-	: StreamIndex extends '1' ? OptionsType['stdout'] extends NoOutputStdioOption ? true : false
-		// Same with `stderr`
-		: StreamIndex extends '2' ? OptionsType['stderr'] extends NoOutputStdioOption ? true : false
-			// Otherwise
-			: false;
+> = StreamIndex extends '0'
+	? true
+	: IgnoresNormalProperty<StreamOption<StreamIndex, OptionsType>>;
+
+type StreamOption<
+	StreamIndex extends string,
+	OptionsType extends CommonOptions = CommonOptions,
+> = StreamIndex extends '0' ? OptionsType['stdin']
+	: StreamIndex extends '1' ? OptionsType['stdout']
+		: StreamIndex extends '2' ? OptionsType['stderr']
+			: undefined;
+
+type IgnoresNormalProperty<OutputOptions extends StdioOption> = OutputOptions extends NoOutputStdioOption ? true : false;
 
 type IgnoresStdioPropertyResult<
 	StreamIndex extends string,
@@ -154,18 +200,21 @@ type LacksBuffer<BufferOption extends Options['buffer']> = BufferOption extends 
 type StdioOutput<
 	StreamIndex extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = StdioOutputResult<IgnoresStreamOutput<StreamIndex, OptionsType>, OptionsType>;
+> = StdioOutputResult<StreamIndex, IgnoresStreamOutput<StreamIndex, OptionsType>, OptionsType>;
 
 type StdioOutputResult<
+	StreamIndex extends string,
 	StreamOutputIgnored extends boolean,
 	OptionsType extends CommonOptions = CommonOptions,
 > = StreamOutputIgnored extends true
 	? undefined
-	: StreamResult<OptionsType>;
+	: StreamEncoding<IsObjectStream<StreamIndex, OptionsType>, OptionsType['encoding']>;
 
-type StreamResult<OptionsType extends CommonOptions = CommonOptions> = StreamEncoding<OptionsType['encoding']>;
-
-type StreamEncoding<Encoding extends CommonOptions['encoding']> = Encoding extends 'buffer' ? Uint8Array : string;
+type StreamEncoding<
+	IsObjectResult extends boolean,
+	Encoding extends CommonOptions['encoding'],
+> = IsObjectResult extends true ? unknown[]
+	: Encoding extends 'buffer' ? Uint8Array : string;
 
 // Type of `result.all`
 type AllOutput<OptionsType extends Options = Options> = AllOutputProperty<OptionsType['all'], OptionsType>;
@@ -174,10 +223,16 @@ type AllOutputProperty<
 	AllOption extends Options['all'] = Options['all'],
 	OptionsType extends Options = Options,
 > = AllOption extends true
-	? IgnoresStreamOutput<'1', OptionsType> extends true
-		? StdioOutput<'2', OptionsType>
-		: StdioOutput<'1', OptionsType>
+	? StdioOutput<AllUsesStdout<OptionsType> extends true ? '1' : '2', OptionsType>
 	: undefined;
+
+type AllUsesStdout<OptionsType extends Options = Options> = IgnoresStreamOutput<'1', OptionsType> extends true
+	? false
+	: IgnoresStreamOutput<'2', OptionsType> extends true
+		? true
+		: IsObjectStream<'2', OptionsType> extends true
+			? false
+			: IsObjectStream<'1', OptionsType>;
 
 // Type of `result.stdio`
 type StdioArrayOutput<OptionsType extends CommonOptions = CommonOptions> = MapStdioOptions<
@@ -558,21 +613,21 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	/**
 	The output of the process on `stdout`.
 
-	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stdout` option is a transform in object mode.
 	*/
 	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the process on `stderr`.
 
-	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stderr` option is a transform in object mode.
 	*/
 	stderr: StdioOutput<'2', OptionsType>;
 
 	/**
 	The output of the process on `stdin`, `stdout`, `stderr` and other file descriptors.
 
-	Items are `undefined` when their corresponding `stdio` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio).
+	Items are `undefined` when their corresponding `stdio` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
 	stdio: StdioArrayOutput<OptionsType>;
 
@@ -627,6 +682,8 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	This is `undefined` if either:
 	- the `all` option is `false` (default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+
+	This is an array if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
 	all: IfAsync<IsSync, AllOutput<OptionsType>>;
 	// Workaround for a TypeScript bug: https://github.com/microsoft/TypeScript/issues/57062

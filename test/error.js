@@ -3,6 +3,7 @@ import test from 'ava';
 import {execa, execaSync} from '../index.js';
 import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
 import {fullStdio, getStdio} from './helpers/stdio.js';
+import {noopGenerator, outputObjectGenerator} from './helpers/generator.js';
 
 const isWindows = process.platform === 'win32';
 
@@ -98,16 +99,20 @@ test('error.message contains the command', async t => {
 	await t.throwsAsync(execa('exit.js', ['2', 'foo', 'bar']), {message: /exit.js 2 foo bar/});
 });
 
-const testStdioMessage = async (t, encoding, all) => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', {...fullStdio, encoding, all}));
+const testStdioMessage = async (t, encoding, all, objectMode) => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', {...getStdio(1, noopGenerator(objectMode), 4), encoding, all}));
 	const output = all ? 'stdout\nstderr' : 'stderr\n\nstdout';
 	t.true(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));
 };
 
-test('error.message contains stdout/stderr/stdio if available', testStdioMessage, 'utf8', false);
-test('error.message contains stdout/stderr/stdio even with encoding "buffer"', testStdioMessage, 'buffer', false);
-test('error.message contains all if available', testStdioMessage, 'utf8', true);
-test('error.message contains all even with encoding "buffer"', testStdioMessage, 'buffer', true);
+test('error.message contains stdout/stderr/stdio if available', testStdioMessage, 'utf8', false, false);
+test('error.message contains stdout/stderr/stdio even with encoding "buffer"', testStdioMessage, 'buffer', false, false);
+test('error.message contains all if available', testStdioMessage, 'utf8', true, false);
+test('error.message contains all even with encoding "buffer"', testStdioMessage, 'buffer', true, false);
+test('error.message contains stdout/stderr/stdio if available, objectMode', testStdioMessage, 'utf8', false, true);
+test('error.message contains stdout/stderr/stdio even with encoding "buffer", objectMode', testStdioMessage, 'buffer', false, true);
+test('error.message contains all if available, objectMode', testStdioMessage, 'utf8', true, true);
+test('error.message contains all even with encoding "buffer", objectMode', testStdioMessage, 'buffer', true, true);
 
 const testPartialIgnoreMessage = async (t, index, stdioOption, output) => {
 	const {message} = await t.throwsAsync(execa('echo-fail.js', getStdio(index, stdioOption, 4)));
@@ -116,6 +121,8 @@ const testPartialIgnoreMessage = async (t, index, stdioOption, output) => {
 
 test('error.message does not contain stdout if not available', testPartialIgnoreMessage, 1, 'ignore', 'stderr');
 test('error.message does not contain stderr if not available', testPartialIgnoreMessage, 2, 'ignore', 'stdout');
+test('error.message does not contain stdout if it is an object', testPartialIgnoreMessage, 1, outputObjectGenerator, 'stderr');
+test('error.message does not contain stderr if it is an object', testPartialIgnoreMessage, 2, outputObjectGenerator, 'stdout');
 
 const testFullIgnoreMessage = async (t, options, resultProperty) => {
 	const {[resultProperty]: message} = await t.throwsAsync(execa('echo-fail.js', options));

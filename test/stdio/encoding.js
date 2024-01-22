@@ -145,7 +145,10 @@ const delayedGenerator = async function * (lines) {
 	}
 };
 
-test('Handle multibyte characters', async t => {
-	const {stdout} = await execa('noop.js', {stdout: delayedGenerator, encoding: 'base64'});
-	t.is(stdout, btoa(foobarArray.join('')));
-});
+const testMultiByteCharacter = async (t, objectMode) => {
+	const {stdout} = await execa('noop.js', {stdout: {transform: delayedGenerator, objectMode}, encoding: 'base64'});
+	t.is(objectMode ? stdout.join('') : stdout, btoa(foobarArray.join('')));
+};
+
+test('Handle multibyte characters', testMultiByteCharacter, false);
+test('Handle multibyte characters, with objectMode', testMultiByteCharacter, true);

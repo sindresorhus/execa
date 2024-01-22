@@ -21,16 +21,58 @@ import {
 	type ExecaSyncError,
 } from './index.js';
 
+type AnySyncChunk = string | Uint8Array | undefined;
+type AnyChunk = AnySyncChunk | unknown[];
 expectType<Readable | null>({} as ExecaChildProcess['stdout']);
 expectType<Readable | null>({} as ExecaChildProcess['stderr']);
 expectType<Readable | undefined>({} as ExecaChildProcess['all']);
-expectType<string | Uint8Array | undefined>({} as ExecaReturnValue['stdout']);
-expectType<string | Uint8Array | undefined>({} as ExecaReturnValue['stderr']);
-expectType<string | Uint8Array | undefined>({} as ExecaReturnValue['all']);
-expectType<[undefined, string | Uint8Array | undefined, string | Uint8Array | undefined]>({} as ExecaReturnValue['stdio']);
-expectType<string | Uint8Array | undefined>({} as ExecaSyncReturnValue['stdout']);
-expectType<string | Uint8Array | undefined>({} as ExecaSyncReturnValue['stderr']);
-expectType<[undefined, string | Uint8Array | undefined, string | Uint8Array | undefined]>({} as ExecaSyncReturnValue['stdio']);
+expectType<AnyChunk>({} as ExecaReturnValue['stdout']);
+expectType<AnyChunk>({} as ExecaReturnValue['stderr']);
+expectType<AnyChunk>({} as ExecaReturnValue['all']);
+expectType<[undefined, AnyChunk, AnyChunk]>({} as ExecaReturnValue['stdio']);
+expectType<AnySyncChunk>({} as ExecaSyncReturnValue['stdout']);
+expectType<AnySyncChunk>({} as ExecaSyncReturnValue['stderr']);
+expectType<[undefined, AnySyncChunk, AnySyncChunk]>({} as ExecaSyncReturnValue['stdio']);
+
+const objectGenerator = async function * (lines: Iterable<unknown>) {
+	for await (const line of lines) {
+		yield JSON.parse(line as string) as object;
+	}
+};
+
+const unknownArrayGenerator = async function * (lines: Iterable<unknown>) {
+	for await (const line of lines) {
+		yield line;
+	}
+};
+
+const booleanGenerator = async function * (lines: Iterable<boolean>) {
+	for await (const line of lines) {
+		yield line;
+	}
+};
+
+const arrayGenerator = async function * (lines: string[]) {
+	for await (const line of lines) {
+		yield line;
+	}
+};
+
+const invalidReturnGenerator = async function * (lines: Iterable<string>) {
+	for await (const line of lines) {
+		yield line;
+	}
+
+	return false;
+};
+
+const syncGenerator = function * (lines: Iterable<string>) {
+	for (const line of lines) {
+		yield line;
+	}
+
+	return false;
+};
 
 try {
 	const execaPromise = execa('unicorns', {all: true});
@@ -285,6 +327,70 @@ try {
 
 	const ignoreFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
 	expectType<undefined>(ignoreFd3Result.stdio[3]);
+
+	const objectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, objectMode: true}});
+	expectType<unknown[]>(objectTransformStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(objectTransformStdoutResult.stdio);
+
+	const objectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, objectMode: true}});
+	expectType<unknown[]>(objectTransformStderrResult.stderr);
+	expectType<[undefined, string, unknown[]]>(objectTransformStderrResult.stdio);
+
+	const objectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, objectMode: true}]});
+	expectType<unknown[]>(objectTransformStdioResult.stderr);
+	expectType<[undefined, string, unknown[]]>(objectTransformStdioResult.stdio);
+
+	const singleObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, objectMode: true}]});
+	expectType<unknown[]>(singleObjectTransformStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(singleObjectTransformStdoutResult.stdio);
+
+	const manyObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, objectMode: true}, {transform: objectGenerator, objectMode: true}]});
+	expectType<unknown[]>(manyObjectTransformStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(manyObjectTransformStdoutResult.stdio);
+
+	const falseObjectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, objectMode: false}});
+	expectType<string>(falseObjectTransformStdoutResult.stdout);
+	expectType<[undefined, string, string]>(falseObjectTransformStdoutResult.stdio);
+
+	const falseObjectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, objectMode: false}});
+	expectType<string>(falseObjectTransformStderrResult.stderr);
+	expectType<[undefined, string, string]>(falseObjectTransformStderrResult.stdio);
+
+	const falseObjectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, objectMode: false}]});
+	expectType<string>(falseObjectTransformStdioResult.stderr);
+	expectType<[undefined, string, string]>(falseObjectTransformStdioResult.stdio);
+
+	const undefinedObjectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator}});
+	expectType<string>(undefinedObjectTransformStdoutResult.stdout);
+	expectType<[undefined, string, string]>(undefinedObjectTransformStdoutResult.stdio);
+
+	const noObjectTransformStdoutResult = await execa('unicorns', {stdout: objectGenerator});
+	expectType<string>(noObjectTransformStdoutResult.stdout);
+	expectType<[undefined, string, string]>(noObjectTransformStdoutResult.stdio);
+
+	const trueTrueObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, objectMode: true}, stderr: {transform: objectGenerator, objectMode: true}, all: true});
+	expectType<unknown[]>(trueTrueObjectTransformResult.stdout);
+	expectType<unknown[]>(trueTrueObjectTransformResult.stderr);
+	expectType<unknown[]>(trueTrueObjectTransformResult.all);
+	expectType<[undefined, unknown[], unknown[]]>(trueTrueObjectTransformResult.stdio);
+
+	const trueFalseObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, objectMode: true}, stderr: {transform: objectGenerator, objectMode: false}, all: true});
+	expectType<unknown[]>(trueFalseObjectTransformResult.stdout);
+	expectType<string>(trueFalseObjectTransformResult.stderr);
+	expectType<unknown[]>(trueFalseObjectTransformResult.all);
+	expectType<[undefined, unknown[], string]>(trueFalseObjectTransformResult.stdio);
+
+	const falseTrueObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, objectMode: false}, stderr: {transform: objectGenerator, objectMode: true}, all: true});
+	expectType<string>(falseTrueObjectTransformResult.stdout);
+	expectType<unknown[]>(falseTrueObjectTransformResult.stderr);
+	expectType<unknown[]>(falseTrueObjectTransformResult.all);
+	expectType<[undefined, string, unknown[]]>(falseTrueObjectTransformResult.stdio);
+
+	const falseFalseObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, objectMode: false}, stderr: {transform: objectGenerator, objectMode: false}, all: true});
+	expectType<string>(falseFalseObjectTransformResult.stdout);
+	expectType<string>(falseFalseObjectTransformResult.stderr);
+	expectType<string>(falseFalseObjectTransformResult.all);
+	expectType<[undefined, string, string]>(falseFalseObjectTransformResult.stdio);
 } catch (error: unknown) {
 	const execaError = error as ExecaError;
 
@@ -377,6 +483,30 @@ try {
 	expectType<string>(streamStderrError.stdout);
 	expectType<undefined>(streamStderrError.stderr);
 	expectType<string>(streamStderrError.all);
+
+	const objectTransformStdoutError = error as ExecaError<{stdout: {transform: typeof objectGenerator; objectMode: true}}>;
+	expectType<unknown[]>(objectTransformStdoutError.stdout);
+	expectType<[undefined, unknown[], string]>(objectTransformStdoutError.stdio);
+
+	const objectTransformStderrError = error as ExecaError<{stderr: {transform: typeof objectGenerator; objectMode: true}}>;
+	expectType<unknown[]>(objectTransformStderrError.stderr);
+	expectType<[undefined, string, unknown[]]>(objectTransformStderrError.stdio);
+
+	const objectTransformStdioError = error as ExecaError<{stdio: ['pipe', 'pipe', {transform: typeof objectGenerator; objectMode: true}]}>;
+	expectType<unknown[]>(objectTransformStdioError.stderr);
+	expectType<[undefined, string, unknown[]]>(objectTransformStdioError.stdio);
+
+	const falseObjectTransformStdoutError = error as ExecaError<{stdout: {transform: typeof objectGenerator; objectMode: false}}>;
+	expectType<string>(falseObjectTransformStdoutError.stdout);
+	expectType<[undefined, string, string]>(falseObjectTransformStdoutError.stdio);
+
+	const falseObjectTransformStderrError = error as ExecaError<{stderr: {transform: typeof objectGenerator; objectMode: false}}>;
+	expectType<string>(falseObjectTransformStderrError.stderr);
+	expectType<[undefined, string, string]>(falseObjectTransformStderrError.stdio);
+
+	const falseObjectTransformStdioError = error as ExecaError<{stdio: ['pipe', 'pipe', {transform: typeof objectGenerator; objectMode: false}]}>;
+	expectType<string>(falseObjectTransformStdioError.stderr);
+	expectType<[undefined, string, string]>(falseObjectTransformStdioError.stdio);
 }
 
 const rejectsResult = await execa('unicorns');
@@ -559,49 +689,11 @@ const binaryGenerator = function * () {
 	yield new Uint8Array(0);
 };
 
-const numberGenerator = function * () {
-	yield 0;
-};
-
 const asyncStringGenerator = async function * () {
 	yield '';
 };
 
 const fileUrl = new URL('file:///test');
-
-const stringOrUint8ArrayGenerator = async function * (lines: Iterable<string | Uint8Array>) {
-	for await (const line of lines) {
-		yield line;
-	}
-};
-
-const booleanGenerator = async function * (lines: Iterable<boolean>) {
-	for await (const line of lines) {
-		yield line;
-	}
-};
-
-const arrayGenerator = async function * (lines: string[]) {
-	for await (const line of lines) {
-		yield line;
-	}
-};
-
-const invalidReturnGenerator = async function * (lines: Iterable<string>) {
-	for await (const line of lines) {
-		yield line;
-	}
-
-	return false;
-};
-
-const syncGenerator = function * (lines: Iterable<string>) {
-	for (const line of lines) {
-		yield line;
-	}
-
-	return false;
-};
 
 expectAssignable<Options>({cleanup: false});
 expectNotAssignable<SyncOptions>({cleanup: false});
@@ -664,7 +756,6 @@ execa('unicorns', {stdin: [new Readable()]});
 execaSync('unicorns', {stdin: [new Readable()]});
 expectError(execa('unicorns', {stdin: new Writable()}));
 expectError(execaSync('unicorns', {stdin: new Writable()}));
-expectError(execa('unicorns', {stdin: [new Writable()]}));
 expectError(execaSync('unicorns', {stdin: [new Writable()]}));
 execa('unicorns', {stdin: new ReadableStream()});
 expectError(execaSync('unicorns', {stdin: new ReadableStream()}));
@@ -672,10 +763,15 @@ execa('unicorns', {stdin: [new ReadableStream()]});
 expectError(execaSync('unicorns', {stdin: [new ReadableStream()]}));
 expectError(execa('unicorns', {stdin: new WritableStream()}));
 expectError(execaSync('unicorns', {stdin: new WritableStream()}));
-expectError(execa('unicorns', {stdin: [new WritableStream()]}));
 expectError(execaSync('unicorns', {stdin: [new WritableStream()]}));
 execa('unicorns', {stdin: new Uint8Array()});
 execaSync('unicorns', {stdin: new Uint8Array()});
+execa('unicorns', {stdin: [['foo', 'bar']]});
+expectError(execaSync('unicorns', {stdin: [['foo', 'bar']]}));
+execa('unicorns', {stdin: [[new Uint8Array(), new Uint8Array()]]});
+expectError(execaSync('unicorns', {stdin: [[new Uint8Array(), new Uint8Array()]]}));
+execa('unicorns', {stdin: [[{}, {}]]});
+expectError(execaSync('unicorns', {stdin: [[{}, {}]]}));
 execa('unicorns', {stdin: emptyStringGenerator()});
 expectError(execaSync('unicorns', {stdin: emptyStringGenerator()}));
 execa('unicorns', {stdin: [emptyStringGenerator()]});
@@ -688,10 +784,6 @@ execa('unicorns', {stdin: asyncStringGenerator()});
 expectError(execaSync('unicorns', {stdin: asyncStringGenerator()}));
 execa('unicorns', {stdin: [asyncStringGenerator()]});
 expectError(execaSync('unicorns', {stdin: [asyncStringGenerator()]}));
-expectError(execa('unicorns', {stdin: numberGenerator()}));
-expectError(execaSync('unicorns', {stdin: numberGenerator()}));
-expectError(execa('unicorns', {stdin: [numberGenerator()]}));
-expectError(execaSync('unicorns', {stdin: [numberGenerator()]}));
 execa('unicorns', {stdin: fileUrl});
 execaSync('unicorns', {stdin: fileUrl});
 execa('unicorns', {stdin: [fileUrl]});
@@ -704,26 +796,29 @@ execa('unicorns', {stdin: 1});
 execaSync('unicorns', {stdin: 1});
 execa('unicorns', {stdin: [1]});
 execaSync('unicorns', {stdin: [1]});
-execa('unicorns', {stdin: stringOrUint8ArrayGenerator});
-expectError(execaSync('unicorns', {stdin: stringOrUint8ArrayGenerator}));
-execa('unicorns', {stdin: [stringOrUint8ArrayGenerator]});
-expectError(execaSync('unicorns', {stdin: [stringOrUint8ArrayGenerator]}));
+execa('unicorns', {stdin: unknownArrayGenerator});
+expectError(execaSync('unicorns', {stdin: unknownArrayGenerator}));
+execa('unicorns', {stdin: [unknownArrayGenerator]});
+expectError(execaSync('unicorns', {stdin: [unknownArrayGenerator]}));
 expectError(execa('unicorns', {stdin: booleanGenerator}));
 expectError(execa('unicorns', {stdin: arrayGenerator}));
 expectError(execa('unicorns', {stdin: invalidReturnGenerator}));
 expectError(execa('unicorns', {stdin: syncGenerator}));
-execa('unicorns', {stdin: {transform: stringOrUint8ArrayGenerator}});
-expectError(execaSync('unicorns', {stdin: {transform: stringOrUint8ArrayGenerator}}));
-execa('unicorns', {stdin: [{transform: stringOrUint8ArrayGenerator}]});
-expectError(execaSync('unicorns', {stdin: [{transform: stringOrUint8ArrayGenerator}]}));
+execa('unicorns', {stdin: {transform: unknownArrayGenerator}});
+expectError(execaSync('unicorns', {stdin: {transform: unknownArrayGenerator}}));
+execa('unicorns', {stdin: [{transform: unknownArrayGenerator}]});
+expectError(execaSync('unicorns', {stdin: [{transform: unknownArrayGenerator}]}));
 expectError(execa('unicorns', {stdin: {transform: booleanGenerator}}));
 expectError(execa('unicorns', {stdin: {transform: arrayGenerator}}));
 expectError(execa('unicorns', {stdin: {transform: invalidReturnGenerator}}));
 expectError(execa('unicorns', {stdin: {transform: syncGenerator}}));
 expectError(execa('unicorns', {stdin: {}}));
 expectError(execa('unicorns', {stdin: {binary: true}}));
-execa('unicorns', {stdin: {transform: stringOrUint8ArrayGenerator, binary: true}});
-expectError(execa('unicorns', {stdin: {transform: stringOrUint8ArrayGenerator, binary: 'true'}}));
+expectError(execa('unicorns', {stdin: {objectMode: true}}));
+execa('unicorns', {stdin: {transform: unknownArrayGenerator, binary: true}});
+expectError(execa('unicorns', {stdin: {transform: unknownArrayGenerator, binary: 'true'}}));
+execa('unicorns', {stdin: {transform: unknownArrayGenerator, objectMode: true}});
+expectError(execa('unicorns', {stdin: {transform: unknownArrayGenerator, objectMode: 'true'}}));
 execa('unicorns', {stdin: undefined});
 execaSync('unicorns', {stdin: undefined});
 execa('unicorns', {stdin: [undefined]});
@@ -782,26 +877,29 @@ execa('unicorns', {stdout: 1});
 execaSync('unicorns', {stdout: 1});
 execa('unicorns', {stdout: [1]});
 execaSync('unicorns', {stdout: [1]});
-execa('unicorns', {stdout: stringOrUint8ArrayGenerator});
-expectError(execaSync('unicorns', {stdout: stringOrUint8ArrayGenerator}));
-execa('unicorns', {stdout: [stringOrUint8ArrayGenerator]});
-expectError(execaSync('unicorns', {stdout: [stringOrUint8ArrayGenerator]}));
+execa('unicorns', {stdout: unknownArrayGenerator});
+expectError(execaSync('unicorns', {stdout: unknownArrayGenerator}));
+execa('unicorns', {stdout: [unknownArrayGenerator]});
+expectError(execaSync('unicorns', {stdout: [unknownArrayGenerator]}));
 expectError(execa('unicorns', {stdout: booleanGenerator}));
 expectError(execa('unicorns', {stdout: arrayGenerator}));
 expectError(execa('unicorns', {stdout: invalidReturnGenerator}));
 expectError(execa('unicorns', {stdout: syncGenerator}));
-execa('unicorns', {stdout: {transform: stringOrUint8ArrayGenerator}});
-expectError(execaSync('unicorns', {stdout: {transform: stringOrUint8ArrayGenerator}}));
-execa('unicorns', {stdout: [{transform: stringOrUint8ArrayGenerator}]});
-expectError(execaSync('unicorns', {stdout: [{transform: stringOrUint8ArrayGenerator}]}));
+execa('unicorns', {stdout: {transform: unknownArrayGenerator}});
+expectError(execaSync('unicorns', {stdout: {transform: unknownArrayGenerator}}));
+execa('unicorns', {stdout: [{transform: unknownArrayGenerator}]});
+expectError(execaSync('unicorns', {stdout: [{transform: unknownArrayGenerator}]}));
 expectError(execa('unicorns', {stdout: {transform: booleanGenerator}}));
 expectError(execa('unicorns', {stdout: {transform: arrayGenerator}}));
 expectError(execa('unicorns', {stdout: {transform: invalidReturnGenerator}}));
 expectError(execa('unicorns', {stdout: {transform: syncGenerator}}));
 expectError(execa('unicorns', {stdout: {}}));
 expectError(execa('unicorns', {stdout: {binary: true}}));
-execa('unicorns', {stdout: {transform: stringOrUint8ArrayGenerator, binary: true}});
-expectError(execa('unicorns', {stdout: {transform: stringOrUint8ArrayGenerator, binary: 'true'}}));
+expectError(execa('unicorns', {stdout: {objectMode: true}}));
+execa('unicorns', {stdout: {transform: unknownArrayGenerator, binary: true}});
+expectError(execa('unicorns', {stdout: {transform: unknownArrayGenerator, binary: 'true'}}));
+execa('unicorns', {stdout: {transform: unknownArrayGenerator, objectMode: true}});
+expectError(execa('unicorns', {stdout: {transform: unknownArrayGenerator, objectMode: 'true'}}));
 execa('unicorns', {stdout: undefined});
 execaSync('unicorns', {stdout: undefined});
 execa('unicorns', {stdout: [undefined]});
@@ -860,26 +958,29 @@ execa('unicorns', {stderr: 1});
 execaSync('unicorns', {stderr: 1});
 execa('unicorns', {stderr: [1]});
 execaSync('unicorns', {stderr: [1]});
-execa('unicorns', {stderr: stringOrUint8ArrayGenerator});
-expectError(execaSync('unicorns', {stderr: stringOrUint8ArrayGenerator}));
-execa('unicorns', {stderr: [stringOrUint8ArrayGenerator]});
-expectError(execaSync('unicorns', {stderr: [stringOrUint8ArrayGenerator]}));
+execa('unicorns', {stderr: unknownArrayGenerator});
+expectError(execaSync('unicorns', {stderr: unknownArrayGenerator}));
+execa('unicorns', {stderr: [unknownArrayGenerator]});
+expectError(execaSync('unicorns', {stderr: [unknownArrayGenerator]}));
 expectError(execa('unicorns', {stderr: booleanGenerator}));
 expectError(execa('unicorns', {stderr: arrayGenerator}));
 expectError(execa('unicorns', {stderr: invalidReturnGenerator}));
 expectError(execa('unicorns', {stderr: syncGenerator}));
-execa('unicorns', {stderr: {transform: stringOrUint8ArrayGenerator}});
-expectError(execaSync('unicorns', {stderr: {transform: stringOrUint8ArrayGenerator}}));
-execa('unicorns', {stderr: [{transform: stringOrUint8ArrayGenerator}]});
-expectError(execaSync('unicorns', {stderr: [{transform: stringOrUint8ArrayGenerator}]}));
+execa('unicorns', {stderr: {transform: unknownArrayGenerator}});
+expectError(execaSync('unicorns', {stderr: {transform: unknownArrayGenerator}}));
+execa('unicorns', {stderr: [{transform: unknownArrayGenerator}]});
+expectError(execaSync('unicorns', {stderr: [{transform: unknownArrayGenerator}]}));
 expectError(execa('unicorns', {stderr: {transform: booleanGenerator}}));
 expectError(execa('unicorns', {stderr: {transform: arrayGenerator}}));
 expectError(execa('unicorns', {stderr: {transform: invalidReturnGenerator}}));
 expectError(execa('unicorns', {stderr: {transform: syncGenerator}}));
 expectError(execa('unicorns', {stderr: {}}));
 expectError(execa('unicorns', {stderr: {binary: true}}));
-execa('unicorns', {stderr: {transform: stringOrUint8ArrayGenerator, binary: true}});
-expectError(execa('unicorns', {stderr: {transform: stringOrUint8ArrayGenerator, binary: 'true'}}));
+expectError(execa('unicorns', {stderr: {objectMode: true}}));
+execa('unicorns', {stderr: {transform: unknownArrayGenerator, binary: true}});
+expectError(execa('unicorns', {stderr: {transform: unknownArrayGenerator, binary: 'true'}}));
+execa('unicorns', {stderr: {transform: unknownArrayGenerator, objectMode: true}});
+expectError(execa('unicorns', {stderr: {transform: unknownArrayGenerator, objectMode: 'true'}}));
 execa('unicorns', {stderr: undefined});
 execaSync('unicorns', {stderr: undefined});
 execa('unicorns', {stderr: [undefined]});
@@ -916,10 +1017,10 @@ expectError(execa('unicorns', {stdio: 'ipc'}));
 expectError(execaSync('unicorns', {stdio: 'ipc'}));
 expectError(execa('unicorns', {stdio: 1}));
 expectError(execaSync('unicorns', {stdio: 1}));
-expectError(execa('unicorns', {stdio: stringOrUint8ArrayGenerator}));
-expectError(execaSync('unicorns', {stdio: stringOrUint8ArrayGenerator}));
-expectError(execa('unicorns', {stdio: {transform: stringOrUint8ArrayGenerator}}));
-expectError(execaSync('unicorns', {stdio: {transform: stringOrUint8ArrayGenerator}}));
+expectError(execa('unicorns', {stdio: unknownArrayGenerator}));
+expectError(execaSync('unicorns', {stdio: unknownArrayGenerator}));
+expectError(execa('unicorns', {stdio: {transform: unknownArrayGenerator}}));
+expectError(execaSync('unicorns', {stdio: {transform: unknownArrayGenerator}}));
 expectError(execa('unicorns', {stdio: fileUrl}));
 expectError(execaSync('unicorns', {stdio: fileUrl}));
 expectError(execa('unicorns', {stdio: {file: './test'}}));
@@ -952,7 +1053,6 @@ execa('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]});
 execaSync('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]});
 expectError(execa('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
 expectError(execaSync('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
-expectError(execa('unicorns', {stdio: [[new Writable()], ['pipe'], ['pipe']]}));
 expectError(execaSync('unicorns', {stdio: [[new Writable()], ['pipe'], ['pipe']]}));
 expectError(execa('unicorns', {stdio: ['pipe', new Readable(), 'pipe']}));
 expectError(execaSync('unicorns', {stdio: ['pipe', new Readable(), 'pipe']}));
@@ -971,9 +1071,10 @@ execa('unicorns', {
 		'inherit',
 		process.stdin,
 		1,
-		stringOrUint8ArrayGenerator,
-		{transform: stringOrUint8ArrayGenerator},
-		{transform: stringOrUint8ArrayGenerator, binary: true},
+		unknownArrayGenerator,
+		{transform: unknownArrayGenerator},
+		{transform: unknownArrayGenerator, binary: true},
+		{transform: unknownArrayGenerator, objectMode: true},
 		undefined,
 		fileUrl,
 		{file: './test'},
@@ -1003,8 +1104,8 @@ execaSync('unicorns', {
 		new Uint8Array(),
 	],
 });
-expectError(execaSync('unicorns', {stdio: [stringOrUint8ArrayGenerator]}));
-expectError(execaSync('unicorns', {stdio: [{transform: stringOrUint8ArrayGenerator}]}));
+expectError(execaSync('unicorns', {stdio: [unknownArrayGenerator]}));
+expectError(execaSync('unicorns', {stdio: [{transform: unknownArrayGenerator}]}));
 expectError(execaSync('unicorns', {stdio: [new WritableStream()]}));
 expectError(execaSync('unicorns', {stdio: [new ReadableStream()]}));
 expectError(execaSync('unicorns', {stdio: [emptyStringGenerator()]}));
@@ -1019,9 +1120,10 @@ execa('unicorns', {
 		['inherit'],
 		[process.stdin],
 		[1],
-		[stringOrUint8ArrayGenerator],
-		[{transform: stringOrUint8ArrayGenerator}],
-		[{transform: stringOrUint8ArrayGenerator, binary: true}],
+		[unknownArrayGenerator],
+		[{transform: unknownArrayGenerator}],
+		[{transform: unknownArrayGenerator, binary: true}],
+		[{transform: unknownArrayGenerator, objectMode: true}],
 		[undefined],
 		[fileUrl],
 		[{file: './test'}],
@@ -1030,6 +1132,9 @@ execa('unicorns', {
 		[new WritableStream()],
 		[new ReadableStream()],
 		[new Uint8Array()],
+		[['foo', 'bar']],
+		[[new Uint8Array(), new Uint8Array()]],
+		[[{}, {}]],
 		[emptyStringGenerator()],
 		[asyncStringGenerator()],
 	],
@@ -1052,10 +1157,13 @@ execaSync('unicorns', {
 		[new Uint8Array()],
 	],
 });
-expectError(execaSync('unicorns', {stdio: [[stringOrUint8ArrayGenerator]]}));
-expectError(execaSync('unicorns', {stdio: [[{transform: stringOrUint8ArrayGenerator}]]}));
+expectError(execaSync('unicorns', {stdio: [[unknownArrayGenerator]]}));
+expectError(execaSync('unicorns', {stdio: [[{transform: unknownArrayGenerator}]]}));
 expectError(execaSync('unicorns', {stdio: [[new WritableStream()]]}));
 expectError(execaSync('unicorns', {stdio: [[new ReadableStream()]]}));
+expectError(execaSync('unicorns', {stdio: [[['foo', 'bar']]]}));
+expectError(execaSync('unicorns', {stdio: [[[new Uint8Array(), new Uint8Array()]]]}));
+expectError(execaSync('unicorns', {stdio: [[[{}, {}]]]}));
 expectError(execaSync('unicorns', {stdio: [[emptyStringGenerator()]]}));
 expectError(execaSync('unicorns', {stdio: [[asyncStringGenerator()]]}));
 execa('unicorns', {serialization: 'advanced'});

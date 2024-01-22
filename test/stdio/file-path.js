@@ -8,11 +8,10 @@ import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {identity, getStdio} from '../helpers/stdio.js';
 import {runExeca, runExecaSync, runScript, runScriptSync} from '../helpers/run.js';
+import {foobarUint8Array} from '../helpers/input.js';
 
 setFixtureDir();
 
-const textEncoder = new TextEncoder();
-const binaryFoobar = textEncoder.encode('foobar');
 const nonFileUrl = new URL('https://example.com');
 
 const getAbsolutePath = file => ({file});
@@ -26,7 +25,7 @@ const getStdioInput = (index, file) => {
 	}
 
 	if (index === 'binary') {
-		return {input: binaryFoobar};
+		return {input: foobarUint8Array};
 	}
 
 	return getStdioFile(index, file);

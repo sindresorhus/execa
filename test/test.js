@@ -7,8 +7,8 @@ import getNode from 'get-node';
 import which from 'which';
 import {execa, execaSync, execaNode, $} from '../index.js';
 import {setFixtureDir, PATH_KEY, FIXTURES_DIR_URL} from './helpers/fixtures-dir.js';
-import {identity, fullStdio} from './helpers/stdio.js';
-import {stringGenerator} from './helpers/generator.js';
+import {identity, fullStdio, getStdio} from './helpers/stdio.js';
+import {noopGenerator} from './helpers/generator.js';
 
 setFixtureDir();
 process.env.FOO = 'foo';
@@ -42,7 +42,7 @@ test('cannot return stdin', testNoStdin, execa);
 test('cannot return stdin - sync', testNoStdin, execaSync);
 
 test('cannot return input stdio[*]', async t => {
-	const {stdio} = await execa('stdin-fd.js', ['3'], {stdio: ['pipe', 'pipe', 'pipe', stringGenerator()]});
+	const {stdio} = await execa('stdin-fd.js', ['3'], getStdio(3, [['foobar']]));
 	t.is(stdio[3], undefined);
 });
 
@@ -91,6 +91,11 @@ test('stripFinalNewline: true with stderr - sync', testStripFinalNewline, 2, und
 test('stripFinalNewline: false with stderr - sync', testStripFinalNewline, 2, false, execaSync);
 test('stripFinalNewline: true with stdio[*] - sync', testStripFinalNewline, 3, undefined, execaSync);
 test('stripFinalNewline: false with stdio[*] - sync', testStripFinalNewline, 3, false, execaSync);
+
+test('stripFinalNewline is not used in objectMode', async t => {
+	const {stdout} = await execa('noop-fd.js', ['1', 'foobar\n'], {stripFinalNewline: true, stdout: noopGenerator(true)});
+	t.deepEqual(stdout, ['foobar\n']);
+});
 
 const getPathWithoutLocalDir = () => {
 	const newPath = process.env[PATH_KEY].split(path.delimiter).filter(pathDir => !BIN_DIR_REGEXP.test(pathDir)).join(path.delimiter);

@@ -10,7 +10,7 @@ import {makeError} from './lib/error.js';
 import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {normalizeStdioNode} from './lib/stdio/normalize.js';
-import {spawnedKill, spawnedCancel, validateTimeout} from './lib/kill.js';
+import {spawnedKill, validateTimeout} from './lib/kill.js';
 import {addPipeMethods} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
@@ -142,20 +142,19 @@ export function execa(rawFile, rawArgs, rawOptions) {
 
 	pipeOutputAsync(spawned, stdioStreamsGroups);
 
-	const context = {isCanceled: false, timedOut: false};
-
 	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
-	spawned.cancel = spawnedCancel.bind(null, spawned, context);
 	spawned.all = makeAllStream(spawned, options);
 
 	addPipeMethods(spawned);
 
-	const promise = handlePromise({spawned, options, context, stdioStreamsGroups, command, escapedCommand});
+	const promise = handlePromise({spawned, options, stdioStreamsGroups, command, escapedCommand});
 	mergePromise(spawned, promise);
 	return spawned;
 }
 
-const handlePromise = async ({spawned, options, context, stdioStreamsGroups, command, escapedCommand}) => {
+const handlePromise = async ({spawned, options, stdioStreamsGroups, command, escapedCommand}) => {
+	const context = {timedOut: false};
+
 	const [
 		[exitCode, signal, error],
 		stdioResults,
@@ -165,7 +164,7 @@ const handlePromise = async ({spawned, options, context, stdioStreamsGroups, com
 	const all = handleOutput(options, allResult);
 
 	if (error || exitCode !== 0 || signal !== null) {
-		const isCanceled = context.isCanceled || Boolean(options.signal?.aborted);
+		const isCanceled = options.signal?.aborted === true;
 		const returnedError = makeError({
 			error,
 			exitCode,

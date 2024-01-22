@@ -76,7 +76,6 @@ const syncGenerator = function * (lines: Iterable<string>) {
 
 try {
 	const execaPromise = execa('unicorns', {all: true});
-	execaPromise.cancel();
 
 	const execaBufferPromise = execa('unicorns', {encoding: 'buffer', all: true});
 	const writeStream = createWriteStream('output.txt');

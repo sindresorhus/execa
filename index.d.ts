@@ -391,7 +391,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	If `true`, the child process uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-	If `false`, it uses only the `env` option is used, not `process.env`.
+	If `false`, only the `env` option is used, not `process.env`.
 
 	@default true
 	*/

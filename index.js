@@ -49,25 +49,8 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 
 	const {command: file, args, options: initialOptions} = crossSpawn._parse(filePath, rawArgs, rawOptions);
 
-	const options = {
-		maxBuffer: DEFAULT_MAX_BUFFER,
-		buffer: true,
-		stripFinalNewline: true,
-		extendEnv: true,
-		preferLocal: false,
-		localDir: initialOptions.cwd || process.cwd(),
-		execPath: process.execPath,
-		encoding: 'utf8',
-		reject: true,
-		cleanup: true,
-		all: false,
-		windowsHide: true,
-		verbose: verboseDefault,
-		killSignal: 'SIGTERM',
-		...initialOptions,
-		shell: normalizeFileUrl(initialOptions.shell),
-	};
-
+	const options = addDefaultOptions(initialOptions);
+	options.shell = normalizeFileUrl(options.shell);
 	options.env = getEnv(options);
 
 	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
@@ -79,6 +62,42 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 
 	return {file, args, command, escapedCommand, options};
 };
+
+const addDefaultOptions = ({
+	maxBuffer = DEFAULT_MAX_BUFFER,
+	buffer = true,
+	stripFinalNewline = true,
+	extendEnv = true,
+	preferLocal = false,
+	cwd = process.cwd(),
+	localDir = cwd,
+	execPath = process.execPath,
+	encoding = 'utf8',
+	reject = true,
+	cleanup = true,
+	all = false,
+	windowsHide = true,
+	verbose = verboseDefault,
+	killSignal = 'SIGTERM',
+	...options
+}) => ({
+	...options,
+	maxBuffer,
+	buffer,
+	stripFinalNewline,
+	extendEnv,
+	preferLocal,
+	cwd,
+	localDir,
+	execPath,
+	encoding,
+	reject,
+	cleanup,
+	all,
+	windowsHide,
+	verbose,
+	killSignal,
+});
 
 const handleOutput = (options, value) => {
 	if (value === undefined || value === null) {

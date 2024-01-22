@@ -76,20 +76,26 @@ test('skip throwing when using reject option in sync mode', t => {
 
 const testStripFinalNewline = async (t, index, stripFinalNewline, execaCommand) => {
 	const {stdio} = await execaCommand('noop-fd.js', [`${index}`, 'foobar\n'], {...fullStdio, stripFinalNewline});
-	t.is(stdio[index], `foobar${stripFinalNewline ? '' : '\n'}`);
+	t.is(stdio[index], `foobar${stripFinalNewline === false ? '\n' : ''}`);
 };
 
-test('stripFinalNewline: true with stdout', testStripFinalNewline, 1, undefined, execa);
+test('stripFinalNewline: undefined with stdout', testStripFinalNewline, 1, undefined, execa);
+test('stripFinalNewline: true with stdout', testStripFinalNewline, 1, true, execa);
 test('stripFinalNewline: false with stdout', testStripFinalNewline, 1, false, execa);
-test('stripFinalNewline: true with stderr', testStripFinalNewline, 2, undefined, execa);
+test('stripFinalNewline: undefined with stderr', testStripFinalNewline, 2, undefined, execa);
+test('stripFinalNewline: true with stderr', testStripFinalNewline, 2, true, execa);
 test('stripFinalNewline: false with stderr', testStripFinalNewline, 2, false, execa);
-test('stripFinalNewline: true with stdio[*]', testStripFinalNewline, 3, undefined, execa);
+test('stripFinalNewline: undefined with stdio[*]', testStripFinalNewline, 3, undefined, execa);
+test('stripFinalNewline: true with stdio[*]', testStripFinalNewline, 3, true, execa);
 test('stripFinalNewline: false with stdio[*]', testStripFinalNewline, 3, false, execa);
-test('stripFinalNewline: true with stdout - sync', testStripFinalNewline, 1, undefined, execaSync);
+test('stripFinalNewline: undefined with stdout - sync', testStripFinalNewline, 1, undefined, execaSync);
+test('stripFinalNewline: true with stdout - sync', testStripFinalNewline, 1, true, execaSync);
 test('stripFinalNewline: false with stdout - sync', testStripFinalNewline, 1, false, execaSync);
-test('stripFinalNewline: true with stderr - sync', testStripFinalNewline, 2, undefined, execaSync);
+test('stripFinalNewline: undefined with stderr - sync', testStripFinalNewline, 2, undefined, execaSync);
+test('stripFinalNewline: true with stderr - sync', testStripFinalNewline, 2, true, execaSync);
 test('stripFinalNewline: false with stderr - sync', testStripFinalNewline, 2, false, execaSync);
-test('stripFinalNewline: true with stdio[*] - sync', testStripFinalNewline, 3, undefined, execaSync);
+test('stripFinalNewline: undefined with stdio[*] - sync', testStripFinalNewline, 3, undefined, execaSync);
+test('stripFinalNewline: true with stdio[*] - sync', testStripFinalNewline, 3, true, execaSync);
 test('stripFinalNewline: false with stdio[*] - sync', testStripFinalNewline, 3, false, execaSync);
 
 test('stripFinalNewline is not used in objectMode', async t => {

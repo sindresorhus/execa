@@ -390,7 +390,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stripFinalNewline?: boolean;
 
 	/**
-	Set to `false` if you don't want to extend the environment variables when providing the `env` property.
+	If `true`, the child process uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+	If `false`, only the `env` option is used, not `process.env`.
 
 	@default true
 	*/
@@ -404,7 +405,9 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly cwd?: string | URL;
 
 	/**
-	Environment key-value pairs. Extends automatically from `process.env`. Set `extendEnv` to `false` if you don't want this.
+	Environment key-value pairs.
+
+	Unless the `extendEnv` option is `false`, the child process also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 
 	@default process.env
 	*/

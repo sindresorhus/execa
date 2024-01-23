@@ -2,6 +2,8 @@ import {once} from 'node:events';
 import {createReadStream, createWriteStream} from 'node:fs';
 import {readFile, writeFile, rm} from 'node:fs/promises';
 import {Readable, Writable, PassThrough} from 'node:stream';
+import {setTimeout} from 'node:timers/promises';
+import {callbackify} from 'node:util';
 import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
@@ -114,3 +116,18 @@ const testLazyFileWritable = async (t, index) => {
 test('stdout can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 1);
 test('stderr can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 2);
 test('stdio[*] can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 3);
+
+test('Wait for custom streams destroy on process errors', async t => {
+	let waitedForDestroy = false;
+	const stream = new Writable({
+		destroy: callbackify(async error => {
+			await setTimeout(0);
+			waitedForDestroy = true;
+			return error;
+		}),
+	});
+	const childProcess = execa('forever.js', {stdout: [stream, 'pipe'], timeout: 1});
+	const {timedOut} = await t.throwsAsync(childProcess);
+	t.true(timedOut);
+	t.true(waitedForDestroy);
+});

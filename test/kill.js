@@ -71,16 +71,18 @@ test('execa() returns a promise with kill()', async t => {
 });
 
 test('timeout kills the process if it times out', async t => {
-	const {isTerminated, timedOut} = await t.throwsAsync(execa('noop.js', {timeout: 1}), {message: TIMEOUT_REGEXP});
+	const {isTerminated, signal, timedOut} = await t.throwsAsync(execa('forever.js', {timeout: 1}), {message: TIMEOUT_REGEXP});
 	t.true(isTerminated);
+	t.is(signal, 'SIGTERM');
 	t.true(timedOut);
 });
 
 test('timeout kills the process if it times out, in sync mode', async t => {
-	const {isTerminated, timedOut} = await t.throws(() => {
-		execaSync('noop.js', {timeout: 1, message: TIMEOUT_REGEXP});
+	const {isTerminated, signal, timedOut} = await t.throws(() => {
+		execaSync('forever.js', {timeout: 1, message: TIMEOUT_REGEXP});
 	});
 	t.true(isTerminated);
+	t.is(signal, 'SIGTERM');
 	t.true(timedOut);
 });
 
@@ -91,17 +93,16 @@ test('timeout does not kill the process if it does not time out', async t => {
 
 const INVALID_TIMEOUT_REGEXP = /`timeout` option to be a non-negative integer/;
 
-test('timeout must not be negative', async t => {
-	await t.throws(() => {
-		execa('noop.js', {timeout: -1});
+const testTimeoutValidation = (t, timeout, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', {timeout});
 	}, {message: INVALID_TIMEOUT_REGEXP});
-});
+};
 
-test('timeout must be an integer', async t => {
-	await t.throws(() => {
-		execa('noop.js', {timeout: false});
-	}, {message: INVALID_TIMEOUT_REGEXP});
-});
+test('timeout must not be negative', testTimeoutValidation, -1, execa);
+test('timeout must be an integer', testTimeoutValidation, false, execa);
+test('timeout must not be negative - sync', testTimeoutValidation, -1, execaSync);
+test('timeout must be an integer - sync', testTimeoutValidation, false, execaSync);
 
 test('timedOut is false if timeout is undefined', async t => {
 	const {timedOut} = await execa('noop.js');

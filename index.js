@@ -50,6 +50,7 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	const {command: file, args, options: initialOptions} = crossSpawn._parse(filePath, rawArgs, rawOptions);
 
 	const options = addDefaultOptions(initialOptions);
+	validateTimeout(options);
 	options.shell = normalizeFileUrl(options.shell);
 	options.env = getEnv(options);
 
@@ -117,7 +118,6 @@ const handleOutput = (options, value) => {
 
 export function execa(rawFile, rawArgs, rawOptions) {
 	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
-	validateTimeout(options);
 
 	const stdioStreamsGroups = handleInputAsync(options);
 

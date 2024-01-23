@@ -469,6 +469,26 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly killSignal?: string | number;
 
 	/**
+	If the child process is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+
+	The grace period is 5 seconds by default. This feature can be disabled with `false`.
+
+	This works when the child process is terminated by either:
+	- the `signal`, `timeout`, `maxBuffer` or `cleanup` option
+	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
+
+	This does not work when the child process is terminated by either:
+	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with an argument
+	- calling [`process.kill(subprocess.pid)`](https://nodejs.org/api/process.html#processkillpid-signal)
+	- sending a termination signal from another process
+
+	Also, this does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events): `SIGKILL` and `SIGTERM` both terminate the process immediately. Other packages (such as [`taskkill`](https://github.com/sindresorhus/taskkill)) can be used to achieve fail-safe termination on Windows.
+
+	@default 5000
+	*/
+	forceKillAfterTimeout?: number | false;
+
+	/**
 	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
 
 	@default false
@@ -721,17 +741,6 @@ type ExecaCommonError = {
 export type ExecaError<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType> & ExecaCommonError;
 export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType> & ExecaCommonError;
 
-export type KillOptions = {
-	/**
-	Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
-
-	Can be disabled with `false`.
-
-	@default 5000
-	*/
-	forceKillAfterTimeout?: number | false;
-};
-
 type StreamUnlessIgnored<
 	StreamIndex extends string,
 	OptionsType extends Options = Options,
@@ -778,11 +787,6 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	catch<ResultType = never>(
 		onRejected?: (reason: ExecaError<OptionsType>) => ResultType | PromiseLike<ResultType>
 	): Promise<ExecaReturnValue<OptionsType> | ResultType>;
-
-	/**
-	Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal), except if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`. Note that this graceful termination does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events) (`SIGKILL` and `SIGTERM` has the same effect of force-killing the process immediately.) If you want to achieve graceful termination on Windows, you have to use other means, such as [`taskkill`](https://github.com/sindresorhus/taskkill).
-	*/
-	kill(signal?: string, options?: KillOptions): void;
 
 	/**
 	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
@@ -916,17 +920,6 @@ try {
 	}
 	\*\/
 }
-```
-
-@example <caption>Graceful termination</caption>
-```
-const subprocess = execa('node');
-
-setTimeout(() => {
-	subprocess.kill('SIGTERM', {
-		forceKillAfterTimeout: 2000
-	});
-}, 1000);
 ```
 */
 export function execa<OptionsType extends Options = {}>(

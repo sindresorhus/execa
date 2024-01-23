@@ -50,7 +50,7 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - Redirect [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1) from/to files, streams, iterables, strings, `Uint8Array` or [objects](docs/transform.md#object-mode).
 - [Transform](docs/transform.md) `stdin`/`stdout`/`stderr` with simple functions.
 - Iterate over [each text line](docs/transform.md#binary-data) output by the process.
-- [Graceful termination](#optionsforcekillaftertimeout).
+- [Fail-safe process termination](#forcekillaftertimeout).
 - Get [interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
 - Convenience methods to pipe processes' [input](#input) and [output](#redirect-output-to-a-file).
@@ -221,20 +221,6 @@ try {
 }
 ```
 
-### Graceful termination
-
-Using SIGTERM, and after 2 seconds, kill it with SIGKILL.
-
-```js
-const subprocess = execa('node');
-
-setTimeout(() => {
-	subprocess.kill('SIGTERM', {
-		forceKillAfterTimeout: 2000
-	});
-}, 1000);
-```
-
 ## API
 
 ### Methods
@@ -322,21 +308,6 @@ For all the [methods above](#methods), no shell interpreter (Bash, cmd.exe, etc.
 The return value of all [asynchronous methods](#methods) is both:
 - a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
-
-#### kill(signal?, options?)
-
-Same as the original [`child_process#kill()`](https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal) except: if `signal` is `SIGTERM` (the default value) and the child process is not terminated after 5 seconds, force it by sending `SIGKILL`.
-
-Note that this graceful termination does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events) (`SIGKILL` and `SIGTERM` has the same effect of force-killing the process immediately.) If you want to achieve graceful termination on Windows, you have to use other means, such as [`taskkill`](https://github.com/sindresorhus/taskkill).
-
-##### options.forceKillAfterTimeout
-
-Type: `number | false`\
-Default: `5000`
-
-Milliseconds to wait for the child process to terminate before sending `SIGKILL`.
-
-Can be disabled with `false`.
 
 #### all
 
@@ -468,7 +439,7 @@ Whether the process was canceled using the [`signal`](#signal-1) option.
 Type: `boolean`
 
 Whether the process was terminated using either:
-- [`childProcess.kill()`](#killsignal-options).
+- `childProcess.kill()`.
 - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 #### signal
@@ -476,7 +447,7 @@ Whether the process was terminated using either:
 Type: `string | undefined`
 
 The name of the signal (like `SIGFPE`) that terminated the process using either:
-- [`childProcess.kill()`](#killsignal-options).
+- `childProcess.kill()`.
 - A signal sent by another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
@@ -783,6 +754,26 @@ Default: `SIGTERM`
 
 Signal value to be used when the spawned process will be killed.
 
+#### forceKillAfterTimeout
+
+Type: `number | false`\
+Default: `5000`
+
+If the child process is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+
+The grace period is 5 seconds by default. This feature can be disabled with `false`.
+
+This works when the child process is terminated by either:
+- the [`signal`](#signal-1), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
+- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
+
+This does not work when the child process is terminated by either:
+- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with an argument
+- calling [`process.kill(subprocess.pid)`](https://nodejs.org/api/process.html#processkillpid-signal)
+- sending a termination signal from another process
+
+Also, this does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events): `SIGKILL` and `SIGTERM` both terminate the process immediately. Other packages (such as [`taskkill`](https://github.com/sindresorhus/taskkill)) can be used to achieve fail-safe termination on Windows.
+
 #### signal
 
 Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
@@ -861,7 +852,7 @@ This limitation can be worked around by passing either:
 
 ### Retry on error
 
-Gracefully handle failures by using automatic retries and exponential backoff with the [`p-retry`](https://github.com/sindresorhus/p-retry) package:
+Safely handle failures by using automatic retries and exponential backoff with the [`p-retry`](https://github.com/sindresorhus/p-retry) package:
 
 ```js
 import pRetry from 'p-retry';

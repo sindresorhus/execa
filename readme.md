@@ -50,7 +50,7 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - Redirect [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1) from/to files, streams, iterables, strings, `Uint8Array` or [objects](docs/transform.md#object-mode).
 - [Transform](docs/transform.md) `stdin`/`stdout`/`stderr` with simple functions.
 - Iterate over [each text line](docs/transform.md#binary-data) output by the process.
-- [Fail-safe process termination](#forcekillaftertimeout).
+- [Fail-safe process termination](#forcekillafterdelay).
 - Get [interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
 - Convenience methods to pipe processes' [input](#input) and [output](#redirect-output-to-a-file).
@@ -754,7 +754,7 @@ Default: `SIGTERM`
 
 Signal value to be used when the spawned process will be killed.
 
-#### forceKillAfterTimeout
+#### forceKillAfterDelay
 
 Type: `number | false`\
 Default: `5000`

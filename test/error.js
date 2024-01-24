@@ -158,17 +158,17 @@ test('failed is true on failure', async t => {
 });
 
 test('error.isTerminated is true if process was killed directly', async t => {
-	const subprocess = execa('forever.js');
+	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
 
 	subprocess.kill();
 
-	const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGTERM/});
+	const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGINT/});
 	t.true(isTerminated);
-	t.is(signal, 'SIGTERM');
+	t.is(signal, 'SIGINT');
 });
 
 test('error.isTerminated is true if process was killed indirectly', async t => {
-	const subprocess = execa('forever.js');
+	const subprocess = execa('forever.js', {killSignal: 'SIGHUP'});
 
 	process.kill(subprocess.pid, 'SIGINT');
 
@@ -242,9 +242,9 @@ if (!isWindows) {
 		t.is(signal, 'SIGTERM');
 	});
 
-	test('custom error.signal', async t => {
-		const {signal} = await t.throwsAsync(execa('forever.js', {killSignal: 'SIGHUP', timeout: 1, message: TIMEOUT_REGEXP}));
-		t.is(signal, 'SIGHUP');
+	test('error.signal uses killSignal', async t => {
+		const {signal} = await t.throwsAsync(execa('forever.js', {killSignal: 'SIGINT', timeout: 1, message: TIMEOUT_REGEXP}));
+		t.is(signal, 'SIGINT');
 	});
 
 	test('exitCode is undefined on signal termination', async t => {

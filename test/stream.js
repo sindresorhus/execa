@@ -135,6 +135,15 @@ test('maxBuffer does not affect stderr if too high', testMaxBufferSuccess, 2, fa
 test('maxBuffer does not affect stdio[*] if too high', testMaxBufferSuccess, 3, false);
 test('maxBuffer does not affect all if too high', testMaxBufferSuccess, 1, true);
 
+test('maxBuffer uses killSignal', async t => {
+	const {isTerminated, signal} = await t.throwsAsync(
+		execa('noop-forever.js', ['.'.repeat(maxBuffer + 1)], {maxBuffer, killSignal: 'SIGINT'}),
+		{message: /maxBuffer exceeded/},
+	);
+	t.true(isTerminated);
+	t.is(signal, 'SIGINT');
+});
+
 const testMaxBufferLimit = async (t, index, all) => {
 	const length = all ? maxBuffer * 2 : maxBuffer;
 	const result = await t.throwsAsync(
@@ -297,6 +306,14 @@ test('Errors on stdin should make the process exit', testStreamError, 0);
 test('Errors on stdout should make the process exit', testStreamError, 1);
 test('Errors on stderr should make the process exit', testStreamError, 2);
 test('Errors on stdio[*] should make the process exit', testStreamError, 3);
+
+test('Errors on streams use killSignal', async t => {
+	const childProcess = execa('forever.js', {killSignal: 'SIGINT'});
+	childProcess.stdout.destroy(new Error('test'));
+	const {isTerminated, signal} = await t.throwsAsync(childProcess, {message: /test/});
+	t.true(isTerminated);
+	t.is(signal, 'SIGINT');
+});
 
 const testWaitOnStreamEnd = async (t, index) => {
 	const childProcess = execa('stdin-fd.js', [`${index}`], fullStdio);

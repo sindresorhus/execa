@@ -448,7 +448,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly encoding?: EncodingOption;
 
 	/**
-	If `timeout` is greater than `0`, the parent will send the signal identified by the `killSignal` property (the default is `SIGTERM`) if the child runs longer than `timeout` milliseconds.
+	If `timeout`` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
 	@default 0
 	*/
@@ -462,7 +462,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly maxBuffer?: number;
 
 	/**
-	Signal value to be used when the spawned process will be killed.
+	Signal used to terminate the child process when:
+	- using the `signal`, `timeout`, `maxBuffer` or `cleanup` option
+	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
+
+	This can be either a name (like `"SIGTERM"`) or a number (like `9`).
 
 	@default 'SIGTERM'
 	*/

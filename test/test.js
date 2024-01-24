@@ -147,12 +147,6 @@ const testExecPath = async (t, mapPath) => {
 test.serial('execPath option', testExecPath, identity);
 test.serial('execPath option can be a file URL', testExecPath, pathToFileURL);
 
-test('child process errors are handled', async t => {
-	const subprocess = execa('noop.js');
-	subprocess.emit('error', new Error('test'));
-	await t.throwsAsync(subprocess, {message: /test/});
-});
-
 test('execa() returns a promise with pid', async t => {
 	const subprocess = execa('noop.js', ['foo']);
 	t.is(typeof subprocess.pid, 'number');

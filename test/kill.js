@@ -1,5 +1,6 @@
 import process from 'node:process';
 import {once} from 'node:events';
+import {constants} from 'node:os';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {pEvent} from 'p-event';
@@ -34,8 +35,8 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests do not make sense on Windows.
 if (process.platform !== 'win32') {
-	const testNoForceKill = async (t, forceKillAfterDelay, killArgument) => {
-		const {subprocess} = await spawnNoKillable(forceKillAfterDelay);
+	const testNoForceKill = async (t, forceKillAfterDelay, killArgument, options) => {
+		const {subprocess} = await spawnNoKillable(forceKillAfterDelay, options);
 
 		subprocess.kill(killArgument);
 
@@ -50,9 +51,11 @@ if (process.platform !== 'win32') {
 
 	test('`forceKillAfterDelay: false` should not kill after a timeout', testNoForceKill, false);
 	test('`forceKillAfterDelay` should not kill after a timeout with other signals', testNoForceKill, true, 'SIGINT');
+	test('`forceKillAfterDelay` should not kill after a timeout with wrong killSignal string', testNoForceKill, true, 'SIGTERM', {killSignal: 'SIGINT'});
+	test('`forceKillAfterDelay` should not kill after a timeout with wrong killSignal number', testNoForceKill, true, constants.signals.SIGTERM, {killSignal: constants.signals.SIGINT});
 
-	const testForceKill = async (t, forceKillAfterDelay, killArgument) => {
-		const {subprocess} = await spawnNoKillable(forceKillAfterDelay);
+	const testForceKill = async (t, forceKillAfterDelay, killArgument, options) => {
+		const {subprocess} = await spawnNoKillable(forceKillAfterDelay, options);
 
 		subprocess.kill(killArgument);
 
@@ -64,7 +67,9 @@ if (process.platform !== 'win32') {
 	test('`forceKillAfterDelay: number` should kill after a timeout', testForceKill, 50);
 	test('`forceKillAfterDelay: true` should kill after a timeout', testForceKill, true);
 	test('`forceKillAfterDelay: undefined` should kill after a timeout', testForceKill, undefined);
-	test('`forceKillAfterDelay` should kill after a timeout with the killSignal', testForceKill, 50, 'SIGTERM');
+	test('`forceKillAfterDelay` should kill after a timeout with SIGTERM', testForceKill, 50, 'SIGTERM');
+	test('`forceKillAfterDelay` should kill after a timeout with the killSignal string', testForceKill, 50, 'SIGINT', {killSignal: 'SIGINT'});
+	test('`forceKillAfterDelay` should kill after a timeout with the killSignal number', testForceKill, 50, constants.signals.SIGINT, {killSignal: constants.signals.SIGINT});
 
 	const testInvalidForceKill = async (t, forceKillAfterDelay) => {
 		t.throws(() => {
@@ -77,7 +82,8 @@ if (process.platform !== 'win32') {
 
 	test('`forceKillAfterDelay` works with the "signal" option', async t => {
 		const abortController = new AbortController();
-		const {subprocess} = await spawnNoKillable(1, {signal: abortController.signal});
+		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, signal: abortController.signal});
+		await once(subprocess, 'spawn');
 		abortController.abort();
 		const {isTerminated, signal, isCanceled} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
@@ -85,10 +91,8 @@ if (process.platform !== 'win32') {
 		t.true(isCanceled);
 	});
 
-	// For this test to work, the process needs to spawn and setup its `SIGTERM` handler before `timeout` terminates it.
-	// This creates a race condition that we can only work around by using `test.serial()` and a higher timeout.
-	test.serial('`forceKillAfterDelay` works with the "timeout" option', async t => {
-		const {subprocess} = await spawnNoKillable(1, {timeout: 5e3});
+	test('`forceKillAfterDelay` works with the "timeout" option', async t => {
+		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, timeout: 1});
 		const {isTerminated, signal, timedOut} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
@@ -96,14 +100,15 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterDelay` works with the "maxBuffer" option', async t => {
-		const {subprocess} = await spawnNoKillable(1, {maxBuffer: 1});
+		const subprocess = execa('noop-forever.js', ['.'], {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, maxBuffer: 1});
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
 	});
 
 	test('`forceKillAfterDelay` works with "error" events on childProcess', async t => {
-		const {subprocess} = await spawnNoKillable(1);
+		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1});
+		await once(subprocess, 'spawn');
 		subprocess.emit('error', new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
@@ -111,7 +116,8 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterDelay` works with "error" events on childProcess.stdout', async t => {
-		const {subprocess} = await spawnNoKillable(1);
+		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1});
+		await once(subprocess, 'spawn');
 		subprocess.stdout.destroy(new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
@@ -144,6 +150,13 @@ test('timeout kills the process if it times out, in sync mode', async t => {
 test('timeout does not kill the process if it does not time out', async t => {
 	const {timedOut} = await execa('delay.js', ['500'], {timeout: 1e8});
 	t.false(timedOut);
+});
+
+test('timeout uses killSignal', async t => {
+	const {isTerminated, signal, timedOut} = await t.throwsAsync(execa('forever.js', {timeout: 1, killSignal: 'SIGINT'}));
+	t.true(isTerminated);
+	t.is(signal, 'SIGINT');
+	t.true(timedOut);
 });
 
 const INVALID_TIMEOUT_REGEXP = /`timeout` option to be a non-negative integer/;
@@ -314,4 +327,19 @@ test('calling abort on a successfully completed process does not make result.isC
 	const result = await subprocess;
 	abortController.abort();
 	t.false(result.isCanceled);
+});
+
+test('child process errors are handled', async t => {
+	const subprocess = execa('forever.js');
+	subprocess.emit('error', new Error('test'));
+	await t.throwsAsync(subprocess, {message: 'Command failed: forever.js\ntest'});
+});
+
+test('child process errors use killSignal', async t => {
+	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
+	await once(subprocess, 'spawn');
+	subprocess.emit('error', new Error('test'));
+	const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /test/});
+	t.true(isTerminated);
+	t.is(signal, 'SIGINT');
 });

@@ -162,8 +162,9 @@ test('error.isTerminated is true if process was killed directly', async t => {
 
 	subprocess.kill();
 
-	const {isTerminated} = await t.throwsAsync(subprocess, {message: /was killed with SIGTERM/});
+	const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGTERM/});
 	t.true(isTerminated);
+	t.is(signal, 'SIGTERM');
 });
 
 test('error.isTerminated is true if process was killed indirectly', async t => {
@@ -172,9 +173,15 @@ test('error.isTerminated is true if process was killed indirectly', async t => {
 	process.kill(subprocess.pid, 'SIGINT');
 
 	// `process.kill()` is emulated by Node.js on Windows
-	const message = isWindows ? /failed with exit code 1/ : /was killed with SIGINT/;
-	const {isTerminated} = await t.throwsAsync(subprocess, {message});
-	t.not(isTerminated, isWindows);
+	if (isWindows) {
+		const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /failed with exit code 1/});
+		t.is(isTerminated, false);
+		t.is(signal, undefined);
+	} else {
+		const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGINT/});
+		t.is(isTerminated, true);
+		t.is(signal, 'SIGINT');
+	}
 });
 
 test('result.isTerminated is false if not killed', async t => {

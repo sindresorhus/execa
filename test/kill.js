@@ -1,4 +1,5 @@
 import process from 'node:process';
+import {once} from 'node:events';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {pEvent} from 'p-event';
@@ -79,8 +80,8 @@ if (process.platform !== 'win32') {
 		const {subprocess} = await spawnNoKillable(1, {signal: abortController.signal});
 		abortController.abort();
 		const {isTerminated, signal, isCanceled} = await t.throwsAsync(subprocess);
-		t.false(isTerminated);
-		t.is(signal, undefined);
+		t.true(isTerminated);
+		t.is(signal, 'SIGKILL');
 		t.true(isCanceled);
 	});
 
@@ -88,31 +89,31 @@ if (process.platform !== 'win32') {
 		const {subprocess} = await spawnNoKillable(1, {timeout: 2e3});
 		const {isTerminated, signal, timedOut} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
-		t.is(signal, 'SIGTERM');
+		t.is(signal, 'SIGKILL');
 		t.true(timedOut);
 	});
 
 	test('`forceKillAfterDelay` works with the "maxBuffer" option', async t => {
 		const {subprocess} = await spawnNoKillable(1, {maxBuffer: 1});
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
-		t.false(isTerminated);
-		t.is(signal, undefined);
+		t.true(isTerminated);
+		t.is(signal, 'SIGKILL');
 	});
 
 	test('`forceKillAfterDelay` works with "error" events on childProcess', async t => {
 		const {subprocess} = await spawnNoKillable(1);
 		subprocess.emit('error', new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
-		t.false(isTerminated);
-		t.is(signal, undefined);
+		t.true(isTerminated);
+		t.is(signal, 'SIGKILL');
 	});
 
 	test('`forceKillAfterDelay` works with "error" events on childProcess.stdout', async t => {
 		const {subprocess} = await spawnNoKillable(1);
 		subprocess.stdout.destroy(new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
-		t.false(isTerminated);
-		t.is(signal, undefined);
+		t.true(isTerminated);
+		t.is(signal, 'SIGKILL');
 	});
 }
 
@@ -263,13 +264,14 @@ test('result.isCanceled is false when abort isn\'t called in sync mode (failure)
 	t.false(isCanceled);
 });
 
-test('calling abort is not considered a signal termination', async t => {
+test('calling abort is considered a signal termination', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', {signal: abortController.signal});
+	const subprocess = execa('forever.js', {signal: abortController.signal});
+	await once(subprocess, 'spawn');
 	abortController.abort();
 	const {isTerminated, signal} = await t.throwsAsync(subprocess);
-	t.false(isTerminated);
-	t.is(signal, undefined);
+	t.true(isTerminated);
+	t.is(signal, 'SIGTERM');
 });
 
 test('error.isCanceled is true when abort is used', async t => {

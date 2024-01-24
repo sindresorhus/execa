@@ -161,7 +161,8 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, command, esc
 	const context = {timedOut: false};
 
 	const [
-		[exitCode, signal, error],
+		error,
+		[, exitCode, signal],
 		stdioResults,
 		allResult,
 	] = await getSpawnedResult({spawned, options, context, stdioStreamsGroups, controller});

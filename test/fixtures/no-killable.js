@@ -9,6 +9,4 @@ process.on('SIGINT', noop);
 process.send('');
 console.log('.');
 
-setInterval(() => {
-	// Run forever
-}, 20_000);
+setTimeout(noop, 1e8);

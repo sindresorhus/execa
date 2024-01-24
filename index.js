@@ -103,6 +103,9 @@ const addDefaultOptions = ({
 	forceKillAfterDelay,
 });
 
+// Prevent passing the `timeout` option directly to `child_process.spawn()`
+const handleAsyncOptions = ({timeout, ...options}) => ({...options, timeoutDuration: timeout});
+
 const handleOutput = (options, value) => {
 	if (value === undefined || value === null) {
 		return;
@@ -120,7 +123,8 @@ const handleOutput = (options, value) => {
 };
 
 export function execa(rawFile, rawArgs, rawOptions) {
-	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
+	const {file, args, command, escapedCommand, options: normalizedOptions} = handleArguments(rawFile, rawArgs, rawOptions);
+	const options = handleAsyncOptions(normalizedOptions);
 
 	const stdioStreamsGroups = handleInputAsync(options);
 

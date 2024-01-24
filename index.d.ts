@@ -625,7 +625,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	/**
 	Same as `command` but escaped.
 
-	This is meant to be copy and pasted into a shell, for debugging purposes.
+	This is meant to be copied and pasted into a shell, for debugging purposes.
 	Since the escaping is fairly basic, this should not be executed directly as a process, including using `execa()` or `execaCommand()`.
 	*/
 	escapedCommand: string;

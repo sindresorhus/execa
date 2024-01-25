@@ -1,6 +1,6 @@
 import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
-import {setTimeout} from 'node:timers/promises';
+import {setImmediate} from 'node:timers/promises';
 import {promisify} from 'node:util';
 import test from 'ava';
 import getStream, {getStreamAsBuffer} from 'get-stream';
@@ -136,11 +136,11 @@ const delayedGenerator = async function * (lines) {
 	// eslint-disable-next-line no-unused-vars
 	for await (const line of lines) {
 		yield foobarArray[0];
-		await setTimeout(0);
+		await setImmediate();
 		yield foobarArray[1];
-		await setTimeout(0);
+		await setImmediate();
 		yield foobarArray[2];
-		await setTimeout(0);
+		await setImmediate();
 		yield foobarArray[3];
 	}
 };

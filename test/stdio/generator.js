@@ -1,7 +1,7 @@
 import {Buffer} from 'node:buffer';
 import {readFile, writeFile, rm} from 'node:fs/promises';
 import {getDefaultHighWaterMark, PassThrough} from 'node:stream';
-import {setTimeout} from 'node:timers/promises';
+import {setTimeout, setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import getStream, {getStreamAsArray} from 'get-stream';
 import tempfile from 'tempfile';
@@ -450,7 +450,7 @@ const brokenSymbol = '\uFFFD';
 const testMultibyte = async (t, objectMode) => {
 	const childProcess = execa('stdin.js', {stdin: noopGenerator(objectMode)});
 	childProcess.stdin.write(multibyteUint8Array.slice(0, breakingLength));
-	await setTimeout(0);
+	await setImmediate();
 	childProcess.stdin.end(multibyteUint8Array.slice(breakingLength));
 	const {stdout} = await childProcess;
 	t.is(stdout, multibyteString);
@@ -487,9 +487,9 @@ const suffix = ' <';
 const multipleYieldGenerator = async function * (lines) {
 	for await (const line of lines) {
 		yield prefix;
-		await setTimeout(0);
+		await setImmediate();
 		yield line;
-		await setTimeout(0);
+		await setImmediate();
 		yield suffix;
 	}
 };
@@ -648,6 +648,6 @@ test.serial('Process streams failures make generators throw', async t => {
 	childProcess.stdout.emit('error', error);
 	const thrownError = await t.throwsAsync(childProcess);
 	t.is(error, thrownError);
-	await setTimeout(0);
+	await setImmediate();
 	t.is(state.error.code, 'ABORT_ERR');
 });

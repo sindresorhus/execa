@@ -2,7 +2,7 @@ import {once} from 'node:events';
 import {createReadStream, createWriteStream} from 'node:fs';
 import {readFile, writeFile, rm} from 'node:fs/promises';
 import {Readable, Writable, PassThrough} from 'node:stream';
-import {setTimeout} from 'node:timers/promises';
+import {setImmediate} from 'node:timers/promises';
 import {callbackify} from 'node:util';
 import test from 'ava';
 import tempfile from 'tempfile';
@@ -121,7 +121,7 @@ test('Wait for custom streams destroy on process errors', async t => {
 	let waitedForDestroy = false;
 	const stream = new Writable({
 		destroy: callbackify(async error => {
-			await setTimeout(0);
+			await setImmediate();
 			waitedForDestroy = true;
 			return error;
 		}),

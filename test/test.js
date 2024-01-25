@@ -153,24 +153,37 @@ test('execa() returns a promise with pid', async t => {
 	await subprocess;
 });
 
-test('child_process.spawn() propagated errors have correct shape', t => {
-	const subprocess = execa('noop.js', {uid: -1});
+const testEarlyErrorShape = async (t, reject) => {
+	const subprocess = execa('', {reject});
 	t.notThrows(() => {
 		subprocess.catch(() => {});
 		subprocess.unref();
 		subprocess.on('error', () => {});
 	});
-});
+};
 
-test('child_process.spawn() errors are propagated', async t => {
-	const {failed} = await t.throwsAsync(execa('noop.js', {uid: -1}));
+test('child_process.spawn() early errors have correct shape', testEarlyErrorShape, true);
+test('child_process.spawn() early errors have correct shape - reject false', testEarlyErrorShape, false);
+
+test('child_process.spawn() early errors are propagated', async t => {
+	const {failed} = await t.throwsAsync(execa(''));
 	t.true(failed);
 });
 
-test('child_process.spawnSync() errors are propagated with a correct shape', t => {
+test('child_process.spawn() early errors are returned', async t => {
+	const {failed} = await execa('', {reject: false});
+	t.true(failed);
+});
+
+test('child_process.spawnSync() early errors are propagated with a correct shape', t => {
 	const {failed} = t.throws(() => {
-		execaSync('noop.js', {uid: -1});
+		execaSync('');
 	});
+	t.true(failed);
+});
+
+test('child_process.spawnSync() early errors are propagated with a correct shape - reject false', t => {
+	const {failed} = execaSync('', {reject: false});
 	t.true(failed);
 });
 

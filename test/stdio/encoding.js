@@ -1,12 +1,13 @@
 import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
-import {setImmediate} from 'node:timers/promises';
 import {promisify} from 'node:util';
 import test from 'ava';
 import getStream, {getStreamAsBuffer} from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
+import {outputObjectGenerator, getChunksGenerator} from '../helpers/generator.js';
+import {foobarObject} from '../helpers/input.js';
 
 const pExec = promisify(exec);
 
@@ -132,23 +133,17 @@ test('validate unknown encodings', async t => {
 
 const foobarArray = ['fo', 'ob', 'ar', '..'];
 
-const delayedGenerator = async function * (lines) {
-	// eslint-disable-next-line no-unused-vars
-	for await (const line of lines) {
-		yield foobarArray[0];
-		await setImmediate();
-		yield foobarArray[1];
-		await setImmediate();
-		yield foobarArray[2];
-		await setImmediate();
-		yield foobarArray[3];
-	}
-};
+test('Handle multibyte characters', async t => {
+	const {stdout} = await execa('noop.js', {stdout: getChunksGenerator(foobarArray, false), encoding: 'base64'});
+	t.is(stdout, btoa(foobarArray.join('')));
+});
 
-const testMultiByteCharacter = async (t, objectMode) => {
-	const {stdout} = await execa('noop.js', {stdout: {transform: delayedGenerator, objectMode}, encoding: 'base64'});
-	t.is(objectMode ? stdout.join('') : stdout, btoa(foobarArray.join('')));
-};
+test('Handle multibyte characters, with objectMode', async t => {
+	const {stdout} = await execa('noop.js', {stdout: getChunksGenerator(foobarArray, true), encoding: 'base64'});
+	t.deepEqual(stdout, foobarArray.map(chunk => btoa(chunk)));
+});
 
-test('Handle multibyte characters', testMultiByteCharacter, false);
-test('Handle multibyte characters, with objectMode', testMultiByteCharacter, true);
+test('Other encodings work with transforms that return objects', async t => {
+	const {stdout} = await execa('noop.js', {stdout: outputObjectGenerator, encoding: 'base64'});
+	t.deepEqual(stdout, [foobarObject]);
+});

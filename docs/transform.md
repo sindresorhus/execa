@@ -58,7 +58,7 @@ This is more efficient and recommended if the data is either:
 
 ## Object mode
 
-By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`. However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead. The process' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.
+By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`. However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null`. The process' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.
 
 ```js
 const transform = async function * (lines) {

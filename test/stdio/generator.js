@@ -635,6 +635,19 @@ test('Generators errors make process fail', async t => {
 	);
 });
 
+test('Generators errors make process fail even when other output generators do not throw', async t => {
+	await t.throwsAsync(
+		execa('noop-fd.js', ['1', foobarString], {stdout: [noopGenerator(false), throwingGenerator, noopGenerator(false)]}),
+		{message: /Generator error foobar/},
+	);
+});
+
+test('Generators errors make process fail even when other input generators do not throw', async t => {
+	const childProcess = execa('stdin-fd.js', ['0'], {stdin: [noopGenerator(false), throwingGenerator, noopGenerator(false)]});
+	childProcess.stdin.write('foobar\n');
+	await t.throwsAsync(childProcess, {message: /Generator error foobar/});
+});
+
 // eslint-disable-next-line require-yield
 const errorHandlerGenerator = async function * (state, lines) {
 	try {
@@ -647,7 +660,7 @@ const errorHandlerGenerator = async function * (state, lines) {
 	}
 };
 
-test.serial('Process streams failures make generators throw', async t => {
+test('Process streams failures make generators throw', async t => {
 	const state = {};
 	const childProcess = execa('noop-fail.js', ['1'], {stdout: errorHandlerGenerator.bind(undefined, state)});
 	const error = new Error('test');

@@ -82,6 +82,7 @@ const addDefaultOptions = ({
 	verbose = verboseDefault,
 	killSignal = 'SIGTERM',
 	forceKillAfterDelay = true,
+	lines = false,
 	...options
 }) => ({
 	...options,
@@ -101,6 +102,7 @@ const addDefaultOptions = ({
 	verbose,
 	killSignal,
 	forceKillAfterDelay,
+	lines,
 });
 
 // Prevent passing the `timeout` option directly to `child_process.spawn()`

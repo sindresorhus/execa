@@ -208,13 +208,16 @@ type StdioOutputResult<
 	OptionsType extends CommonOptions = CommonOptions,
 > = StreamOutputIgnored extends true
 	? undefined
-	: StreamEncoding<IsObjectStream<StreamIndex, OptionsType>, OptionsType['encoding']>;
+	: StreamEncoding<IsObjectStream<StreamIndex, OptionsType>, OptionsType['lines'], OptionsType['encoding']>;
 
 type StreamEncoding<
 	IsObjectResult extends boolean,
+	LinesOption extends CommonOptions['lines'],
 	Encoding extends CommonOptions['encoding'],
 > = IsObjectResult extends true ? unknown[]
-	: Encoding extends 'buffer' ? Uint8Array : string;
+	: LinesOption extends true
+		? Encoding extends 'buffer' ? Uint8Array[] : string[]
+		: Encoding extends 'buffer' ? Uint8Array : string;
 
 // Type of `result.all`
 type AllOutput<OptionsType extends Options = Options> = AllOutputProperty<OptionsType['all'], OptionsType>;
@@ -374,6 +377,16 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	@default 'pipe'
 	*/
 	readonly stdio?: StdioOptions<IsSync>;
+
+	/**
+	Split `stdout` and `stderr` into lines.
+	- `result.stdout`, `result.stderr`, `result.all` and `result.stdio` are arrays of lines.
+	- `childProcess.stdout`, `childProcess.stderr`, `childProcess.all` and `childProcess.stdio` iterate over lines instead of arbitrary chunks.
+	- Any stream passed to the `stdout`, `stderr` or `stdio` option receives lines instead of arbitrary chunks.
+
+	@default false
+	*/
+	readonly lines?: IfAsync<IsSync, boolean>;
 
 	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.
@@ -640,14 +653,14 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	/**
 	The output of the process on `stdout`.
 
-	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stdout` option is a transform in object mode.
+	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stdout` option is a transform in object mode.
 	*/
 	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the process on `stderr`.
 
-	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `stderr` option is a transform in object mode.
+	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stderr` option is a transform in object mode.
 	*/
 	stderr: StdioOutput<'2', OptionsType>;
 
@@ -708,7 +721,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	- the `all` option is `false` (default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-	This is an array if either the `stdout` or `stderr` option is a transform in object mode.
+	This is an array if the `lines` option is `true, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
 	all: IfAsync<IsSync, AllOutput<OptionsType>>;
 	// Workaround for a TypeScript bug: https://github.com/microsoft/TypeScript/issues/57062
@@ -939,7 +952,7 @@ export function execa<OptionsType extends Options = {}>(
 /**
 Same as `execa()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1038,7 +1051,7 @@ export function execaCommand<OptionsType extends Options = {}>(
 /**
 Same as `execaCommand()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `childProcessResult` object
@@ -1095,7 +1108,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error
@@ -1147,7 +1160,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization` and `signal`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error

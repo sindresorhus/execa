@@ -1,5 +1,6 @@
 import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
+import process from 'node:process';
 import {promisify} from 'node:util';
 import test from 'ava';
 import getStream, {getStreamAsBuffer} from 'get-stream';
@@ -147,3 +148,26 @@ test('Other encodings work with transforms that return objects', async t => {
 	const {stdout} = await execa('noop.js', {stdout: outputObjectGenerator, encoding: 'base64'});
 	t.deepEqual(stdout, [foobarObject]);
 });
+
+const testIgnoredEncoding = async (t, stdoutOption, isUndefined) => {
+	const {stdout} = await execa('empty.js', {stdout: stdoutOption, encoding: 'base64'});
+	t.is(stdout === undefined, isUndefined);
+};
+
+test('Is ignored with other encodings and "ignore"', testIgnoredEncoding, 'ignore', true);
+test('Is ignored with other encodings and ["ignore"]', testIgnoredEncoding, ['ignore'], true);
+test('Is ignored with other encodings and "ipc"', testIgnoredEncoding, 'ipc', true);
+test('Is ignored with other encodings and ["ipc"]', testIgnoredEncoding, ['ipc'], true);
+test('Is ignored with other encodings and "inherit"', testIgnoredEncoding, 'inherit', true);
+test('Is ignored with other encodings and ["inherit"]', testIgnoredEncoding, ['inherit'], true);
+test('Is ignored with other encodings and 1', testIgnoredEncoding, 1, true);
+test('Is ignored with other encodings and [1]', testIgnoredEncoding, [1], true);
+test('Is ignored with other encodings and process.stdout', testIgnoredEncoding, process.stdout, true);
+test('Is ignored with other encodings and [process.stdout]', testIgnoredEncoding, [process.stdout], true);
+test('Is not ignored with other encodings and "pipe"', testIgnoredEncoding, 'pipe', false);
+test('Is not ignored with other encodings and ["pipe"]', testIgnoredEncoding, ['pipe'], false);
+test('Is not ignored with other encodings and "overlapped"', testIgnoredEncoding, 'overlapped', false);
+test('Is not ignored with other encodings and ["overlapped"]', testIgnoredEncoding, ['overlapped'], false);
+test('Is not ignored with other encodings and ["inherit", "pipe"]', testIgnoredEncoding, ['inherit', 'pipe'], false);
+test('Is not ignored with other encodings and undefined', testIgnoredEncoding, undefined, false);
+test('Is not ignored with other encodings and null', testIgnoredEncoding, null, false);

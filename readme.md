@@ -556,7 +556,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 
 #### stdin
 
-Type: `string | number | stream.Readable | ReadableStream | URL | Uint8Array | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array> | AsyncGeneratorFunction<string | Uint8Array>` (or a tuple of those types)\
+Type: `string | number | stream.Readable | ReadableStream | URL | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string> | AsyncIterable<Uint8Array> | AsyncIterable<unknown> | AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
@@ -579,7 +579,7 @@ This can also be an async generator function to transform the input. [Learn more
 
 #### stdout
 
-Type: `string | number | stream.Writable | WritableStream | URL | AsyncGeneratorFunction<string | Uint8Array>` (or a tuple of those types)\
+Type: `string | number | stream.Writable | WritableStream | URL | AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
@@ -600,7 +600,7 @@ This can also be an async generator function to transform the output. [Learn mor
 
 #### stderr
 
-Type: `string | number | stream.Writable | WritableStream | URL | AsyncGeneratorFunction<string | Uint8Array>` (or a tuple of those types)`\
+Type: `string | number | stream.Writable | WritableStream | URL | AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)`\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
@@ -621,7 +621,7 @@ This can also be an async generator function to transform the output. [Learn mor
 
 #### stdio
 
-Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | URL | Uint8Array | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array> | AsyncGeneratorFunction<string | Uint8Array>>` (or a tuple of those types)\
+Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | URL | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string> | AsyncIterable<Uint8Array> | AsyncIterable<unknown> | AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>>` (or a tuple of those types)\
 Default: `pipe`
 
 Like the [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options but for all file descriptors at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.

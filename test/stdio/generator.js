@@ -9,7 +9,15 @@ import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUint8Array, foobarBuffer, foobarObject, foobarObjectString} from '../helpers/input.js';
-import {serializeGenerator, noopGenerator, getOutputsGenerator, getOutputGenerator, outputObjectGenerator} from '../helpers/generator.js';
+import {
+	serializeGenerator,
+	noopGenerator,
+	getOutputsGenerator,
+	getOutputGenerator,
+	outputObjectGenerator,
+	noYieldGenerator,
+	convertTransformToFinal,
+} from '../helpers/generator.js';
 
 setFixtureDir();
 
@@ -19,16 +27,12 @@ const textDecoder = new TextDecoder();
 const foobarUppercase = foobarString.toUpperCase();
 const foobarHex = foobarBuffer.toString('hex');
 
-const uppercaseGenerator = async function * (lines) {
-	for await (const line of lines) {
-		yield line.toUpperCase();
-	}
+const uppercaseGenerator = function * (line) {
+	yield line.toUpperCase();
 };
 
-const uppercaseBufferGenerator = async function * (lines) {
-	for await (const line of lines) {
-		yield textDecoder.decode(line).toUpperCase();
-	}
+const uppercaseBufferGenerator = function * (line) {
+	yield textDecoder.decode(line).toUpperCase();
 };
 
 const getInputObjectMode = objectMode => objectMode
@@ -103,6 +107,19 @@ test('Generators with result.stdin cannot return null if not in objectMode', tes
 test('Generators with result.stdin cannot return null if in objectMode', testGeneratorReturn, 0, inputNullGenerator(true), 'stdin-fd.js', true);
 test('Generators with result.stdout cannot return null if not in objectMode', testGeneratorReturn, 1, outputNullGenerator(false), 'noop-fd.js', false);
 test('Generators with result.stdout cannot return null if in objectMode', testGeneratorReturn, 1, outputNullGenerator(true), 'noop-fd.js', true);
+
+const testGeneratorFinal = async (t, fixtureName) => {
+	const {stdout} = await execa(fixtureName, {stdout: convertTransformToFinal(getOutputGenerator(foobarString), true)});
+	t.is(stdout, foobarString);
+};
+
+test('Generators "final" can be used', testGeneratorFinal, 'noop.js');
+test('Generators "final" is used even on empty streams', testGeneratorFinal, 'empty.js');
+
+test('Generators "final" return value is validated', async t => {
+	const childProcess = execa('noop.js', {stdout: convertTransformToFinal(outputNullGenerator(true), true)});
+	await t.throwsAsync(childProcess, {message: /not return null/});
+});
 
 // eslint-disable-next-line max-params
 const testGeneratorOutput = async (t, index, reject, useShortcutProperty, objectMode) => {
@@ -234,26 +251,20 @@ test('Can use generators with input option', async t => {
 	t.is(stdout, foobarUppercase);
 });
 
-const syncGenerator = function * () {};
-
 const testInvalidGenerator = (t, index, stdioOption) => {
 	t.throws(() => {
-		execa('empty.js', getStdio(index, stdioOption));
-	}, {message: /asynchronous generator/});
+		execa('empty.js', getStdio(index, {...noopGenerator(), ...stdioOption}));
+	}, {message: /must be a generator/});
 };
 
-test('Cannot use sync generators with stdin', testInvalidGenerator, 0, syncGenerator);
-test('Cannot use sync generators with stdout', testInvalidGenerator, 1, syncGenerator);
-test('Cannot use sync generators with stderr', testInvalidGenerator, 2, syncGenerator);
-test('Cannot use sync generators with stdio[*]', testInvalidGenerator, 3, syncGenerator);
-test('Cannot use sync generators with stdin, with options', testInvalidGenerator, 0, {transform: syncGenerator});
-test('Cannot use sync generators with stdout, with options', testInvalidGenerator, 1, {transform: syncGenerator});
-test('Cannot use sync generators with stderr, with options', testInvalidGenerator, 2, {transform: syncGenerator});
-test('Cannot use sync generators with stdio[*], with options', testInvalidGenerator, 3, {transform: syncGenerator});
 test('Cannot use invalid "transform" with stdin', testInvalidGenerator, 0, {transform: true});
 test('Cannot use invalid "transform" with stdout', testInvalidGenerator, 1, {transform: true});
 test('Cannot use invalid "transform" with stderr', testInvalidGenerator, 2, {transform: true});
 test('Cannot use invalid "transform" with stdio[*]', testInvalidGenerator, 3, {transform: true});
+test('Cannot use invalid "final" with stdin', testInvalidGenerator, 0, {final: true});
+test('Cannot use invalid "final" with stdout', testInvalidGenerator, 1, {final: true});
+test('Cannot use invalid "final" with stderr', testInvalidGenerator, 2, {final: true});
+test('Cannot use invalid "final" with stdio[*]', testInvalidGenerator, 3, {final: true});
 
 const testInvalidBinary = (t, index, optionName) => {
 	t.throws(() => {
@@ -283,23 +294,14 @@ test('Cannot use generators with sync methods and stdio[*]', testSyncMethods, 3)
 
 const repeatHighWaterMark = 10;
 
-const writerGenerator = async function * (lines) {
-	// eslint-disable-next-line no-unused-vars
-	for await (const line of lines) {
-		for (let index = 0; index < getDefaultHighWaterMark() * repeatHighWaterMark; index += 1) {
-			yield '\n';
-		}
+const writerGenerator = function * () {
+	for (let index = 0; index < getDefaultHighWaterMark() * repeatHighWaterMark; index += 1) {
+		yield '\n';
 	}
 };
 
-const passThroughGenerator = async function * (chunks) {
-	yield * chunks;
-};
-
-const getLengthGenerator = async function * (chunks) {
-	for await (const chunk of chunks) {
-		yield `${chunk.length}`;
-	}
+const getLengthGenerator = function * (chunk) {
+	yield `${chunk.length}`;
 };
 
 const testHighWaterMark = async (t, passThrough, binary, objectMode) => {
@@ -307,7 +309,7 @@ const testHighWaterMark = async (t, passThrough, binary, objectMode) => {
 		stdout: [
 			...(objectMode ? [outputObjectGenerator] : []),
 			writerGenerator,
-			...(passThrough ? [{transform: passThroughGenerator, binary}] : []),
+			...(passThrough ? [noopGenerator(false, binary)] : []),
 			{transform: getLengthGenerator, binary: true},
 		],
 	});
@@ -320,10 +322,8 @@ test('Stream respects highWaterMark, binary passThrough', testHighWaterMark, tru
 test('Stream respects highWaterMark, objectMode as input but not output', testHighWaterMark, false, false, true);
 
 const getTypeofGenerator = objectMode => ({
-	async * transform(lines) {
-		for await (const line of lines) {
-			yield Object.prototype.toString.call(line);
-		}
+	* transform(line) {
+		yield Object.prototype.toString.call(line);
 	},
 	objectMode,
 });
@@ -410,10 +410,10 @@ test('The first generator with result.stderr does not receive an object argument
 test('The first generator with result.stdio[*] does not receive an object argument even in objectMode', testFirstOutputGeneratorArgument, 3);
 
 // eslint-disable-next-line max-params
-const testGeneratorReturnType = async (t, input, encoding, reject, objectMode) => {
+const testGeneratorReturnType = async (t, input, encoding, reject, objectMode, final) => {
 	const fixtureName = reject ? 'noop-fd.js' : 'noop-fail.js';
 	const {stdout} = await execa(fixtureName, ['1', 'other'], {
-		stdout: getOutputGenerator(input, objectMode),
+		stdout: convertTransformToFinal(getOutputGenerator(input, objectMode), final),
 		encoding,
 		reject,
 	});
@@ -422,30 +422,54 @@ const testGeneratorReturnType = async (t, input, encoding, reject, objectMode) =
 	t.is(output, foobarString);
 };
 
-test('Generator can return string with default encoding', testGeneratorReturnType, foobarString, 'utf8', true, false);
-test('Generator can return Uint8Array with default encoding', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false);
-test('Generator can return string with encoding "buffer"', testGeneratorReturnType, foobarString, 'buffer', true, false);
-test('Generator can return Uint8Array with encoding "buffer"', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false);
-test('Generator can return string with encoding "hex"', testGeneratorReturnType, foobarString, 'hex', true, false);
-test('Generator can return Uint8Array with encoding "hex"', testGeneratorReturnType, foobarUint8Array, 'hex', true, false);
-test('Generator can return string with default encoding, failure', testGeneratorReturnType, foobarString, 'utf8', false, false);
-test('Generator can return Uint8Array with default encoding, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false);
-test('Generator can return string with encoding "buffer", failure', testGeneratorReturnType, foobarString, 'buffer', false, false);
-test('Generator can return Uint8Array with encoding "buffer", failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, false);
-test('Generator can return string with encoding "hex", failure', testGeneratorReturnType, foobarString, 'hex', false, false);
-test('Generator can return Uint8Array with encoding "hex", failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, false);
-test('Generator can return string with default encoding, objectMode', testGeneratorReturnType, foobarString, 'utf8', true, true);
-test('Generator can return Uint8Array with default encoding, objectMode', testGeneratorReturnType, foobarUint8Array, 'utf8', true, true);
-test('Generator can return string with encoding "buffer", objectMode', testGeneratorReturnType, foobarString, 'buffer', true, true);
-test('Generator can return Uint8Array with encoding "buffer", objectMode', testGeneratorReturnType, foobarUint8Array, 'buffer', true, true);
-test('Generator can return string with encoding "hex", objectMode', testGeneratorReturnType, foobarString, 'hex', true, true);
-test('Generator can return Uint8Array with encoding "hex", objectMode', testGeneratorReturnType, foobarUint8Array, 'hex', true, true);
-test('Generator can return string with default encoding, objectMode, failure', testGeneratorReturnType, foobarString, 'utf8', false, true);
-test('Generator can return Uint8Array with default encoding, objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, true);
-test('Generator can return string with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarString, 'buffer', false, true);
-test('Generator can return Uint8Array with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true);
-test('Generator can return string with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarString, 'hex', false, true);
-test('Generator can return Uint8Array with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, true);
+test('Generator can return string with default encoding', testGeneratorReturnType, foobarString, 'utf8', true, false, false);
+test('Generator can return Uint8Array with default encoding', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, false);
+test('Generator can return string with encoding "buffer"', testGeneratorReturnType, foobarString, 'buffer', true, false, false);
+test('Generator can return Uint8Array with encoding "buffer"', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, false);
+test('Generator can return string with encoding "hex"', testGeneratorReturnType, foobarString, 'hex', true, false, false);
+test('Generator can return Uint8Array with encoding "hex"', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, false);
+test('Generator can return string with default encoding, failure', testGeneratorReturnType, foobarString, 'utf8', false, false, false);
+test('Generator can return Uint8Array with default encoding, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, false);
+test('Generator can return string with encoding "buffer", failure', testGeneratorReturnType, foobarString, 'buffer', false, false, false);
+test('Generator can return Uint8Array with encoding "buffer", failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, false, false);
+test('Generator can return string with encoding "hex", failure', testGeneratorReturnType, foobarString, 'hex', false, false, false);
+test('Generator can return Uint8Array with encoding "hex", failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, false, false);
+test('Generator can return string with default encoding, objectMode', testGeneratorReturnType, foobarString, 'utf8', true, true, false);
+test('Generator can return Uint8Array with default encoding, objectMode', testGeneratorReturnType, foobarUint8Array, 'utf8', true, true, false);
+test('Generator can return string with encoding "buffer", objectMode', testGeneratorReturnType, foobarString, 'buffer', true, true, false);
+test('Generator can return Uint8Array with encoding "buffer", objectMode', testGeneratorReturnType, foobarUint8Array, 'buffer', true, true, false);
+test('Generator can return string with encoding "hex", objectMode', testGeneratorReturnType, foobarString, 'hex', true, true, false);
+test('Generator can return Uint8Array with encoding "hex", objectMode', testGeneratorReturnType, foobarUint8Array, 'hex', true, true, false);
+test('Generator can return string with default encoding, objectMode, failure', testGeneratorReturnType, foobarString, 'utf8', false, true, false);
+test('Generator can return Uint8Array with default encoding, objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, true, false);
+test('Generator can return string with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarString, 'buffer', false, true, false);
+test('Generator can return Uint8Array with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true, false);
+test('Generator can return string with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarString, 'hex', false, true, false);
+test('Generator can return Uint8Array with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, true, false);
+test('Generator can return final string with default encoding', testGeneratorReturnType, foobarString, 'utf8', true, false, true);
+test('Generator can return final Uint8Array with default encoding', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, true);
+test('Generator can return final string with encoding "buffer"', testGeneratorReturnType, foobarString, 'buffer', true, false, true);
+test('Generator can return final Uint8Array with encoding "buffer"', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, true);
+test('Generator can return final string with encoding "hex"', testGeneratorReturnType, foobarString, 'hex', true, false, true);
+test('Generator can return final Uint8Array with encoding "hex"', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, true);
+test('Generator can return final string with default encoding, failure', testGeneratorReturnType, foobarString, 'utf8', false, false, true);
+test('Generator can return final Uint8Array with default encoding, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, true);
+test('Generator can return final string with encoding "buffer", failure', testGeneratorReturnType, foobarString, 'buffer', false, false, true);
+test('Generator can return final Uint8Array with encoding "buffer", failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, false, true);
+test('Generator can return final string with encoding "hex", failure', testGeneratorReturnType, foobarString, 'hex', false, false, true);
+test('Generator can return final Uint8Array with encoding "hex", failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, false, true);
+test('Generator can return final string with default encoding, objectMode', testGeneratorReturnType, foobarString, 'utf8', true, true, true);
+test('Generator can return final Uint8Array with default encoding, objectMode', testGeneratorReturnType, foobarUint8Array, 'utf8', true, true, true);
+test('Generator can return final string with encoding "buffer", objectMode', testGeneratorReturnType, foobarString, 'buffer', true, true, true);
+test('Generator can return final Uint8Array with encoding "buffer", objectMode', testGeneratorReturnType, foobarUint8Array, 'buffer', true, true, true);
+test('Generator can return final string with encoding "hex", objectMode', testGeneratorReturnType, foobarString, 'hex', true, true, true);
+test('Generator can return final Uint8Array with encoding "hex", objectMode', testGeneratorReturnType, foobarUint8Array, 'hex', true, true, true);
+test('Generator can return final string with default encoding, objectMode, failure', testGeneratorReturnType, foobarString, 'utf8', false, true, true);
+test('Generator can return final Uint8Array with default encoding, objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, true, true);
+test('Generator can return final string with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarString, 'buffer', false, true, true);
+test('Generator can return final Uint8Array with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true, true);
+test('Generator can return final string with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarString, 'hex', false, true, true);
+test('Generator can return final Uint8Array with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, true, true);
 
 const multibyteChar = '\u{1F984}';
 const multibyteString = `${multibyteChar}${multibyteChar}`;
@@ -473,37 +497,34 @@ const testMultibytePartial = async (t, objectMode) => {
 test('Generator handles partial multibyte characters with Uint8Array', testMultibytePartial, false);
 test('Generator handles partial multibyte characters with Uint8Array, objectMode', testMultibytePartial, true);
 
-// eslint-disable-next-line require-yield
-const noYieldGenerator = async function * (lines) {
-	// eslint-disable-next-line no-empty, no-unused-vars
-	for await (const line of lines) {}
-};
-
-const testNoYield = async (t, objectMode, output) => {
-	const {stdout} = await execa('noop.js', {stdout: {transform: noYieldGenerator, objectMode}});
+const testNoYield = async (t, objectMode, final, output) => {
+	const {stdout} = await execa('noop.js', {stdout: convertTransformToFinal(noYieldGenerator(objectMode), final)});
 	t.deepEqual(stdout, output);
 };
 
-test('Generator can filter by not calling yield', testNoYield, false, '');
-test('Generator can filter by not calling yield, objectMode', testNoYield, true, []);
+test('Generator can filter "transform" by not calling yield', testNoYield, false, false, '');
+test('Generator can filter "transform" by not calling yield, objectMode', testNoYield, true, false, []);
+test('Generator can filter "final" by not calling yield', testNoYield, false, false, '');
+test('Generator can filter "final" by not calling yield, objectMode', testNoYield, true, false, []);
 
 const prefix = '> ';
 const suffix = ' <';
 
-const multipleYieldGenerator = async function * (lines) {
-	for await (const line of lines) {
-		yield prefix;
-		await setImmediate();
-		yield line;
-		await setImmediate();
-		yield suffix;
-	}
+const multipleYieldGenerator = async function * (line = foobarString) {
+	yield prefix;
+	await setImmediate();
+	yield line;
+	await setImmediate();
+	yield suffix;
 };
 
-test('Generator can yield multiple times at different moments', async t => {
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: multipleYieldGenerator});
+const testMultipleYields = async (t, final) => {
+	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(multipleYieldGenerator, final)});
 	t.is(stdout, `${prefix}${foobarString}${suffix}`);
-});
+};
+
+test('Generator can yield "transform" multiple times at different moments', testMultipleYields, false);
+test('Generator can yield "final" multiple times at different moments', testMultipleYields, true);
 
 const testInputFile = async (t, getOptions, reversed) => {
 	const filePath = tempfile();
@@ -557,10 +578,8 @@ test('Can use generators with "inherit"', async t => {
 
 const casedSuffix = 'k';
 
-const appendGenerator = async function * (lines) {
-	for await (const line of lines) {
-		yield `${line}${casedSuffix}`;
-	}
+const appendGenerator = function * (line) {
+	yield `${line}${casedSuffix}`;
 };
 
 const testAppendInput = async (t, reversed) => {
@@ -601,72 +620,55 @@ test('Generators take "maxBuffer" into account', async t => {
 });
 
 test('Generators take "maxBuffer" into account, objectMode', async t => {
-	const bigArray = Array.from({length: maxBuffer});
+	const bigArray = Array.from({length: maxBuffer}).fill('.');
 	const {stdout} = await execa('noop.js', {maxBuffer, stdout: getOutputsGenerator(bigArray, true)});
 	t.is(stdout.length, maxBuffer);
 
 	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: getOutputsGenerator([...bigArray, ''], true)}));
 });
 
-const timeoutGenerator = async function * (timeout, lines) {
-	for await (const line of lines) {
-		await setTimeout(timeout);
-		yield line;
-	}
+const timeoutGenerator = async function * (timeout) {
+	await setTimeout(timeout);
+	yield foobarString;
 };
 
-test('Generators are awaited on success', async t => {
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {maxBuffer, stdout: timeoutGenerator.bind(undefined, 1e3)});
+const testAsyncGenerators = async (t, final) => {
+	const {stdout} = await execa('noop.js', {
+		maxBuffer,
+		stdout: convertTransformToFinal(timeoutGenerator.bind(undefined, 1e2), final),
+	});
 	t.is(stdout, foobarString);
-});
+};
+
+test('Generators "transform" is awaited on success', testAsyncGenerators, false);
+test('Generators "final" is awaited on success', testAsyncGenerators, true);
 
 // eslint-disable-next-line require-yield
-const throwingGenerator = async function * (lines) {
-	// eslint-disable-next-line no-unreachable-loop
-	for await (const line of lines) {
-		throw new Error(`Generator error ${line}`);
-	}
+const throwingGenerator = function * () {
+	throw new Error('Generator error');
 };
 
-test('Generators errors make process fail', async t => {
+const GENERATOR_ERROR_REGEXP = /Generator error/;
+
+const testThrowingGenerator = async (t, final) => {
 	await t.throwsAsync(
-		execa('noop-fd.js', ['1', foobarString], {stdout: throwingGenerator}),
-		{message: /Generator error foobar/},
+		execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(throwingGenerator, final)}),
+		{message: GENERATOR_ERROR_REGEXP},
 	);
-});
+};
+
+test('Generators "transform" errors make process fail', testThrowingGenerator, false);
+test('Generators "final" errors make process fail', testThrowingGenerator, true);
 
 test('Generators errors make process fail even when other output generators do not throw', async t => {
 	await t.throwsAsync(
 		execa('noop-fd.js', ['1', foobarString], {stdout: [noopGenerator(false), throwingGenerator, noopGenerator(false)]}),
-		{message: /Generator error foobar/},
+		{message: GENERATOR_ERROR_REGEXP},
 	);
 });
 
 test('Generators errors make process fail even when other input generators do not throw', async t => {
 	const childProcess = execa('stdin-fd.js', ['0'], {stdin: [noopGenerator(false), throwingGenerator, noopGenerator(false)]});
 	childProcess.stdin.write('foobar\n');
-	await t.throwsAsync(childProcess, {message: /Generator error foobar/});
-});
-
-// eslint-disable-next-line require-yield
-const errorHandlerGenerator = async function * (state, lines) {
-	try {
-		// eslint-disable-next-line no-unused-vars
-		for await (const line of lines) {
-			await setTimeout(1e8);
-		}
-	} catch (error) {
-		state.error = error;
-	}
-};
-
-test('Process streams failures make generators throw', async t => {
-	const state = {};
-	const childProcess = execa('noop-fail.js', ['1'], {stdout: errorHandlerGenerator.bind(undefined, state)});
-	const error = new Error('test');
-	childProcess.stdout.emit('error', error);
-	const thrownError = await t.throwsAsync(childProcess);
-	t.is(error, thrownError);
-	await setImmediate();
-	t.is(state.error.code, 'ABORT_ERR');
+	await t.throwsAsync(childProcess, {message: GENERATOR_ERROR_REGEXP});
 });

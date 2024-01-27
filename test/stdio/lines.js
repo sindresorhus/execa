@@ -29,22 +29,17 @@ const runOverChunks = ['aaa\nb', 'b', 'b\nccc'];
 const bigLine = '.'.repeat(1e5);
 const manyChunks = Array.from({length: 1e3}).fill('.');
 
-const inputGenerator = async function * (input, chunks) {
-	// eslint-disable-next-line no-unused-vars
-	for await (const chunk of chunks) {
-		for (const inputItem of input) {
-			yield inputItem;
-			// eslint-disable-next-line no-await-in-loop
-			await scheduler.yield();
-		}
+const inputGenerator = async function * (input) {
+	for (const inputItem of input) {
+		yield inputItem;
+		// eslint-disable-next-line no-await-in-loop
+		await scheduler.yield();
 	}
 };
 
-const resultGenerator = async function * (lines, chunks) {
-	for await (const chunk of chunks) {
-		lines.push(chunk);
-		yield chunk;
-	}
+const resultGenerator = function * (lines, chunk) {
+	lines.push(chunk);
+	yield chunk;
 };
 
 const textEncoder = new TextEncoder();

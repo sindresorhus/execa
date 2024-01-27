@@ -2,16 +2,14 @@
 
 ## Summary
 
-Transforms map or filter the input or output of a child process. They are defined by passing an [async generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*) to the [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) or [`stdio`](../readme.md#stdio-1) option.
+Transforms map or filter the input or output of a child process. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) to the [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) or [`stdio`](../readme.md#stdio-1) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
 
 ```js
 import {execa} from 'execa';
 
-const transform = async function * (lines) {
-	for await (const line of lines) {
-		const prefix = line.includes('error') ? 'ERROR' : 'INFO'
-		yield `${prefix}: ${line}`
-	}
+const transform = function * (line) {
+	const prefix = line.includes('error') ? 'ERROR' : 'INFO';
+	yield `${prefix}: ${line}`;
 };
 
 const {stdout} = await execa('echo', ['hello'], {stdout: transform});
@@ -20,7 +18,7 @@ console.log(stdout); // HELLO
 
 ## Encoding
 
-The `lines` argument passed to the transform is an [`AsyncIterable<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols). If the [`encoding`](../readme.md#encoding) option is `buffer`, it is an `AsyncIterable<Uint8Array>` instead.
+The `line` argument passed to the transform is a string. If the [`encoding`](../readme.md#encoding) option is `buffer`, it is an `Uint8Array` instead.
 
 The transform can `yield` either a `string` or an `Uint8Array`, regardless of the `lines` argument's type.
 
@@ -31,11 +29,9 @@ The transform can `yield` either a `string` or an `Uint8Array`, regardless of th
 ```js
 import {execa} from 'execa';
 
-const transform = async function * (lines) {
-	for await (const line of lines) {
-		if (!line.includes('secret')) {
-			yield line;
-		}
+const transform = function * (line) {
+	if (!line.includes('secret')) {
+		yield line;
 	}
 };
 
@@ -63,29 +59,58 @@ Please note the [`lines`](../readme.md#lines) option is unrelated: it has no imp
 By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`. However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null`. The process' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.
 
 ```js
-const transform = async function * (lines) {
-	for await (const line of lines) {
-		yield JSON.parse(line)
-	}
-}
+const transform = function * (line) {
+	yield JSON.parse(line);
+};
 
 const {stdout} = await execa('./jsonlines-output.js', {stdout: {transform, objectMode: true}});
 for (const data of stdout) {
-	console.log(stdout) // {...}
+	console.log(stdout); // {...}
 }
 ```
 
 `stdin` can also use `objectMode: true`.
 
 ```js
-const transform = async function * (lines) {
-	for await (const line of lines) {
-		yield JSON.stringify(line)
-	}
-}
+const transform = function * (line) {
+	yield JSON.stringify(line);
+};
 
-const input = [{event: 'example'}, {event: 'otherExample'}]
+const input = [{event: 'example'}, {event: 'otherExample'}];
 await execa('./jsonlines-input.js', {stdin: [input, {transform, objectMode: true}]});
+```
+
+## Sharing state
+
+State can be shared between calls of the `transform` and [`final`](#finalizing) functions.
+
+```js
+let count = 0
+
+// Prefix line number
+const transform = function * (line) {
+	yield `[${count++}] ${line}`;
+};
+```
+
+## Finalizing
+
+To create additional lines after the last one, a `final` generator function can be used by passing a `{transform, final}` plain object.
+
+```js
+let count = 0
+
+const transform = function * (line) {
+	count += 1;
+	yield line;
+};
+
+const final = function * () {
+	yield `Number of lines: ${count}`;
+};
+
+const {stdout} = await execa('./command.js', {stdout: {transform, final}});
+console.log(stdout); // Ends with: 'Number of lines: 54'
 ```
 
 ## Combining

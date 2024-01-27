@@ -1,38 +1,31 @@
 import {setImmediate} from 'node:timers/promises';
 import {foobarObject} from './input.js';
 
-export const noopGenerator = objectMode => ({
-	async * transform(lines) {
-		yield * lines;
+export const noopGenerator = (objectMode, binary) => ({
+	* transform(line) {
+		yield line;
 	},
 	objectMode,
+	binary,
 });
 
 export const serializeGenerator = {
-	async * transform(objects) {
-		for await (const object of objects) {
-			yield JSON.stringify(object);
-		}
+	* transform(object) {
+		yield JSON.stringify(object);
 	},
 	objectMode: true,
 };
 
 export const getOutputsGenerator = (inputs, objectMode) => ({
-	async * transform(lines) {
-	// eslint-disable-next-line no-unused-vars
-		for await (const line of lines) {
-			yield * inputs;
-		}
+	* transform() {
+		yield * inputs;
 	},
 	objectMode,
 });
 
 export const getOutputGenerator = (input, objectMode) => ({
-	async * transform(lines) {
-	// eslint-disable-next-line no-unused-vars
-		for await (const line of lines) {
-			yield input;
-		}
+	* transform() {
+		yield input;
 	},
 	objectMode,
 });
@@ -40,16 +33,29 @@ export const getOutputGenerator = (input, objectMode) => ({
 export const outputObjectGenerator = getOutputGenerator(foobarObject, true);
 
 export const getChunksGenerator = (chunks, objectMode, binary) => ({
-	async * transform(lines) {
-	// eslint-disable-next-line no-unused-vars
-		for await (const line of lines) {
-			for (const chunk of chunks) {
-				yield chunk;
-				// eslint-disable-next-line no-await-in-loop
-				await setImmediate();
-			}
+	async * transform() {
+		for (const chunk of chunks) {
+			yield chunk;
+			// eslint-disable-next-line no-await-in-loop
+			await setImmediate();
 		}
 	},
 	objectMode,
 	binary,
 });
+
+const noYieldTransform = function * () {};
+
+export const noYieldGenerator = objectMode => ({
+	transform: noYieldTransform,
+	objectMode,
+});
+
+export const convertTransformToFinal = (transform, final) => {
+	if (!final) {
+		return transform;
+	}
+
+	const generatorOptions = typeof transform === 'function' ? {transform} : transform;
+	return ({...generatorOptions, transform: noYieldTransform, final: generatorOptions.transform});
+};

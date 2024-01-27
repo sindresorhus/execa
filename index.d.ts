@@ -20,10 +20,12 @@ type BaseStdioOption =
 
 // @todo Use `string`, `Uint8Array` or `unknown` for both the argument and the return type, based on whether `encoding: 'buffer'` and `objectMode: true` are used.
 // See https://github.com/sindresorhus/execa/issues/694
-type StdioTransform = ((chunks: Iterable<unknown>) => AsyncGenerator<unknown, void, void>);
+type StdioTransform = (chunk: unknown) => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
+type StdioFinal = () => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
 
 type StdioTransformFull = {
 	transform: StdioTransform;
+	final?: StdioFinal;
 	binary?: boolean;
 	objectMode?: boolean;
 };
@@ -319,7 +321,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be an async generator function to transform the input. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function to transform the input. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
@@ -340,7 +342,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be an async generator function to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default 'pipe'
 	*/
@@ -361,7 +363,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be an async generator function to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default 'pipe'
 	*/

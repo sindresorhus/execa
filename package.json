@@ -79,7 +79,9 @@
 		]
 	},
 	"ava": {
-		"workerThreads": false
+		"workerThreads": false,
+		"concurrency": 1,
+		"timeout": "60s"
 	},
 	"xo": {
 		"rules": {

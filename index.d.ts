@@ -538,9 +538,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly cleanup?: IfAsync<IsSync, boolean>;
 
 	/**
-	Buffer the output from the spawned process. When set to `false`, you must read the output of `stdout` and `stderr` (or `all` if the `all` option is `true`). Otherwise the returned promise will not be resolved/rejected.
+	Whether to return the child process' output using the `result.stdout`, `result.stderr`, `result.all` and `result.stdio` properties.
 
-	If the spawned process fails, `error.stdout`, `error.stderr`, and `error.all` will contain the buffered data.
+	On failure, the `error.stdout`, `error.stderr`, `error.all` and `error.stdio` properties are used instead.
+
+	When `buffer` is `false`, the output can still be read using the `childProcess.stdout`, `childProcess.stderr`, `childProcess.stdio` and `childProcess.all` streams. If the output is read, this should be done right away to avoid missing any data.
 
 	@default true
 	*/

@@ -15,8 +15,8 @@ process.env.FOO = 'foo';
 
 const ENOENT_REGEXP = process.platform === 'win32' ? /failed with exit code 1/ : /spawn.* ENOENT/;
 
-const testOutput = async (t, index, execaCommand) => {
-	const {stdout, stderr, stdio} = await execaCommand('noop-fd.js', [`${index}`, 'foobar'], fullStdio);
+const testOutput = async (t, index, execaMethod) => {
+	const {stdout, stderr, stdio} = await execaMethod('noop-fd.js', [`${index}`, 'foobar'], fullStdio);
 	t.is(stdio[index], 'foobar');
 
 	if (index === 1) {
@@ -33,8 +33,8 @@ test('can return stdout - sync', testOutput, 1, execaSync);
 test('can return stderr - sync', testOutput, 2, execaSync);
 test('can return output stdio[*] - sync', testOutput, 3, execaSync);
 
-const testNoStdin = async (t, execaCommand) => {
-	const {stdio} = await execaCommand('noop.js', ['foobar']);
+const testNoStdin = async (t, execaMethod) => {
+	const {stdio} = await execaMethod('noop.js', ['foobar']);
 	t.is(stdio[0], undefined);
 };
 
@@ -74,8 +74,8 @@ test('skip throwing when using reject option in sync mode', t => {
 	t.is(exitCode, 2);
 });
 
-const testStripFinalNewline = async (t, index, stripFinalNewline, execaCommand) => {
-	const {stdio} = await execaCommand('noop-fd.js', [`${index}`, 'foobar\n'], {...fullStdio, stripFinalNewline});
+const testStripFinalNewline = async (t, index, stripFinalNewline, execaMethod) => {
+	const {stdio} = await execaMethod('noop-fd.js', [`${index}`, 'foobar\n'], {...fullStdio, stripFinalNewline});
 	t.is(stdio[index], `foobar${stripFinalNewline === false ? '\n' : ''}`);
 };
 

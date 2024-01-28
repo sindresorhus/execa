@@ -952,6 +952,8 @@ Same as `execa()` but synchronous.
 
 Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
+Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
 @returns A `childProcessResult` object
@@ -1051,6 +1053,8 @@ Same as `execaCommand()` but synchronous.
 
 Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
+Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+
 @param command - The program/script to execute and its arguments.
 @returns A `childProcessResult` object
 @throws A `childProcessResult` error
@@ -1108,6 +1112,8 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 
 	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
+	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error
 
@@ -1159,6 +1165,8 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	Same as $\`command\` but synchronous.
 
 	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+
+	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 	@returns A `childProcessResult` object
 	@throws A `childProcessResult` error

@@ -141,7 +141,7 @@ test('stdio[*] must be an object when it is a file path string - sync', testFile
 
 const testFileError = async (t, mapFile, index) => {
 	await t.throwsAsync(
-		execa('empty.js', getStdio(index, mapFile('./unknown/file'))),
+		execa('forever.js', getStdio(index, mapFile('./unknown/file'))),
 		{code: 'ENOENT'},
 	);
 };
@@ -201,3 +201,13 @@ test('input Uint8Array and stdin can be both set - sync', testMultipleInputs, [0
 test('stdin and inputFile can be both set - sync', testMultipleInputs, [0, 'inputFile'], execaSync);
 test('input String, stdin and inputFile can be all set - sync', testMultipleInputs, ['inputFile', 0, 'string'], execaSync);
 test('input Uint8Array, stdin and inputFile can be all set - sync', testMultipleInputs, ['inputFile', 0, 'binary'], execaSync);
+
+const testInputFileHanging = async (t, mapFilePath) => {
+	const filePath = tempfile();
+	await writeFile(filePath, 'foobar');
+	await t.throwsAsync(execa('stdin.js', {stdin: mapFilePath(filePath), timeout: 1}), {message: /timed out/});
+	await rm(filePath);
+};
+
+test('Passing an input file path when process exits does not make promise hang', testInputFileHanging, getAbsolutePath);
+test('Passing an input file URL when process exits does not make promise hang', testInputFileHanging, pathToFileURL);

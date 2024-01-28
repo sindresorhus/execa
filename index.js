@@ -155,7 +155,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	const controller = new AbortController();
 	setMaxListeners(Number.POSITIVE_INFINITY, controller.signal);
 
-	pipeOutputAsync(spawned, stdioStreamsGroups);
+	pipeOutputAsync(spawned, stdioStreamsGroups, controller);
 	cleanupOnExit(spawned, options, controller);
 
 	spawned.kill = spawnedKill.bind(undefined, spawned.kill.bind(spawned), options, controller);

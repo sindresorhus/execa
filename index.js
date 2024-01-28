@@ -155,6 +155,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	const controller = new AbortController();
 	setMaxListeners(Number.POSITIVE_INFINITY, controller.signal);
 
+	const originalStreams = [...spawned.stdio];
 	pipeOutputAsync(spawned, stdioStreamsGroups, controller);
 	cleanupOnExit(spawned, options, controller);
 
@@ -162,12 +163,12 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	spawned.all = makeAllStream(spawned, options);
 	spawned.pipe = pipeToProcess.bind(undefined, {spawned, stdioStreamsGroups, options});
 
-	const promise = handlePromise({spawned, options, stdioStreamsGroups, command, escapedCommand, controller});
+	const promise = handlePromise({spawned, options, stdioStreamsGroups, originalStreams, command, escapedCommand, controller});
 	mergePromise(spawned, promise);
 	return spawned;
 }
 
-const handlePromise = async ({spawned, options, stdioStreamsGroups, command, escapedCommand, controller}) => {
+const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStreams, command, escapedCommand, controller}) => {
 	const context = {timedOut: false};
 
 	const [
@@ -175,7 +176,7 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, command, esc
 		[, exitCode, signal],
 		stdioResults,
 		allResult,
-	] = await getSpawnedResult({spawned, options, context, stdioStreamsGroups, controller});
+	] = await getSpawnedResult({spawned, options, context, stdioStreamsGroups, originalStreams, controller});
 	controller.abort();
 
 	const stdio = stdioResults.map(stdioResult => handleOutput(options, stdioResult));

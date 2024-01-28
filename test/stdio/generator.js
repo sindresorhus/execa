@@ -17,6 +17,7 @@ import {
 	outputObjectGenerator,
 	noYieldGenerator,
 	convertTransformToFinal,
+	infiniteGenerator,
 } from '../helpers/generator.js';
 
 setFixtureDir();
@@ -701,4 +702,8 @@ test('Generators errors make process fail even when other input generators do no
 	const childProcess = execa('stdin-fd.js', ['0'], {stdin: [noopGenerator(false), throwingGenerator, noopGenerator(false)]});
 	childProcess.stdin.write('foobar\n');
 	await t.throwsAsync(childProcess, {message: GENERATOR_ERROR_REGEXP});
+});
+
+test('Generators are canceled on early process exit', async t => {
+	await t.throwsAsync(execa('noop.js', {stdout: infiniteGenerator, uid: -1}));
 });

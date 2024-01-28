@@ -131,3 +131,14 @@ test('Wait for custom streams destroy on process errors', async t => {
 	t.true(timedOut);
 	t.true(waitedForDestroy);
 });
+
+const noopReadable = () => new Readable({read() {}});
+const noopWritable = () => new Writable({write() {}});
+
+const testStreamEarlyExit = async (t, stream, streamName) => {
+	await t.throwsAsync(execa('noop.js', {[streamName]: [stream, 'pipe'], uid: -1}));
+	t.true(stream.destroyed);
+};
+
+test('Input streams are canceled on early process exit', testStreamEarlyExit, noopReadable(), 'stdin');
+test('Output streams are canceled on early process exit', testStreamEarlyExit, noopWritable(), 'stdout');

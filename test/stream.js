@@ -394,3 +394,13 @@ const testBufferDestroyOnEnd = async (t, index) => {
 test('childProcess.stdout must be read right away', testBufferDestroyOnEnd, 1);
 test('childProcess.stderr must be read right away', testBufferDestroyOnEnd, 2);
 test('childProcess.stdio[*] must be read right away', testBufferDestroyOnEnd, 3);
+
+const testProcessEventsCleanup = async (t, fixtureName) => {
+	const childProcess = execa(fixtureName, {reject: false});
+	t.deepEqual(childProcess.eventNames().sort(), ['error', 'exit', 'spawn']);
+	await childProcess;
+	t.deepEqual(childProcess.eventNames(), []);
+};
+
+test('childProcess listeners are cleaned up on success', testProcessEventsCleanup, 'empty.js');
+test('childProcess listeners are cleaned up on failure', testProcessEventsCleanup, 'fail.js');

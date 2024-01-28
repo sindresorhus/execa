@@ -7,10 +7,9 @@ import getStream from 'get-stream';
 import {execa, execaSync} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
 import {fullStdio, getStdio} from './helpers/stdio.js';
+import {foobarString} from './helpers/input.js';
 
 setFixtureDir();
-
-const foobarString = 'foobar';
 
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const {all} = await execa('noop-132.js', {all: true});

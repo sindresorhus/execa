@@ -1,4 +1,5 @@
 import {Buffer} from 'node:buffer';
+import {setMaxListeners} from 'node:events';
 import path from 'node:path';
 import childProcess from 'node:child_process';
 import process from 'node:process';
@@ -151,6 +152,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	}
 
 	const controller = new AbortController();
+	setMaxListeners(Number.POSITIVE_INFINITY, controller.signal);
 
 	pipeOutputAsync(spawned, stdioStreamsGroups);
 

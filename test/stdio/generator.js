@@ -526,6 +526,41 @@ const testMultipleYields = async (t, final) => {
 test('Generator can yield "transform" multiple times at different moments', testMultipleYields, false);
 test('Generator can yield "final" multiple times at different moments', testMultipleYields, true);
 
+const partsPerChunk = 4;
+const chunksPerCall = 10;
+const callCount = 5;
+const fullString = '\n'.repeat(getDefaultHighWaterMark(false) / partsPerChunk);
+
+const yieldFullStrings = function * () {
+	yield * Array.from({length: partsPerChunk * chunksPerCall}).fill(fullString);
+};
+
+const manyYieldGenerator = async function * () {
+	for (let index = 0; index < callCount; index += 1) {
+		yield * yieldFullStrings();
+		// eslint-disable-next-line no-await-in-loop
+		await setImmediate();
+	}
+};
+
+const testManyYields = async (t, final) => {
+	const childProcess = execa('noop-fd.js', ['1', foobarString], {
+		stdout: convertTransformToFinal(manyYieldGenerator, final),
+		stripFinalNewline: false,
+		buffer: false,
+	});
+	const [chunks] = await Promise.all([
+		getStreamAsArray(childProcess.stdout),
+		childProcess,
+	]);
+	const expectedLength = chunksPerCall * callCount;
+	const expectedChunk = Buffer.alloc(getDefaultHighWaterMark(false)).fill('\n');
+	t.deepEqual(chunks, Array.from({length: expectedLength}).fill(expectedChunk));
+};
+
+test('Generator "transform" yields are sent right away', testManyYields, false);
+test('Generator "final" yields are sent right away', testManyYields, true);
+
 const testInputFile = async (t, getOptions, reversed) => {
 	const filePath = tempfile();
 	await writeFile(filePath, foobarString);

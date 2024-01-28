@@ -1,4 +1,5 @@
 import {Buffer} from 'node:buffer';
+import {once} from 'node:events';
 import {readFile, writeFile, rm} from 'node:fs/promises';
 import {getDefaultHighWaterMark, PassThrough} from 'node:stream';
 import {setTimeout, scheduler} from 'node:timers/promises';
@@ -704,6 +705,26 @@ test('Generators errors make process fail even when other input generators do no
 	await t.throwsAsync(childProcess, {message: GENERATOR_ERROR_REGEXP});
 });
 
-test('Generators are canceled on early process exit', async t => {
+const testGeneratorCancel = async (t, error) => {
+	const childProcess = execa('noop.js', {stdout: infiniteGenerator});
+	await once(childProcess.stdout, 'data');
+	childProcess.stdout.destroy(error);
+	await t.throwsAsync(childProcess);
+};
+
+test('Running generators are canceled on process abort', testGeneratorCancel, undefined);
+test('Running generators are canceled on process error', testGeneratorCancel, new Error('test'));
+
+const testGeneratorDestroy = async (t, transform) => {
+	const childProcess = execa('forever.js', {stdout: transform});
+	const error = new Error('test');
+	childProcess.stdout.destroy(error);
+	t.is(await t.throwsAsync(childProcess), error);
+};
+
+test('Generators are destroyed on process error, sync', testGeneratorDestroy, noopGenerator(false));
+test('Generators are destroyed on process error, async', testGeneratorDestroy, infiniteGenerator);
+
+test('Generators are destroyed on early process exit', async t => {
 	await t.throwsAsync(execa('noop.js', {stdout: infiniteGenerator, uid: -1}));
 });

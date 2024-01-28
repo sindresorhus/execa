@@ -128,8 +128,10 @@ test('can pass encoding "base64" to stdio[*] - sync', checkEncoding, 'base64', 3
 test('can pass encoding "base64url" to stdio[*] - sync', checkEncoding, 'base64url', 3, execaSync);
 /* eslint-enable unicorn/text-encoding-identifier-case */
 
-test('validate unknown encodings', async t => {
-	await t.throwsAsync(execa('noop.js', {encoding: 'unknownEncoding'}), {code: 'ERR_UNKNOWN_ENCODING'});
+test('validate unknown encodings', t => {
+	t.throws(() => {
+		execa('noop.js', {encoding: 'unknownEncoding'});
+	}, {code: 'ERR_UNKNOWN_ENCODING'});
 });
 
 const foobarArray = ['fo', 'ob', 'ar', '..'];

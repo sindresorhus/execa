@@ -1100,6 +1100,8 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 
 	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
+	Unlike $\`command\`, the `stdin` option defaults to `"inherit"`, not `["pipe", "inherit"]`.
+
 	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 	@returns A `childProcessResult` object

@@ -6,7 +6,7 @@ With Execa, you can write scripts with Node.js instead of a shell language. It i
 import {$} from 'execa';
 
 const {stdout: name} = await $`cat package.json`
-  .pipe($({stdin: 'pipe'})`grep name`);
+  .pipe($`grep name`);
 console.log(name);
 
 const branch = await $`git branch --show-current`;
@@ -598,7 +598,7 @@ await $`echo example | cat`;
 
 ```js
 // Execa
-await $`echo example`.pipe($({stdin: 'pipe'})`cat`);
+await $`echo example`.pipe($`cat`);
 ```
 
 ### Piping stdout and stderr to another command
@@ -619,7 +619,7 @@ await Promise.all([echo, cat]);
 
 ```js
 // Execa
-await $({all: true})`echo example`.pipe($({stdin: 'pipe'})`cat`, 'all');
+await $({all: true})`echo example`.pipe($`cat`, 'all');
 ```
 
 ### Piping stdout to a file
@@ -656,6 +656,15 @@ await cat
 ```js
 // Execa
 await $({inputFile: 'file.txt'})`cat`
+```
+
+### Interactive stdin
+
+By default, the command can use the user's interactive input.\
+If you encounter any issues receiving it, the following can help.
+
+```js
+await $({stdin: 'inherit'})`interactive-command`
 ```
 
 ### Silent stderr

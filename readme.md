@@ -289,6 +289,8 @@ Same as [$\`command\`](#command) but synchronous.
 
 Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
+Unlike $\`command\`, the [`stdin`](#stdin) option defaults to `"inherit"`, not `["pipe", "inherit"]`.
+
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 ### execaCommandSync(command, options?)
@@ -549,7 +551,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 #### stdin
 
 Type: `string | number | stream.Readable | ReadableStream | URL | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string> | AsyncIterable<Uint8Array> | AsyncIterable<unknown> | GeneratorFunction<string> | GeneratorFunction<Uint8Array> | GeneratorFunction<unknown>| AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)\
-Default: `inherit` with [`$`](#command), `pipe` otherwise
+Default: `["pipe", "inherit"]` with [`$`](#command), `"inherit"` with [`$.sync`](#synccommand), `"pipe"` otherwise
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
 - `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.

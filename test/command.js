@@ -330,6 +330,11 @@ test('$ stdin defaults to "inherit"', async t => {
 	t.is(stdout, 'foo');
 });
 
+test('$ stdin also defaults to "pipe"', async t => {
+	const {stdout} = await $`noop.js foo`.pipe($`stdin.js`);
+	t.is(stdout, 'foo');
+});
+
 test('$.sync stdin defaults to "inherit"', t => {
 	const {stdout} = $({input: 'foo'}).sync`stdin-script.js`;
 	t.is(stdout, 'foo');

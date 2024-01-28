@@ -79,17 +79,32 @@ test('Must set target "stdin" option to "pipe" to use pipe()', t => {
 	}, {message: /stdin must be available/});
 });
 
-const invalidSource = (t, optionName, streamName, options) => {
+// eslint-disable-next-line max-params
+const invalidSource = (t, optionName, optionValue, streamName, options) => {
 	t.throws(() => {
 		execa('empty.js', options).pipe(execa('empty.js'), streamName);
-	}, {message: new RegExp(`"${optionName}" option's value is incompatible`)});
+	}, {message: new RegExp(`\`${optionName}: ${optionValue}\` option is incompatible`)});
 };
 
-test('Cannot set "stdout" option to "ignore" to use pipe()', invalidSource, 'stdout', 1, {stdout: 'ignore'});
-test('Cannot set "stderr" option to "ignore" to use pipe()', invalidSource, 'stderr', 2, {stderr: 'ignore'});
-test('Cannot set "stdio[*]" option to "ignore" to use pipe()', invalidSource, 'stdio', 3, {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
-test('Cannot set "stdout" + "stderr" option to "ignore" to use pipe() with "all"', invalidSource, 'stdout', 1, {stdout: 'ignore', stderr: 'ignore', all: true});
-test('Cannot set "stdout" option to "inherit" to use pipe()', invalidSource, 'stdout', 1, {stdout: 'inherit'});
-test('Cannot set "stdout" option to "ipc" to use pipe()', invalidSource, 'stdout', 1, {stdout: 'ipc'});
-test('Cannot set "stdout" option to file descriptors to use pipe()', invalidSource, 'stdout', 1, {stdout: 1});
-test('Cannot set "stdout" option to Node.js streams to use pipe()', invalidSource, 'stdout', 1, {stdout: process.stdout});
+test('Cannot set "stdout" option to "ignore" to use pipe(...)', invalidSource, 'stdout', '"ignore"', undefined, {stdout: 'ignore'});
+test('Cannot set "stdout" option to "ignore" to use pipe(..., 1)', invalidSource, 'stdout', '"ignore"', 1, {stdout: 'ignore'});
+test('Cannot set "stdout" option to "ignore" to use pipe(..., "stdout")', invalidSource, 'stdout', '"ignore"', 'stdout', {stdout: 'ignore'});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use pipe(...)', invalidSource, 'stdout', '"ignore"', undefined, {stdout: 'ignore', stderr: 'ignore'});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use pipe(..., 1)', invalidSource, 'stdout', '"ignore"', 1, {stdout: 'ignore', stderr: 'ignore'});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use pipe(..., "stdout")', invalidSource, 'stdout', '"ignore"', 'stdout', {stdout: 'ignore', stderr: 'ignore'});
+test('Cannot set "stdio[1]" option to "ignore" to use pipe(...)', invalidSource, 'stdio\\[1\\]', '"ignore"', undefined, {stdio: ['pipe', 'ignore', 'pipe']});
+test('Cannot set "stdio[1]" option to "ignore" to use pipe(..., 1)', invalidSource, 'stdio\\[1\\]', '"ignore"', 1, {stdio: ['pipe', 'ignore', 'pipe']});
+test('Cannot set "stdio[1]" option to "ignore" to use pipe(..., "stdout")', invalidSource, 'stdio\\[1\\]', '"ignore"', 'stdout', {stdio: ['pipe', 'ignore', 'pipe']});
+test('Cannot set "stderr" option to "ignore" to use pipe(..., 2)', invalidSource, 'stderr', '"ignore"', 2, {stderr: 'ignore'});
+test('Cannot set "stderr" option to "ignore" to use pipe(..., "stderr")', invalidSource, 'stderr', '"ignore"', 'stderr', {stderr: 'ignore'});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use pipe(..., 2)', invalidSource, 'stderr', '"ignore"', 2, {stdout: 'ignore', stderr: 'ignore'});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use pipe(..., "stderr")', invalidSource, 'stderr', '"ignore"', 'stderr', {stdout: 'ignore', stderr: 'ignore'});
+test('Cannot set "stdio[2]" option to "ignore" to use pipe(..., 2)', invalidSource, 'stdio\\[2\\]', '"ignore"', 2, {stdio: ['pipe', 'pipe', 'ignore']});
+test('Cannot set "stdio[2]" option to "ignore" to use pipe(..., "stderr")', invalidSource, 'stdio\\[2\\]', '"ignore"', 'stderr', {stdio: ['pipe', 'pipe', 'ignore']});
+test('Cannot set "stdio[3]" option to "ignore" to use pipe(..., 3)', invalidSource, 'stdio\\[3\\]', '"ignore"', 3, {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use pipe(..., "all")', invalidSource, 'stdout', '"ignore"', 'all', {stdout: 'ignore', stderr: 'ignore', all: true});
+test('Cannot set "stdio[1]" + "stdio[2]" option to "ignore" to use pipe(..., "all")', invalidSource, 'stdio\\[1\\]', '"ignore"', 'all', {stdio: ['pipe', 'ignore', 'ignore'], all: true});
+test('Cannot set "stdout" option to "inherit" to use pipe()', invalidSource, 'stdout', '"inherit"', 1, {stdout: 'inherit'});
+test('Cannot set "stdout" option to "ipc" to use pipe()', invalidSource, 'stdout', '"ipc"', 1, {stdout: 'ipc'});
+test('Cannot set "stdout" option to file descriptors to use pipe()', invalidSource, 'stdout', '1', 1, {stdout: 1});
+test('Cannot set "stdout" option to Node.js streams to use pipe()', invalidSource, 'stdout', 'Stream', 1, {stdout: process.stdout});

@@ -812,25 +812,13 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	/**
 	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to another Execa child process' `stdin`.
 
-	Returns `execaChildProcess`, which allows chaining `pipeStdout()` then `await`ing the final result.
+	A `streamName` can be passed to pipe `"stderr"`, `"all"` (both `stdout` and `stderr`) or any another file descriptor instead of `stdout`.
 
-	`childProcess.stdout` must not be `undefined`.
+	`childProcess.stdout` (and/or `childProcess.stderr` depending on `streamName`) must not be `undefined`. When `streamName` is `"all"`, the `all` option must be set to `true`.
+
+	Returns `execaChildProcess`, which allows chaining `.pipe()` then `await`ing the final result.
 	*/
-	pipeStdout?<Target extends ExecaChildProcess>(target: Target): Target;
-
-	/**
-	Like `pipeStdout()` but piping the child process's `stderr` instead.
-
-	`childProcess.stderr` must not be `undefined`.
-	*/
-	pipeStderr?<Target extends ExecaChildProcess>(target: Target): Target;
-
-	/**
-	Combines both `pipeStdout()` and `pipeStderr()`.
-
-	The `all` option must be set to `true`.
-	*/
-	pipeAll?<Target extends ExecaChildProcess>(target: Target): Target;
+	pipe<Target extends ExecaChildProcess>(target: Target, streamName?: 'stdout' | 'stderr' | 'all' | number): Target;
 };
 
 export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &
@@ -865,13 +853,13 @@ console.log(stdout);
 import {execa} from 'execa';
 
 // Similar to `echo unicorns > stdout.txt` in Bash
-await execa('echo', ['unicorns']).pipeStdout('stdout.txt');
+await execa('echo', ['unicorns'], {stdout: {file: 'stdout.txt'}});
 
 // Similar to `echo unicorns 2> stdout.txt` in Bash
-await execa('echo', ['unicorns']).pipeStderr('stderr.txt');
+await execa('echo', ['unicorns'], {stderr: {file: 'stderr.txt'}});
 
 // Similar to `echo unicorns &> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {all: true}).pipeAll('all.txt');
+await execa('echo', ['unicorns'], {stdout: {file: 'all.txt'}, stderr: {file: 'all.txt'}});
 ```
 
 @example <caption>Redirect input from a file</caption>
@@ -888,7 +876,7 @@ console.log(stdout);
 ```
 import {execa} from 'execa';
 
-const {stdout} = await execa('echo', ['unicorns']).pipeStdout(process.stdout);
+const {stdout} = await execa('echo', ['unicorns'], {stdout: ['pipe', 'inherit']});
 // Prints `unicorns`
 console.log(stdout);
 // Also returns 'unicorns'
@@ -899,7 +887,7 @@ console.log(stdout);
 import {execa} from 'execa';
 
 // Similar to `echo unicorns | cat` in Bash
-const {stdout} = await execa('echo', ['unicorns']).pipeStdout(execa('cat'));
+const {stdout} = await execa('echo', ['unicorns']).pipe(execa('cat'));
 console.log(stdout);
 //=> 'unicorns'
 ```

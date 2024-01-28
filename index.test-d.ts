@@ -82,23 +82,14 @@ try {
 	const execaBufferPromise = execa('unicorns', {encoding: 'buffer', all: true});
 	const writeStream = createWriteStream('output.txt');
 
-	expectAssignable<Function | undefined>(execaPromise.pipeStdout);
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(execaPromise));
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(execaBufferPromise));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaPromise));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaBufferPromise));
-
-	expectAssignable<Function | undefined>(execaPromise.pipeStderr);
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(execaPromise));
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(execaBufferPromise));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaPromise));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaBufferPromise));
-
-	expectAssignable<Function | undefined>(execaPromise.pipeAll);
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(execaPromise));
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(execaBufferPromise));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaPromise));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaBufferPromise));
+	expectType<typeof execaPromise>(execaBufferPromise.pipe(execaPromise));
+	expectError(execaBufferPromise.pipe(writeStream));
+	expectError(execaBufferPromise.pipe('output.txt'));
+	await execaBufferPromise.pipe(execaPromise, 'stdout');
+	await execaBufferPromise.pipe(execaPromise, 'stderr');
+	await execaBufferPromise.pipe(execaPromise, 'all');
+	await execaBufferPromise.pipe(execaPromise, 3);
+	expectError(execaBufferPromise.pipe(execaPromise, 'other'));
 
 	expectType<Readable>(execaPromise.all);
 	const noAllPromise = execa('unicorns');
@@ -551,9 +542,7 @@ try {
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number | undefined>(unicornsResult.exitCode);
-	expectError(unicornsResult.pipeStdout);
-	expectError(unicornsResult.pipeStderr);
-	expectError(unicornsResult.pipeAll);
+	expectError(unicornsResult.pipe);
 	expectType<boolean>(unicornsResult.failed);
 	expectType<boolean>(unicornsResult.timedOut);
 	expectType<boolean>(unicornsResult.isCanceled);

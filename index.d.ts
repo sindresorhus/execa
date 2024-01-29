@@ -657,21 +657,21 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	/**
 	The output of the process on `stdout`.
 
-	This is `undefined` if the `stdout` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stdout` option is a transform in object mode.
+	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stdout` option is a transform in object mode.
 	*/
 	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the process on `stderr`.
 
-	This is `undefined` if the `stderr` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stderr` option is a transform in object mode.
+	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stderr` option is a transform in object mode.
 	*/
 	stderr: StdioOutput<'2', OptionsType>;
 
 	/**
 	The output of the process on `stdin`, `stdout`, `stderr` and other file descriptors.
 
-	Items are `undefined` when their corresponding `stdio` option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a transform in object mode.
+	Items are `undefined` when their corresponding `stdio` option is set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
 	stdio: StdioArrayOutput<OptionsType>;
 
@@ -810,33 +810,27 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	): Promise<ExecaReturnValue<OptionsType> | ResultType>;
 
 	/**
-	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
-	- Another `execa()` return value
-	- A writable stream
-	- A file path string
+	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to another Execa child process' `stdin`.
 
-	If the `target` is another `execa()` return value, it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the final result.
+	Returns `execaChildProcess`, which allows chaining `pipeStdout()` then `await`ing the final result.
 
-	The `stdout` option] must be kept as `pipe`, its default value.
+	`childProcess.stdout` must not be `undefined`.
 	*/
 	pipeStdout?<Target extends ExecaChildProcess>(target: Target): Target;
-	pipeStdout?(target: Writable | string): ExecaChildProcess<OptionsType>;
 
 	/**
 	Like `pipeStdout()` but piping the child process's `stderr` instead.
 
-	The `stderr` option must be kept as `pipe`, its default value.
+	`childProcess.stderr` must not be `undefined`.
 	*/
 	pipeStderr?<Target extends ExecaChildProcess>(target: Target): Target;
-	pipeStderr?(target: Writable | string): ExecaChildProcess<OptionsType>;
 
 	/**
 	Combines both `pipeStdout()` and `pipeStderr()`.
 
-	Either the `stdout` option or the `stderr` option must be kept as `pipe`, their default value. Also, the `all` option must be set to `true`.
+	The `all` option must be set to `true`.
 	*/
 	pipeAll?<Target extends ExecaChildProcess>(target: Target): Target;
-	pipeAll?(target: Writable | string): ExecaChildProcess<OptionsType>;
 };
 
 export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &

@@ -636,7 +636,7 @@ await $`echo example`.pipe(fs.createWriteStream('file.txt'));
 
 ```js
 // Execa
-await $`echo example`.pipeStdout('file.txt');
+await $({stdout: {file: 'file.txt'}})`echo example`;
 ```
 
 ### Piping stdin from a file

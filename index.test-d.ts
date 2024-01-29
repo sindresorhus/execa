@@ -83,30 +83,18 @@ try {
 	const writeStream = createWriteStream('output.txt');
 
 	expectAssignable<Function | undefined>(execaPromise.pipeStdout);
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!('file.txt'));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!('file.txt'));
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(writeStream));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(writeStream));
 	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(execaPromise));
 	expectAssignable<ExecaChildProcess>(execaPromise.pipeStdout!(execaBufferPromise));
 	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaPromise));
 	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStdout!(execaBufferPromise));
 
 	expectAssignable<Function | undefined>(execaPromise.pipeStderr);
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!('file.txt'));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!('file.txt'));
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(writeStream));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(writeStream));
 	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(execaPromise));
 	expectAssignable<ExecaChildProcess>(execaPromise.pipeStderr!(execaBufferPromise));
 	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaPromise));
 	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeStderr!(execaBufferPromise));
 
 	expectAssignable<Function | undefined>(execaPromise.pipeAll);
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!('file.txt'));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!('file.txt'));
-	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(writeStream));
-	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(writeStream));
 	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(execaPromise));
 	expectAssignable<ExecaChildProcess>(execaPromise.pipeAll!(execaBufferPromise));
 	expectAssignable<ExecaChildProcess>(execaBufferPromise.pipeAll!(execaPromise));

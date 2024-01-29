@@ -146,13 +146,13 @@ rainbows
 import {execa} from 'execa';
 
 // Similar to `echo unicorns > stdout.txt` in Bash
-await execa('echo', ['unicorns']).pipeStdout('stdout.txt');
+await execa('echo', ['unicorns'], {stdout: {file: 'stdout.txt'}});
 
 // Similar to `echo unicorns 2> stdout.txt` in Bash
-await execa('echo', ['unicorns']).pipeStderr('stderr.txt');
+await execa('echo', ['unicorns'], {stderr: {file: 'stderr.txt'}});
 
 // Similar to `echo unicorns &> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {all: true}).pipeAll('all.txt');
+await execa('echo', ['unicorns'], {stdout: {file: 'all.txt'}, stderr: {file: 'all.txt'}});
 ```
 
 #### Redirect input from a file
@@ -171,7 +171,7 @@ console.log(stdout);
 ```js
 import {execa} from 'execa';
 
-const {stdout} = await execa('echo', ['unicorns']).pipeStdout(process.stdout);
+const {stdout} = await execa('echo', ['unicorns'], {stdout: ['pipe', 'inherit']});
 // Prints `unicorns`
 console.log(stdout);
 // Also returns 'unicorns'
@@ -319,28 +319,31 @@ This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-#### pipeStdout(target)
+#### pipeStdout(execaChildProcess)
 
-[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process's `stdout` to `target`, which can be:
-- Another [`execa()` return value](#pipe-multiple-processes)
-- A [writable stream](#save-and-pipe-output-from-a-child-process)
-- A [file path string](#redirect-output-to-a-file)
+`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)
 
-If the `target` is another [`execa()` return value](#execacommandcommand-options), it is returned. Otherwise, the original `execa()` return value is returned. This allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
+[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to another Execa child process' `stdin`.
 
-The [`stdout` option](#stdout-1) must be kept as `pipe`, its default value.
+Returns `execaChildProcess`, which allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
 
-#### pipeStderr(target)
+[`childProcess.stdout`](#stdout) must not be `undefined`.
 
-Like [`pipeStdout()`](#pipestdouttarget) but piping the child process's `stderr` instead.
+#### pipeStderr(execaChildProcess)
 
-The [`stderr` option](#stderr-1) must be kept as `pipe`, its default value.
+`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)
 
-#### pipeAll(target)
+Like [`pipeStdout()`](#pipestdoutexecachildprocess) but piping the child process's `stderr` instead.
 
-Combines both [`pipeStdout()`](#pipestdouttarget) and [`pipeStderr()`](#pipestderrtarget).
+[`childProcess.stderr`](#stderr) must not be `undefined`.
 
-Either the [`stdout` option](#stdout-1) or the [`stderr` option](#stderr-1) must be kept as `pipe`, their default value. Also, the [`all` option](#all-2) must be set to `true`.
+#### pipeAll(execaChildProcess)
+
+`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)
+
+Combines both [`pipeStdout()`](#pipestdoutexecachildprocess) and [`pipeStderr()`](#pipestderrexecachildprocess).
+
+The [`all` option](#all-2) must be set to `true`.
 
 ### childProcessResult
 
@@ -386,7 +389,7 @@ Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stdout`.
 
-This is `undefined` if the [`stdout`](#stdout-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stdout`](#stdout-1) option is set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### stderr
 
@@ -394,7 +397,7 @@ Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stderr`.
 
-This is `undefined` if the [`stderr`](#stderr-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stderr`](#stderr-1) option is set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### all
 
@@ -404,7 +407,7 @@ The output of the process with `stdout` and `stderr` [interleaved](#ensuring-all
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
-- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 This is an array if the [`lines` option](#lines) is `true, or if either the `stdout` or `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 

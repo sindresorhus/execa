@@ -11,7 +11,7 @@ import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {normalizeStdioNode} from './lib/stdio/normalize.js';
 import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay} from './lib/kill.js';
-import {addPipeMethods} from './lib/pipe.js';
+import {pipeToProcess} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
 import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
@@ -154,10 +154,9 @@ export function execa(rawFile, rawArgs, rawOptions) {
 
 	pipeOutputAsync(spawned, stdioStreamsGroups);
 
-	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned), options, controller);
+	spawned.kill = spawnedKill.bind(undefined, spawned.kill.bind(spawned), options, controller);
 	spawned.all = makeAllStream(spawned, options);
-
-	addPipeMethods(spawned);
+	spawned.pipe = pipeToProcess.bind(undefined, {spawned, stdioStreamsGroups, options});
 
 	const promise = handlePromise({spawned, options, stdioStreamsGroups, command, escapedCommand, controller});
 	mergePromise(spawned, promise);

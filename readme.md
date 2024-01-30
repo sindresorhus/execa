@@ -183,7 +183,7 @@ console.log(stdout);
 import {execa} from 'execa';
 
 // Similar to `echo unicorns | cat` in Bash
-const {stdout} = await execa('echo', ['unicorns']).pipeStdout(execa('cat'));
+const {stdout} = await execa('echo', ['unicorns']).pipe(execa('cat'));
 console.log(stdout);
 //=> 'unicorns'
 ```
@@ -319,31 +319,18 @@ This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-#### pipeStdout(execaChildProcess)
+#### pipe(execaChildProcess, streamName?)
 
 `execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)
+`streamName`: `"stdout"` (default), `"stderr"`, `"all"` or file descriptor index
 
 [Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to another Execa child process' `stdin`.
 
-Returns `execaChildProcess`, which allows chaining `pipeStdout()` then `await`ing the [final result](#childprocessresult).
+A `streamName` can be passed to pipe `"stderr"`, `"all"` (both `stdout` and `stderr`) or any another file descriptor instead of `stdout`.
 
-[`childProcess.stdout`](#stdout) must not be `undefined`.
+[`childProcess.stdout`](#stdout) (and/or [`childProcess.stderr`](#stderr) depending on `streamName`) must not be `undefined`. When `streamName` is `"all"`, the [`all` option](#all-2) must be set to `true`.
 
-#### pipeStderr(execaChildProcess)
-
-`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)
-
-Like [`pipeStdout()`](#pipestdoutexecachildprocess) but piping the child process's `stderr` instead.
-
-[`childProcess.stderr`](#stderr) must not be `undefined`.
-
-#### pipeAll(execaChildProcess)
-
-`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)
-
-Combines both [`pipeStdout()`](#pipestdoutexecachildprocess) and [`pipeStderr()`](#pipestderrexecachildprocess).
-
-The [`all` option](#all-2) must be set to `true`.
+Returns `execaChildProcess`, which allows chaining `.pipe()` then `await`ing the [final result](#childprocessresult).
 
 ### childProcessResult
 

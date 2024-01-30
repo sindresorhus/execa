@@ -1,7 +1,7 @@
 import {Buffer} from 'node:buffer';
 import {readFile, writeFile, rm} from 'node:fs/promises';
 import {getDefaultHighWaterMark, PassThrough} from 'node:stream';
-import {setTimeout, setImmediate} from 'node:timers/promises';
+import {setTimeout, scheduler} from 'node:timers/promises';
 import test from 'ava';
 import getStream, {getStreamAsArray} from 'get-stream';
 import tempfile from 'tempfile';
@@ -292,16 +292,17 @@ test('Cannot use generators with sync methods and stdout', testSyncMethods, 1);
 test('Cannot use generators with sync methods and stderr', testSyncMethods, 2);
 test('Cannot use generators with sync methods and stdio[*]', testSyncMethods, 3);
 
-const repeatHighWaterMark = 10;
+const repeatCount = getDefaultHighWaterMark() * 3;
 
 const writerGenerator = function * () {
-	for (let index = 0; index < getDefaultHighWaterMark() * repeatHighWaterMark; index += 1) {
+	for (let index = 0; index < repeatCount; index += 1) {
 		yield '\n';
 	}
 };
 
-const getLengthGenerator = function * (chunk) {
-	yield `${chunk.length}`;
+const getLengthGenerator = function * (t, chunk) {
+	t.is(chunk.length, 1);
+	yield chunk;
 };
 
 const testHighWaterMark = async (t, passThrough, binary, objectMode) => {
@@ -310,16 +311,17 @@ const testHighWaterMark = async (t, passThrough, binary, objectMode) => {
 			...(objectMode ? [outputObjectGenerator] : []),
 			writerGenerator,
 			...(passThrough ? [noopGenerator(false, binary)] : []),
-			{transform: getLengthGenerator, binary: true},
+			{transform: getLengthGenerator.bind(undefined, t), binary: true, objectMode: true},
 		],
 	});
-	t.is(stdout, `${getDefaultHighWaterMark()}`.repeat(repeatHighWaterMark));
+	t.is(stdout.length, repeatCount);
+	t.true(stdout.every(chunk => chunk.toString() === '\n'));
 };
 
-test('Stream respects highWaterMark, no passThrough', testHighWaterMark, false, false, false);
-test('Stream respects highWaterMark, line-wise passThrough', testHighWaterMark, true, false, false);
-test('Stream respects highWaterMark, binary passThrough', testHighWaterMark, true, true, false);
-test('Stream respects highWaterMark, objectMode as input but not output', testHighWaterMark, false, false, true);
+test('Synchronous yields are not buffered, no passThrough', testHighWaterMark, false, false, false);
+test('Synchronous yields are not buffered, line-wise passThrough', testHighWaterMark, true, false, false);
+test('Synchronous yields are not buffered, binary passThrough', testHighWaterMark, true, true, false);
+test('Synchronous yields are not buffered, objectMode as input but not output', testHighWaterMark, false, false, true);
 
 const getTypeofGenerator = objectMode => ({
 	* transform(line) {
@@ -480,7 +482,7 @@ const brokenSymbol = '\uFFFD';
 const testMultibyte = async (t, objectMode) => {
 	const childProcess = execa('stdin.js', {stdin: noopGenerator(objectMode)});
 	childProcess.stdin.write(multibyteUint8Array.slice(0, breakingLength));
-	await setImmediate();
+	await scheduler.yield();
 	childProcess.stdin.end(multibyteUint8Array.slice(breakingLength));
 	const {stdout} = await childProcess;
 	t.is(stdout, multibyteString);
@@ -512,9 +514,9 @@ const suffix = ' <';
 
 const multipleYieldGenerator = async function * (line = foobarString) {
 	yield prefix;
-	await setImmediate();
+	await scheduler.yield();
 	yield line;
-	await setImmediate();
+	await scheduler.yield();
 	yield suffix;
 };
 
@@ -525,6 +527,33 @@ const testMultipleYields = async (t, final) => {
 
 test('Generator can yield "transform" multiple times at different moments', testMultipleYields, false);
 test('Generator can yield "final" multiple times at different moments', testMultipleYields, true);
+
+const partsPerChunk = 4;
+const chunksPerCall = 10;
+const callCount = 5;
+const fullString = '\n'.repeat(getDefaultHighWaterMark(false) / partsPerChunk);
+
+const yieldFullStrings = function * () {
+	yield * Array.from({length: partsPerChunk * chunksPerCall}).fill(fullString);
+};
+
+const manyYieldGenerator = async function * () {
+	for (let index = 0; index < callCount; index += 1) {
+		yield * yieldFullStrings();
+		// eslint-disable-next-line no-await-in-loop
+		await scheduler.yield();
+	}
+};
+
+const testManyYields = async (t, final) => {
+	const childProcess = execa('noop.js', {stdout: convertTransformToFinal(manyYieldGenerator, final), buffer: false});
+	const [chunks] = await Promise.all([getStreamAsArray(childProcess.stdout), childProcess]);
+	const expectedChunk = Buffer.alloc(getDefaultHighWaterMark(false) * chunksPerCall).fill('\n');
+	t.deepEqual(chunks, Array.from({length: callCount}).fill(expectedChunk));
+};
+
+test('Generator "transform" yields are sent right away', testManyYields, false);
+test('Generator "final" yields are sent right away', testManyYields, true);
 
 const testInputFile = async (t, getOptions, reversed) => {
 	const filePath = tempfile();

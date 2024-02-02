@@ -8,7 +8,7 @@ import crossSpawn from 'cross-spawn';
 import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
 import {makeError} from './lib/error.js';
-import {handleInputAsync, pipeOutputAsync} from './lib/stdio/async.js';
+import {handleInputAsync, pipeOutputAsync, cleanupStdioStreams} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {normalizeStdioNode} from './lib/stdio/normalize.js';
 import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay} from './lib/kill.js';
@@ -135,6 +135,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	try {
 		spawned = childProcess.spawn(file, args, options);
 	} catch (error) {
+		cleanupStdioStreams(stdioStreamsGroups);
 		// Ensure the returned error is always both a promise and a child process
 		const dummySpawned = new childProcess.ChildProcess();
 		const errorInstance = makeError({

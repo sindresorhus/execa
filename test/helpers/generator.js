@@ -1,4 +1,4 @@
-import {setImmediate} from 'node:timers/promises';
+import {setImmediate, setInterval} from 'node:timers/promises';
 import {foobarObject} from './input.js';
 
 export const noopGenerator = (objectMode, binary) => ({
@@ -58,4 +58,10 @@ export const convertTransformToFinal = (transform, final) => {
 
 	const generatorOptions = typeof transform === 'function' ? {transform} : transform;
 	return ({...generatorOptions, transform: noYieldTransform, final: generatorOptions.transform});
+};
+
+export const infiniteGenerator = async function * () {
+	for await (const value of setInterval(100, 'foo')) {
+		yield value;
+	}
 };

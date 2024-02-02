@@ -1,5 +1,5 @@
 import process from 'node:process';
-import {once} from 'node:events';
+import {once, defaultMaxListeners} from 'node:events';
 import {constants} from 'node:os';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
@@ -22,6 +22,10 @@ const spawnNoKillable = async (forceKillAfterDelay, options) => {
 	return {subprocess};
 };
 
+const spawnNoKillableSimple = options => execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, ...options});
+
+const spawnNoKillableOutput = options => execa('noop-forever.js', ['.'], {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, ...options});
+
 test('kill("SIGKILL") should terminate cleanly', async t => {
 	const {subprocess} = await spawnNoKillable();
 
@@ -32,9 +36,27 @@ test('kill("SIGKILL") should terminate cleanly', async t => {
 	t.is(signal, 'SIGKILL');
 });
 
+const testInvalidForceKill = async (t, forceKillAfterDelay) => {
+	t.throws(() => {
+		execa('empty.js', {forceKillAfterDelay});
+	}, {instanceOf: TypeError, message: /non-negative integer/});
+};
+
+test('`forceKillAfterDelay` should not be NaN', testInvalidForceKill, Number.NaN);
+test('`forceKillAfterDelay` should not be negative', testInvalidForceKill, -1);
+
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
-// Therefore, this feature and those tests do not make sense on Windows.
-if (process.platform !== 'win32') {
+// Therefore, this feature and those tests must be different on Windows.
+if (process.platform === 'win32') {
+	test('Can call `.kill()` with `forceKillAfterDelay` on Windows', async t => {
+		const {subprocess} = await spawnNoKillable(1);
+		subprocess.kill();
+
+		const {isTerminated, signal} = await t.throwsAsync(subprocess);
+		t.true(isTerminated);
+		t.is(signal, 'SIGTERM');
+	});
+} else {
 	const testNoForceKill = async (t, forceKillAfterDelay, killArgument, options) => {
 		const {subprocess} = await spawnNoKillable(forceKillAfterDelay, options);
 
@@ -71,18 +93,9 @@ if (process.platform !== 'win32') {
 	test('`forceKillAfterDelay` should kill after a timeout with the killSignal string', testForceKill, 50, 'SIGINT', {killSignal: 'SIGINT'});
 	test('`forceKillAfterDelay` should kill after a timeout with the killSignal number', testForceKill, 50, constants.signals.SIGINT, {killSignal: constants.signals.SIGINT});
 
-	const testInvalidForceKill = async (t, forceKillAfterDelay) => {
-		t.throws(() => {
-			execa('empty.js', {forceKillAfterDelay});
-		}, {instanceOf: TypeError, message: /non-negative integer/});
-	};
-
-	test('`forceKillAfterDelay` should not be NaN', testInvalidForceKill, Number.NaN);
-	test('`forceKillAfterDelay` should not be negative', testInvalidForceKill, -1);
-
 	test('`forceKillAfterDelay` works with the "signal" option', async t => {
 		const abortController = new AbortController();
-		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, signal: abortController.signal});
+		const subprocess = spawnNoKillableSimple({signal: abortController.signal});
 		await once(subprocess, 'spawn');
 		abortController.abort();
 		const {isTerminated, signal, isCanceled} = await t.throwsAsync(subprocess);
@@ -92,7 +105,7 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterDelay` works with the "timeout" option', async t => {
-		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, timeout: 1});
+		const subprocess = spawnNoKillableSimple({timeout: 1});
 		const {isTerminated, signal, timedOut} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
@@ -100,14 +113,14 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterDelay` works with the "maxBuffer" option', async t => {
-		const subprocess = execa('noop-forever.js', ['.'], {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, maxBuffer: 1});
+		const subprocess = spawnNoKillableOutput({maxBuffer: 1});
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
 	});
 
 	test('`forceKillAfterDelay` works with "error" events on childProcess', async t => {
-		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1});
+		const subprocess = spawnNoKillableSimple();
 		await once(subprocess, 'spawn');
 		subprocess.emit('error', new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
@@ -116,14 +129,55 @@ if (process.platform !== 'win32') {
 	});
 
 	test('`forceKillAfterDelay` works with "error" events on childProcess.stdout', async t => {
-		const subprocess = execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1});
+		const subprocess = spawnNoKillableSimple();
 		await once(subprocess, 'spawn');
 		subprocess.stdout.destroy(new Error('test'));
 		const {isTerminated, signal} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
 	});
+
+	test.serial('Can call `.kill()` with `forceKillAfterDelay` many times without triggering the maxListeners warning', async t => {
+		let warning;
+		const captureWarning = warningArgument => {
+			warning = warningArgument;
+		};
+
+		process.once('warning', captureWarning);
+
+		const subprocess = spawnNoKillableSimple();
+		for (let index = 0; index < defaultMaxListeners + 1; index += 1) {
+			subprocess.kill();
+		}
+
+		const {isTerminated, signal} = await t.throwsAsync(subprocess);
+		t.true(isTerminated);
+		t.is(signal, 'SIGKILL');
+
+		t.is(warning, undefined);
+		process.off('warning', captureWarning);
+	});
+
+	test('Can call `.kill()` with `forceKillAfterDelay` multiple times', async t => {
+		const subprocess = spawnNoKillableSimple();
+		subprocess.kill();
+		subprocess.kill();
+
+		const {isTerminated, signal} = await t.throwsAsync(subprocess);
+		t.true(isTerminated);
+		t.is(signal, 'SIGKILL');
+	});
 }
+
+test('Can call `.kill()` multiple times', async t => {
+	const subprocess = execa('forever.js');
+	subprocess.kill();
+	subprocess.kill();
+
+	const {isTerminated, signal} = await t.throwsAsync(subprocess);
+	t.true(isTerminated);
+	t.is(signal, 'SIGTERM');
+});
 
 test('execa() returns a promise with kill()', async t => {
 	const subprocess = execa('noop.js', ['foo']);

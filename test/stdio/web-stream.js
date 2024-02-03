@@ -87,3 +87,12 @@ const testReadableStreamError = async (t, index) => {
 
 test('stdin option handles errors in ReadableStream', testReadableStreamError, 0);
 test('stdio[*] option handles errors in ReadableStream', testReadableStreamError, 3);
+
+test('ReadableStream with stdin is canceled on process exit', async t => {
+	let readableStream;
+	const promise = new Promise(resolve => {
+		readableStream = new ReadableStream({cancel: resolve});
+	});
+	await t.throwsAsync(execa('stdin.js', {stdin: readableStream, timeout: 1}), {message: /timed out/});
+	await promise;
+});

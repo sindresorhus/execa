@@ -1,11 +1,11 @@
 import {once} from 'node:events';
-import {setTimeout, setImmediate} from 'node:timers/promises';
+import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarObject, foobarObjectString} from '../helpers/input.js';
-import {serializeGenerator} from '../helpers/generator.js';
+import {serializeGenerator, infiniteGenerator} from '../helpers/generator.js';
 
 const stringArray = ['foo', 'bar'];
 
@@ -106,28 +106,12 @@ test('stderr option cannot be an iterable', testNoIterableOutput, stringGenerato
 test('stdout option cannot be an iterable - sync', testNoIterableOutput, stringGenerator(), 1, execaSync);
 test('stderr option cannot be an iterable - sync', testNoIterableOutput, stringGenerator(), 2, execaSync);
 
-const infiniteGenerator = () => {
-	const controller = new AbortController();
-
-	const generator = async function * () {
-		yield 'foo';
-		await setTimeout(1e7, undefined, {signal: controller.signal});
-	};
-
-	return {iterable: generator(), abort: controller.abort.bind(controller)};
-};
-
 test('stdin option can be an infinite iterable', async t => {
-	const {iterable, abort} = infiniteGenerator();
-	try {
-		const childProcess = execa('stdin.js', getStdio(0, iterable));
-		const stdout = await once(childProcess.stdout, 'data');
-		t.is(stdout.toString(), 'foo');
-		childProcess.kill('SIGKILL');
-		await t.throwsAsync(childProcess, {message: /SIGKILL/});
-	} finally {
-		abort();
-	}
+	const childProcess = execa('stdin.js', getStdio(0, infiniteGenerator()));
+	const stdout = await once(childProcess.stdout, 'data');
+	t.true(stdout.toString().startsWith('foo'));
+	childProcess.kill();
+	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
 });
 
 const testMultipleIterable = async (t, index) => {

@@ -117,7 +117,7 @@ test('stdout can be [Writable, "pipe"] without a file descriptor', testLazyFileW
 test('stderr can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 2);
 test('stdio[*] can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 3);
 
-test('Wait for custom streams destroy on process errors', async t => {
+test('Waits for custom streams destroy on process errors', async t => {
 	let waitedForDestroy = false;
 	const stream = new Writable({
 		destroy: callbackify(async error => {
@@ -142,3 +142,64 @@ const testStreamEarlyExit = async (t, stream, streamName) => {
 
 test('Input streams are canceled on early process exit', testStreamEarlyExit, noopReadable(), 'stdin');
 test('Output streams are canceled on early process exit', testStreamEarlyExit, noopWritable(), 'stdout');
+
+test('Handles output streams ends', async t => {
+	const stream = noopWritable();
+	stream.end();
+	await t.throwsAsync(
+		execa('forever.js', {stdout: [stream, 'pipe']}),
+		{code: 'ERR_STREAM_PREMATURE_CLOSE'},
+	);
+});
+
+const testStreamAbort = async (t, stream, streamName) => {
+	stream.destroy();
+	await t.throwsAsync(
+		execa('forever.js', {[streamName]: [stream, 'pipe']}),
+		{code: 'ERR_STREAM_PREMATURE_CLOSE'},
+	);
+};
+
+test('Handles input streams aborts', testStreamAbort, noopReadable(), 'stdin');
+test('Handles output streams aborts', testStreamAbort, noopWritable(), 'stdout');
+
+const testStreamError = async (t, stream, streamName) => {
+	const error = new Error('test');
+	stream.destroy(error);
+	t.is(
+		await t.throwsAsync(execa('forever.js', {[streamName]: [stream, 'pipe']})),
+		error,
+	);
+};
+
+test('Handles input streams errors', testStreamError, noopReadable(), 'stdin');
+test('Handles output streams errors', testStreamError, noopWritable(), 'stdout');
+
+test('Handles childProcess.stdin end', async t => {
+	const stream = noopReadable();
+	const childProcess = execa('forever.js', {stdin: [stream, 'pipe']});
+	childProcess.stdin.end();
+	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	t.true(stream.destroyed);
+});
+
+const testChildStreamAbort = async (t, stream, streamName) => {
+	const childProcess = execa('forever.js', {[streamName]: [stream, 'pipe']});
+	childProcess[streamName].destroy();
+	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	t.true(stream.destroyed);
+};
+
+test('Handles childProcess.stdin aborts', testChildStreamAbort, noopReadable(), 'stdin');
+test('Handles childProcess.stdout aborts', testChildStreamAbort, noopWritable(), 'stdout');
+
+const testChildStreamError = async (t, stream, streamName) => {
+	const childProcess = execa('forever.js', {[streamName]: [stream, 'pipe']});
+	const error = new Error('test');
+	childProcess[streamName].destroy(error);
+	t.is(await t.throwsAsync(childProcess), error);
+	t.true(stream.destroyed);
+};
+
+test('Handles childProcess.stdin errors', testChildStreamError, noopReadable(), 'stdin');
+test('Handles childProcess.stdout errors', testChildStreamError, noopWritable(), 'stdout');

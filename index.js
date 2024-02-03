@@ -11,7 +11,7 @@ import {makeError} from './lib/error.js';
 import {handleInputAsync, pipeOutputAsync, cleanupStdioStreams} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {normalizeStdioNode} from './lib/stdio/normalize.js';
-import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay} from './lib/kill.js';
+import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExit} from './lib/kill.js';
 import {pipeToProcess} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
@@ -156,6 +156,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	setMaxListeners(Number.POSITIVE_INFINITY, controller.signal);
 
 	pipeOutputAsync(spawned, stdioStreamsGroups);
+	cleanupOnExit(spawned, options, controller);
 
 	spawned.kill = spawnedKill.bind(undefined, spawned.kill.bind(spawned), options, controller);
 	spawned.all = makeAllStream(spawned, options);
@@ -175,6 +176,8 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, command, esc
 		stdioResults,
 		allResult,
 	] = await getSpawnedResult({spawned, options, context, stdioStreamsGroups, controller});
+	controller.abort();
+
 	const stdio = stdioResults.map(stdioResult => handleOutput(options, stdioResult));
 	const all = handleOutput(options, allResult);
 

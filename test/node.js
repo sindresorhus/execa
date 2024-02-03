@@ -2,27 +2,12 @@ import process from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import {pEvent} from 'p-event';
-import {execaNode} from '../index.js';
-import {setFixtureDir} from './helpers/fixtures-dir.js';
+import {execa, execaNode} from '../index.js';
+import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
+import {fullStdio} from './helpers/stdio.js';
+import {foobarString} from './helpers/input.js';
 
 setFixtureDir();
-
-async function inspectMacro(t, input) {
-	const originalArgv = process.execArgv;
-	process.execArgv = [input, '-e'];
-	try {
-		const subprocess = execaNode('console.log("foo")', {
-			reject: false,
-		});
-
-		const {stdout, stderr} = await subprocess;
-
-		t.is(stdout, 'foo');
-		t.is(stderr, '');
-	} finally {
-		process.execArgv = originalArgv;
-	}
-}
 
 test('node()', async t => {
 	const {exitCode} = await execaNode('test/fixtures/noop.js');
@@ -67,42 +52,34 @@ test('node pass on nodeOptions', async t => {
 	t.is(stdout, 'foo');
 });
 
-test.serial(
-	'node removes --inspect from nodeOptions when defined by parent process',
-	inspectMacro,
-	'--inspect',
+const spawnNestedExecaNode = (realExecArgv, fakeExecArgv, nodeOptions) => execa(
+	'node',
+	[...realExecArgv, 'nested-node.js', fakeExecArgv, nodeOptions, 'noop.js', foobarString],
+	{...fullStdio, cwd: FIXTURES_DIR},
 );
 
-test.serial(
-	'node removes --inspect=9222 from nodeOptions when defined by parent process',
-	inspectMacro,
-	'--inspect=9222',
-);
+const testInspectRemoval = async (t, fakeExecArgv) => {
+	const {stdout, stdio} = await spawnNestedExecaNode([], fakeExecArgv, '');
+	t.is(stdout, foobarString);
+	t.is(stdio[3], '');
+};
 
-test.serial(
-	'node removes --inspect-brk from nodeOptions when defined by parent process',
-	inspectMacro,
-	'--inspect-brk',
-);
+test('node removes --inspect without a port from nodeOptions when defined by parent process', testInspectRemoval, '--inspect');
+test('node removes --inspect with a port from nodeOptions when defined by parent process', testInspectRemoval, '--inspect=9222');
+test('node removes --inspect-brk without a port from nodeOptions when defined by parent process', testInspectRemoval, '--inspect-brk');
+test('node removes --inspect-brk with a port from nodeOptions when defined by parent process', testInspectRemoval, '--inspect-brk=9223');
 
-test.serial(
-	'node removes --inspect-brk=9222 from nodeOptions when defined by parent process',
-	inspectMacro,
-	'--inspect-brk=9222',
-);
+test('node allows --inspect with a different port from nodeOptions even when defined by parent process', async t => {
+	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9225'], '', '--inspect=9224');
+	t.is(stdout, foobarString);
+	t.true(stdio[3].includes('Debugger listening'));
+});
 
-test.serial(
-	'node should not remove --inspect when passed through nodeOptions',
-	async t => {
-		const {stdout, stderr} = await execaNode('console.log("foo")', {
-			reject: false,
-			nodeOptions: ['--inspect', '-e'],
-		});
-
-		t.is(stdout, 'foo');
-		t.true(stderr.includes('Debugger listening'));
-	},
-);
+test('node forbids --inspect with the same port from nodeOptions when defined by parent process', async t => {
+	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9226'], '', '--inspect=9226');
+	t.is(stdout, foobarString);
+	t.true(stdio[3].includes('address already in use'));
+});
 
 test('node\'s forked script has a communication channel', async t => {
 	const subprocess = execaNode('test/fixtures/send.js');

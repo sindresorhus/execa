@@ -14,7 +14,7 @@ const TIMEOUT_REGEXP = /timed out after/;
 
 const spawnNoKillable = async (forceKillAfterDelay, options) => {
 	const subprocess = execa('no-killable.js', {
-		stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+		ipc: true,
 		forceKillAfterDelay,
 		...options,
 	});
@@ -253,7 +253,7 @@ test('spawnAndExit cleanup detached', spawnAndExit, true, true);
 
 // When parent process exits before child process
 const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
-	const subprocess = execa('sub-process.js', [cleanup, detached], {stdio: ['ignore', 'ignore', 'ignore', 'ipc']});
+	const subprocess = execa('sub-process.js', [cleanup, detached], {stdio: 'ignore', ipc: true});
 
 	const pid = await pEvent(subprocess, 'message');
 	t.true(Number.isInteger(pid));

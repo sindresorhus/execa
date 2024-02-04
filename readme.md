@@ -244,7 +244,7 @@ This is the preferred method when executing Node.js files.
 Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
 - the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
 - the [`shell`](#shell) option cannot be used
-- an extra channel [`ipc`](https://nodejs.org/api/child_process.html#child_process_options_stdio) is passed to [`stdio`](#stdio-1)
+- the [`ipc`](#ipc) option defaults to `true`
 
 #### $\`command\`
 
@@ -278,7 +278,7 @@ This is the preferred method when executing a user-supplied `command` string, su
 
 Same as [`execa()`](#execacommandcommand-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -287,7 +287,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProc
 
 Same as [$\`command\`](#command) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -295,7 +295,7 @@ Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProc
 
 Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -317,7 +317,7 @@ Stream [combining/interleaving](#ensuring-all-output-is-interleaved) [`stdout`](
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
-- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 #### pipe(execaChildProcess, streamName?)
 
@@ -376,7 +376,7 @@ Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stdout`.
 
-This is `undefined` if the [`stdout`](#stdout-1) option is set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stdout`](#stdout-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### stderr
 
@@ -384,7 +384,7 @@ Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stderr`.
 
-This is `undefined` if the [`stderr`](#stderr-1) option is set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stderr`](#stderr-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### all
 
@@ -394,7 +394,7 @@ The output of the process with `stdout` and `stderr` [interleaved](#ensuring-all
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
-- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to only [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+- both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
 This is an array if the [`lines` option](#lines) is `true, or if either the `stdout` or `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
@@ -404,7 +404,7 @@ Type: `Array<string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefin
 
 The output of the process on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [other file descriptors](#stdio-1).
 
-Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ipc'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a [transform in object mode](docs/transform.md#object-mode).
+Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### failed
 
@@ -555,7 +555,6 @@ Default: `inherit` with [`$`](#command), `pipe` otherwise
 - `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stdin`.
-- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
 - `'inherit'`: Re-use the current process' `stdin`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Readable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
@@ -578,7 +577,6 @@ Default: `pipe`
 - `'pipe'`: Sets [`childProcessResult.stdout`](#stdout) (as a string or `Uint8Array`) and [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stdout`.
-- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
 - `'inherit'`: Re-use the current process' `stdout`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
@@ -599,7 +597,6 @@ Default: `pipe`
 - `'pipe'`: Sets [`childProcessResult.stderr`](#stderr) (as a string or `Uint8Array`) and [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stderr`.
-- `'ipc'`: Sets an [IPC channel](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback). You can also use [`execaNode()`](#execanodescriptpath-arguments-options) instead.
 - `'inherit'`: Re-use the current process' `stderr`.
 - an integer: Re-use a specific file descriptor from the current process.
 - a [Node.js `Writable` stream](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr).
@@ -620,7 +617,7 @@ Like the [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) opti
 
 A single string can be used as a shortcut. For example, `{stdio: 'pipe'}` is the same as `{stdin: 'pipe', stdout: 'pipe', stderr: 'pipe'}`.
 
-The array can have more than 3 items, to create additional file descriptors beyond `stdin`/`stdout`/`stderr`. For example, `{stdio: ['pipe', 'pipe', 'pipe', 'ipc']}` sets a fourth file descriptor `'ipc'`.
+The array can have more than 3 items, to create additional file descriptors beyond `stdin`/`stdout`/`stderr`. For example, `{stdio: ['pipe', 'pipe', 'pipe', 'pipe']}` sets a fourth file descriptor.
 
 #### all
 
@@ -638,6 +635,13 @@ Split `stdout` and `stderr` into lines.
 - [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) are arrays of lines.
 - [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`childProcess.all`](#all) and [`childProcess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) iterate over lines instead of arbitrary chunks.
 - Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
+
+#### ipc
+
+Type: `boolean`\
+Default: `true` with [`execaNode()`](#execanodescriptpath-arguments-options), `false` otherwise
+
+Enables exchanging messages with the child process using [`childProcess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`childProcess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
 
 #### reject
 
@@ -692,7 +696,7 @@ Explicitly set the value of `argv[0]` sent to the child process. This will be se
 Type: `string`\
 Default: `'json'`
 
-Specify the kind of serialization used for sending messages between processes when using the [`stdio: 'ipc'`](#stdio-1) option or [`execaNode()`](#execanodescriptpath-arguments-options):
+Specify the kind of serialization used for sending messages between processes when using the [`ipc`](#ipc) option:
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 

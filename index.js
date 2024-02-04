@@ -10,7 +10,6 @@ import {npmRunPathEnv} from 'npm-run-path';
 import {makeError} from './lib/error.js';
 import {handleInputAsync, pipeOutputAsync, cleanupStdioStreams} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
-import {normalizeStdioNode} from './lib/stdio/normalize.js';
 import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExit} from './lib/kill.js';
 import {pipeToProcess} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
@@ -86,6 +85,7 @@ const addDefaultOptions = ({
 	killSignal = 'SIGTERM',
 	forceKillAfterDelay = true,
 	lines = false,
+	ipc = false,
 	...options
 }) => ({
 	...options,
@@ -106,6 +106,7 @@ const addDefaultOptions = ({
 	killSignal,
 	forceKillAfterDelay,
 	lines,
+	ipc,
 });
 
 // Prevent passing the `timeout` option directly to `child_process.spawn()`
@@ -223,6 +224,7 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 
 export function execaSync(rawFile, rawArgs, rawOptions) {
 	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
+	validateSyncOptions(options);
 
 	const stdioStreamsGroups = handleInputSync(options);
 
@@ -286,6 +288,12 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	};
 }
 
+const validateSyncOptions = ({ipc}) => {
+	if (ipc) {
+		throw new TypeError('The "ipc: true" option cannot be used with synchronous methods.');
+	}
+};
+
 const normalizeScriptStdin = ({input, inputFile, stdio}) => input === undefined && inputFile === undefined && stdio === undefined
 	? {stdin: 'inherit'}
 	: {};
@@ -332,15 +340,13 @@ export function execaCommandSync(command, options) {
 	return execaSync(file, args, options);
 }
 
-export function execaNode(scriptPath, args, options = {}) {
-	if (args && !Array.isArray(args) && typeof args === 'object') {
+export function execaNode(scriptPath, args = [], options = {}) {
+	if (!Array.isArray(args)) {
 		options = args;
 		args = [];
 	}
 
-	const stdio = normalizeStdioNode(options);
 	const defaultExecArgv = process.execArgv.filter(arg => !arg.startsWith('--inspect'));
-
 	const {
 		nodePath = process.execPath,
 		nodeOptions = defaultExecArgv,
@@ -348,18 +354,7 @@ export function execaNode(scriptPath, args, options = {}) {
 
 	return execa(
 		nodePath,
-		[
-			...nodeOptions,
-			getFilePath(scriptPath),
-			...(Array.isArray(args) ? args : []),
-		],
-		{
-			...options,
-			stdin: undefined,
-			stdout: undefined,
-			stderr: undefined,
-			stdio,
-			shell: false,
-		},
+		[...nodeOptions, getFilePath(scriptPath), ...args],
+		{ipc: true, ...options, shell: false},
 	);
 }

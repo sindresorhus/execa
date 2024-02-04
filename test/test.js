@@ -3,12 +3,12 @@ import process from 'node:process';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import test from 'ava';
 import isRunning from 'is-running';
-import getNode from 'get-node';
 import which from 'which';
 import {execa, execaSync, execaNode, $} from '../index.js';
 import {setFixtureDir, PATH_KEY, FIXTURES_DIR_URL} from './helpers/fixtures-dir.js';
 import {identity, fullStdio, getStdio} from './helpers/stdio.js';
 import {noopGenerator} from './helpers/generator.js';
+import {foobarString} from './helpers/input.js';
 
 setFixtureDir();
 process.env.FOO = 'foo';
@@ -57,6 +57,14 @@ if (process.platform === 'win32') {
 		t.is(stdout, 'Hello World');
 	});
 }
+
+const testNullOptions = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('noop.js', [foobarString], null);
+	t.is(stdout, foobarString);
+};
+
+test('Can pass null to options', testNullOptions, execa);
+test('Can pass null to options - sync', testNullOptions, execaSync);
 
 test('execaSync() throws error if ENOENT', t => {
 	t.throws(() => {
@@ -136,16 +144,6 @@ test('localDir option', async t => {
 	const envPaths = stdout.split(path.delimiter);
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });
-
-const testExecPath = async (t, mapPath) => {
-	const {path} = await getNode('16.0.0');
-	const execPath = mapPath(path);
-	const {stdout} = await execa('node', ['-p', 'process.env.Path || process.env.PATH'], {preferLocal: true, execPath});
-	t.true(stdout.includes('16.0.0'));
-};
-
-test.serial('execPath option', testExecPath, identity);
-test.serial('execPath option can be a file URL', testExecPath, pathToFileURL);
 
 test('execa() returns a promise with pid', async t => {
 	const subprocess = execa('noop.js', ['foo']);

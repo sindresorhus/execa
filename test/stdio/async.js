@@ -65,6 +65,7 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 			Array.from({length: processesCount}, () => execa('empty.js', getComplexStdio(isMultiple))),
 		);
 		await setImmediate();
+		await setImmediate();
 		t.true(results.every(({exitCode}) => exitCode === 0));
 		t.is(warning, undefined);
 	} finally {

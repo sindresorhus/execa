@@ -173,7 +173,7 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 
 	const [
 		error,
-		[, exitCode, signal],
+		[exitCode, signal],
 		stdioResults,
 		allResult,
 	] = await getSpawnedResult({spawned, options, context, stdioStreamsGroups, originalStreams, controller});

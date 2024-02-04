@@ -1,7 +1,7 @@
 import process from 'node:process';
 import {once, defaultMaxListeners} from 'node:events';
 import {constants} from 'node:os';
-import {setTimeout} from 'node:timers/promises';
+import {setTimeout, setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {pEvent} from 'p-event';
 import isRunning from 'is-running';
@@ -383,10 +383,42 @@ test('calling abort on a successfully completed process does not make result.isC
 	t.false(result.isCanceled);
 });
 
-test('child process errors are handled', async t => {
+test('child process errors are handled before spawn', async t => {
 	const subprocess = execa('forever.js');
-	subprocess.emit('error', new Error('test'));
-	await t.throwsAsync(subprocess, {message: 'Command failed: forever.js\ntest'});
+	const error = new Error('test');
+	subprocess.emit('error', error);
+	const thrownError = await t.throwsAsync(subprocess);
+	t.is(thrownError, error);
+	t.is(thrownError.exitCode, undefined);
+	t.is(thrownError.signal, undefined);
+	t.false(thrownError.isTerminated);
+});
+
+test('child process errors are handled after spawn', async t => {
+	const subprocess = execa('forever.js');
+	await once(subprocess, 'spawn');
+	const error = new Error('test');
+	subprocess.emit('error', error);
+	const thrownError = await t.throwsAsync(subprocess);
+	t.is(thrownError, error);
+	t.is(thrownError.exitCode, undefined);
+	t.is(thrownError.signal, 'SIGTERM');
+	t.true(thrownError.isTerminated);
+});
+
+test('child process double errors are handled after spawn', async t => {
+	const abortController = new AbortController();
+	const subprocess = execa('forever.js', {signal: abortController.signal});
+	await once(subprocess, 'spawn');
+	const error = new Error('test');
+	subprocess.emit('error', error);
+	await setImmediate();
+	abortController.abort();
+	const thrownError = await t.throwsAsync(subprocess);
+	t.is(thrownError, error);
+	t.is(thrownError.exitCode, undefined);
+	t.is(thrownError.signal, 'SIGTERM');
+	t.true(thrownError.isTerminated);
 });
 
 test('child process errors use killSignal', async t => {

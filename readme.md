@@ -274,7 +274,7 @@ Arguments are [automatically escaped](#shell-syntax). They can contain any chara
 
 This is the preferred method when executing a user-supplied `command` string, such as in a REPL.
 
-### execaSync(file, arguments?, options?)
+#### execaSync(file, arguments?, options?)
 
 Same as [`execa()`](#execacommandcommand-options) but synchronous.
 
@@ -282,8 +282,8 @@ Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buff
 
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-### $.sync\`command\`
-### $.s\`command\`
+#### $.sync\`command\`
+#### $.s\`command\`
 
 Same as [$\`command\`](#command) but synchronous.
 
@@ -291,7 +291,7 @@ Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buff
 
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-### execaCommandSync(command, options?)
+#### execaCommandSync(command, options?)
 
 Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
 
@@ -321,7 +321,7 @@ This is `undefined` if either:
 
 #### pipe(execaChildProcess, streamName?)
 
-`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)
+`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)\
 `streamName`: `"stdout"` (default), `"stderr"`, `"all"` or file descriptor index
 
 [Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to another Execa child process' `stdin`.
@@ -736,7 +736,8 @@ Specify the kind of serialization used for sending messages between processes wh
 
 #### detached
 
-Type: `boolean`
+Type: `boolean`\
+Default: `false`
 
 Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
@@ -754,7 +755,7 @@ Kill the spawned process when the parent process exits unless either:
 Type: `number`\
 Default: `0`
 
-If `timeout`` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
+If `timeout` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
 #### signal
 

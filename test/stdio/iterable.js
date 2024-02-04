@@ -121,3 +121,10 @@ const testMultipleIterable = async (t, index) => {
 
 test('stdin option can be multiple iterables', testMultipleIterable, 0);
 test('stdio[*] option can be multiple iterables', testMultipleIterable, 3);
+
+test('stdin option iterable is canceled on process error', async t => {
+	const iterable = infiniteGenerator();
+	await t.throwsAsync(execa('stdin.js', {stdin: iterable, timeout: 1}), {message: /timed out/});
+	// eslint-disable-next-line no-unused-vars, no-empty
+	for await (const _ of iterable) {}
+});

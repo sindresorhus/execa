@@ -362,13 +362,11 @@ Same as [`command`](#command-1) but escaped.
 This is meant to be copied and pasted into a shell, for debugging purposes.
 Since the escaping is fairly basic, this should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
 
-#### exitCode
+#### cwd
 
-Type: `number | undefined`
+Type: `string`
 
-The numeric exit code of the process that was run.
-
-This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal-1).
+The `cwd` of the command if provided in the [command options](#cwd-1). Otherwise it is `process.cwd()`.
 
 #### stdout
 
@@ -406,6 +404,28 @@ The output of the process on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`
 
 Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a [transform in object mode](docs/transform.md#object-mode).
 
+#### message
+
+Type: `string`
+
+Error message when the child process failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the child process errored.
+
+The child process [`stderr`](#stderr), [`stdout`](#stdout) and other [file descriptors' output](#stdio) are appended to the end, separated with newlines and not interleaved.
+
+#### shortMessage
+
+Type: `string`
+
+This is the same as the [`message` property](#message) except it does not include the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio).
+
+#### originalMessage
+
+Type: `string | undefined`
+
+Original error message. This is the same as the `message` property excluding the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio) and some additional information added by Execa.
+
+This is `undefined` unless the child process exited due to an `error` event or a timeout.
+
 #### failed
 
 Type: `boolean`
@@ -432,6 +452,14 @@ Whether the process was terminated by a signal (like `SIGTERM`) sent by either:
 - The current process.
 - Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
+#### exitCode
+
+Type: `number | undefined`
+
+The numeric exit code of the process that was run.
+
+This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal-1).
+
 #### signal
 
 Type: `string | undefined`
@@ -449,34 +477,6 @@ Type: `string | undefined`
 A human-friendly description of the signal that was used to terminate the process. For example, `Floating point arithmetic error`.
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
-
-#### cwd
-
-Type: `string`
-
-The `cwd` of the command if provided in the [command options](#cwd-1). Otherwise it is `process.cwd()`.
-
-#### message
-
-Type: `string`
-
-Error message when the child process failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the child process errored.
-
-The child process [`stderr`](#stderr), [`stdout`](#stdout) and other [file descriptors' output](#stdio) are appended to the end, separated with newlines and not interleaved.
-
-#### shortMessage
-
-Type: `string`
-
-This is the same as the [`message` property](#message) except it does not include the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio).
-
-#### originalMessage
-
-Type: `string | undefined`
-
-Original error message. This is the same as the `message` property excluding the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio) and some additional information added by Execa.
-
-This is `undefined` unless the child process exited due to an `error` event or a timeout.
 
 ### options
 

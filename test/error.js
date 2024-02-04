@@ -12,6 +12,47 @@ setFixtureDir();
 
 const TIMEOUT_REGEXP = /timed out after/;
 
+test('Return value properties are not missing and are ordered', async t => {
+	const result = await execa('empty.js', {...fullStdio, all: true});
+	t.deepEqual(Reflect.ownKeys(result), [
+		'command',
+		'escapedCommand',
+		'failed',
+		'timedOut',
+		'isCanceled',
+		'isTerminated',
+		'exitCode',
+		'stdout',
+		'stderr',
+		'all',
+		'stdio',
+	]);
+});
+
+test('Error properties are not missing and are ordered', async t => {
+	const error = await t.throwsAsync(execa('fail.js', {...fullStdio, all: true}));
+	t.deepEqual(Reflect.ownKeys(error), [
+		'stack',
+		'message',
+		'originalMessage',
+		'shortMessage',
+		'command',
+		'escapedCommand',
+		'cwd',
+		'failed',
+		'timedOut',
+		'isCanceled',
+		'isTerminated',
+		'exitCode',
+		'signal',
+		'signalDescription',
+		'stdout',
+		'stderr',
+		'all',
+		'stdio',
+	]);
+});
+
 const testEmptyErrorStdio = async (t, execaMethod) => {
 	const {failed, stdout, stderr, stdio} = await execaMethod('fail.js', {reject: false});
 	t.true(failed);

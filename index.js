@@ -210,15 +210,15 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 	return {
 		command,
 		escapedCommand,
-		exitCode: 0,
-		stdio,
-		stdout: stdio[1],
-		stderr: stdio[2],
-		all,
 		failed: false,
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
+		exitCode: 0,
+		stdout: stdio[1],
+		stderr: stdio[2],
+		all,
+		stdio,
 	};
 };
 
@@ -277,14 +277,14 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	return {
 		command,
 		escapedCommand,
-		exitCode: 0,
-		stdio,
-		stdout: stdio[1],
-		stderr: stdio[2],
 		failed: false,
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
+		exitCode: 0,
+		stdout: stdio[1],
+		stderr: stdio[2],
+		stdio,
 	};
 }
 

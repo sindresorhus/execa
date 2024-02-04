@@ -7,6 +7,7 @@ import crossSpawn from 'cross-spawn';
 import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
 import {makeError} from './lib/error.js';
+import {handleNodeOption} from './lib/node.js';
 import {handleInputAsync, pipeOutputAsync, cleanupStdioStreams} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExit} from './lib/kill.js';
@@ -39,7 +40,9 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	const command = joinCommand(filePath, rawArgs);
 	const escapedCommand = getEscapedCommand(filePath, rawArgs);
 
-	const {command: file, args, options: initialOptions} = crossSpawn._parse(filePath, rawArgs, rawOptions);
+	const [processedFile, processedArgs, processedOptions] = handleNodeOption(filePath, rawArgs, rawOptions);
+
+	const {command: file, args, options: initialOptions} = crossSpawn._parse(processedFile, processedArgs, processedOptions);
 
 	const options = addDefaultOptions(initialOptions);
 	validateTimeout(options);
@@ -215,7 +218,8 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 };
 
 export function execaSync(rawFile, rawArgs, rawOptions) {
-	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, rawOptions);
+	const syncOptions = normalizeSyncOptions(rawOptions);
+	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, syncOptions);
 	validateSyncOptions(options);
 
 	const stdioStreamsGroups = handleInputSync(options);
@@ -281,6 +285,8 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	};
 }
 
+const normalizeSyncOptions = (options = {}) => options.node && !options.ipc ? {...options, ipc: false} : options;
+
 const validateSyncOptions = ({ipc}) => {
 	if (ipc) {
 		throw new TypeError('The "ipc: true" option cannot be used with synchronous methods.');
@@ -333,21 +339,15 @@ export function execaCommandSync(command, options) {
 	return execaSync(file, args, options);
 }
 
-export function execaNode(scriptPath, args = [], options = {}) {
+export function execaNode(file, args = [], options = {}) {
 	if (!Array.isArray(args)) {
 		options = args;
 		args = [];
 	}
 
-	const defaultExecArgv = process.execArgv.filter(arg => !arg.startsWith('--inspect'));
-	const {
-		nodePath = process.execPath,
-		nodeOptions = defaultExecArgv,
-	} = options;
+	if (options.node === false) {
+		throw new TypeError('The "node" option cannot be false with `execaNode()`.');
+	}
 
-	return execa(
-		nodePath,
-		[...nodeOptions, getFilePath(scriptPath), ...args],
-		{ipc: true, ...options, shell: false},
-	);
+	return execa(file, args, {...options, node: true});
 }

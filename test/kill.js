@@ -6,12 +6,11 @@ import test from 'ava';
 import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../index.js';
-import {setFixtureDir} from './helpers/fixtures-dir.js';
+import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
 
 const isWindows = process.platform === 'win32';
-const TIMEOUT_REGEXP = /timed out after/;
 
 const spawnNoKillable = async (forceKillAfterDelay, options) => {
 	const subprocess = execa('no-killable.js', {
@@ -187,19 +186,25 @@ test('execa() returns a promise with kill()', async t => {
 });
 
 test('timeout kills the process if it times out', async t => {
-	const {isTerminated, signal, timedOut} = await t.throwsAsync(execa('forever.js', {timeout: 1}), {message: TIMEOUT_REGEXP});
+	const {isTerminated, signal, timedOut, originalMessage, shortMessage, message} = await t.throwsAsync(execa('forever.js', {timeout: 1}));
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');
 	t.true(timedOut);
+	t.is(originalMessage, '');
+	t.is(shortMessage, 'Command timed out after 1 milliseconds: forever.js');
+	t.is(message, shortMessage);
 });
 
 test('timeout kills the process if it times out, in sync mode', async t => {
-	const {isTerminated, signal, timedOut} = await t.throws(() => {
-		execaSync('forever.js', {timeout: 1, message: TIMEOUT_REGEXP});
+	const {isTerminated, signal, timedOut, originalMessage, shortMessage, message} = await t.throws(() => {
+		execaSync('node', ['forever.js'], {timeout: 1, cwd: FIXTURES_DIR});
 	});
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');
 	t.true(timedOut);
+	t.is(originalMessage, 'spawnSync node ETIMEDOUT');
+	t.is(shortMessage, `Command timed out after 1 milliseconds: node forever.js\n${originalMessage}`);
+	t.is(message, shortMessage);
 });
 
 test('timeout does not kill the process if it does not time out', async t => {

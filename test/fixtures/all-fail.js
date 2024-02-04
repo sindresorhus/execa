@@ -3,4 +3,4 @@ import process from 'node:process';
 
 console.log('stdout');
 console.error('stderr');
-process.exit(1);
+process.exitCode = 1;

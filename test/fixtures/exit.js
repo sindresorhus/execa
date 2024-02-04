@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 import process from 'node:process';
 
-process.exit(Number(process.argv[2]));
+process.exitCode = Number(process.argv[2]);

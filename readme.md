@@ -366,7 +366,7 @@ Since the escaping is fairly basic, this should not be executed directly as a pr
 
 Type: `string`
 
-The `cwd` of the command if provided in the [command options](#cwd-1). Otherwise it is `process.cwd()`.
+The [current directory](#cwd-1) in which the command was run.
 
 #### stdout
 
@@ -510,6 +510,8 @@ Default: `process.cwd()`
 
 Current working directory of the child process.
 
+This is also used to resolve the [`execPath`](#execpath) option when it is a relative path.
+
 #### env
 
 Type: `object`\
@@ -548,8 +550,6 @@ Type: `string | URL`\
 Default: `process.execPath` (Current Node.js executable)
 
 Path to the Node.js executable to use in child processes.
-
-This can be either an absolute path or a path relative to the [`cwd` option](#cwd).
 
 Requires [`preferLocal`](#preferlocal) to be `true`.
 

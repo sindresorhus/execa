@@ -1,9 +1,8 @@
 import {Buffer} from 'node:buffer';
 import {setMaxListeners} from 'node:events';
-import path from 'node:path';
+import {basename} from 'node:path';
 import childProcess from 'node:child_process';
 import process from 'node:process';
-import {fileURLToPath} from 'node:url';
 import crossSpawn from 'cross-spawn';
 import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
@@ -16,6 +15,7 @@ import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
 import {joinCommand, getEscapedCommand} from './lib/escape.js';
 import {parseCommand} from './lib/command.js';
+import {getDefaultCwd, normalizeCwd, safeNormalizeFileUrl, normalizeFileUrl} from './lib/cwd.js';
 import {parseTemplates} from './lib/script.js';
 import {logCommand, verboseDefault} from './lib/verbose.js';
 import {bufferToUint8Array} from './lib/stdio/utils.js';
@@ -32,17 +32,7 @@ const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) =>
 	return env;
 };
 
-const normalizeFileUrl = file => file instanceof URL ? fileURLToPath(file) : file;
-
-const getFilePath = rawFile => {
-	const fileString = normalizeFileUrl(rawFile);
-
-	if (typeof fileString !== 'string') {
-		throw new TypeError('First argument must be a string or a file URL.');
-	}
-
-	return fileString;
-};
+const getFilePath = rawFile => safeNormalizeFileUrl(rawFile, 'First argument');
 
 const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	const filePath = getFilePath(rawFile);
@@ -56,8 +46,9 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	options.shell = normalizeFileUrl(options.shell);
 	options.env = getEnv(options);
 	options.forceKillAfterDelay = normalizeForceKillAfterDelay(options.forceKillAfterDelay);
+	options.cwd = normalizeCwd(options.cwd);
 
-	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
+	if (process.platform === 'win32' && basename(file, '.exe') === 'cmd') {
 		// #116
 		args.unshift('/q');
 	}
@@ -73,7 +64,7 @@ const addDefaultOptions = ({
 	stripFinalNewline = true,
 	extendEnv = true,
 	preferLocal = false,
-	cwd = process.cwd(),
+	cwd = getDefaultCwd(),
 	localDir = cwd,
 	execPath = process.execPath,
 	encoding = 'utf8',
@@ -210,6 +201,7 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 	return {
 		command,
 		escapedCommand,
+		cwd: options.cwd,
 		failed: false,
 		timedOut: false,
 		isCanceled: false,
@@ -277,6 +269,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	return {
 		command,
 		escapedCommand,
+		cwd: options.cwd,
 		failed: false,
 		timedOut: false,
 		isCanceled: false,

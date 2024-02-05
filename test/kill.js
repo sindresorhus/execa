@@ -392,8 +392,10 @@ test('child process errors are handled', async t => {
 test('child process errors use killSignal', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
 	await once(subprocess, 'spawn');
-	subprocess.emit('error', new Error('test'));
-	const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /test/});
-	t.true(isTerminated);
-	t.is(signal, 'SIGINT');
+	const error = new Error('test');
+	subprocess.emit('error', error);
+	const thrownError = await t.throwsAsync(subprocess);
+	t.is(thrownError, error);
+	t.true(thrownError.isTerminated);
+	t.is(thrownError.signal, 'SIGINT');
 });

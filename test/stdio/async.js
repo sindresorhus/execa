@@ -1,6 +1,6 @@
 import {once, defaultMaxListeners} from 'node:events';
 import process from 'node:process';
-import {setTimeout} from 'node:timers/promises';
+import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {STANDARD_STREAMS} from '../helpers/stdio.js';
@@ -28,6 +28,7 @@ const testListenersCleanup = async (t, isMultiple) => {
 		once(process.stdout, 'unpipe'),
 		once(process.stderr, 'unpipe'),
 	]);
+	await setImmediate();
 
 	for (const [index, streamNewListeners] of Object.entries(getStandardStreamsListeners())) {
 		const defaultListeners = Object.fromEntries(Reflect.ownKeys(streamNewListeners).map(eventName => [eventName, []]));
@@ -63,7 +64,7 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 		const results = await Promise.all(
 			Array.from({length: processesCount}, () => execa('empty.js', getComplexStdio(isMultiple))),
 		);
-		await setTimeout(0);
+		await setImmediate();
 		t.true(results.every(({exitCode}) => exitCode === 0));
 		t.is(warning, undefined);
 	} finally {

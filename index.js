@@ -15,7 +15,9 @@ import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExi
 import {pipeToProcess} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
-import {joinCommand, parseCommand, parseTemplates, getEscapedCommand} from './lib/command.js';
+import {joinCommand, getEscapedCommand} from './lib/escape.js';
+import {parseCommand} from './lib/command.js';
+import {parseTemplates} from './lib/script.js';
 import {logCommand, verboseDefault} from './lib/verbose.js';
 import {bufferToUint8Array} from './lib/stdio/utils.js';
 

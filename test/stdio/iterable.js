@@ -42,8 +42,8 @@ test('stdin option can be an iterable of strings', testIterable, stringGenerator
 test('stdio[*] option can be an iterable of strings', testIterable, stringGenerator(), 3);
 test('stdin option can be an iterable of Uint8Arrays', testIterable, binaryGenerator(), 0);
 test('stdio[*] option can be an iterable of Uint8Arrays', testIterable, binaryGenerator(), 3);
-test('stdin option can be an async iterable', testIterable, asyncGenerator(), 0);
-test('stdio[*] option can be an async iterable', testIterable, asyncGenerator(), 3);
+test.serial('stdin option can be an async iterable', testIterable, asyncGenerator(), 0);
+test.serial('stdio[*] option can be an async iterable', testIterable, asyncGenerator(), 3);
 
 const foobarObjectGenerator = function * () {
 	yield foobarObject;
@@ -107,11 +107,13 @@ test('stdout option cannot be an iterable - sync', testNoIterableOutput, stringG
 test('stderr option cannot be an iterable - sync', testNoIterableOutput, stringGenerator(), 2, execaSync);
 
 test('stdin option can be an infinite iterable', async t => {
-	const childProcess = execa('stdin.js', getStdio(0, infiniteGenerator()));
-	const stdout = await once(childProcess.stdout, 'data');
-	t.true(stdout.toString().startsWith('foo'));
+	const iterable = infiniteGenerator();
+	const childProcess = execa('stdin.js', getStdio(0, iterable));
+	await once(childProcess.stdout, 'data');
 	childProcess.kill();
-	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	const {stdout} = await t.throwsAsync(childProcess);
+	t.true(stdout.startsWith('foo'));
+	t.deepEqual(await iterable.next(), {value: undefined, done: true});
 });
 
 const testMultipleIterable = async (t, index) => {

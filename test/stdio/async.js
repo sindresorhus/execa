@@ -18,17 +18,17 @@ const getComplexStdio = isMultiple => ({
 	stderr: ['pipe', 'inherit', ...(isMultiple ? [2, process.stderr] : [])],
 });
 
+const onStdinRemoveListener = () => once(process.stdin, 'removeListener', {cleanup: true});
+
 const testListenersCleanup = async (t, isMultiple) => {
 	const streamsPreviousListeners = getStandardStreamsListeners();
 	const childProcess = execa('empty.js', getComplexStdio(isMultiple));
 	t.notDeepEqual(getStandardStreamsListeners(), streamsPreviousListeners);
-	await Promise.all([
-		childProcess,
-		once(childProcess.stdin, 'unpipe'),
-		once(process.stdout, 'unpipe'),
-		once(process.stderr, 'unpipe'),
-	]);
-	await setImmediate();
+	await childProcess;
+	await onStdinRemoveListener();
+	if (isMultiple) {
+		await onStdinRemoveListener();
+	}
 
 	for (const [index, streamNewListeners] of Object.entries(getStandardStreamsListeners())) {
 		const defaultListeners = Object.fromEntries(Reflect.ownKeys(streamNewListeners).map(eventName => [eventName, []]));
@@ -64,11 +64,12 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 		const results = await Promise.all(
 			Array.from({length: processesCount}, () => execa('empty.js', getComplexStdio(isMultiple))),
 		);
-		await setImmediate();
-		await setImmediate();
 		t.true(results.every(({exitCode}) => exitCode === 0));
 		t.is(warning, undefined);
 	} finally {
+		await setImmediate();
+		await setImmediate();
+
 		for (const standardStream of STANDARD_STREAMS) {
 			t.is(standardStream.getMaxListeners(), maxListenersCount);
 			standardStream.setMaxListeners(defaultMaxListeners);

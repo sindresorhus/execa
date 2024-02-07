@@ -1,7 +1,7 @@
 import {Buffer} from 'node:buffer';
 import {once} from 'node:events';
 import {getDefaultHighWaterMark} from 'node:stream';
-import {setTimeout, setImmediate} from 'node:timers/promises';
+import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../index.js';
@@ -87,7 +87,6 @@ const getFirstDataEvent = async stream => {
 const testLateStream = async (t, index, all) => {
 	const subprocess = execa('noop-fd-ipc.js', [`${index}`, foobarString], {...getStdio(4, 'ipc', 4), buffer: false, all});
 	await once(subprocess, 'message');
-	await setImmediate();
 	const [output, allOutput] = await Promise.all([
 		getStream(subprocess.stdio[index]),
 		all ? getStream(subprocess.all) : undefined,
@@ -101,10 +100,10 @@ const testLateStream = async (t, index, all) => {
 	}
 };
 
-test('Lacks some data when stdout is read too late `buffer` set to `false`', testLateStream, 1, false);
-test('Lacks some data when stderr is read too late `buffer` set to `false`', testLateStream, 2, false);
-test('Lacks some data when stdio[*] is read too late `buffer` set to `false`', testLateStream, 3, false);
-test('Lacks some data when all is read too late `buffer` set to `false`', testLateStream, 1, true);
+test.serial('Lacks some data when stdout is read too late `buffer` set to `false`', testLateStream, 1, false);
+test.serial('Lacks some data when stderr is read too late `buffer` set to `false`', testLateStream, 2, false);
+test.serial('Lacks some data when stdio[*] is read too late `buffer` set to `false`', testLateStream, 3, false);
+test.serial('Lacks some data when all is read too late `buffer` set to `false`', testLateStream, 1, true);
 
 // eslint-disable-next-line max-params
 const testIterationBuffer = async (t, index, buffer, useDataEvents, all) => {

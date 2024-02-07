@@ -1233,6 +1233,8 @@ expectError(execaSync('unicorns', {stdio: [[[new Uint8Array(), new Uint8Array()]
 expectError(execaSync('unicorns', {stdio: [[[{}, {}]]]}));
 expectError(execaSync('unicorns', {stdio: [[emptyStringGenerator()]]}));
 expectError(execaSync('unicorns', {stdio: [[asyncStringGenerator()]]}));
+execa('unicorns', {ipc: true});
+expectError(execaSync('unicorns', {ipc: true}));
 execa('unicorns', {serialization: 'advanced'});
 expectError(execaSync('unicorns', {serialization: 'advanced'}));
 execa('unicorns', {detached: true});

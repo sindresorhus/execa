@@ -1,6 +1,6 @@
 import {inspect} from 'node:util';
 import test from 'ava';
-import {normalizeStdio, normalizeStdioNode} from '../../lib/stdio/normalize.js';
+import {normalizeStdio} from '../../lib/stdio/normalize.js';
 
 const macro = (t, input, expected, func) => {
 	if (expected instanceof Error) {
@@ -17,9 +17,6 @@ const macroTitle = name => (title, input) => `${name} ${(inspect(input))}`;
 
 const stdioMacro = (...args) => macro(...args, normalizeStdio);
 stdioMacro.title = macroTitle('execa()');
-
-test(stdioMacro, undefined, [undefined, undefined, undefined]);
-test(stdioMacro, null, [undefined, undefined, undefined]);
 
 test(stdioMacro, {stdio: 'inherit'}, ['inherit', 'inherit', 'inherit']);
 test(stdioMacro, {stdio: 'pipe'}, ['pipe', 'pipe', 'pipe']);
@@ -46,21 +43,3 @@ test(stdioMacro, {stdin: 'inherit', stdio: 'pipe'}, new Error('It\'s not possibl
 test(stdioMacro, {stdin: 'inherit', stdio: ['pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 test(stdioMacro, {stdin: 'inherit', stdio: [undefined, 'pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
 test(stdioMacro, {stdin: 0, stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));
-
-const forkMacro = (...args) => macro(...args, normalizeStdioNode);
-forkMacro.title = macroTitle('execaNode()');
-
-test(forkMacro, undefined, [undefined, undefined, undefined, 'ipc']);
-test(forkMacro, {stdio: 'ignore'}, ['ignore', 'ignore', 'ignore', 'ipc']);
-test(forkMacro, {stdio: 'ipc'}, ['ipc', 'ipc', 'ipc']);
-test(forkMacro, {stdio: [0, 1, 2]}, [0, 1, 2, 'ipc']);
-test(forkMacro, {stdio: [0, 1, 2, 3]}, [0, 1, 2, 3, 'ipc']);
-test(forkMacro, {stdio: [0, 1, 2, 'ipc']}, [0, 1, 2, 'ipc']);
-
-test(forkMacro, {stdio: [0, 1, undefined]}, [0, 1, undefined, 'ipc']);
-test(forkMacro, {stdio: [0, 1, 2, undefined]}, [0, 1, 2, undefined, 'ipc']);
-test(forkMacro, {stdout: 'ignore'}, [undefined, 'ignore', undefined, 'ipc']);
-test(forkMacro, {stdout: 'ignore', stderr: 'ignore'}, [undefined, 'ignore', 'ignore', 'ipc']);
-
-test(forkMacro, {stdio: {foo: 'bar'}}, new TypeError('Expected `stdio` to be of type `string` or `Array`, got `object`'));
-test(forkMacro, {stdin: 'inherit', stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`'));

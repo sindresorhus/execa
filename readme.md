@@ -482,14 +482,50 @@ This is `undefined` unless the child process exited due to an `error` event or a
 
 Type: `object`
 
-#### cleanup
+This lists all Execa options, including some options which are the same as for [`child_process#spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)/[`child_process#exec()`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback).
+
+#### reject
 
 Type: `boolean`\
 Default: `true`
 
-Kill the spawned process when the parent process exits unless either:
-	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+Setting this to `false` resolves the promise with the error instead of rejecting it.
+
+#### shell
+
+Type: `boolean | string | URL`\
+Default: `false`
+
+If `true`, runs `file` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
+
+We recommend against using this option since it is:
+- not cross-platform, encouraging shell-specific syntax.
+- slower, because of the additional shell interpretation.
+- unsafe, potentially allowing command injection.
+
+#### cwd
+
+Type: `string | URL`\
+Default: `process.cwd()`
+
+Current working directory of the child process.
+
+#### env
+
+Type: `object`\
+Default: `process.env`
+
+Environment key-value pairs.
+
+Unless the [`extendEnv` option](#extendenv) is `false`, the child process also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+
+#### extendEnv
+
+Type: `boolean`\
+Default: `true`
+
+If `true`, the child process uses both the [`env` option](#env) and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+If `false`, only the `env` option is used, not `process.env`.
 
 #### preferLocal
 
@@ -518,6 +554,29 @@ This can be either an absolute path or a path relative to the [`cwd` option](#cw
 Requires [`preferLocal`](#preferlocal) to be `true`.
 
 For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
+
+#### nodePath *(For `.node()` only)*
+
+Type: `string | URL`\
+Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
+
+Node.js executable used to create the child process.
+
+#### nodeOptions *(For `.node()` only)*
+
+Type: `string[]`\
+Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
+
+List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
+
+#### verbose
+
+Type: `boolean`\
+Default: `false`
+
+[Print each command](#verbose-mode) on `stderr` before executing it.
+
+This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
 
 #### buffer
 
@@ -636,19 +695,12 @@ Split `stdout` and `stderr` into lines.
 - [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`childProcess.all`](#all) and [`childProcess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) iterate over lines instead of arbitrary chunks.
 - Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
 
-#### ipc
+#### encoding
 
-Type: `boolean`\
-Default: `true` with [`execaNode()`](#execanodescriptpath-arguments-options), `false` otherwise
+Type: `string`\
+Default: `utf8`
 
-Enables exchanging messages with the child process using [`childProcess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`childProcess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
-
-#### reject
-
-Type: `boolean`\
-Default: `true`
-
-Setting this to `false` resolves the promise with the error instead of rejecting it.
+Specify the character encoding used to decode the [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio) output. If set to `'buffer'`, then `stdout`, `stderr` and `stdio` will be `Uint8Array`s instead of strings.
 
 #### stripFinalNewline
 
@@ -657,39 +709,19 @@ Default: `true`
 
 Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
 
-#### extendEnv
+#### maxBuffer
+
+Type: `number`\
+Default: `100_000_000` (100 MB)
+
+Largest amount of data in bytes allowed on [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio).
+
+#### ipc
 
 Type: `boolean`\
-Default: `true`
+Default: `true` with [`execaNode()`](#execanodescriptpath-arguments-options), `false` otherwise
 
-If `true`, the child process uses both the [`env` option](#env) and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-If `false`, only the `env` option is used, not `process.env`.
-
----
-
-Execa also accepts the below options which are the same as the options for [`child_process#spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)/[`child_process#exec()`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback)
-
-#### cwd
-
-Type: `string | URL`\
-Default: `process.cwd()`
-
-Current working directory of the child process.
-
-#### env
-
-Type: `object`\
-Default: `process.env`
-
-Environment key-value pairs.
-
-Unless the [`extendEnv` option](#extendenv) is `false`, the child process also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-
-#### argv0
-
-Type: `string`
-
-Explicitly set the value of `argv[0]` sent to the child process. This will be set to `file` if not specified.
+Enables exchanging messages with the child process using [`childProcess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`childProcess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
 
 #### serialization
 
@@ -708,36 +740,14 @@ Type: `boolean`
 
 Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
-#### uid
+#### cleanup
 
-Type: `number`
+Type: `boolean`\
+Default: `true`
 
-Sets the user identity of the process.
-
-#### gid
-
-Type: `number`
-
-Sets the group identity of the process.
-
-#### shell
-
-Type: `boolean | string | URL`\
-Default: `false`
-
-If `true`, runs `file` inside of a shell. Uses `/bin/sh` on UNIX and `cmd.exe` on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
-
-We recommend against using this option since it is:
-- not cross-platform, encouraging shell-specific syntax.
-- slower, because of the additional shell interpretation.
-- unsafe, potentially allowing command injection.
-
-#### encoding
-
-Type: `string`\
-Default: `utf8`
-
-Specify the character encoding used to decode the [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio) output. If set to `'buffer'`, then `stdout`, `stderr` and `stdio` will be `Uint8Array`s instead of strings.
+Kill the spawned process when the parent process exits unless either:
+	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
 
 #### timeout
 
@@ -746,23 +756,13 @@ Default: `0`
 
 If `timeout`` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
-#### maxBuffer
+#### signal
 
-Type: `number`\
-Default: `100_000_000` (100 MB)
+Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
-Largest amount of data in bytes allowed on [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio).
+You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-#### killSignal
-
-Type: `string | number`\
-Default: `SIGTERM`
-
-Signal used to terminate the child process when:
-- using the [`signal`](#signal-1), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
-- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
-
-This can be either a name (like `"SIGTERM"`) or a number (like `9`).
+When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `true`.
 
 #### forceKillAfterDelay
 
@@ -784,13 +784,34 @@ This does not work when the child process is terminated by either:
 
 Also, this does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events): `SIGKILL` and `SIGTERM` both terminate the process immediately. Other packages (such as [`taskkill`](https://github.com/sindresorhus/taskkill)) can be used to achieve fail-safe termination on Windows.
 
-#### signal
+#### killSignal
 
-Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
+Type: `string | number`\
+Default: `SIGTERM`
 
-You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+Signal used to terminate the child process when:
+- using the [`signal`](#signal-1), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
+- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
-When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `true`.
+This can be either a name (like `"SIGTERM"`) or a number (like `9`).
+
+#### argv0
+
+Type: `string`
+
+Explicitly set the value of `argv[0]` sent to the child process. This will be set to `file` if not specified.
+
+#### uid
+
+Type: `number`
+
+Sets the user identity of the process.
+
+#### gid
+
+Type: `number`
+
+Sets the group identity of the process.
 
 #### windowsVerbatimArguments
 
@@ -805,29 +826,6 @@ Type: `boolean`\
 Default: `true`
 
 On Windows, do not create a new console window. Please note this also prevents `CTRL-C` [from working](https://github.com/nodejs/node/issues/29837) on Windows.
-
-#### verbose
-
-Type: `boolean`\
-Default: `false`
-
-[Print each command](#verbose-mode) on `stderr` before executing it.
-
-This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
-
-#### nodePath *(For `.node()` only)*
-
-Type: `string | URL`\
-Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
-
-Node.js executable used to create the child process.
-
-#### nodeOptions *(For `.node()` only)*
-
-Type: `string[]`\
-Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
-
-List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
 
 ## Tips
 

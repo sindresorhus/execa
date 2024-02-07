@@ -4,6 +4,7 @@ import {execa, execaSync} from '../index.js';
 import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
 import {fullStdio, getStdio} from './helpers/stdio.js';
 import {noopGenerator, outputObjectGenerator} from './helpers/generator.js';
+import {foobarString} from './helpers/input.js';
 
 const isWindows = process.platform === 'win32';
 
@@ -291,4 +292,67 @@ test('error.cwd is undefined on failure if not passed as options', async t => {
 	const expectedCwd = process.cwd();
 	const {cwd} = await t.throwsAsync(execa('fail.js'));
 	t.is(cwd, expectedCwd);
+});
+
+const testUnusualError = async (t, error) => {
+	const childProcess = execa('empty.js');
+	childProcess.emit('error', error);
+	const {message, originalMessage} = await t.throwsAsync(childProcess);
+	t.true(message.includes(String(error)));
+	t.is(originalMessage, String(error));
+};
+
+test('error instance can be null', testUnusualError, null);
+test('error instance can be false', testUnusualError, false);
+test('error instance can be a string', testUnusualError, 'test');
+test('error instance can be a number', testUnusualError, 0);
+test('error instance can be a BigInt', testUnusualError, 0n);
+test('error instance can be a symbol', testUnusualError, Symbol('test'));
+test('error instance can be a function', testUnusualError, () => {});
+test('error instance can be an array', testUnusualError, ['test', 'test']);
+
+test('error instance can be undefined', async t => {
+	const childProcess = execa('empty.js');
+	childProcess.emit('error');
+	await t.throwsAsync(childProcess, {message: 'Command failed: empty.js'});
+});
+
+test('error instance can be a plain object', async t => {
+	const childProcess = execa('empty.js');
+	childProcess.emit('error', {message: foobarString});
+	await t.throwsAsync(childProcess, {message: new RegExp(foobarString)});
+});
+
+test('error instance can be shared', async t => {
+	const originalMessage = foobarString;
+	const error = new Error(originalMessage);
+	const fixtureName = 'noop.js';
+
+	const firstArgument = 'one';
+	const childProcess = execa(fixtureName, [firstArgument]);
+	childProcess.emit('error', error);
+	const firstError = await t.throwsAsync(childProcess);
+
+	const secondArgument = 'two';
+	const secondChildProcess = execa(fixtureName, [secondArgument]);
+	secondChildProcess.emit('error', error);
+	const secondError = await t.throwsAsync(secondChildProcess);
+
+	const firstCommand = `${fixtureName} ${firstArgument}`;
+	const firstMessage = `Command failed: ${firstCommand}\n${foobarString}`;
+	t.is(firstError, error);
+	t.is(firstError.command, firstCommand);
+	t.is(firstError.message, firstMessage);
+	t.true(firstError.stack.includes(firstMessage));
+	t.is(firstError.shortMessage, firstMessage);
+	t.is(firstError.originalMessage, originalMessage);
+
+	const secondCommand = `${fixtureName} ${secondArgument}`;
+	const secondMessage = `Command failed: ${secondCommand}\n${foobarString}`;
+	t.not(secondError, error);
+	t.is(secondError.command, secondCommand);
+	t.is(secondError.message, secondMessage);
+	t.true(secondError.stack.includes(secondMessage));
+	t.is(secondError.shortMessage, secondMessage);
+	t.is(secondError.originalMessage, originalMessage);
 });

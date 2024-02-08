@@ -1,7 +1,7 @@
 import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync} from '../index.js';
-import {FIXTURES_DIR, setFixtureDir} from './helpers/fixtures-dir.js';
+import {setFixtureDir} from './helpers/fixtures-dir.js';
 import {fullStdio, getStdio} from './helpers/stdio.js';
 import {noopGenerator, outputObjectGenerator} from './helpers/generator.js';
 import {foobarString} from './helpers/input.js';
@@ -17,6 +17,7 @@ test('Return value properties are not missing and are ordered', async t => {
 	t.deepEqual(Reflect.ownKeys(result), [
 		'command',
 		'escapedCommand',
+		'cwd',
 		'failed',
 		'timedOut',
 		'isCanceled',
@@ -185,8 +186,8 @@ test('error.message newlines are consistent - no newline', testErrorMessageConsi
 test('error.message newlines are consistent - newline', testErrorMessageConsistent, 'stdout\n');
 
 test('Original error.message is kept', async t => {
-	const {originalMessage} = await t.throwsAsync(execa('noop.js', {cwd: 1}));
-	t.true(originalMessage.startsWith('The "options.cwd" property must be of type string or an instance of Buffer or URL. Received type number'));
+	const {originalMessage} = await t.throwsAsync(execa('noop.js', {uid: true}));
+	t.is(originalMessage, 'The "options.uid" property must be int32. Received type boolean (true)');
 });
 
 test('failed is false on success', async t => {
@@ -320,19 +321,8 @@ test('error.code is undefined on success', async t => {
 });
 
 test('error.code is defined on failure if applicable', async t => {
-	const {code} = await t.throwsAsync(execa('noop.js', {cwd: 1}));
+	const {code} = await t.throwsAsync(execa('noop.js', {uid: true}));
 	t.is(code, 'ERR_INVALID_ARG_TYPE');
-});
-
-test('error.cwd is defined on failure if applicable', async t => {
-	const {cwd} = await t.throwsAsync(execa('fail.js', [], {cwd: FIXTURES_DIR}));
-	t.is(cwd, FIXTURES_DIR);
-});
-
-test('error.cwd is undefined on failure if not passed as options', async t => {
-	const expectedCwd = process.cwd();
-	const {cwd} = await t.throwsAsync(execa('fail.js'));
-	t.is(cwd, expectedCwd);
 });
 
 const testUnusualError = async (t, error) => {
@@ -367,7 +357,7 @@ test('error instance can be a plain object', async t => {
 test('error instance can be shared', async t => {
 	const originalMessage = foobarString;
 	const error = new Error(originalMessage);
-	const fixtureName = 'noop.js';
+	const fixtureName = 'empty.js';
 
 	const firstArgument = 'one';
 	const childProcess = execa(fixtureName, [firstArgument]);

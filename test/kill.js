@@ -10,6 +10,7 @@ import {setFixtureDir} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
 
+const isWindows = process.platform === 'win32';
 const TIMEOUT_REGEXP = /timed out after/;
 
 const spawnNoKillable = async (forceKillAfterDelay, options) => {
@@ -47,7 +48,7 @@ test('`forceKillAfterDelay` should not be negative', testInvalidForceKill, -1);
 
 // `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests must be different on Windows.
-if (process.platform === 'win32') {
+if (isWindows) {
 	test('Can call `.kill()` with `forceKillAfterDelay` on Windows', async t => {
 		const {subprocess} = await spawnNoKillable(1);
 		subprocess.kill();
@@ -289,11 +290,10 @@ const pollForProcessExit = async pid => {
 //   - on Linux subprocesses are never killed regardless of `options.detached`
 // With `options.cleanup`, subprocesses are always killed
 //   - `options.cleanup` with SIGKILL is a noop, since it cannot be handled
-const exitIfWindows = process.platform === 'win32';
-test('spawnAndKill SIGTERM', spawnAndKill, ['SIGTERM', false, false, exitIfWindows]);
-test('spawnAndKill SIGKILL', spawnAndKill, ['SIGKILL', false, false, exitIfWindows]);
+test('spawnAndKill SIGTERM', spawnAndKill, ['SIGTERM', false, false, isWindows]);
+test('spawnAndKill SIGKILL', spawnAndKill, ['SIGKILL', false, false, isWindows]);
 test('spawnAndKill cleanup SIGTERM', spawnAndKill, ['SIGTERM', true, false, true]);
-test('spawnAndKill cleanup SIGKILL', spawnAndKill, ['SIGKILL', true, false, exitIfWindows]);
+test('spawnAndKill cleanup SIGKILL', spawnAndKill, ['SIGKILL', true, false, isWindows]);
 test('spawnAndKill detached SIGTERM', spawnAndKill, ['SIGTERM', false, true, false]);
 test('spawnAndKill detached SIGKILL', spawnAndKill, ['SIGKILL', false, true, false]);
 test('spawnAndKill cleanup detached SIGTERM', spawnAndKill, ['SIGTERM', true, true, false]);

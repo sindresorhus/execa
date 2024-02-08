@@ -280,8 +280,6 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Path to the Node.js executable to use in child processes.
 
-	This can be either an absolute path or a path relative to the `cwd` option.
-
 	Requires `preferLocal` to be `true`.
 
 	For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
@@ -411,6 +409,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	Current working directory of the child process.
+
+	This is also used to resolve the `execPath` option when it is a relative path.
 
 	@default process.cwd()
 	*/
@@ -711,7 +711,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	signalDescription?: string;
 
 	/**
-	The `cwd` of the command if provided in the command options. Otherwise it is `process.cwd()`.
+	The current directory in which the command was run.
 	*/
 	cwd: string;
 

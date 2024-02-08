@@ -3,4 +3,4 @@ import process from 'node:process';
 
 process.stdout.write(process.argv[2]);
 process.stderr.write(process.argv[3]);
-process.exit(1);
+process.exitCode = 1;

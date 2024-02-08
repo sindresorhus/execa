@@ -5,4 +5,4 @@ import {writeSync} from 'node:fs';
 console.log('stdout');
 console.error('stderr');
 writeSync(3, 'fd3');
-process.exit(1);
+process.exitCode = 1;

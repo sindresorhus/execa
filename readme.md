@@ -233,19 +233,6 @@ Arguments are [automatically escaped](#shell-syntax). They can contain any chara
 
 This is the preferred method when executing single commands.
 
-#### execaNode(scriptPath, arguments?, options?)
-
-Executes a Node.js file using `node scriptPath ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a [`childProcess`](#childprocess).
-
-Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces.
-
-This is the preferred method when executing Node.js files.
-
-Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
-- the current Node version and options are used. This can be overridden using the [`nodePath`](#nodepath-for-node-only) and [`nodeOptions`](#nodeoptions-for-node-only) options.
-- the [`shell`](#shell) option cannot be used
-- the [`ipc`](#ipc) option defaults to `true`
-
 #### $\`command\`
 
 Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a [`childProcess`](#childprocess).
@@ -273,6 +260,12 @@ Executes a command. The `command` string includes both the `file` and its `argum
 Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces must be escaped with a backslash like `execaCommand('echo has\\ space')`.
 
 This is the preferred method when executing a user-supplied `command` string, such as in a REPL.
+
+#### execaNode(scriptPath, arguments?, options?)
+
+Same as [`execa()`](#execacommandcommand-options) but using the [`node`](#node) option.
+
+Executes a Node.js file using `node scriptPath ...arguments`.
 
 #### execaSync(file, arguments?, options?)
 
@@ -544,30 +537,41 @@ Default: `process.cwd()`
 
 Preferred path to find locally installed binaries in (use with `preferLocal`).
 
-#### execPath
+#### node
+
+Type: `boolean`\
+Default: `true` with [`execaNode()`](#execanodescriptpath-arguments-options), `false` otherwise
+
+If `true`, runs with Node.js. The first argument must be a Node.js file.
+
+#### nodeOptions
+
+Type: `string[]`\
+Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
+
+List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the [Node.js executable](#nodepath).
+
+Requires the [`node`](#node) option to be `true`.
+
+#### nodePath
 
 Type: `string | URL`\
-Default: `process.execPath` (Current Node.js executable)
-
-Path to the Node.js executable to use in child processes.
-
-Requires [`preferLocal`](#preferlocal) to be `true`.
-
-For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
-
-#### nodePath *(For `.node()` only)*
-
-Type: `string | URL`\
-Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath)
+Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
 
 Node.js executable used to create the child process.
 
-#### nodeOptions *(For `.node()` only)*
+Requires the [`node`](#node) option to be `true`.
 
-Type: `string[]`\
-Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv)
+#### execPath
 
-List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
+Type: `string | URL`\
+Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
+
+Path to the Node.js executable to use in child processes.
+
+Requires the [`preferLocal`](#preferlocal) option to be `true`.
+
+For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
 
 #### verbose
 
@@ -719,7 +723,7 @@ Largest amount of data in bytes allowed on [`stdout`](#stdout), [`stderr`](#stde
 #### ipc
 
 Type: `boolean`\
-Default: `true` with [`execaNode()`](#execanodescriptpath-arguments-options), `false` otherwise
+Default: `true` if the [`node`](#node) option is enabled, `false` otherwise
 
 Enables exchanging messages with the child process using [`childProcess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`childProcess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
 

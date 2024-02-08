@@ -278,13 +278,38 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly localDir?: string | URL;
 
 	/**
+	If `true`, runs with Node.js. The first argument must be a Node.js file.
+
+	@default `true` with `execaNode()`, `false` otherwise
+	*/
+	readonly node?: boolean;
+
+	/**
+	Node.js executable used to create the child process.
+
+	Requires the `node` option to be `true`.
+
+	@default [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
+	*/
+	readonly nodePath?: string | URL;
+
+	/**
+	List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
+
+	Requires the `node` option to be `true`.
+
+	@default [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
+	*/
+	readonly nodeOptions?: string[];
+
+	/**
 	Path to the Node.js executable to use in child processes.
 
-	Requires `preferLocal` to be `true`.
+	Requires the `preferLocal` option to be `true`.
 
 	For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
 
-	@default process.execPath
+	@default [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
 	*/
 	readonly execPath?: string | URL;
 
@@ -556,6 +581,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	Enables exchanging messages with the child process using [`childProcess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`childProcess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
+
+	@default `true` if the `node` option is enabled, `false` otherwise
 	*/
 	readonly ipc?: IfAsync<IsSync, boolean>;
 
@@ -606,22 +633,6 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 export type Options = CommonOptions<false>;
 export type SyncOptions = CommonOptions<true>;
-
-export type NodeOptions<OptionsType extends Options = Options> = {
-	/**
-	The Node.js executable to use.
-
-	@default process.execPath
-	*/
-	readonly nodePath?: string | URL;
-
-	/**
-	List of [CLI options](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
-
-	@default process.execArgv
-	*/
-	readonly nodeOptions?: string[];
-} & OptionsType;
 
 /**
 Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
@@ -1262,16 +1273,9 @@ await $$`echo rainbows`;
 export const $: Execa$;
 
 /**
-Executes a Node.js file using `node scriptPath ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a `childProcess`.
+Same as `execa()` but using the `node` option.
 
-Arguments are automatically escaped. They can contain any character, including spaces.
-
-This is the preferred method when executing Node.js files.
-
-Like [`child_process#fork()`](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options):
-- the current Node version and options are used. This can be overridden using the `nodePath` and `nodeOptions` options.
-- the `shell` option cannot be used
-- the `ipc` option defaults to `true`
+Executes a Node.js file using `node scriptPath ...arguments`.
 
 @param scriptPath - Node.js script to execute, as a string or file URL
 @param arguments - Arguments to pass to `scriptPath` on execution.
@@ -1287,12 +1291,12 @@ import {execa} from 'execa';
 await execaNode('scriptPath', ['argument']);
 ```
 */
-export function execaNode<OptionsType extends NodeOptions = {}>(
+export function execaNode<OptionsType extends Options = {}>(
 	scriptPath: string | URL,
 	arguments?: readonly string[],
 	options?: OptionsType
 ): ExecaChildProcess<OptionsType>;
-export function execaNode<OptionsType extends NodeOptions = {}>(
+export function execaNode<OptionsType extends Options = {}>(
 	scriptPath: string | URL,
 	options?: OptionsType
 ): ExecaChildProcess<OptionsType>;

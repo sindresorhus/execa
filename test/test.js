@@ -8,7 +8,6 @@ import {execa, execaSync, execaNode, $} from '../index.js';
 import {setFixtureDir, PATH_KEY, FIXTURES_DIR_URL} from './helpers/fixtures-dir.js';
 import {identity, fullStdio, getStdio} from './helpers/stdio.js';
 import {noopGenerator} from './helpers/generator.js';
-import {foobarString} from './helpers/input.js';
 
 setFixtureDir();
 process.env.FOO = 'foo';
@@ -58,14 +57,6 @@ if (isWindows) {
 		t.is(stdout, 'Hello World');
 	});
 }
-
-const testNullOptions = async (t, execaMethod) => {
-	const {stdout} = await execaMethod('noop.js', [foobarString], null);
-	t.is(stdout, foobarString);
-};
-
-test('Can pass null to options', testNullOptions, execa);
-test('Can pass null to options - sync', testNullOptions, execaSync);
 
 test('execaSync() throws error if ENOENT', t => {
 	t.throws(() => {

@@ -11,15 +11,38 @@ import {foobarString} from './helpers/input.js';
 
 process.chdir(FIXTURES_DIR);
 
-test('execaNode() succeeds', async t => {
-	const {exitCode} = await execaNode('noop.js');
+const runWithNodeOption = (file, args = [], options = {}) => execa(file, args, {...options, node: true});
+const runWithNodeOptionSync = (file, args = [], options = {}) => execaSync(file, args, {...options, node: true});
+const runWithIpc = (file, options) => execa('node', [file], {...options, ipc: true});
+
+const testNodeSuccess = async (t, execaMethod) => {
+	const {exitCode, stdout} = await execaMethod('noop.js', [foobarString]);
 	t.is(exitCode, 0);
+	t.is(stdout, foobarString);
+};
+
+test('execaNode() succeeds', testNodeSuccess, execaNode);
+test('The "node" option succeeds', testNodeSuccess, runWithNodeOption);
+test('The "node" option succeeds - sync', testNodeSuccess, runWithNodeOptionSync);
+
+test('execaNode() cannot set the "node" option to false', t => {
+	t.throws(() => {
+		execaNode('empty.js', {node: false});
+	}, {message: /The "node" option cannot be false/});
 });
 
-test('execaNode() returns stdout', async t => {
-	const {stdout} = await execaNode('noop.js', ['foo']);
-	t.is(stdout, 'foo');
-});
+const testDoubleNode = (t, execPath, execaMethod) => {
+	t.throws(() => {
+		execaMethod(execPath, ['noop.js']);
+	}, {message: /does not need to be "node"/});
+};
+
+test('Cannot use "node" as binary - execaNode()', testDoubleNode, 'node', execaNode);
+test('Cannot use "node" as binary - "node" option', testDoubleNode, 'node', runWithNodeOption);
+test('Cannot use "node" as binary - "node" option sync', testDoubleNode, 'node', runWithNodeOptionSync);
+test('Cannot use path to "node" as binary - execaNode()', testDoubleNode, process.execPath, execaNode);
+test('Cannot use path to "node" as binary - "node" option', testDoubleNode, process.execPath, runWithNodeOption);
+test('Cannot use path to "node" as binary - "node" option sync', testDoubleNode, process.execPath, runWithNodeOptionSync);
 
 const getNodePath = async () => {
 	const {path} = await getNode(TEST_NODE_VERSION);
@@ -28,19 +51,34 @@ const getNodePath = async () => {
 
 const TEST_NODE_VERSION = '16.0.0';
 
-const testNodePath = async (t, mapPath) => {
+const testNodePath = async (t, execaMethod, mapPath) => {
 	const nodePath = mapPath(await getNodePath());
-	const {stdout} = await execaNode('--version', {nodePath});
+	const {stdout} = await execaMethod('--version', [], {nodePath});
 	t.is(stdout, `v${TEST_NODE_VERSION}`);
 };
 
-test.serial('The "nodePath" option can be used', testNodePath, identity);
-test.serial('The "nodePath" option can be a file URL', testNodePath, pathToFileURL);
+test.serial('The "nodePath" option can be used - execaNode()', testNodePath, execaNode, identity);
+test.serial('The "nodePath" option can be a file URL - execaNode()', testNodePath, execaNode, pathToFileURL);
+test.serial('The "nodePath" option can be used - "node" option', testNodePath, runWithNodeOption, identity);
+test.serial('The "nodePath" option can be a file URL - "node" option', testNodePath, runWithNodeOption, pathToFileURL);
 
-test('The "nodePath" option defaults to the current Node.js binary', async t => {
-	const {stdout} = await execaNode('--version');
+const testNodePathDefault = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('--version');
 	t.is(stdout, process.version);
-});
+};
+
+test('The "nodePath" option defaults to the current Node.js binary - execaNode()', testNodePathDefault, execaNode);
+test('The "nodePath" option defaults to the current Node.js binary - "node" option', testNodePathDefault, runWithNodeOption);
+
+const testNodePathInvalid = (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('noop.js', [], {nodePath: true});
+	}, {message: /The "nodePath" option must be a string or a file URL/});
+};
+
+test('The "nodePath" option must be a string or URL - execaNode()', testNodePathInvalid, execaNode);
+test('The "nodePath" option must be a string or URL - "node" option', testNodePathInvalid, runWithNodeOption);
+test('The "nodePath" option must be a string or URL - "node" option sync', testNodePathInvalid, runWithNodeOptionSync);
 
 const nodePathArguments = ['node', ['-p', 'process.env.Path || process.env.PATH']];
 
@@ -64,44 +102,55 @@ test.serial('The "execPath" option requires "preferLocal: true"', async t => {
 	t.false(stdout.includes(TEST_NODE_VERSION));
 });
 
-test('The "nodeOptions" option can be used', async t => {
-	const {stdout} = await execaNode('empty.js', {nodeOptions: ['--version']});
+const testNodeOptions = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('empty.js', [], {nodeOptions: ['--version']});
 	t.is(stdout, process.version);
-});
+};
 
-const spawnNestedExecaNode = (realExecArgv, fakeExecArgv, nodeOptions) => execa(
+test('The "nodeOptions" option can be used - execaNode()', testNodeOptions, execaNode);
+test('The "nodeOptions" option can be used - "node" option', testNodeOptions, runWithNodeOption);
+
+const spawnNestedExecaNode = (realExecArgv, fakeExecArgv, execaMethod, nodeOptions) => execa(
 	'node',
-	[...realExecArgv, 'nested-node.js', fakeExecArgv, nodeOptions, 'noop.js', foobarString],
+	[...realExecArgv, 'nested-node.js', fakeExecArgv, execaMethod, nodeOptions, 'noop.js', foobarString],
 	{...fullStdio, cwd: FIXTURES_DIR},
 );
 
-const testInspectRemoval = async (t, fakeExecArgv) => {
-	const {stdout, stdio} = await spawnNestedExecaNode([], fakeExecArgv, '');
+const testInspectRemoval = async (t, fakeExecArgv, execaMethod) => {
+	const {stdout, stdio} = await spawnNestedExecaNode([], fakeExecArgv, execaMethod, '');
 	t.is(stdout, foobarString);
 	t.is(stdio[3], '');
 };
 
-test('The "nodeOptions" option removes --inspect without a port when defined by parent process', testInspectRemoval, '--inspect');
-test('The "nodeOptions" option removes --inspect with a port when defined by parent process', testInspectRemoval, '--inspect=9222');
-test('The "nodeOptions" option removes --inspect-brk without a port when defined by parent process', testInspectRemoval, '--inspect-brk');
-test('The "nodeOptions" option removes --inspect-brk with a port when defined by parent process', testInspectRemoval, '--inspect-brk=9223');
+test('The "nodeOptions" option removes --inspect without a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect', 'execaNode');
+test('The "nodeOptions" option removes --inspect without a port when defined by parent process - "node" option', testInspectRemoval, '--inspect', 'nodeOption');
+test('The "nodeOptions" option removes --inspect with a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect=9222', 'execaNode');
+test('The "nodeOptions" option removes --inspect with a port when defined by parent process - "node" option', testInspectRemoval, '--inspect=9222', 'nodeOption');
+test('The "nodeOptions" option removes --inspect-brk without a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect-brk', 'execaNode');
+test('The "nodeOptions" option removes --inspect-brk without a port when defined by parent process - "node" option', testInspectRemoval, '--inspect-brk', 'nodeOption');
+test('The "nodeOptions" option removes --inspect-brk with a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect-brk=9223', 'execaNode');
+test('The "nodeOptions" option removes --inspect-brk with a port when defined by parent process - "node" option', testInspectRemoval, '--inspect-brk=9223', 'nodeOption');
 
-test('The "nodeOptions" option allows --inspect with a different port even when defined by parent process', async t => {
-	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9225'], '', '--inspect=9224');
+const testInspectDifferentPort = async (t, execaMethod) => {
+	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9225'], '', execaMethod, '--inspect=9224');
 	t.is(stdout, foobarString);
 	t.true(stdio[3].includes('Debugger listening'));
-});
+};
 
-test('The "nodeOptions" option forbids --inspect with the same port when defined by parent process', async t => {
-	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9226'], '', '--inspect=9226');
+test.serial('The "nodeOptions" option allows --inspect with a different port even when defined by parent process - execaNode()', testInspectDifferentPort, 'execaNode');
+test.serial('The "nodeOptions" option allows --inspect with a different port even when defined by parent process - "node" option', testInspectDifferentPort, 'nodeOption');
+
+const testInspectSamePort = async (t, execaMethod) => {
+	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9226'], '', execaMethod, '--inspect=9226');
 	t.is(stdout, foobarString);
 	t.true(stdio[3].includes('address already in use'));
-});
+};
 
-const runWithIpc = (file, options) => execa('node', [file], {...options, ipc: true});
+test.serial('The "nodeOptions" option forbids --inspect with the same port when defined by parent process - execaNode()', testInspectSamePort, 'execaNode');
+test.serial('The "nodeOptions" option forbids --inspect with the same port when defined by parent process - "node" option', testInspectSamePort, 'nodeOption');
 
 const testIpc = async (t, execaMethod, options) => {
-	const subprocess = execaMethod('send.js', options);
+	const subprocess = execaMethod('send.js', [], options);
 	await pEvent(subprocess, 'message');
 	subprocess.send(foobarString);
 	const {stdout, stdio} = await subprocess;
@@ -111,6 +160,7 @@ const testIpc = async (t, execaMethod, options) => {
 };
 
 test('execaNode() adds an ipc channel', testIpc, execaNode, {});
+test('The "node" option adds an ipc channel', testIpc, runWithNodeOption, {});
 test('The "ipc" option adds an ipc channel', testIpc, runWithIpc, {});
 test('The "ipc" option works with "stdio: \'pipe\'"', testIpc, runWithIpc, {stdio: 'pipe'});
 test('The "ipc" option works with "stdio: [\'pipe\', \'pipe\', \'pipe\']"', testIpc, runWithIpc, {stdio: ['pipe', 'pipe', 'pipe']});
@@ -122,13 +172,40 @@ test('No ipc channel is added by default', async t => {
 	t.is(stdio.length, 3);
 });
 
-test('Can disable "ipc" with execaNode', async t => {
-	const {stdio} = await t.throwsAsync(execaNode('send.js', {ipc: false}), {message: /process.send is not a function/});
+const testDisableIpc = async (t, execaMethod) => {
+	const {failed, message, stdio} = await execaMethod('send.js', [], {ipc: false, reject: false});
+	t.true(failed);
+	t.true(message.includes('process.send is not a function'));
 	t.is(stdio.length, 3);
+};
+
+test('Can disable "ipc" - execaNode()', testDisableIpc, execaNode);
+test('Can disable "ipc" - "node" option', testDisableIpc, runWithNodeOption);
+test('Can disable "ipc" - "node" option sync', testDisableIpc, runWithNodeOptionSync);
+
+const NO_IPC_MESSAGE = /The "ipc: true" option cannot be used/;
+
+const testNoIpcSync = (t, node) => {
+	t.throws(() => {
+		execaSync('node', ['send.js'], {ipc: true, node});
+	}, {message: NO_IPC_MESSAGE});
+};
+
+test('Cannot use "ipc: true" with execaSync()', testNoIpcSync, undefined);
+test('Cannot use "ipc: true" with execaSync() - "node: false"', testNoIpcSync, false);
+
+test('Cannot use "ipc: true" with execaSync() - "node: true"', t => {
+	t.throws(() => {
+		execaSync('send.js', {ipc: true, node: true});
+	}, {message: NO_IPC_MESSAGE});
 });
 
-test('Cannot use the "ipc" option with execaSync()', t => {
-	t.throws(() => {
-		execaSync('node', ['send.js'], {ipc: true});
-	}, {message: /The "ipc: true" option cannot be used/});
-});
+const testNoShell = async (t, execaMethod) => {
+	const {failed, message} = await execaMethod('node --version', [], {shell: true, reject: false});
+	t.true(failed);
+	t.true(message.includes('MODULE_NOT_FOUND'));
+};
+
+test('Cannot use "shell: true" - execaNode()', testNoShell, execaNode);
+test('Cannot use "shell: true" - "node" option', testNoShell, runWithNodeOption);
+test('Cannot use "shell: true" - "node" option sync', testNoShell, runWithNodeOptionSync);

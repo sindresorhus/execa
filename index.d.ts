@@ -460,7 +460,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly encoding?: EncodingOption;
 
 	/**
-	If `timeout`` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
+	If `timeout` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
 	@default 0
 	*/

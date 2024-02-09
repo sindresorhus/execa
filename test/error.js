@@ -35,8 +35,8 @@ test('Error properties are not missing and are ordered', async t => {
 	t.deepEqual(Reflect.ownKeys(error), [
 		'stack',
 		'message',
-		'originalMessage',
 		'shortMessage',
+		'originalMessage',
 		'command',
 		'escapedCommand',
 		'cwd',
@@ -354,36 +354,51 @@ test('error instance can be a plain object', async t => {
 	await t.throwsAsync(childProcess, {message: new RegExp(foobarString)});
 });
 
-test('error instance can be shared', async t => {
-	const originalMessage = foobarString;
-	const error = new Error(originalMessage);
-	const fixtureName = 'empty.js';
-
-	const firstArgument = 'one';
-	const childProcess = execa(fixtureName, [firstArgument]);
+const runAndFail = (t, fixtureName, argument, error) => {
+	const childProcess = execa(fixtureName, [argument]);
 	childProcess.emit('error', error);
-	const firstError = await t.throwsAsync(childProcess);
+	return t.throwsAsync(childProcess);
+};
 
-	const secondArgument = 'two';
-	const secondChildProcess = execa(fixtureName, [secondArgument]);
-	secondChildProcess.emit('error', error);
-	const secondError = await t.throwsAsync(secondChildProcess);
+const testErrorCopy = async (t, getPreviousArgument) => {
+	const fixtureName = 'empty.js';
+	const argument = 'two';
 
-	const firstCommand = `${fixtureName} ${firstArgument}`;
-	const firstMessage = `Command failed: ${firstCommand}\n${foobarString}`;
-	t.is(firstError, error);
-	t.is(firstError.command, firstCommand);
-	t.is(firstError.message, firstMessage);
-	t.true(firstError.stack.includes(firstMessage));
-	t.is(firstError.shortMessage, firstMessage);
-	t.is(firstError.originalMessage, originalMessage);
+	const previousArgument = await getPreviousArgument(t, fixtureName);
+	const previousError = await runAndFail(t, fixtureName, 'foo', previousArgument);
+	const error = await runAndFail(t, fixtureName, argument, previousError);
+	const message = `Command failed: ${fixtureName} ${argument}\n${foobarString}`;
 
-	const secondCommand = `${fixtureName} ${secondArgument}`;
-	const secondMessage = `Command failed: ${secondCommand}\n${foobarString}`;
-	t.not(secondError, error);
-	t.is(secondError.command, secondCommand);
-	t.is(secondError.message, secondMessage);
-	t.true(secondError.stack.includes(secondMessage));
-	t.is(secondError.shortMessage, secondMessage);
-	t.is(secondError.originalMessage, originalMessage);
-});
+	t.not(error, previousError);
+	t.is(error.command, `${fixtureName} ${argument}`);
+	t.is(error.message, message);
+	t.true(error.stack.includes(message));
+	t.is(error.shortMessage, message);
+	t.is(error.originalMessage, foobarString);
+};
+
+test('error instance can be shared', testErrorCopy, () => new Error(foobarString));
+test('error string can be shared', testErrorCopy, () => foobarString);
+test('error copy can be shared', testErrorCopy, (t, fixtureName) => runAndFail(t, fixtureName, 'bar', new Error(foobarString)));
+
+const testErrorCopyProperty = async (t, propertyName, isCopied) => {
+	const propertyValue = 'test';
+	const initialError = new Error(foobarString);
+	initialError[propertyName] = propertyValue;
+
+	const previousError = await runAndFail(t, 'empty.js', 'foo', initialError);
+	t.is(previousError, initialError);
+
+	const error = await runAndFail(t, 'empty.js', 'bar', previousError);
+	t.is(error[propertyName] === propertyValue, isCopied);
+};
+
+test('error.code can be copied', testErrorCopyProperty, 'code', true);
+test('error.errno can be copied', testErrorCopyProperty, 'errno', true);
+test('error.syscall can be copied', testErrorCopyProperty, 'syscall', true);
+test('error.path can be copied', testErrorCopyProperty, 'path', true);
+test('error.dest can be copied', testErrorCopyProperty, 'dest', true);
+test('error.address can be copied', testErrorCopyProperty, 'address', true);
+test('error.port can be copied', testErrorCopyProperty, 'port', true);
+test('error.info can be copied', testErrorCopyProperty, 'info', true);
+test('error.other cannot be copied', testErrorCopyProperty, 'other', false);

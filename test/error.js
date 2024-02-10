@@ -126,12 +126,14 @@ test('exitCode is 0 on success', async t => {
 	t.is(exitCode, 0);
 });
 
-const testExitCode = async (t, number) => {
-	const {exitCode} = await t.throwsAsync(
-		execa('exit.js', [`${number}`]),
-		{message: new RegExp(`failed with exit code ${number}`)},
+const testExitCode = async (t, expectedExitCode) => {
+	const {exitCode, originalMessage, shortMessage, message} = await t.throwsAsync(
+		execa('exit.js', [`${expectedExitCode}`]),
 	);
-	t.is(exitCode, number);
+	t.is(exitCode, expectedExitCode);
+	t.is(originalMessage, '');
+	t.is(shortMessage, `Command failed with exit code ${expectedExitCode}: exit.js ${expectedExitCode}`);
+	t.is(message, shortMessage);
 };
 
 test('exitCode is 2', testExitCode, 2);
@@ -205,9 +207,12 @@ test('error.isTerminated is true if process was killed directly', async t => {
 
 	subprocess.kill();
 
-	const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGINT/});
+	const {isTerminated, signal, originalMessage, message, shortMessage} = await t.throwsAsync(subprocess, {message: /was killed with SIGINT/});
 	t.true(isTerminated);
 	t.is(signal, 'SIGINT');
+	t.is(originalMessage, '');
+	t.is(shortMessage, 'Command was killed with SIGINT (User interruption with CTRL-C): forever.js');
+	t.is(message, shortMessage);
 });
 
 test('error.isTerminated is true if process was killed indirectly', async t => {
@@ -328,9 +333,10 @@ test('error.code is defined on failure if applicable', async t => {
 const testUnusualError = async (t, error) => {
 	const childProcess = execa('empty.js');
 	childProcess.emit('error', error);
-	const {message, originalMessage} = await t.throwsAsync(childProcess);
-	t.true(message.includes(String(error)));
+	const {originalMessage, shortMessage, message} = await t.throwsAsync(childProcess);
 	t.is(originalMessage, String(error));
+	t.true(shortMessage.includes(String(error)));
+	t.is(message, shortMessage);
 };
 
 test('error instance can be null', testUnusualError, null);
@@ -345,7 +351,10 @@ test('error instance can be an array', testUnusualError, ['test', 'test']);
 test('error instance can be undefined', async t => {
 	const childProcess = execa('empty.js');
 	childProcess.emit('error');
-	await t.throwsAsync(childProcess, {message: 'Command failed: empty.js'});
+	const {originalMessage, shortMessage, message} = await t.throwsAsync(childProcess);
+	t.is(originalMessage, '');
+	t.is(shortMessage, 'Command failed: empty.js');
+	t.is(message, shortMessage);
 });
 
 test('error instance can be a plain object', async t => {

@@ -134,10 +134,20 @@ test('Waits for custom streams destroy on process errors', async t => {
 			return error;
 		}),
 	});
-	const childProcess = execa('forever.js', {stdout: [stream, 'pipe'], timeout: 1});
-	const {timedOut} = await t.throwsAsync(childProcess);
+	const {timedOut} = await t.throwsAsync(execa('forever.js', {stdout: [stream, 'pipe'], timeout: 1}));
 	t.true(timedOut);
 	t.true(waitedForDestroy);
+});
+
+test('Handles custom streams destroy errors on process success', async t => {
+	const error = new Error('test');
+	const stream = new Writable({
+		destroy(destroyError, done) {
+			done(destroyError ?? error);
+		},
+	});
+	const thrownError = await t.throwsAsync(execa('empty.js', {stdout: [stream, 'pipe']}));
+	t.is(thrownError, error);
 });
 
 const testStreamEarlyExit = async (t, stream, streamName) => {

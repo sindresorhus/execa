@@ -10,7 +10,7 @@ import {makeError} from './lib/error.js';
 import {handleNodeOption} from './lib/node.js';
 import {handleInputAsync, pipeOutputAsync, cleanupStdioStreams} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
-import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExit} from './lib/kill.js';
+import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExit, isFailedExit} from './lib/kill.js';
 import {pipeToProcess} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
@@ -169,7 +169,7 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 	const context = {timedOut: false};
 
 	const [
-		error,
+		errorInfo,
 		[exitCode, signal],
 		stdioResults,
 		allResult,
@@ -179,10 +179,10 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 	const stdio = stdioResults.map(stdioResult => handleOutput(options, stdioResult));
 	const all = handleOutput(options, allResult);
 
-	if (error || exitCode !== 0 || signal !== null) {
+	if ('error' in errorInfo) {
 		const isCanceled = options.signal?.aborted === true;
 		const returnedError = makeError({
-			error,
+			error: errorInfo.error,
 			exitCode,
 			signal,
 			stdio,
@@ -250,7 +250,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	const output = result.output || Array.from({length: 3});
 	const stdio = output.map(stdioOutput => handleOutput(options, stdioOutput));
 
-	if (result.error || result.status !== 0 || result.signal !== null) {
+	if (result.error !== undefined || isFailedExit(result.status, result.signal)) {
 		const error = makeError({
 			stdio,
 			error: result.error,

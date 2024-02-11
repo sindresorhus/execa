@@ -193,8 +193,10 @@ const getStreamFixtureName = index => index === 0 ? 'stdin.js' : 'noop.js';
 test('Handles output streams ends', async t => {
 	const stream = noopWritable();
 	const childProcess = execa('stdin.js', {stdout: [stream, 'pipe']});
-	stream.end();
 	childProcess.stdin.end();
+	await setImmediate();
+	stream.destroy();
+
 	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
 	assertStreamError(t, error);
 });
@@ -227,6 +229,9 @@ test('Handles output Duplex streams errors', testStreamError, noopDuplex(), 1);
 const testChildStreamEnd = async (t, stream) => {
 	const childProcess = execa('stdin.js', {stdin: [stream, 'pipe']});
 	childProcess.stdin.end();
+	await setImmediate();
+	stream.destroy();
+
 	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
 	assertStreamError(t, error);
 	t.true(stream.destroyed);

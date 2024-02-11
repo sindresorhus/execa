@@ -4,7 +4,6 @@ import {execa, execaSync} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
 import {fullStdio, getStdio} from './helpers/stdio.js';
 import {noopGenerator, outputObjectGenerator} from './helpers/generator.js';
-import {foobarString} from './helpers/input.js';
 
 const isWindows = process.platform === 'win32';
 
@@ -329,85 +328,3 @@ test('error.code is defined on failure if applicable', async t => {
 	const {code} = await t.throwsAsync(execa('noop.js', {uid: true}));
 	t.is(code, 'ERR_INVALID_ARG_TYPE');
 });
-
-const testUnusualError = async (t, error) => {
-	const childProcess = execa('empty.js');
-	childProcess.emit('error', error);
-	const {originalMessage, shortMessage, message} = await t.throwsAsync(childProcess);
-	t.is(originalMessage, String(error));
-	t.true(shortMessage.includes(String(error)));
-	t.is(message, shortMessage);
-};
-
-test('error instance can be null', testUnusualError, null);
-test('error instance can be false', testUnusualError, false);
-test('error instance can be a string', testUnusualError, 'test');
-test('error instance can be a number', testUnusualError, 0);
-test('error instance can be a BigInt', testUnusualError, 0n);
-test('error instance can be a symbol', testUnusualError, Symbol('test'));
-test('error instance can be a function', testUnusualError, () => {});
-test('error instance can be an array', testUnusualError, ['test', 'test']);
-
-test('error instance can be undefined', async t => {
-	const childProcess = execa('empty.js');
-	childProcess.emit('error');
-	const {originalMessage, shortMessage, message} = await t.throwsAsync(childProcess);
-	t.is(originalMessage, '');
-	t.is(shortMessage, 'Command failed: empty.js');
-	t.is(message, shortMessage);
-});
-
-test('error instance can be a plain object', async t => {
-	const childProcess = execa('empty.js');
-	childProcess.emit('error', {message: foobarString});
-	await t.throwsAsync(childProcess, {message: new RegExp(foobarString)});
-});
-
-const runAndFail = (t, fixtureName, argument, error) => {
-	const childProcess = execa(fixtureName, [argument]);
-	childProcess.emit('error', error);
-	return t.throwsAsync(childProcess);
-};
-
-const testErrorCopy = async (t, getPreviousArgument) => {
-	const fixtureName = 'empty.js';
-	const argument = 'two';
-
-	const previousArgument = await getPreviousArgument(t, fixtureName);
-	const previousError = await runAndFail(t, fixtureName, 'foo', previousArgument);
-	const error = await runAndFail(t, fixtureName, argument, previousError);
-	const message = `Command failed: ${fixtureName} ${argument}\n${foobarString}`;
-
-	t.not(error, previousError);
-	t.is(error.command, `${fixtureName} ${argument}`);
-	t.is(error.message, message);
-	t.true(error.stack.includes(message));
-	t.is(error.shortMessage, message);
-	t.is(error.originalMessage, foobarString);
-};
-
-test('error instance can be shared', testErrorCopy, () => new Error(foobarString));
-test('error string can be shared', testErrorCopy, () => foobarString);
-test('error copy can be shared', testErrorCopy, (t, fixtureName) => runAndFail(t, fixtureName, 'bar', new Error(foobarString)));
-
-const testErrorCopyProperty = async (t, propertyName, isCopied) => {
-	const propertyValue = 'test';
-	const initialError = new Error(foobarString);
-	initialError[propertyName] = propertyValue;
-
-	const previousError = await runAndFail(t, 'empty.js', 'foo', initialError);
-	t.is(previousError, initialError);
-
-	const error = await runAndFail(t, 'empty.js', 'bar', previousError);
-	t.is(error[propertyName] === propertyValue, isCopied);
-};
-
-test('error.code can be copied', testErrorCopyProperty, 'code', true);
-test('error.errno can be copied', testErrorCopyProperty, 'errno', true);
-test('error.syscall can be copied', testErrorCopyProperty, 'syscall', true);
-test('error.path can be copied', testErrorCopyProperty, 'path', true);
-test('error.dest can be copied', testErrorCopyProperty, 'dest', true);
-test('error.address can be copied', testErrorCopyProperty, 'address', true);
-test('error.port can be copied', testErrorCopyProperty, 'port', true);
-test('error.info can be copied', testErrorCopyProperty, 'info', true);
-test('error.other cannot be copied', testErrorCopyProperty, 'other', false);

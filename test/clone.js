@@ -120,7 +120,15 @@ test('error.stack is set even if memoized', async t => {
 	childProcess.emit('error', error);
 	t.is(await t.throwsAsync(childProcess), error);
 	t.is(error.message, `Command failed: empty.js\n${message}`);
-	t.true(error.stack.startsWith(`Error: Command failed: empty.js\n${message}`));
+	t.true(error.stack.startsWith(`Error: ${error.message}`));
+});
+
+test('error.stack is set even if memoized with an unusual error.name', async t => {
+	const childProcess = execa('empty.js');
+	childProcess.stdin.destroy();
+	const error = await t.throwsAsync(childProcess);
+	t.is(error.message, 'Command failed with ERR_STREAM_PREMATURE_CLOSE: empty.js\nPremature close');
+	t.true(error.stack.startsWith(`Error [ERR_STREAM_PREMATURE_CLOSE]: ${error.message}`));
 });
 
 test('Cloned errors keep the stack trace', async t => {

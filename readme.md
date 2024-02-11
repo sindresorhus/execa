@@ -516,7 +516,7 @@ Default: `process.cwd()`
 
 Current working directory of the child process.
 
-This is also used to resolve the [`execPath`](#execpath) option when it is a relative path.
+This is also used to resolve the [`nodePath`](#nodepath) option when it is a relative path.
 
 #### env
 
@@ -571,20 +571,11 @@ Requires the [`node`](#node) option to be `true`.
 Type: `string | URL`\
 Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
 
-Node.js executable used to create the child process.
+Path to the Node.js executable.
 
-Requires the [`node`](#node) option to be `true`.
+When the [`node`](#node) option is `true`, this is used to to create the child process. When the [`preferLocal`](#preferlocal) option is `true`, this is used in the child process itself.
 
-#### execPath
-
-Type: `string | URL`\
-Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
-
-Path to the Node.js executable to use in child processes.
-
-Requires the [`preferLocal`](#preferlocal) option to be `true`.
-
-For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
+For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version.
 
 #### verbose
 

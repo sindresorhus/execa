@@ -285,9 +285,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly node?: boolean;
 
 	/**
-	Node.js executable used to create the child process.
+	Path to the Node.js executable.
 
-	Requires the `node` option to be `true`.
+	When the `node` option is `true`, this is used to to create the child process. When the `preferLocal` option is `true`, this is used in the child process itself.
+
+	For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version.
 
 	@default [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
 	*/
@@ -301,17 +303,6 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	@default [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
 	*/
 	readonly nodeOptions?: string[];
-
-	/**
-	Path to the Node.js executable to use in child processes.
-
-	Requires the `preferLocal` option to be `true`.
-
-	For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version in a child process.
-
-	@default [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
-	*/
-	readonly execPath?: string | URL;
 
 	/**
 	Write some input to the child process' `stdin`.
@@ -435,7 +426,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Current working directory of the child process.
 
-	This is also used to resolve the `execPath` option when it is a relative path.
+	This is also used to resolve the `nodePath` option when it is a relative path.
 
 	@default process.cwd()
 	*/

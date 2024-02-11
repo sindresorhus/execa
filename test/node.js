@@ -1,4 +1,4 @@
-import {dirname} from 'node:path';
+import {dirname, relative} from 'node:path';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
@@ -11,8 +11,12 @@ import {foobarString} from './helpers/input.js';
 
 process.chdir(FIXTURES_DIR);
 
-const runWithNodeOption = (file, args = [], options = {}) => execa(file, args, {...options, node: true});
-const runWithNodeOptionSync = (file, args = [], options = {}) => execaSync(file, args, {...options, node: true});
+const runWithNodeOption = (file, args, options) => Array.isArray(args)
+	? execa(file, args, {...options, node: true})
+	: execa(file, {...options, node: true});
+const runWithNodeOptionSync = (file, args, options) => Array.isArray(args)
+	? execaSync(file, args, {...options, node: true})
+	: execaSync(file, {...options, node: true});
 const runWithIpc = (file, options) => execa('node', [file], {...options, ipc: true});
 
 const testNodeSuccess = async (t, execaMethod) => {
@@ -31,9 +35,9 @@ test('execaNode() cannot set the "node" option to false', t => {
 	}, {message: /The "node" option cannot be false/});
 });
 
-const testDoubleNode = (t, execPath, execaMethod) => {
+const testDoubleNode = (t, nodePath, execaMethod) => {
 	t.throws(() => {
-		execaMethod(execPath, ['noop.js']);
+		execaMethod(nodePath, ['noop.js']);
 	}, {message: /does not need to be "node"/});
 };
 
@@ -82,25 +86,44 @@ test('The "nodePath" option must be a string or URL - "node" option sync', testN
 
 const nodePathArguments = ['node', ['-p', 'process.env.Path || process.env.PATH']];
 
-const testExecPath = async (t, mapPath) => {
-	const execPath = mapPath(await getNodePath());
-	const {stdout} = await execa(...nodePathArguments, {preferLocal: true, execPath});
+const testChildNodePath = async (t, mapPath) => {
+	const nodePath = mapPath(await getNodePath());
+	const {stdout} = await execa(...nodePathArguments, {preferLocal: true, nodePath});
 	t.true(stdout.includes(TEST_NODE_VERSION));
 };
 
-test.serial('The "execPath" option can be used', testExecPath, identity);
-test.serial('The "execPath" option can be a file URL', testExecPath, pathToFileURL);
+test.serial('The "nodePath" option impacts the child process', testChildNodePath, identity);
+test.serial('The "nodePath" option can be a file URL', testChildNodePath, pathToFileURL);
 
-test('The "execPath" option defaults to the current Node.js binary', async t => {
+test('The "nodePath" option defaults to the current Node.js binary in the child process', async t => {
 	const {stdout} = await execa(...nodePathArguments, {preferLocal: true});
 	t.true(stdout.includes(dirname(process.execPath)));
 });
 
-test.serial('The "execPath" option requires "preferLocal: true"', async t => {
-	const execPath = await getNodePath();
-	const {stdout} = await execa(...nodePathArguments, {execPath});
+test.serial('The "nodePath" option requires "preferLocal: true" to impact the child process', async t => {
+	const nodePath = await getNodePath();
+	const {stdout} = await execa(...nodePathArguments, {nodePath});
 	t.false(stdout.includes(TEST_NODE_VERSION));
 });
+
+test.serial('The "nodePath" option is relative to "cwd" when used in the child process', async t => {
+	const nodePath = await getNodePath();
+	const cwd = dirname(dirname(nodePath));
+	const relativeExecPath = relative(cwd, nodePath);
+	const {stdout} = await execa(...nodePathArguments, {preferLocal: true, nodePath: relativeExecPath, cwd});
+	t.true(stdout.includes(TEST_NODE_VERSION));
+});
+
+const testCwdNodePath = async (t, execaMethod) => {
+	const nodePath = await getNodePath();
+	const cwd = dirname(dirname(nodePath));
+	const relativeExecPath = relative(cwd, nodePath);
+	const {stdout} = await execaMethod('--version', [], {nodePath: relativeExecPath, cwd});
+	t.is(stdout, `v${TEST_NODE_VERSION}`);
+};
+
+test.serial('The "nodePath" option is relative to "cwd" - execaNode()', testCwdNodePath, execaNode);
+test.serial('The "nodePath" option is relative to "cwd" - "node" option', testCwdNodePath, runWithNodeOption);
 
 const testNodeOptions = async (t, execaMethod) => {
 	const {stdout} = await execaMethod('empty.js', [], {nodeOptions: ['--version']});

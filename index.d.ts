@@ -832,6 +832,17 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	Returns `execaChildProcess`, which allows chaining `.pipe()` then `await`ing the final result.
 	*/
 	pipe<Target extends ExecaChildProcess>(target: Target, streamName?: 'stdout' | 'stderr' | 'all' | number): Target;
+
+	/**
+	Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the child process. The default signal is the `killSignal` option. `killSignal` defaults to `SIGTERM`, which terminates the child process.
+
+	This returns `false` when the signal could not be sent, for example when the child process has already exited.
+
+	When an error is passed as argument, its message and stack trace are kept in the child process' error. The child process is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
+
+	[More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
+	*/
+	kill(signalOrError: Parameters<ChildProcess['kill']>[0] | Error): ReturnType<ChildProcess['kill']>;
 };
 
 export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &

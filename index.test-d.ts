@@ -1282,10 +1282,15 @@ execaSync('unicorns', {windowsHide: false});
 execa('unicorns', {verbose: false});
 execaSync('unicorns', {verbose: false});
 /* eslint-enable @typescript-eslint/no-floating-promises */
-execa('unicorns').kill();
+expectType<boolean>(execa('unicorns').kill());
 execa('unicorns').kill('SIGKILL');
 execa('unicorns').kill(undefined);
+execa('unicorns').kill(new Error('test'));
 expectError(execa('unicorns').kill('SIGKILL', {}));
+expectError(execa('unicorns').kill(null));
+expectError(execa('unicorns').kill(0n));
+expectError(execa('unicorns').kill([new Error('test')]));
+expectError(execa('unicorns').kill({message: 'test'}));
 
 expectError(execa(['unicorns', 'arg']));
 expectType<ExecaChildProcess>(execa('unicorns'));

@@ -34,14 +34,14 @@ const testIterable = async (t, stdioOption, index) => {
 	t.is(stdout, 'foobar');
 };
 
-test('stdin option can be an array of strings', testIterable, [stringArray], 0);
-test('stdio[*] option can be an array of strings', testIterable, [stringArray], 3);
-test('stdin option can be an array of Uint8Arrays', testIterable, [binaryArray], 0);
-test('stdio[*] option can be an array of Uint8Arrays', testIterable, [binaryArray], 3);
-test('stdin option can be an iterable of strings', testIterable, stringGenerator(), 0);
-test('stdio[*] option can be an iterable of strings', testIterable, stringGenerator(), 3);
-test('stdin option can be an iterable of Uint8Arrays', testIterable, binaryGenerator(), 0);
-test('stdio[*] option can be an iterable of Uint8Arrays', testIterable, binaryGenerator(), 3);
+test.serial('stdin option can be an array of strings', testIterable, [stringArray], 0);
+test.serial('stdio[*] option can be an array of strings', testIterable, [stringArray], 3);
+test.serial('stdin option can be an array of Uint8Arrays', testIterable, [binaryArray], 0);
+test.serial('stdio[*] option can be an array of Uint8Arrays', testIterable, [binaryArray], 3);
+test.serial('stdin option can be an iterable of strings', testIterable, stringGenerator(), 0);
+test.serial('stdio[*] option can be an iterable of strings', testIterable, stringGenerator(), 3);
+test.serial('stdin option can be an iterable of Uint8Arrays', testIterable, binaryGenerator(), 0);
+test.serial('stdio[*] option can be an iterable of Uint8Arrays', testIterable, binaryGenerator(), 3);
 test.serial('stdin option can be an async iterable', testIterable, asyncGenerator(), 0);
 test.serial('stdio[*] option can be an async iterable', testIterable, asyncGenerator(), 3);
 

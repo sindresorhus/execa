@@ -1,5 +1,6 @@
 import {Buffer} from 'node:buffer';
 import {once} from 'node:events';
+import {platform} from 'node:process';
 import {getDefaultHighWaterMark} from 'node:stream';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
@@ -100,10 +101,10 @@ const testLateStream = async (t, index, all) => {
 	}
 };
 
-test.serial('Lacks some data when stdout is read too late `buffer` set to `false`', testLateStream, 1, false);
-test.serial('Lacks some data when stderr is read too late `buffer` set to `false`', testLateStream, 2, false);
-test.serial('Lacks some data when stdio[*] is read too late `buffer` set to `false`', testLateStream, 3, false);
-test.serial('Lacks some data when all is read too late `buffer` set to `false`', testLateStream, 1, true);
+test('Lacks some data when stdout is read too late `buffer` set to `false`', testLateStream, 1, false);
+test('Lacks some data when stderr is read too late `buffer` set to `false`', testLateStream, 2, false);
+test('Lacks some data when stdio[*] is read too late `buffer` set to `false`', testLateStream, 3, false);
+test('Lacks some data when all is read too late `buffer` set to `false`', testLateStream, 1, true);
 
 // eslint-disable-next-line max-params
 const testIterationBuffer = async (t, index, buffer, useDataEvents, all) => {
@@ -311,61 +312,101 @@ test('Process buffers stderr, which does not prevent exit if read and buffer is 
 test('Process buffers stdio[*], which does not prevent exit if read and buffer is false', testBufferRead, 3, false);
 test('Process buffers all, which does not prevent exit if read and buffer is false', testBufferRead, 1, true);
 
-const getStreamDestroyOptions = (index, isInput) => {
+const getStreamInputProcess = index => execa('stdin-fd.js', [`${index}`], index === 3
+	? getStdio(3, [new Uint8Array(), infiniteGenerator])
+	: {});
+const getStreamOutputProcess = index => execa('max-buffer.js', [`${index}`], index === 3 ? fullStdio : {});
+
+const assertStreamInputError = (t, {exitCode, signal, isTerminated, failed}) => {
+	t.is(exitCode, 0);
+	t.is(signal, undefined);
+	t.false(isTerminated);
+	t.true(failed);
+};
+
+const assertStreamOutputError = (t, index, {exitCode, signal, isTerminated, failed, stderr}) => {
 	if (index !== 3) {
-		return {};
+		t.is(exitCode, 1);
 	}
 
-	return getStdio(3, isInput ? [new Uint8Array(), infiniteGenerator] : 'pipe');
+	t.is(signal, undefined);
+	t.false(isTerminated);
+	t.true(failed);
+
+	if (index === 1 && platform !== 'win32') {
+		t.true(stderr.includes('EPIPE'));
+	}
 };
 
-const testStreamAbort = async (t, index, isInput) => {
-	const childProcess = execa('forever.js', getStreamDestroyOptions(index, isInput));
+const testStreamInputAbort = async (t, index) => {
+	const childProcess = getStreamInputProcess(index);
 	childProcess.stdio[index].destroy();
-	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	assertStreamInputError(t, error);
 };
 
-test('Aborting stdin should make the process exit', testStreamAbort, 0, true);
-test('Aborting stdout should make the process exit', testStreamAbort, 1, false);
-test('Aborting stderr should make the process exit', testStreamAbort, 2, false);
-test('Aborting output stdio[*] should make the process exit', testStreamAbort, 3, false);
-test('Aborting input stdio[*] should make the process exit', testStreamAbort, 3, true);
+test('Aborting stdin should not make the process exit', testStreamInputAbort, 0);
+test('Aborting input stdio[*] should not make the process exit', testStreamInputAbort, 3);
 
-const testStreamDestroy = async (t, index, isInput) => {
-	const childProcess = execa('forever.js', getStreamDestroyOptions(index, isInput));
+const testStreamOutputAbort = async (t, index) => {
+	const childProcess = getStreamOutputProcess(index);
+	childProcess.stdio[index].destroy();
+	const error = await t.throwsAsync(childProcess);
+	assertStreamOutputError(t, index, error);
+};
+
+test('Aborting stdout should not make the process exit', testStreamOutputAbort, 1);
+test('Aborting stderr should not make the process exit', testStreamOutputAbort, 2);
+test('Aborting output stdio[*] should not make the process exit', testStreamOutputAbort, 3);
+
+const testStreamInputDestroy = async (t, index) => {
+	const childProcess = getStreamInputProcess(index);
 	const error = new Error('test');
 	childProcess.stdio[index].destroy(error);
 	t.is(await t.throwsAsync(childProcess), error);
+	assertStreamInputError(t, error);
 };
 
-test('Destroying stdin should make the process exit', testStreamDestroy, 0, true);
-test('Destroying stdout should make the process exit', testStreamDestroy, 1, false);
-test('Destroying stderr should make the process exit', testStreamDestroy, 2, false);
-test('Destroying output stdio[*] should make the process exit', testStreamDestroy, 3, false);
-test('Destroying input stdio[*] should make the process exit', testStreamDestroy, 3, true);
+test('Destroying stdin should not make the process exit', testStreamInputDestroy, 0);
+test('Destroying input stdio[*] should not make the process exit', testStreamInputDestroy, 3);
 
-const testStreamError = async (t, index, isInput) => {
-	const childProcess = execa('forever.js', getStreamDestroyOptions(index, isInput));
+const testStreamOutputDestroy = async (t, index) => {
+	const childProcess = getStreamOutputProcess(index);
 	const error = new Error('test');
-	childProcess.stdio[index].emit('error', error);
+	childProcess.stdio[index].destroy(error);
 	t.is(await t.throwsAsync(childProcess), error);
+	assertStreamOutputError(t, index, error);
 };
 
-test('Errors on stdin should make the process exit', testStreamError, 0, true);
-test('Errors on stdout should make the process exit', testStreamError, 1, false);
-test('Errors on stderr should make the process exit', testStreamError, 2, false);
-test('Errors on output stdio[*] should make the process exit', testStreamError, 3, false);
-test('Errors on input stdio[*] should make the process exit', testStreamError, 3, true);
+test('Destroying stdout should not make the process exit', testStreamOutputDestroy, 1);
+test('Destroying stderr should not make the process exit', testStreamOutputDestroy, 2);
+test('Destroying output stdio[*] should not make the process exit', testStreamOutputDestroy, 3);
 
-test('Errors on streams use killSignal', async t => {
-	const childProcess = execa('forever.js', {killSignal: 'SIGINT'});
+const testStreamInputError = async (t, index) => {
+	const childProcess = getStreamInputProcess(index);
 	const error = new Error('test');
-	childProcess.stdout.destroy(error);
-	const thrownError = await t.throwsAsync(childProcess);
-	t.is(thrownError, error);
-	t.true(error.isTerminated);
-	t.is(error.signal, 'SIGINT');
-});
+	const stream = childProcess.stdio[index];
+	stream.emit('error', error);
+	stream.end();
+	t.is(await t.throwsAsync(childProcess), error);
+	assertStreamInputError(t, error);
+};
+
+test('Errors on stdin should not make the process exit', testStreamInputError, 0);
+test('Errors on input stdio[*] should not make the process exit', testStreamInputError, 3);
+
+const testStreamOutputError = async (t, index) => {
+	const childProcess = getStreamOutputProcess(index);
+	const error = new Error('test');
+	const stream = childProcess.stdio[index];
+	stream.emit('error', error);
+	t.is(await t.throwsAsync(childProcess), error);
+	assertStreamOutputError(t, index, error);
+};
+
+test('Errors on stdout should not make the process exit', testStreamOutputError, 1);
+test('Errors on stderr should not make the process exit', testStreamOutputError, 2);
+test('Errors on output stdio[*] should not make the process exit', testStreamOutputError, 3);
 
 const testWaitOnStreamEnd = async (t, index) => {
 	const childProcess = execa('stdin-fd.js', [`${index}`], fullStdio);
@@ -375,8 +416,8 @@ const testWaitOnStreamEnd = async (t, index) => {
 	t.is(stdout, 'foobar');
 };
 
-test.serial('Process waits on stdin before exiting', testWaitOnStreamEnd, 0);
-test.serial('Process waits on stdio[*] before exiting', testWaitOnStreamEnd, 3);
+test('Process waits on stdin before exiting', testWaitOnStreamEnd, 0);
+test('Process waits on stdio[*] before exiting', testWaitOnStreamEnd, 3);
 
 const testBufferExit = async (t, index, fixtureName, reject) => {
 	const childProcess = execa(fixtureName, [`${index}`], {...fullStdio, reject});
@@ -385,15 +426,15 @@ const testBufferExit = async (t, index, fixtureName, reject) => {
 	t.is(stdio[index], 'foobar');
 };
 
-test.serial('Process buffers stdout before it is read', testBufferExit, 1, 'noop-delay.js', true);
-test.serial('Process buffers stderr before it is read', testBufferExit, 2, 'noop-delay.js', true);
-test.serial('Process buffers stdio[*] before it is read', testBufferExit, 3, 'noop-delay.js', true);
-test.serial('Process buffers stdout right away, on successfully exit', testBufferExit, 1, 'noop-fd.js', true);
-test.serial('Process buffers stderr right away, on successfully exit', testBufferExit, 2, 'noop-fd.js', true);
-test.serial('Process buffers stdio[*] right away, on successfully exit', testBufferExit, 3, 'noop-fd.js', true);
-test.serial('Process buffers stdout right away, on failure', testBufferExit, 1, 'noop-fail.js', false);
-test.serial('Process buffers stderr right away, on failure', testBufferExit, 2, 'noop-fail.js', false);
-test.serial('Process buffers stdio[*] right away, on failure', testBufferExit, 3, 'noop-fail.js', false);
+test('Process buffers stdout before it is read', testBufferExit, 1, 'noop-delay.js', true);
+test('Process buffers stderr before it is read', testBufferExit, 2, 'noop-delay.js', true);
+test('Process buffers stdio[*] before it is read', testBufferExit, 3, 'noop-delay.js', true);
+test('Process buffers stdout right away, on successfully exit', testBufferExit, 1, 'noop-fd.js', true);
+test('Process buffers stderr right away, on successfully exit', testBufferExit, 2, 'noop-fd.js', true);
+test('Process buffers stdio[*] right away, on successfully exit', testBufferExit, 3, 'noop-fd.js', true);
+test('Process buffers stdout right away, on failure', testBufferExit, 1, 'noop-fail.js', false);
+test('Process buffers stderr right away, on failure', testBufferExit, 2, 'noop-fail.js', false);
+test('Process buffers stdio[*] right away, on failure', testBufferExit, 3, 'noop-fail.js', false);
 
 const testBufferDirect = async (t, index) => {
 	const childProcess = execa('noop-fd.js', [`${index}`], fullStdio);

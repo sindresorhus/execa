@@ -119,24 +119,6 @@ if (isWindows) {
 		t.is(signal, 'SIGKILL');
 	});
 
-	test('`forceKillAfterDelay` works with "error" events on childProcess', async t => {
-		const subprocess = spawnNoKillableSimple();
-		await once(subprocess, 'spawn');
-		subprocess.emit('error', new Error('test'));
-		const {isTerminated, signal} = await t.throwsAsync(subprocess);
-		t.true(isTerminated);
-		t.is(signal, 'SIGKILL');
-	});
-
-	test('`forceKillAfterDelay` works with "error" events on childProcess.stdout', async t => {
-		const subprocess = spawnNoKillableSimple();
-		await once(subprocess, 'spawn');
-		subprocess.stdout.destroy(new Error('test'));
-		const {isTerminated, signal} = await t.throwsAsync(subprocess);
-		t.true(isTerminated);
-		t.is(signal, 'SIGKILL');
-	});
-
 	test.serial('Can call `.kill()` with `forceKillAfterDelay` many times without triggering the maxListeners warning', async t => {
 		let warning;
 		const captureWarning = warningArgument => {
@@ -245,6 +227,14 @@ test('timedOut is false if timeout is 0', async t => {
 test('timedOut is false if timeout is undefined and exit code is 0 in sync mode', t => {
 	const {timedOut} = execaSync('noop.js');
 	t.false(timedOut);
+});
+
+test('timedOut is true if the timeout happened after a different error occurred', async t => {
+	const childProcess = execa('forever.js', {timeout: 1e3});
+	const error = new Error('test');
+	childProcess.emit('error', error);
+	t.is(await t.throwsAsync(childProcess), error);
+	t.true(error.timedOut);
 });
 
 // When child process exits before parent process
@@ -392,6 +382,7 @@ test('child process errors are handled before spawn', async t => {
 	const subprocess = execa('forever.js');
 	const error = new Error('test');
 	subprocess.emit('error', error);
+	subprocess.kill();
 	const thrownError = await t.throwsAsync(subprocess);
 	t.is(thrownError, error);
 	t.is(thrownError.exitCode, undefined);
@@ -404,6 +395,7 @@ test('child process errors are handled after spawn', async t => {
 	await once(subprocess, 'spawn');
 	const error = new Error('test');
 	subprocess.emit('error', error);
+	subprocess.kill();
 	const thrownError = await t.throwsAsync(subprocess);
 	t.is(thrownError, error);
 	t.is(thrownError.exitCode, undefined);
@@ -431,6 +423,7 @@ test('child process errors use killSignal', async t => {
 	await once(subprocess, 'spawn');
 	const error = new Error('test');
 	subprocess.emit('error', error);
+	subprocess.kill();
 	const thrownError = await t.throwsAsync(subprocess);
 	t.is(thrownError, error);
 	t.true(thrownError.isTerminated);

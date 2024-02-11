@@ -181,73 +181,83 @@ test('Can pass Duplex streams to stdout', testOutputDuplexStream, 1);
 test('Can pass Duplex streams to stderr', testOutputDuplexStream, 2);
 test('Can pass Duplex streams to output stdio[*]', testOutputDuplexStream, 3);
 
+const assertStreamError = (t, {exitCode, signal, isTerminated, failed}) => {
+	t.is(exitCode, 0);
+	t.is(signal, undefined);
+	t.false(isTerminated);
+	t.true(failed);
+};
+
+const getStreamFixtureName = index => index === 0 ? 'stdin.js' : 'noop.js';
+
 test('Handles output streams ends', async t => {
 	const stream = noopWritable();
+	const childProcess = execa('stdin.js', {stdout: [stream, 'pipe']});
 	stream.end();
-	await t.throwsAsync(
-		execa('forever.js', {stdout: [stream, 'pipe']}),
-		{code: 'ERR_STREAM_PREMATURE_CLOSE'},
-	);
+	childProcess.stdin.end();
+	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	assertStreamError(t, error);
 });
 
-const testStreamAbort = async (t, stream, streamName) => {
+const testStreamAbort = async (t, stream, index) => {
+	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
 	stream.destroy();
-	await t.throwsAsync(
-		execa('forever.js', {[streamName]: [stream, 'pipe']}),
-		{code: 'ERR_STREAM_PREMATURE_CLOSE'},
-	);
+	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	assertStreamError(t, error);
 };
 
-test('Handles input streams aborts', testStreamAbort, noopReadable(), 'stdin');
-test('Handles input Duplex streams aborts', testStreamAbort, noopDuplex(), 'stdin');
-test('Handles output streams aborts', testStreamAbort, noopWritable(), 'stdout');
-test('Handles output Duplex streams aborts', testStreamAbort, noopDuplex(), 'stdout');
+test('Handles input streams aborts', testStreamAbort, noopReadable(), 0);
+test('Handles input Duplex streams aborts', testStreamAbort, noopDuplex(), 0);
+test('Handles output streams aborts', testStreamAbort, noopWritable(), 1);
+test('Handles output Duplex streams aborts', testStreamAbort, noopDuplex(), 1);
 
-const testStreamError = async (t, stream, streamName) => {
+const testStreamError = async (t, stream, index) => {
+	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
 	const error = new Error('test');
 	stream.destroy(error);
-	t.is(
-		await t.throwsAsync(execa('forever.js', {[streamName]: [stream, 'pipe']})),
-		error,
-	);
+	t.is(await t.throwsAsync(childProcess), error);
+	assertStreamError(t, error);
 };
 
-test('Handles input streams errors', testStreamError, noopReadable(), 'stdin');
-test('Handles input Duplex streams errors', testStreamError, noopDuplex(), 'stdin');
-test('Handles output streams errors', testStreamError, noopWritable(), 'stdout');
-test('Handles output Duplex streams errors', testStreamError, noopDuplex(), 'stdout');
+test('Handles input streams errors', testStreamError, noopReadable(), 0);
+test('Handles input Duplex streams errors', testStreamError, noopDuplex(), 0);
+test('Handles output streams errors', testStreamError, noopWritable(), 1);
+test('Handles output Duplex streams errors', testStreamError, noopDuplex(), 1);
 
 const testChildStreamEnd = async (t, stream) => {
-	const childProcess = execa('forever.js', {stdin: [stream, 'pipe']});
+	const childProcess = execa('stdin.js', {stdin: [stream, 'pipe']});
 	childProcess.stdin.end();
-	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	assertStreamError(t, error);
 	t.true(stream.destroyed);
 };
 
 test('Handles childProcess.stdin end', testChildStreamEnd, noopReadable());
 test('Handles childProcess.stdin Duplex end', testChildStreamEnd, noopDuplex());
 
-const testChildStreamAbort = async (t, stream, streamName) => {
-	const childProcess = execa('forever.js', {[streamName]: [stream, 'pipe']});
-	childProcess[streamName].destroy();
-	await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+const testChildStreamAbort = async (t, stream, index) => {
+	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
+	childProcess.stdio[index].destroy();
+	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	assertStreamError(t, error);
 	t.true(stream.destroyed);
 };
 
-test('Handles childProcess.stdin aborts', testChildStreamAbort, noopReadable(), 'stdin');
-test('Handles childProcess.stdin Duplex aborts', testChildStreamAbort, noopDuplex(), 'stdin');
-test('Handles childProcess.stdout aborts', testChildStreamAbort, noopWritable(), 'stdout');
-test('Handles childProcess.stdout Duplex aborts', testChildStreamAbort, noopDuplex(), 'stdout');
+test('Handles childProcess.stdin aborts', testChildStreamAbort, noopReadable(), 0);
+test('Handles childProcess.stdin Duplex aborts', testChildStreamAbort, noopDuplex(), 0);
+test('Handles childProcess.stdout aborts', testChildStreamAbort, noopWritable(), 1);
+test('Handles childProcess.stdout Duplex aborts', testChildStreamAbort, noopDuplex(), 1);
 
-const testChildStreamError = async (t, stream, streamName) => {
-	const childProcess = execa('forever.js', {[streamName]: [stream, 'pipe']});
+const testChildStreamError = async (t, stream, index) => {
+	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
 	const error = new Error('test');
-	childProcess[streamName].destroy(error);
+	childProcess.stdio[index].destroy(error);
 	t.is(await t.throwsAsync(childProcess), error);
+	assertStreamError(t, error);
 	t.true(stream.destroyed);
 };
 
-test('Handles childProcess.stdin errors', testChildStreamError, noopReadable(), 'stdin');
-test('Handles childProcess.stdin Duplex errors', testChildStreamError, noopDuplex(), 'stdin');
-test('Handles childProcess.stdout errors', testChildStreamError, noopWritable(), 'stdout');
-test('Handles childProcess.stdout Duplex errors', testChildStreamError, noopDuplex(), 'stdout');
+test('Handles childProcess.stdin errors', testChildStreamError, noopReadable(), 0);
+test('Handles childProcess.stdin Duplex errors', testChildStreamError, noopDuplex(), 0);
+test('Handles childProcess.stdout errors', testChildStreamError, noopWritable(), 1);
+test('Handles childProcess.stdout Duplex errors', testChildStreamError, noopDuplex(), 1);

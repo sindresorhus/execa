@@ -65,6 +65,8 @@ test.serial('The "nodePath" option can be used - execaNode()', testNodePath, exe
 test.serial('The "nodePath" option can be a file URL - execaNode()', testNodePath, execaNode, pathToFileURL);
 test.serial('The "nodePath" option can be used - "node" option', testNodePath, runWithNodeOption, identity);
 test.serial('The "nodePath" option can be a file URL - "node" option', testNodePath, runWithNodeOption, pathToFileURL);
+test.serial('The "nodePath" option can be used - "node" option sync', testNodePath, runWithNodeOptionSync, identity);
+test.serial('The "nodePath" option can be a file URL - "node" option sync', testNodePath, runWithNodeOptionSync, pathToFileURL);
 
 const testNodePathDefault = async (t, execaMethod) => {
 	const {stdout} = await execaMethod('--version');
@@ -73,6 +75,7 @@ const testNodePathDefault = async (t, execaMethod) => {
 
 test('The "nodePath" option defaults to the current Node.js binary - execaNode()', testNodePathDefault, execaNode);
 test('The "nodePath" option defaults to the current Node.js binary - "node" option', testNodePathDefault, runWithNodeOption);
+test('The "nodePath" option defaults to the current Node.js binary - "node" option sync', testNodePathDefault, runWithNodeOptionSync);
 
 const testNodePathInvalid = (t, execaMethod) => {
 	t.throws(() => {
@@ -134,6 +137,7 @@ const testCwdNodePath = async (t, execaMethod) => {
 
 test.serial('The "nodePath" option is relative to "cwd" - execaNode()', testCwdNodePath, execaNode);
 test.serial('The "nodePath" option is relative to "cwd" - "node" option', testCwdNodePath, runWithNodeOption);
+test.serial('The "nodePath" option is relative to "cwd" - "node" option sync', testCwdNodePath, runWithNodeOptionSync);
 
 const testNodeOptions = async (t, execaMethod) => {
 	const {stdout} = await execaMethod('empty.js', [], {nodeOptions: ['--version']});
@@ -142,6 +146,7 @@ const testNodeOptions = async (t, execaMethod) => {
 
 test('The "nodeOptions" option can be used - execaNode()', testNodeOptions, execaNode);
 test('The "nodeOptions" option can be used - "node" option', testNodeOptions, runWithNodeOption);
+test('The "nodeOptions" option can be used - "node" option sync', testNodeOptions, runWithNodeOptionSync);
 
 const spawnNestedExecaNode = (realExecArgv, fakeExecArgv, execaMethod, nodeOptions) => execa(
 	'node',

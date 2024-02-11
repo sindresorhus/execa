@@ -84,6 +84,16 @@ test('The "nodePath" option must be a string or URL - execaNode()', testNodePath
 test('The "nodePath" option must be a string or URL - "node" option', testNodePathInvalid, runWithNodeOption);
 test('The "nodePath" option must be a string or URL - "node" option sync', testNodePathInvalid, runWithNodeOptionSync);
 
+const testFormerNodePath = (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('noop.js', [], {execPath: process.execPath});
+	}, {message: /The "execPath" option has been removed/});
+};
+
+test('The "execPath" option cannot be used - execaNode()', testFormerNodePath, execaNode);
+test('The "execPath" option cannot be used - "node" option', testFormerNodePath, runWithNodeOption);
+test('The "execPath" option cannot be used - "node" option sync', testFormerNodePath, runWithNodeOptionSync);
+
 const nodePathArguments = ['node', ['-p', 'process.env.Path || process.env.PATH']];
 
 const testChildNodePath = async (t, mapPath) => {

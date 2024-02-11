@@ -1,7 +1,7 @@
 import {once} from 'node:events';
 import {createReadStream, createWriteStream} from 'node:fs';
 import {readFile, writeFile, rm} from 'node:fs/promises';
-import {Readable, Writable, Duplex, PassThrough} from 'node:stream';
+import {Writable, PassThrough} from 'node:stream';
 import {text} from 'node:stream/consumers';
 import {setImmediate} from 'node:timers/promises';
 import {callbackify} from 'node:util';
@@ -11,13 +11,9 @@ import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
+import {noopReadable, noopWritable, noopDuplex, simpleReadable} from '../helpers/stream.js';
 
 setFixtureDir();
-
-const noopReadable = () => new Readable({read() {}});
-const noopWritable = () => new Writable({write() {}});
-const noopDuplex = () => new Duplex({read() {}, write() {}});
-const simpleReadable = () => Readable.from([foobarString]);
 
 const testNoFileStreamSync = async (t, index, stream) => {
 	t.throws(() => {
@@ -60,11 +56,35 @@ test('stdio[*] cannot be a Node.js Readable without a file descriptor', testNoFi
 test('stdio[*] cannot be a Node.js Writable without a file descriptor', testNoFileStream, 3, noopWritable());
 test('stdio[*] cannot be a Node.js Duplex without a file descriptor', testNoFileStream, 3, noopDuplex());
 
-const testFileReadable = async (t, index, execaMethod) => {
+const createFileReadStream = async () => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
 	const stream = createReadStream(filePath);
 	await once(stream, 'open');
+	return {stream, filePath};
+};
+
+const createFileWriteStream = async () => {
+	const filePath = tempfile();
+	const stream = createWriteStream(filePath);
+	await once(stream, 'open');
+	return {stream, filePath};
+};
+
+const assertFileStreamError = async (t, childProcess, stream, filePath) => {
+	await once(childProcess, 'spawn');
+	const error = new Error('test');
+	stream.destroy(error);
+
+	t.is(await t.throwsAsync(childProcess), error);
+	t.is(error.exitCode, 0);
+	t.is(error.signal, undefined);
+
+	await rm(filePath);
+};
+
+const testFileReadable = async (t, index, execaMethod) => {
+	const {stream, filePath} = await createFileReadStream();
 
 	const indexString = index === 'input' ? '0' : `${index}`;
 	const {stdout} = await execaMethod('stdin-fd.js', [indexString], getStdio(index, stream));
@@ -79,10 +99,41 @@ test('stdio[*] can be a Node.js Readable with a file descriptor', testFileReadab
 test('stdin can be a Node.js Readable with a file descriptor - sync', testFileReadable, 0, execaSync);
 test('stdio[*] can be a Node.js Readable with a file descriptor - sync', testFileReadable, 3, execaSync);
 
+const testFileReadableError = async (t, index) => {
+	const {stream, filePath} = await createFileReadStream();
+
+	const indexString = index === 'input' ? '0' : `${index}`;
+	const childProcess = execa('stdin-fd.js', [indexString], getStdio(index, stream));
+
+	await assertFileStreamError(t, childProcess, stream, filePath);
+};
+
+test('input handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 'input');
+test('stdin handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 0);
+test('stdio[*] handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 3);
+
+const testFileReadableOpen = async (t, index, useSingle, execaMethod) => {
+	const {stream, filePath} = await createFileReadStream();
+	t.deepEqual(stream.eventNames(), []);
+
+	const stdioOption = useSingle ? stream : [stream, 'pipe'];
+	await execaMethod('empty.js', getStdio(index, stdioOption));
+
+	t.is(stream.readable, useSingle && index !== 'input');
+	t.deepEqual(stream.eventNames(), []);
+
+	await rm(filePath);
+};
+
+test('input closes a Node.js Readable with a file descriptor', testFileReadableOpen, 'input', true, execa);
+test('stdin leaves open a single Node.js Readable with a file descriptor', testFileReadableOpen, 0, true, execa);
+test('stdin closes a combined Node.js Readable with a file descriptor', testFileReadableOpen, 0, false, execa);
+test('stdio[*] leaves open a single Node.js Readable with a file descriptor', testFileReadableOpen, 3, true, execa);
+test('stdin leaves open a single Node.js Readable with a file descriptor - sync', testFileReadableOpen, 0, true, execaSync);
+test('stdio[*] leaves open a single Node.js Readable with a file descriptor - sync', testFileReadableOpen, 3, true, execaSync);
+
 const testFileWritable = async (t, index, execaMethod) => {
-	const filePath = tempfile();
-	const stream = createWriteStream(filePath);
-	await once(stream, 'open');
+	const {stream, filePath} = await createFileWriteStream();
 
 	await execaMethod('noop-fd.js', [`${index}`, 'foobar'], getStdio(index, stream));
 	t.is(await readFile(filePath, 'utf8'), 'foobar');
@@ -96,6 +147,42 @@ test('stdio[*] can be a Node.js Writable with a file descriptor', testFileWritab
 test('stdout can be a Node.js Writable with a file descriptor - sync', testFileWritable, 1, execaSync);
 test('stderr can be a Node.js Writable with a file descriptor - sync', testFileWritable, 2, execaSync);
 test('stdio[*] can be a Node.js Writable with a file descriptor - sync', testFileWritable, 3, execaSync);
+
+const testFileWritableError = async (t, index) => {
+	const {stream, filePath} = await createFileWriteStream();
+
+	const childProcess = execa('noop-stdin-fd.js', [`${index}`], getStdio(index, stream));
+	childProcess.stdin.end(foobarString);
+
+	await assertFileStreamError(t, childProcess, stream, filePath);
+};
+
+test('stdout handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 1);
+test('stderr handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 2);
+test('stdio[*] handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 3);
+
+const testFileWritableOpen = async (t, index, useSingle, execaMethod) => {
+	const {stream, filePath} = await createFileWriteStream();
+	t.deepEqual(stream.eventNames(), []);
+
+	const stdioOption = useSingle ? stream : [stream, 'pipe'];
+	await execaMethod('empty.js', getStdio(index, stdioOption));
+
+	t.is(stream.writable, useSingle);
+	t.deepEqual(stream.eventNames(), []);
+
+	await rm(filePath);
+};
+
+test('stdout leaves open a single Node.js Writable with a file descriptor', testFileWritableOpen, 1, true, execa);
+test('stdout closes a combined Node.js Writable with a file descriptor', testFileWritableOpen, 1, false, execa);
+test('stderr leaves open a single Node.js Writable with a file descriptor', testFileWritableOpen, 2, true, execa);
+test('stderr closes a combined Node.js Writable with a file descriptor', testFileWritableOpen, 2, false, execa);
+test('stdio[*] leaves open a single Node.js Writable with a file descriptor', testFileWritableOpen, 3, true, execa);
+test('stdio[*] closes a combined Node.js Writable with a file descriptor', testFileWritableOpen, 3, false, execa);
+test('stdout leaves open a single Node.js Writable with a file descriptor - sync', testFileWritableOpen, 1, true, execaSync);
+test('stderr leaves open a single Node.js Writable with a file descriptor - sync', testFileWritableOpen, 2, true, execaSync);
+test('stdio[*] leaves open a single Node.js Writable with a file descriptor - sync', testFileWritableOpen, 3, true, execaSync);
 
 const testLazyFileReadable = async (t, index) => {
 	const filePath = tempfile();
@@ -180,89 +267,3 @@ const testOutputDuplexStream = async (t, index) => {
 test('Can pass Duplex streams to stdout', testOutputDuplexStream, 1);
 test('Can pass Duplex streams to stderr', testOutputDuplexStream, 2);
 test('Can pass Duplex streams to output stdio[*]', testOutputDuplexStream, 3);
-
-const assertStreamError = (t, {exitCode, signal, isTerminated, failed}) => {
-	t.is(exitCode, 0);
-	t.is(signal, undefined);
-	t.false(isTerminated);
-	t.true(failed);
-};
-
-const getStreamFixtureName = index => index === 0 ? 'stdin.js' : 'noop.js';
-
-test('Handles output streams ends', async t => {
-	const stream = noopWritable();
-	const childProcess = execa('stdin.js', {stdout: [stream, 'pipe']});
-	childProcess.stdin.end();
-	await setImmediate();
-	stream.destroy();
-
-	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
-	assertStreamError(t, error);
-});
-
-const testStreamAbort = async (t, stream, index) => {
-	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
-	stream.destroy();
-	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
-	assertStreamError(t, error);
-};
-
-test('Handles input streams aborts', testStreamAbort, noopReadable(), 0);
-test('Handles input Duplex streams aborts', testStreamAbort, noopDuplex(), 0);
-test('Handles output streams aborts', testStreamAbort, noopWritable(), 1);
-test('Handles output Duplex streams aborts', testStreamAbort, noopDuplex(), 1);
-
-const testStreamError = async (t, stream, index) => {
-	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
-	const error = new Error('test');
-	stream.destroy(error);
-	t.is(await t.throwsAsync(childProcess), error);
-	assertStreamError(t, error);
-};
-
-test('Handles input streams errors', testStreamError, noopReadable(), 0);
-test('Handles input Duplex streams errors', testStreamError, noopDuplex(), 0);
-test('Handles output streams errors', testStreamError, noopWritable(), 1);
-test('Handles output Duplex streams errors', testStreamError, noopDuplex(), 1);
-
-const testChildStreamEnd = async (t, stream) => {
-	const childProcess = execa('stdin.js', {stdin: [stream, 'pipe']});
-	childProcess.stdin.end();
-	await setImmediate();
-	stream.destroy();
-
-	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
-	assertStreamError(t, error);
-	t.true(stream.destroyed);
-};
-
-test('Handles childProcess.stdin end', testChildStreamEnd, noopReadable());
-test('Handles childProcess.stdin Duplex end', testChildStreamEnd, noopDuplex());
-
-const testChildStreamAbort = async (t, stream, index) => {
-	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
-	childProcess.stdio[index].destroy();
-	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
-	assertStreamError(t, error);
-	t.true(stream.destroyed);
-};
-
-test('Handles childProcess.stdin aborts', testChildStreamAbort, noopReadable(), 0);
-test('Handles childProcess.stdin Duplex aborts', testChildStreamAbort, noopDuplex(), 0);
-test('Handles childProcess.stdout aborts', testChildStreamAbort, noopWritable(), 1);
-test('Handles childProcess.stdout Duplex aborts', testChildStreamAbort, noopDuplex(), 1);
-
-const testChildStreamError = async (t, stream, index) => {
-	const childProcess = execa(getStreamFixtureName(index), getStdio(index, [stream, 'pipe']));
-	const error = new Error('test');
-	childProcess.stdio[index].destroy(error);
-	t.is(await t.throwsAsync(childProcess), error);
-	assertStreamError(t, error);
-	t.true(stream.destroyed);
-};
-
-test('Handles childProcess.stdin errors', testChildStreamError, noopReadable(), 0);
-test('Handles childProcess.stdin Duplex errors', testChildStreamError, noopDuplex(), 0);
-test('Handles childProcess.stdout errors', testChildStreamError, noopWritable(), 1);
-test('Handles childProcess.stdout Duplex errors', testChildStreamError, noopDuplex(), 1);

@@ -709,7 +709,7 @@ const testGeneratorCancel = async (t, error) => {
 	const childProcess = execa('noop.js', {stdout: infiniteGenerator});
 	await once(childProcess.stdout, 'data');
 	childProcess.stdout.destroy(error);
-	await t.throwsAsync(childProcess);
+	await (error === undefined ? t.notThrowsAsync(childProcess) : t.throwsAsync(childProcess));
 };
 
 test('Running generators are canceled on process abort', testGeneratorCancel, undefined);

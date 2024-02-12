@@ -719,6 +719,7 @@ const testGeneratorDestroy = async (t, transform) => {
 	const childProcess = execa('forever.js', {stdout: transform});
 	const error = new Error('test');
 	childProcess.stdout.destroy(error);
+	childProcess.kill();
 	t.is(await t.throwsAsync(childProcess), error);
 };
 

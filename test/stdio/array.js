@@ -264,6 +264,7 @@ const testDestroyStandardStream = async (t, index) => {
 	const childProcess = execa('forever.js', getStdio(index, [STANDARD_STREAMS[index], 'pipe']));
 	const error = new Error('test');
 	childProcess.stdio[index].destroy(error);
+	childProcess.kill();
 	const thrownError = await t.throwsAsync(childProcess);
 	t.is(thrownError, error);
 	t.false(STANDARD_STREAMS[index].destroyed);

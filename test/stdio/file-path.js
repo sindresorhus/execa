@@ -139,23 +139,23 @@ test('stdout be an object when it is a file path string - sync', testFilePathObj
 test('stderr be an object when it is a file path string - sync', testFilePathObject, 2, execaSync);
 test('stdio[*] must be an object when it is a file path string - sync', testFilePathObject, 3, execaSync);
 
-const testFileError = async (t, mapFile, index) => {
+const testFileError = async (t, fixtureName, mapFile, index) => {
 	await t.throwsAsync(
-		execa('forever.js', getStdio(index, mapFile('./unknown/file'))),
+		execa(fixtureName, [`${index}`], getStdio(index, mapFile('./unknown/file'))),
 		{code: 'ENOENT'},
 	);
 };
 
-test('inputFile file URL errors should be handled', testFileError, pathToFileURL, 'inputFile');
-test('stdin file URL errors should be handled', testFileError, pathToFileURL, 0);
-test('stdout file URL errors should be handled', testFileError, pathToFileURL, 1);
-test('stderr file URL errors should be handled', testFileError, pathToFileURL, 2);
-test('stdio[*] file URL errors should be handled', testFileError, pathToFileURL, 3);
-test('inputFile file path errors should be handled', testFileError, identity, 'inputFile');
-test('stdin file path errors should be handled', testFileError, getAbsolutePath, 0);
-test('stdout file path errors should be handled', testFileError, getAbsolutePath, 1);
-test('stderr file path errors should be handled', testFileError, getAbsolutePath, 2);
-test('stdio[*] file path errors should be handled', testFileError, getAbsolutePath, 3);
+test.serial('inputFile file URL errors should be handled', testFileError, 'stdin-fd.js', pathToFileURL, 'inputFile');
+test.serial('stdin file URL errors should be handled', testFileError, 'stdin-fd.js', pathToFileURL, 0);
+test.serial('stdout file URL errors should be handled', testFileError, 'noop-fd.js', pathToFileURL, 1);
+test.serial('stderr file URL errors should be handled', testFileError, 'noop-fd.js', pathToFileURL, 2);
+test.serial('stdio[*] file URL errors should be handled', testFileError, 'noop-fd.js', pathToFileURL, 3);
+test.serial('inputFile file path errors should be handled', testFileError, 'stdin-fd.js', identity, 'inputFile');
+test.serial('stdin file path errors should be handled', testFileError, 'stdin-fd.js', getAbsolutePath, 0);
+test.serial('stdout file path errors should be handled', testFileError, 'noop-fd.js', getAbsolutePath, 1);
+test.serial('stderr file path errors should be handled', testFileError, 'noop-fd.js', getAbsolutePath, 2);
+test.serial('stdio[*] file path errors should be handled', testFileError, 'noop-fd.js', getAbsolutePath, 3);
 
 const testFileErrorSync = (t, mapFile, index) => {
 	t.throws(() => {

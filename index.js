@@ -14,32 +14,60 @@ import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExi
 import {pipeToProcess} from './lib/pipe.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
-import {joinCommand, getEscapedCommand} from './lib/escape.js';
+import {joinCommand} from './lib/escape.js';
 import {parseCommand} from './lib/command.js';
-import {getDefaultCwd, normalizeCwd, safeNormalizeFileUrl, normalizeFileUrl} from './lib/cwd.js';
+import {normalizeCwd, safeNormalizeFileUrl, normalizeFileUrl} from './lib/cwd.js';
 import {parseTemplates} from './lib/script.js';
 import {logCommand, verboseDefault} from './lib/verbose.js';
 import {bufferToUint8Array} from './lib/stdio/utils.js';
 
 const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
 
-const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) => {
+const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, nodePath}) => {
 	const env = extendEnv ? {...process.env, ...envOption} : envOption;
 
 	if (preferLocal) {
-		return npmRunPathEnv({env, cwd: localDir, execPath});
+		return npmRunPathEnv({env, cwd: localDir, execPath: nodePath});
 	}
 
 	return env;
 };
 
-const getFilePath = rawFile => safeNormalizeFileUrl(rawFile, 'First argument');
+const handleAsyncArguments = (rawFile, rawArgs, rawOptions) => {
+	[rawArgs, rawOptions] = handleOptionalArguments(rawArgs, rawOptions);
+	const {file, args, command, escapedCommand, options: normalizedOptions} = handleArguments(rawFile, rawArgs, rawOptions);
+	const options = handleAsyncOptions(normalizedOptions);
+	return {file, args, command, escapedCommand, options};
+};
 
-const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
-	const filePath = getFilePath(rawFile);
-	const command = joinCommand(filePath, rawArgs);
-	const escapedCommand = getEscapedCommand(filePath, rawArgs);
+// Prevent passing the `timeout` option directly to `child_process.spawn()`
+const handleAsyncOptions = ({timeout, ...options}) => ({...options, timeoutDuration: timeout});
 
+const handleSyncArguments = (rawFile, rawArgs, rawOptions) => {
+	[rawArgs, rawOptions] = handleOptionalArguments(rawArgs, rawOptions);
+	const syncOptions = normalizeSyncOptions(rawOptions);
+	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, syncOptions);
+	validateSyncOptions(options);
+	return {file, args, command, escapedCommand, options};
+};
+
+const normalizeSyncOptions = options => options.node && !options.ipc ? {...options, ipc: false} : options;
+
+const validateSyncOptions = ({ipc}) => {
+	if (ipc) {
+		throw new TypeError('The "ipc: true" option cannot be used with synchronous methods.');
+	}
+};
+
+const handleOptionalArguments = (args = [], options = {}) => Array.isArray(args)
+	? [args, options]
+	: [[], args];
+
+const handleArguments = (rawFile, rawArgs, rawOptions) => {
+	const filePath = safeNormalizeFileUrl(rawFile, 'First argument');
+	const {command, escapedCommand} = joinCommand(filePath, rawArgs);
+
+	rawOptions.cwd = normalizeCwd(rawOptions.cwd);
 	const [processedFile, processedArgs, processedOptions] = handleNodeOption(filePath, rawArgs, rawOptions);
 
 	const {command: file, args, options: initialOptions} = crossSpawn._parse(processedFile, processedArgs, processedOptions);
@@ -49,7 +77,6 @@ const handleArguments = (rawFile, rawArgs, rawOptions = {}) => {
 	options.shell = normalizeFileUrl(options.shell);
 	options.env = getEnv(options);
 	options.forceKillAfterDelay = normalizeForceKillAfterDelay(options.forceKillAfterDelay);
-	options.cwd = normalizeCwd(options.cwd);
 
 	if (process.platform === 'win32' && basename(file, '.exe') === 'cmd') {
 		// #116
@@ -67,9 +94,8 @@ const addDefaultOptions = ({
 	stripFinalNewline = true,
 	extendEnv = true,
 	preferLocal = false,
-	cwd = getDefaultCwd(),
+	cwd,
 	localDir = cwd,
-	execPath = process.execPath,
 	encoding = 'utf8',
 	reject = true,
 	cleanup = true,
@@ -90,7 +116,6 @@ const addDefaultOptions = ({
 	preferLocal,
 	cwd,
 	localDir,
-	execPath,
 	encoding,
 	reject,
 	cleanup,
@@ -102,9 +127,6 @@ const addDefaultOptions = ({
 	lines,
 	ipc,
 });
-
-// Prevent passing the `timeout` option directly to `child_process.spawn()`
-const handleAsyncOptions = ({timeout, ...options}) => ({...options, timeoutDuration: timeout});
 
 const handleOutput = (options, value) => {
 	if (value === undefined || value === null) {
@@ -123,9 +145,7 @@ const handleOutput = (options, value) => {
 };
 
 export function execa(rawFile, rawArgs, rawOptions) {
-	const {file, args, command, escapedCommand, options: normalizedOptions} = handleArguments(rawFile, rawArgs, rawOptions);
-	const options = handleAsyncOptions(normalizedOptions);
-
+	const {file, args, command, escapedCommand, options} = handleAsyncArguments(rawFile, rawArgs, rawOptions);
 	const stdioStreamsGroups = handleInputAsync(options);
 
 	let spawned;
@@ -218,10 +238,7 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 };
 
 export function execaSync(rawFile, rawArgs, rawOptions) {
-	const syncOptions = normalizeSyncOptions(rawOptions);
-	const {file, args, command, escapedCommand, options} = handleArguments(rawFile, rawArgs, syncOptions);
-	validateSyncOptions(options);
-
+	const {file, args, command, escapedCommand, options} = handleSyncArguments(rawFile, rawArgs, rawOptions);
 	const stdioStreamsGroups = handleInputSync(options);
 
 	let result;
@@ -285,14 +302,6 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	};
 }
 
-const normalizeSyncOptions = (options = {}) => options.node && !options.ipc ? {...options, ipc: false} : options;
-
-const validateSyncOptions = ({ipc}) => {
-	if (ipc) {
-		throw new TypeError('The "ipc: true" option cannot be used with synchronous methods.');
-	}
-};
-
 const normalizeScriptStdin = ({input, inputFile, stdio}) => input === undefined && inputFile === undefined && stdio === undefined
 	? {stdin: 'inherit'}
 	: {};
@@ -339,11 +348,8 @@ export function execaCommandSync(command, options) {
 	return execaSync(file, args, options);
 }
 
-export function execaNode(file, args = [], options = {}) {
-	if (!Array.isArray(args)) {
-		options = args;
-		args = [];
-	}
+export function execaNode(file, args, options) {
+	[args, options] = handleOptionalArguments(args, options);
 
 	if (options.node === false) {
 		throw new TypeError('The "node" option cannot be false with `execaNode()`.');

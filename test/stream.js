@@ -461,7 +461,7 @@ test('childProcess.stdio[*] must be read right away', testBufferDestroyOnEnd, 3)
 
 const testProcessEventsCleanup = async (t, fixtureName) => {
 	const childProcess = execa(fixtureName, {reject: false});
-	t.deepEqual(childProcess.eventNames().sort(), ['error', 'exit', 'spawn']);
+	t.deepEqual(childProcess.eventNames().map(String).sort(), ['Symbol(error)', 'error', 'exit', 'spawn']);
 	await childProcess;
 	t.deepEqual(childProcess.eventNames(), []);
 };

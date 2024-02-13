@@ -92,6 +92,8 @@ if (isWindows) {
 	test('`forceKillAfterDelay` should kill after a timeout with SIGTERM', testForceKill, 50, 'SIGTERM');
 	test('`forceKillAfterDelay` should kill after a timeout with the killSignal string', testForceKill, 50, 'SIGINT', {killSignal: 'SIGINT'});
 	test('`forceKillAfterDelay` should kill after a timeout with the killSignal number', testForceKill, 50, constants.signals.SIGINT, {killSignal: constants.signals.SIGINT});
+	test('`forceKillAfterDelay` should kill after a timeout with an error', testForceKill, 50, new Error('test'));
+	test('`forceKillAfterDelay` should kill after a timeout with an error and a killSignal', testForceKill, 50, new Error('test'), {killSignal: 'SIGINT'});
 
 	test('`forceKillAfterDelay` works with the "signal" option', async t => {
 		const abortController = new AbortController();
@@ -428,4 +430,77 @@ test('child process errors use killSignal', async t => {
 	t.is(thrownError, error);
 	t.true(thrownError.isTerminated);
 	t.is(thrownError.signal, 'SIGINT');
+});
+
+const testInvalidKillArgument = async (t, killArgument) => {
+	const subprocess = execa('empty.js');
+	t.throws(() => {
+		subprocess.kill(killArgument);
+	}, {message: /error instance or a signal name/});
+	await subprocess;
+};
+
+test('Cannot call .kill(null)', testInvalidKillArgument, null);
+test('Cannot call .kill(0n)', testInvalidKillArgument, 0n);
+test('Cannot call .kill(true)', testInvalidKillArgument, true);
+test('Cannot call .kill(errorObject)', testInvalidKillArgument, {name: '', message: '', stack: ''});
+test('Cannot call .kill([error])', testInvalidKillArgument, [new Error('test')]);
+
+test('.kill(error) propagates error', async t => {
+	const subprocess = execa('forever.js');
+	const originalMessage = 'test';
+	const error = new Error(originalMessage);
+	t.true(subprocess.kill(error));
+	t.is(await t.throwsAsync(subprocess), error);
+	t.is(error.exitCode, undefined);
+	t.is(error.signal, 'SIGTERM');
+	t.true(error.isTerminated);
+	t.is(error.originalMessage, originalMessage);
+	t.true(error.message.includes(originalMessage));
+	t.true(error.message.includes('was killed with SIGTERM'));
+	t.true(error.stack.includes(import.meta.url));
+});
+
+test('.kill(error) uses killSignal', async t => {
+	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
+	subprocess.kill(new Error('test'));
+	t.like(await t.throwsAsync(subprocess), {signal: 'SIGINT'});
+});
+
+test('.kill(error) is a noop if process already exited', async t => {
+	const subprocess = execa('empty.js');
+	await subprocess;
+	t.false(isRunning(subprocess.pid));
+	t.false(subprocess.kill(new Error('test')));
+});
+
+test('.kill(error) terminates but does not change the error if the process already errored but did not exit yet', async t => {
+	const subprocess = execa('forever.js');
+	const error = new Error('first');
+	subprocess.stdout.destroy(error);
+	await setImmediate();
+	const secondError = new Error('second');
+	t.true(subprocess.kill(secondError));
+	t.is(await t.throwsAsync(subprocess), error);
+	t.is(error.exitCode, undefined);
+	t.is(error.signal, 'SIGTERM');
+	t.true(error.isTerminated);
+	t.false(error.message.includes(secondError.message));
+});
+
+test('.kill(error) twice in a row', async t => {
+	const subprocess = execa('forever.js');
+	const error = new Error('first');
+	subprocess.kill(error);
+	const secondError = new Error('second');
+	subprocess.kill(secondError);
+	t.is(await t.throwsAsync(subprocess), error);
+	t.false(error.message.includes(secondError.message));
+});
+
+test('.kill(error) does not emit the "error" event', async t => {
+	const subprocess = execa('forever.js');
+	const error = new Error('test');
+	subprocess.kill(error);
+	t.is(await Promise.race([t.throwsAsync(subprocess), once(subprocess, 'error')]), error);
 });

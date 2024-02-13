@@ -156,7 +156,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 	pipeOutputAsync(spawned, stdioStreamsGroups, controller);
 	cleanupOnExit(spawned, options, controller);
 
-	spawned.kill = spawnedKill.bind(undefined, spawned.kill.bind(spawned), options, controller);
+	spawned.kill = spawnedKill.bind(undefined, {kill: spawned.kill.bind(spawned), spawned, options, controller});
 	spawned.all = makeAllStream(spawned, options);
 	spawned.pipe = pipeToProcess.bind(undefined, {spawned, stdioStreamsGroups, options});
 

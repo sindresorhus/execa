@@ -7,11 +7,13 @@ import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
-import {fullStdio, getStdio} from './helpers/stdio.js';
+import {fullStdio, getStdio, prematureClose} from './helpers/stdio.js';
 import {foobarString} from './helpers/input.js';
 import {infiniteGenerator} from './helpers/generator.js';
 
 setFixtureDir();
+
+const isWindows = platform === 'win32';
 
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const {all} = await execa('noop-132.js', {all: true});
@@ -315,7 +317,7 @@ test('Process buffers all, which does not prevent exit if read and buffer is fal
 const getStreamInputProcess = index => execa('stdin-fd.js', [`${index}`], index === 3
 	? getStdio(3, [new Uint8Array(), infiniteGenerator])
 	: {});
-const getStreamOutputProcess = index => execa('max-buffer.js', [`${index}`], index === 3 ? fullStdio : {});
+const getStreamOutputProcess = index => execa('noop-repeat.js', [`${index}`], index === 3 ? fullStdio : {});
 
 const assertStreamInputError = (t, {exitCode, signal, isTerminated, failed}) => {
 	t.is(exitCode, 0);
@@ -333,7 +335,7 @@ const assertStreamOutputError = (t, index, {exitCode, signal, isTerminated, fail
 	t.false(isTerminated);
 	t.true(failed);
 
-	if (index === 1 && platform !== 'win32') {
+	if (index === 1 && !isWindows) {
 		t.true(stderr.includes('EPIPE'));
 	}
 };
@@ -341,7 +343,7 @@ const assertStreamOutputError = (t, index, {exitCode, signal, isTerminated, fail
 const testStreamInputAbort = async (t, index) => {
 	const childProcess = getStreamInputProcess(index);
 	childProcess.stdio[index].destroy();
-	const error = await t.throwsAsync(childProcess, {code: 'ERR_STREAM_PREMATURE_CLOSE'});
+	const error = await t.throwsAsync(childProcess, prematureClose);
 	assertStreamInputError(t, error);
 };
 

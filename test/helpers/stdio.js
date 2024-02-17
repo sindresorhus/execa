@@ -15,3 +15,5 @@ export const getStdio = (indexOrName, stdioOption, length = 3) => {
 export const fullStdio = getStdio(3, 'pipe');
 
 export const STANDARD_STREAMS = [process.stdin, process.stdout, process.stderr];
+
+export const prematureClose = {code: 'ERR_STREAM_PREMATURE_CLOSE'};

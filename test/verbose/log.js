@@ -10,7 +10,9 @@ const testNoStdout = async (t, verbose, execaMethod) => {
 	t.is(stdout, foobarString);
 };
 
-test('Logs on stderr not stdout, verbose false', testNoStdout, false, nestedExecaAsync);
-test('Logs on stderr not stdout, verbose true', testNoStdout, true, nestedExecaAsync);
-test('Logs on stderr not stdout, verbose false, sync', testNoStdout, false, nestedExecaSync);
-test('Logs on stderr not stdout, verbose true, sync', testNoStdout, true, nestedExecaSync);
+test('Logs on stderr not stdout, verbose "none"', testNoStdout, 'none', nestedExecaAsync);
+test('Logs on stderr not stdout, verbose "short"', testNoStdout, 'short', nestedExecaAsync);
+test('Logs on stderr not stdout, verbose "full"', testNoStdout, 'full', nestedExecaAsync);
+test('Logs on stderr not stdout, verbose "none", sync', testNoStdout, 'none', nestedExecaSync);
+test('Logs on stderr not stdout, verbose "short", sync', testNoStdout, 'short', nestedExecaSync);
+test('Logs on stderr not stdout, verbose "full", sync', testNoStdout, 'full', nestedExecaSync);

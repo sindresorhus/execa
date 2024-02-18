@@ -404,7 +404,8 @@ $.verbose = true;
 // Execa
 import {$ as $_} from 'execa';
 
-const $ = $_({verbose: true});
+// `verbose: 'short'` is also available
+const $ = $_({verbose: 'full'});
 
 await $`echo example`;
 ```
@@ -418,7 +419,8 @@ NODE_DEBUG=execa node file.js
 Which prints:
 
 ```
-[19:49:00.360] $ echo example
+[19:49:00.360] [0] $ echo example
+example
 ```
 
 ### Piping stdout to another command

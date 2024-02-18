@@ -7,7 +7,7 @@ const isWindows = platform === 'win32';
 export const QUOTE = isWindows ? '"' : '\'';
 
 // eslint-disable-next-line max-params
-const nestedExeca = (fixtureName, file, args, options, parentOptions) => {
+export const nestedExeca = (fixtureName, file, args, options, parentOptions) => {
 	[args, options = {}, parentOptions = {}] = Array.isArray(args) ? [args, options, parentOptions] : [[], args, options];
 	return execa(fixtureName, [JSON.stringify(options), file, ...args], parentOptions);
 };
@@ -22,7 +22,7 @@ export const runErrorProcess = async (t, verbose, execaMethod) => {
 };
 
 export const runEarlyErrorProcess = async (t, execaMethod) => {
-	const {stderr} = await t.throwsAsync(execaMethod('noop.js', [foobarString], {verbose: true, cwd: true}));
+	const {stderr} = await t.throwsAsync(execaMethod('noop.js', [foobarString], {verbose: 'short', cwd: true}));
 	t.true(stderr.includes('The "cwd" option must'));
 	return stderr;
 };
@@ -30,9 +30,14 @@ export const runEarlyErrorProcess = async (t, execaMethod) => {
 export const getCommandLine = stderr => getCommandLines(stderr)[0];
 export const getCommandLines = stderr => getNormalizedLines(stderr).filter(line => isCommandLine(line));
 const isCommandLine = line => line.includes(' $ ') || line.includes(' | ');
+export const getOutputLine = stderr => getOutputLines(stderr)[0];
+export const getOutputLines = stderr => getNormalizedLines(stderr).filter(line => isOutputLine(line));
+const isOutputLine = line => line.includes(']   ');
 export const getNormalizedLines = stderr => splitLines(normalizeStderr(stderr));
 const splitLines = stderr => stderr.split('\n');
 
 const normalizeStderr = stderr => normalizeTimestamp(stripVTControlCharacters(stderr));
 export const testTimestamp = '[00:00:00.000]';
 const normalizeTimestamp = stderr => stderr.replaceAll(/^\[\d{2}:\d{2}:\d{2}.\d{3}]/gm, testTimestamp);
+
+export const getVerboseOption = (isVerbose, verbose = 'short') => ({verbose: isVerbose ? verbose : 'none'});

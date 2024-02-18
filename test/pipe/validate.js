@@ -163,3 +163,23 @@ test('Both arguments might be invalid', async t => {
 	await assertPipeError(t, pipePromise, 'an Execa child process');
 	t.like(await source, {stdout: undefined});
 });
+
+test('Sets the right error message when the "all" option is incompatible - execa.execa', async t => {
+	await assertPipeError(
+		t,
+		execa('empty.js')
+			.pipe(execa('stdin.js', {all: false}))
+			.pipe(execa('empty.js'), {from: 'all'}),
+		'"all" option must be true',
+	);
+});
+
+test('Sets the right error message when the "all" option is incompatible - early error', async t => {
+	await assertPipeError(
+		t,
+		execa('empty.js', {killSignal: false})
+			.pipe(execa('stdin.js', {all: false}))
+			.pipe(execa('empty.js'), {from: 'all'}),
+		'"all" option must be true',
+	);
+});

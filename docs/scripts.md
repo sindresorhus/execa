@@ -421,13 +421,7 @@ Which prints:
 ```
 [19:49:00.360] [0] $ echo example
 example
-```
-
-Which prints:
-
-```
-[19:49:00.360] [0] $ echo example
-example
+[19:49:00.383] [0] √ (done in 23ms)
 ```
 
 ### Piping stdout to another command

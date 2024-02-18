@@ -21,6 +21,11 @@ export const runErrorProcess = async (t, verbose, execaMethod) => {
 	return stderr;
 };
 
+export const runWarningProcess = async (t, execaMethod) => {
+	const {stderr} = await execaMethod('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false});
+	return stderr;
+};
+
 export const runEarlyErrorProcess = async (t, execaMethod) => {
 	const {stderr} = await t.throwsAsync(execaMethod('noop.js', [foobarString], {verbose: 'short', cwd: true}));
 	t.true(stderr.includes('The "cwd" option must'));
@@ -33,11 +38,15 @@ const isCommandLine = line => line.includes(' $ ') || line.includes(' | ');
 export const getOutputLine = stderr => getOutputLines(stderr)[0];
 export const getOutputLines = stderr => getNormalizedLines(stderr).filter(line => isOutputLine(line));
 const isOutputLine = line => line.includes(']   ');
+export const getCompletionLine = stderr => getCompletionLines(stderr)[0];
+export const getCompletionLines = stderr => getNormalizedLines(stderr).filter(line => isCompletionLine(line));
+const isCompletionLine = line => line.includes('(done in');
 export const getNormalizedLines = stderr => splitLines(normalizeStderr(stderr));
 const splitLines = stderr => stderr.split('\n');
 
-const normalizeStderr = stderr => normalizeTimestamp(stripVTControlCharacters(stderr));
+const normalizeStderr = stderr => normalizeDuration(normalizeTimestamp(stripVTControlCharacters(stderr)));
 export const testTimestamp = '[00:00:00.000]';
 const normalizeTimestamp = stderr => stderr.replaceAll(/^\[\d{2}:\d{2}:\d{2}.\d{3}]/gm, testTimestamp);
+const normalizeDuration = stderr => stderr.replaceAll(/\(done in [^)]+\)/g, '(done in 0ms)');
 
 export const getVerboseOption = (isVerbose, verbose = 'short') => ({verbose: isVerbose ? verbose : 'none'});

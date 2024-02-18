@@ -97,35 +97,44 @@ test('The "execPath" option cannot be used - execaNode()', testFormerNodePath, e
 test('The "execPath" option cannot be used - "node" option', testFormerNodePath, runWithNodeOption);
 test('The "execPath" option cannot be used - "node" option sync', testFormerNodePath, runWithNodeOptionSync);
 
-const nodePathArguments = ['node', ['-p', 'process.env.Path || process.env.PATH']];
+const nodePathArguments = ['-p', ['process.env.Path || process.env.PATH']];
 
-const testChildNodePath = async (t, mapPath) => {
+const testChildNodePath = async (t, execaMethod, mapPath) => {
 	const nodePath = mapPath(await getNodePath());
-	const {stdout} = await execa(...nodePathArguments, {preferLocal: true, nodePath});
+	const {stdout} = await execaMethod(...nodePathArguments, {nodePath});
 	t.true(stdout.includes(TEST_NODE_VERSION));
 };
 
-test.serial('The "nodePath" option impacts the child process', testChildNodePath, identity);
-test.serial('The "nodePath" option can be a file URL', testChildNodePath, pathToFileURL);
+test.serial('The "nodePath" option impacts the child process - execaNode()', testChildNodePath, execaNode, identity);
+test.serial('The "nodePath" option impacts the child process - "node" option', testChildNodePath, runWithNodeOption, identity);
+test.serial('The "nodePath" option impacts the child process - "node" option sync', testChildNodePath, runWithNodeOptionSync, identity);
 
-test('The "nodePath" option defaults to the current Node.js binary in the child process', async t => {
-	const {stdout} = await execa(...nodePathArguments, {preferLocal: true});
+const testChildNodePathDefault = async (t, execaMethod) => {
+	const {stdout} = await execaMethod(...nodePathArguments);
 	t.true(stdout.includes(dirname(process.execPath)));
-});
+};
 
-test.serial('The "nodePath" option requires "preferLocal: true" to impact the child process', async t => {
+test('The "nodePath" option defaults to the current Node.js binary in the child process - execaNode()', testChildNodePathDefault, execaNode);
+test('The "nodePath" option defaults to the current Node.js binary in the child process - "node" option', testChildNodePathDefault, runWithNodeOption);
+test('The "nodePath" option defaults to the current Node.js binary in the child process - "node" option sync', testChildNodePathDefault, runWithNodeOptionSync);
+
+test.serial('The "nodePath" option requires "node: true" to impact the child process', async t => {
 	const nodePath = await getNodePath();
-	const {stdout} = await execa(...nodePathArguments, {nodePath});
+	const {stdout} = await execa('node', nodePathArguments.flat(), {nodePath});
 	t.false(stdout.includes(TEST_NODE_VERSION));
 });
 
-test.serial('The "nodePath" option is relative to "cwd" when used in the child process', async t => {
+const testChildNodePathCwd = async (t, execaMethod) => {
 	const nodePath = await getNodePath();
 	const cwd = dirname(dirname(nodePath));
 	const relativeExecPath = relative(cwd, nodePath);
-	const {stdout} = await execa(...nodePathArguments, {preferLocal: true, nodePath: relativeExecPath, cwd});
+	const {stdout} = await execaMethod(...nodePathArguments, {nodePath: relativeExecPath, cwd});
 	t.true(stdout.includes(TEST_NODE_VERSION));
-});
+};
+
+test.serial('The "nodePath" option is relative to "cwd" when used in the child process - execaNode()', testChildNodePathCwd, execaNode);
+test.serial('The "nodePath" option is relative to "cwd" when used in the child process - "node" option', testChildNodePathCwd, runWithNodeOption);
+test.serial('The "nodePath" option is relative to "cwd" when used in the child process - "node" option sync', testChildNodePathCwd, runWithNodeOptionSync);
 
 const testCwdNodePath = async (t, execaMethod) => {
 	const nodePath = await getNodePath();

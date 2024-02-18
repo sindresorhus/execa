@@ -21,6 +21,7 @@ test('Prints command, NODE_DEBUG=execa + "inherit"', async t => {
 		'1',
 		`${testTimestamp} [0] √ (done in 0ms)`,
 		`${testTimestamp} [1] $ node -e ${QUOTE}process.exit(2)${QUOTE}`,
+		`${testTimestamp} [1] ‼ Command failed with exit code 2: node -e ${QUOTE}process.exit(2)${QUOTE}`,
 		`${testTimestamp} [1] ‼ (done in 0ms)`,
 	]);
 });

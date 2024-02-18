@@ -669,7 +669,7 @@ Requires the [`node`](#node) option to be `true`.
 Type: `'none' | 'short' | 'full'`\
 Default: `'none'`
 
-If `verbose` is `'short'` or `'full'`, [prints each command](#verbose-mode) on `stderr` before executing it. When the command completes, prints its duration.
+If `verbose` is `'short'` or `'full'`, [prints each command](#verbose-mode) on `stderr` before executing it. When the command completes, prints its duration and (if it failed) its error.
 
 If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
 - the [`stdout`](#stdout-1)/[`stderr`](#stderr-1) option is `ignore` or `inherit`.

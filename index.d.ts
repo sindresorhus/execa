@@ -3,14 +3,15 @@ import {type Readable, type Writable} from 'node:stream';
 
 type IfAsync<IsSync extends boolean, AsyncValue> = IsSync extends true ? never : AsyncValue;
 
-type NoOutputStdioOption =
+// When the `stdin`/`stdout`/`stderr`/`stdio` option is set to one of those values, no stream is created
+type NoStreamStdioOption =
 	| 'ignore'
 	| 'inherit'
 	| 'ipc'
 	| number
 	| Readable
 	| Writable
-	| [NoOutputStdioOption];
+	| [NoStreamStdioOption];
 
 type BaseStdioOption =
 	| 'pipe'
@@ -105,25 +106,15 @@ type BufferEncodingOption = 'buffer';
 type IsObjectStream<
 	StreamIndex extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IsObjectNormalStream<StreamIndex, OptionsType> extends true
-	? true
-	: IsObjectStdioStream<StreamIndex, OptionsType['stdio']>;
+> = IsObjectModeStream<StreamIndex, IsObjectOutputOptions<StreamOption<StreamIndex, OptionsType>>, OptionsType>;
 
-type IsObjectNormalStream<
+type IsObjectModeStream<
 	StreamIndex extends string,
+	IsObjectModeStreamOption extends boolean,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IsObjectOutputOptions<StreamOption<StreamIndex, OptionsType>>;
-
-type IsObjectStdioStream<
-	StreamIndex extends string,
-	StdioOptionType extends StdioOptions | undefined,
-> = StdioOptionType extends StdioOptionsArray
-	? StreamIndex extends keyof StdioOptionType
-		? StdioOptionType[StreamIndex] extends StdioOption
-			? IsObjectOutputOptions<StdioOptionType[StreamIndex]>
-			: false
-		: false
-	: false;
+> = IsObjectModeStreamOption extends true
+	? true
+	: IsObjectOutputOptions<StdioProperty<StreamIndex, OptionsType>>;
 
 type IsObjectOutputOptions<OutputOptions extends StdioOption> = IsObjectOutputOption<OutputOptions extends StdioSingleOption[]
 	? OutputOptions[number]
@@ -140,53 +131,18 @@ type BooleanObjectMode<ObjectModeOption extends StdioTransformFull['objectMode']
 type IgnoresStreamResult<
 	StreamIndex extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IgnoresNormalPropertyResult<StreamIndex, OptionsType> extends true
-	? true
-	: IgnoresStdioPropertyResult<StreamIndex, OptionsType['stdio']>;
+> = IgnoresStreamReturn<StreamIndex, IgnoresStdioResult<StreamOption<StreamIndex, OptionsType>>, OptionsType>;
 
-// `result.stdin` is always `undefined`
-// When using `stdout: 'inherit'`, or `'ignore'`, etc. , `result.stdout` is `undefined`
-// Same with `stderr`
-type IgnoresNormalPropertyResult<
+type IgnoresStreamReturn<
 	StreamIndex extends string,
+	IsIgnoredStreamOption extends boolean,
 	OptionsType extends CommonOptions = CommonOptions,
-> = StreamIndex extends '0'
+> = IsIgnoredStreamOption extends true
 	? true
-	: IgnoresNormalProperty<StreamOption<StreamIndex, OptionsType>>;
-
-type StreamOption<
-	StreamIndex extends string,
-	OptionsType extends CommonOptions = CommonOptions,
-> = StreamIndex extends '0' ? OptionsType['stdin']
-	: StreamIndex extends '1' ? OptionsType['stdout']
-		: StreamIndex extends '2' ? OptionsType['stderr']
-			: undefined;
-
-type IgnoresNormalProperty<OutputOptions extends StdioOption> = OutputOptions extends NoOutputStdioOption ? true : false;
-
-type IgnoresStdioPropertyResult<
-	StreamIndex extends string,
-	StdioOptionType extends StdioOptions | undefined,
-	// Same but with `stdio: 'ignore'`
-> = StdioOptionType extends NoOutputStdioOption ? true
-// Same but with `stdio: ['ignore', 'ignore', 'ignore', ...]`
-	: StdioOptionType extends StdioOptionsArray
-		? StreamIndex extends keyof StdioOptionType
-			? StdioOptionType[StreamIndex] extends StdioOption
-				? IgnoresStdioResult<StdioOptionType[StreamIndex]>
-				: false
-			: false
-		: false;
+	: IgnoresStdioResult<StdioProperty<StreamIndex, OptionsType>>;
 
 // Whether `result.stdio[*]` is `undefined`
-type IgnoresStdioResult<StdioOptionType extends StdioOption> =
-	StdioOptionType extends NoOutputStdioOption ? true
-	// `result.stdio[3+]` is `undefined` when it is an input stream
-		: StdioOptionType extends StdinOption
-			? StdioOptionType extends StdoutStderrOption
-				? false
-				: true
-			: false;
+type IgnoresStdioResult<StdioOptionType extends StdioOption> = StdioOptionType extends NoStreamStdioOption ? true : false;
 
 // Whether `result.stdout|stderr|all` is `undefined`
 type IgnoresStreamOutput<
@@ -194,9 +150,53 @@ type IgnoresStreamOutput<
 	OptionsType extends CommonOptions = CommonOptions,
 > = LacksBuffer<OptionsType['buffer']> extends true
 	? true
-	: IgnoresStreamResult<StreamIndex, OptionsType>;
+	: IsInputStdioIndex<StreamIndex, OptionsType> extends true
+		? true
+		: IgnoresStreamResult<StreamIndex, OptionsType>;
 
 type LacksBuffer<BufferOption extends Options['buffer']> = BufferOption extends false ? true : false;
+
+// Whether `result.stdio[StreamIndex]` is an input stream
+type IsInputStdioIndex<
+	StreamIndex extends string,
+	OptionsType extends CommonOptions = CommonOptions,
+> = StreamIndex extends '0'
+	? true
+	: IsInputStdio<StdioProperty<StreamIndex, OptionsType>>;
+
+// Whether `result.stdio[3+]` is an input stream
+type IsInputStdio<StdioOptionType extends StdioOption> = StdioOptionType extends StdinOption
+	? StdioOptionType extends StdoutStderrOption
+		? false
+		: true
+	: false;
+
+// `options.stdin|stdout|stderr`
+type StreamOption<
+	StreamIndex extends string,
+	OptionsType extends CommonOptions = CommonOptions,
+> = string extends StreamIndex ? StdioOption
+	: StreamIndex extends '0' ? OptionsType['stdin']
+		: StreamIndex extends '1' ? OptionsType['stdout']
+			: StreamIndex extends '2' ? OptionsType['stderr']
+				: undefined;
+
+// `options.stdio[StreamIndex]`
+type StdioProperty<
+	StreamIndex extends string,
+	OptionsType extends CommonOptions = CommonOptions,
+> = StdioOptionProperty<StreamIndex, StdioArrayOption<OptionsType>>;
+
+type StdioOptionProperty<
+	StreamIndex extends string,
+	StdioOptionsType extends StdioOptions,
+> = string extends StreamIndex
+	? StdioOption | undefined
+	: StdioOptionsType extends StdioOptionsArray
+		? StreamIndex extends keyof StdioOptionsType
+			? StdioOptionsType[StreamIndex]
+			: undefined
+		: undefined;
 
 // Type of `result.stdout|stderr`
 type StdioOutput<
@@ -240,10 +240,7 @@ type AllUsesStdout<OptionsType extends Options = Options> = IgnoresStreamOutput<
 			: IsObjectStream<'1', OptionsType>;
 
 // Type of `result.stdio`
-type StdioArrayOutput<OptionsType extends CommonOptions = CommonOptions> = MapStdioOptions<
-OptionsType['stdio'] extends StdioOptionsArray ? OptionsType['stdio'] : ['pipe', 'pipe', 'pipe'],
-OptionsType
->;
+type StdioArrayOutput<OptionsType extends CommonOptions = CommonOptions> = MapStdioOptions<StdioArrayOption<OptionsType>, OptionsType>;
 
 type MapStdioOptions<
 	StdioOptionsArrayType extends StdioOptionsArray,
@@ -254,6 +251,17 @@ type MapStdioOptions<
 	OptionsType
 	>
 };
+
+// `stdio` option
+type StdioArrayOption<OptionsType extends CommonOptions = CommonOptions> = OptionsType['stdio'] extends StdioOptionsArray
+	? OptionsType['stdio']
+	: OptionsType['stdio'] extends StdinOption
+		? OptionsType['stdio'] extends StdoutStderrOption
+			? [OptionsType['stdio'], OptionsType['stdio'], OptionsType['stdio']]
+			: DefaultStdio
+		: DefaultStdio;
+
+type DefaultStdio = ['pipe', 'pipe', 'pipe'];
 
 type StricterOptions<
 	WideOptions extends CommonOptions,
@@ -769,10 +777,18 @@ export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = Exec
 type StreamUnlessIgnored<
 	StreamIndex extends string,
 	OptionsType extends Options = Options,
-> = ChildProcessStream<IgnoresStreamResult<StreamIndex, OptionsType>>;
+> = ChildProcessStream<StreamIndex, IgnoresStreamResult<StreamIndex, OptionsType>, OptionsType>;
 
-type ChildProcessStream<StreamResultIgnored extends boolean> = StreamResultIgnored extends true
+type ChildProcessStream<
+	StreamIndex extends string,
+	StreamResultIgnored extends boolean,
+	OptionsType extends Options = Options,
+> = StreamResultIgnored extends true
 	? null
+	: InputOutputStream<IsInputStdioIndex<StreamIndex, OptionsType>>;
+
+type InputOutputStream<IsInput extends boolean> = IsInput extends true
+	? Writable
 	: Readable;
 
 type AllStream<OptionsType extends Options = Options> = AllStreamProperty<OptionsType['all'], OptionsType>;
@@ -796,6 +812,8 @@ type AllIfStderr<StderrResultIgnored extends boolean> = StderrResultIgnored exte
 	: Readable;
 
 export type ExecaChildPromise<OptionsType extends Options = Options> = {
+	stdin: StreamUnlessIgnored<'0', OptionsType>;
+
 	stdout: StreamUnlessIgnored<'1', OptionsType>;
 
 	stderr: StreamUnlessIgnored<'2', OptionsType>;

@@ -6,7 +6,7 @@ import process from 'node:process';
 import crossSpawn from 'cross-spawn';
 import stripFinalNewline from 'strip-final-newline';
 import {npmRunPathEnv} from 'npm-run-path';
-import {makeError} from './lib/error.js';
+import {makeError, makeEarlyError, makeSuccessResult} from './lib/error.js';
 import {handleNodeOption} from './lib/node.js';
 import {handleInputAsync, pipeOutputAsync, cleanupStdioStreams} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
@@ -155,15 +155,7 @@ export function execa(rawFile, rawArgs, rawOptions) {
 		cleanupStdioStreams(stdioStreamsGroups);
 		// Ensure the returned error is always both a promise and a child process
 		const dummySpawned = new childProcess.ChildProcess();
-		const errorInstance = makeError({
-			error,
-			stdio: Array.from({length: stdioStreamsGroups.length}),
-			command,
-			escapedCommand,
-			options,
-			timedOut: false,
-			isCanceled: false,
-		});
+		const errorInstance = makeEarlyError({error, command, escapedCommand, stdioStreamsGroups, options});
 		const errorPromise = options.reject ? Promise.reject(errorInstance) : Promise.resolve(errorInstance);
 		mergePromise(dummySpawned, errorPromise);
 		return dummySpawned;
@@ -203,15 +195,15 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 		const isCanceled = options.signal?.aborted === true;
 		const returnedError = makeError({
 			error: errorInfo.error,
+			command,
+			escapedCommand,
+			timedOut: context.timedOut,
+			isCanceled,
 			exitCode,
 			signal,
 			stdio,
 			all,
-			command,
-			escapedCommand,
 			options,
-			timedOut: context.timedOut,
-			isCanceled,
 		});
 
 		if (!options.reject) {
@@ -221,20 +213,7 @@ const handlePromise = async ({spawned, options, stdioStreamsGroups, originalStre
 		throw returnedError;
 	}
 
-	return {
-		command,
-		escapedCommand,
-		cwd: options.cwd,
-		failed: false,
-		timedOut: false,
-		isCanceled: false,
-		isTerminated: false,
-		exitCode: 0,
-		stdout: stdio[1],
-		stderr: stdio[2],
-		all,
-		stdio,
-	};
+	return makeSuccessResult({command, escapedCommand, stdio, all, options});
 };
 
 export function execaSync(rawFile, rawArgs, rawOptions) {
@@ -245,15 +224,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 	try {
 		result = childProcess.spawnSync(file, args, options);
 	} catch (error) {
-		const errorInstance = makeError({
-			error,
-			stdio: Array.from({length: stdioStreamsGroups.stdioLength}),
-			command,
-			escapedCommand,
-			options,
-			timedOut: false,
-			isCanceled: false,
-		});
+		const errorInstance = makeEarlyError({error, command, escapedCommand, stdioStreamsGroups, options});
 
 		if (!options.reject) {
 			return errorInstance;
@@ -269,15 +240,15 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 
 	if (result.error !== undefined || isFailedExit(result.status, result.signal)) {
 		const error = makeError({
-			stdio,
 			error: result.error,
-			signal: result.signal,
-			exitCode: result.status,
 			command,
 			escapedCommand,
-			options,
 			timedOut: result.error && result.error.code === 'ETIMEDOUT',
 			isCanceled: false,
+			exitCode: result.status,
+			signal: result.signal,
+			stdio,
+			options,
 		});
 
 		if (!options.reject) {
@@ -287,19 +258,7 @@ export function execaSync(rawFile, rawArgs, rawOptions) {
 		throw error;
 	}
 
-	return {
-		command,
-		escapedCommand,
-		cwd: options.cwd,
-		failed: false,
-		timedOut: false,
-		isCanceled: false,
-		isTerminated: false,
-		exitCode: 0,
-		stdout: stdio[1],
-		stderr: stdio[2],
-		stdio,
-	};
+	return makeSuccessResult({command, escapedCommand, stdio, options});
 }
 
 const normalizeScriptStdin = ({input, inputFile, stdio}) => input === undefined && inputFile === undefined && stdio === undefined

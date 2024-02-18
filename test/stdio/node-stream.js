@@ -72,7 +72,6 @@ const createFileWriteStream = async () => {
 };
 
 const assertFileStreamError = async (t, childProcess, stream, filePath) => {
-	await once(childProcess, 'spawn');
 	const error = new Error('test');
 	stream.destroy(error);
 
@@ -108,9 +107,9 @@ const testFileReadableError = async (t, index) => {
 	await assertFileStreamError(t, childProcess, stream, filePath);
 };
 
-test('input handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 'input');
-test('stdin handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 0);
-test('stdio[*] handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 3);
+test.serial('input handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 'input');
+test.serial('stdin handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 0);
+test.serial('stdio[*] handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 3);
 
 const testFileReadableOpen = async (t, index, useSingle, execaMethod) => {
 	const {stream, filePath} = await createFileReadStream();
@@ -157,9 +156,9 @@ const testFileWritableError = async (t, index) => {
 	await assertFileStreamError(t, childProcess, stream, filePath);
 };
 
-test('stdout handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 1);
-test('stderr handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 2);
-test('stdio[*] handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 3);
+test.serial('stdout handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 1);
+test.serial('stderr handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 2);
+test.serial('stdio[*] handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 3);
 
 const testFileWritableOpen = async (t, index, useSingle, execaMethod) => {
 	const {stream, filePath} = await createFileWriteStream();

@@ -182,10 +182,13 @@ console.log(stdout);
 ```js
 import {execa} from 'execa';
 
-// Similar to `echo unicorns | cat` in Bash
-const {stdout} = await execa('echo', ['unicorns']).pipe(execa('cat'));
-console.log(stdout);
-//=> 'unicorns'
+// Similar to `npm run build | sort | head -n2` in Bash
+const {stdout, pipedFrom} = await execa('npm', ['run', 'build'])
+	.pipe(execa('sort'))
+	.pipe(execa('head', ['-n2']));
+console.log(stdout); // Result of `head -n2`
+console.log(pipedFrom[0]); // Result of `sort`
+console.log(pipedFrom[0].pipedFrom[0]); // Result of `npm run build`
 ```
 
 ### Handling Errors
@@ -273,7 +276,7 @@ Same as [`execa()`](#execacommandcommand-options) but synchronous.
 
 Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
-Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipesecondchildprocess-pipeoptions) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 #### $.sync\`command\`
 #### $.s\`command\`
@@ -282,7 +285,7 @@ Same as [$\`command\`](#command) but synchronous.
 
 Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
-Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipesecondchildprocess-pipeoptions) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 #### execaCommandSync(command, options?)
 
@@ -290,7 +293,7 @@ Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
 
 Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
-Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipeexecachildprocess-streamname) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipesecondchildprocess-pipeoptions) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 ### Shell syntax
 
@@ -312,18 +315,38 @@ This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-#### pipe(execaChildProcess, streamName?)
+#### pipe(secondChildProcess, pipeOptions?)
 
-`execaChildProcess`: [`execa()` return value](#pipe-multiple-processes)\
-`streamName`: `"stdout"` (default), `"stderr"`, `"all"` or file descriptor index
+`secondChildProcess`: [`execa()` return value](#pipe-multiple-processes)\
+`pipeOptions`: [`PipeOptions`](#pipeoptions)\
+_Returns_: [`Promise<ChildProcessResult>`](#childprocessresult)
 
-[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to another Execa child process' `stdin`.
+[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' [result](#childprocessresult). If either process is rejected, this is rejected with either process' [error](#childprocessresult) instead.
 
-A `streamName` can be passed to pipe `"stderr"`, `"all"` (both `stdout` and `stderr`) or any another file descriptor instead of `stdout`.
+This can be called multiple times to chain a series of processes.
 
-[`childProcess.stdout`](#stdout) (and/or [`childProcess.stderr`](#stderr) depending on `streamName`) must not be `undefined`. When `streamName` is `"all"`, the [`all` option](#all-2) must be set to `true`.
+Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
 
-Returns `execaChildProcess`, which allows chaining `.pipe()` then `await`ing the [final result](#childprocessresult).
+##### pipeOptions
+
+Type: `object`
+
+##### pipeOptions.from
+
+Type: `"stdout" | "stderr" | "all" | number`\
+Default: `"stdout"`
+
+Which stream to pipe. A file descriptor number can also be passed.
+
+`"all"` pipes both `stdout` and `stderr`. This requires the [`all` option](#all-2) to be `true`.
+
+##### pipeOptions.signal
+
+Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
+
+Unpipe the child process when the signal aborts.
+
+The [`.pipe()`](#pipesecondchildprocess-pipeoptions) method will be rejected with a cancellation error.
 
 #### kill(signal, error?)
 #### kill(error?)
@@ -485,6 +508,14 @@ Type: `string | undefined`
 A human-friendly description of the signal that was used to terminate the process. For example, `Floating point arithmetic error`.
 
 If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
+
+#### pipedFrom
+
+Type: [`ChildProcessResult[]`](#childprocessresult)
+
+Results of the other processes that were [piped](#pipe-multiple-processes) into this child process. This is useful to inspect a series of child processes piped with each other.
+
+This array is initially empty and is populated each time the [`.pipe()`](#pipesecondchildprocess-pipeoptions) method resolves.
 
 ### options
 

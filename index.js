@@ -11,7 +11,7 @@ import {handleNodeOption} from './lib/node.js';
 import {handleInputAsync, pipeOutputAsync, cleanupStdioStreams} from './lib/stdio/async.js';
 import {handleInputSync, pipeOutputSync} from './lib/stdio/sync.js';
 import {spawnedKill, validateTimeout, normalizeForceKillAfterDelay, cleanupOnExit, isFailedExit} from './lib/kill.js';
-import {pipeToProcess} from './lib/pipe.js';
+import {pipeToProcess} from './lib/pipe/setup.js';
 import {getSpawnedResult, makeAllStream} from './lib/stream.js';
 import {mergePromise} from './lib/promise.js';
 import {joinCommand} from './lib/escape.js';

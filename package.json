@@ -45,7 +45,7 @@
 		"zx"
 	],
 	"dependencies": {
-		"@sindresorhus/merge-streams": "^2.0.1",
+		"@sindresorhus/merge-streams": "^3.0.0",
 		"cross-spawn": "^7.0.3",
 		"get-stream": "^8.0.1",
 		"human-signals": "^6.0.0",

@@ -26,6 +26,7 @@ test('Return value properties are not missing and are ordered', async t => {
 		'stderr',
 		'all',
 		'stdio',
+		'pipedFrom',
 	]);
 });
 
@@ -50,6 +51,7 @@ test('Error properties are not missing and are ordered', async t => {
 		'stderr',
 		'all',
 		'stdio',
+		'pipedFrom',
 	]);
 });
 

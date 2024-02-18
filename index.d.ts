@@ -836,47 +836,21 @@ type PipeOptions = {
 
 type PipableProcess = {
 	/**
-	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
-
-	This can be called multiple times to chain a series of processes.
-
-	Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
-
-	When using `$`, the following simpler syntax can be used instead.
-
-	```js
- 	import {$} from 'execa';
-
-	await $`command`.pipe`secondCommand`;
-
-	// To pass either child process options or pipe options
-	await $`command`.pipe(options)`secondCommand`;
-	```
+	Like `.pipe(secondChildProcess)` but using a `command` template string instead. This follows the same syntax as `$`. `options` can be used to specify both pipe options and regular options.
 	*/
-	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & PipableProcess;
-};
+	pipe(templates: TemplateStringsArray, ...expressions: TemplateExpression[]): Promise<ExecaReturnValue<{}>> & PipableProcess;
+	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
+	(templates: TemplateStringsArray, ...expressions: TemplateExpression[])
+	=> Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
 
-type ScriptPipableProcess = {
 	/**
 	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
 
 	This can be called multiple times to chain a series of processes.
 
 	Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
-
-	When using `$`, the following simpler syntax can be used instead.
-
-	```js
-	await $`command`.pipe`secondCommand`;
-	// To pass either child process options or pipe options
-	await $`command`.pipe(options)`secondCommand`;
-	```
 	*/
-	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & ScriptPipableProcess;
-	pipe(templates: TemplateStringsArray, ...expressions: TemplateExpression[]): Promise<ExecaReturnValue<{}>> & ScriptPipableProcess;
-	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
-	(templates: TemplateStringsArray, ...expressions: TemplateExpression[])
-	=> Promise<ExecaReturnValue<OptionsType>> & ScriptPipableProcess;
+	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & PipableProcess;
 };
 
 export type ExecaChildPromise<OptionsType extends Options = Options> = {
@@ -1183,7 +1157,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	(options: NewOptionsType): Execa$<OptionsType & NewOptionsType>;
 
 	(templates: TemplateStringsArray, ...expressions: TemplateExpression[]):
-	Omit<ExecaChildProcess<StricterOptions<OptionsType, Options>>, 'pipe'> & ScriptPipableProcess;
+	ExecaChildProcess<StricterOptions<OptionsType, Options>> & PipableProcess;
 
 	/**
 	Same as $\`command\` but synchronous.

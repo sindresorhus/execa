@@ -97,6 +97,8 @@ try {
 	await execaPromise.pipe(execaPromise).pipe(execaBufferPromise, {from: 'stdout'});
 	await scriptPromise.pipe(execaPromise).pipe(execaBufferPromise, {from: 'stdout'});
 	await scriptPromise.pipe`stdin`.pipe({from: 'stdout'})`stdin`;
+	await scriptPromise.pipe`stdin`.pipe(execaBufferPromise, {from: 'stdout'});
+	await scriptPromise.pipe(execaBufferPromise, {from: 'stdout'}).pipe`stdin`;
 	expectError(execaPromise.pipe(execaBufferPromise).stdout);
 	expectError(scriptPromise.pipe(execaBufferPromise).stdout);
 	expectError(scriptPromise.pipe`stdin`.stdout);

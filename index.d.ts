@@ -856,7 +856,7 @@ type PipableProcess = {
 	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & PipableProcess;
 };
 
-type ScriptPipableProcess = PipableProcess & {
+type ScriptPipableProcess = {
 	/**
 	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
 
@@ -872,6 +872,7 @@ type ScriptPipableProcess = PipableProcess & {
 	await $`command`.pipe(options)`secondCommand`;
 	```
 	*/
+	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & ScriptPipableProcess;
 	pipe(templates: TemplateStringsArray, ...expressions: TemplateExpression[]): Promise<ExecaReturnValue<{}>> & ScriptPipableProcess;
 	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
 	(templates: TemplateStringsArray, ...expressions: TemplateExpression[])
@@ -1182,7 +1183,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	(options: NewOptionsType): Execa$<OptionsType & NewOptionsType>;
 
 	(templates: TemplateStringsArray, ...expressions: TemplateExpression[]):
-	ExecaChildProcess<StricterOptions<OptionsType, Options>> & ScriptPipableProcess;
+	Omit<ExecaChildProcess<StricterOptions<OptionsType, Options>>, 'pipe'> & ScriptPipableProcess;
 
 	/**
 	Same as $\`command\` but synchronous.

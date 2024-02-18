@@ -127,12 +127,12 @@ try {
 	expectError(execaPromise.pipe(execaBufferPromise, {from: 'other'}));
 	expectError(scriptPromise.pipe(execaBufferPromise, {from: 'other'}));
 	expectError(scriptPromise.pipe({from: 'other'})`stdin`);
-	await execaPromise.pipe(execaBufferPromise, {signal: new AbortController().signal});
-	await scriptPromise.pipe(execaBufferPromise, {signal: new AbortController().signal});
-	await scriptPromise.pipe({signal: new AbortController().signal})`stdin`;
-	expectError(await execaPromise.pipe(execaBufferPromise, {signal: true}));
-	expectError(await scriptPromise.pipe(execaBufferPromise, {signal: true}));
-	expectError(await scriptPromise.pipe({signal: true})`stdin`);
+	await execaPromise.pipe(execaBufferPromise, {unpipeSignal: new AbortController().signal});
+	await scriptPromise.pipe(execaBufferPromise, {unpipeSignal: new AbortController().signal});
+	await scriptPromise.pipe({unpipeSignal: new AbortController().signal})`stdin`;
+	expectError(await execaPromise.pipe(execaBufferPromise, {unpipeSignal: true}));
+	expectError(await scriptPromise.pipe(execaBufferPromise, {unpipeSignal: true}));
+	expectError(await scriptPromise.pipe({unpipeSignal: true})`stdin`);
 	expectError(await scriptPromise.pipe({})({}));
 	expectError(await scriptPromise.pipe({})(execaPromise));
 

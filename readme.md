@@ -363,7 +363,7 @@ Which stream to pipe. A file descriptor number can also be passed.
 
 `"all"` pipes both `stdout` and `stderr`. This requires the [`all` option](#all-2) to be `true`.
 
-##### pipeOptions.signal
+##### pipeOptions.unpipeSignal
 
 Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 

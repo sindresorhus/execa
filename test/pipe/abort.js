@@ -36,7 +36,7 @@ test('Can unpipe a single process', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin.js');
 	const destination = execa('stdin.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 
 	abortController.abort();
 	await assertUnPipeError(t, pipePromise);
@@ -53,7 +53,7 @@ test('Can use an already aborted signal', async t => {
 	abortController.abort();
 	const source = execa('empty.js');
 	const destination = execa('empty.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 
 	await assertUnPipeError(t, pipePromise);
 });
@@ -63,7 +63,7 @@ test('Can unpipe a process among other sources', async t => {
 	const source = execa('stdin.js');
 	const secondSource = execa('noop.js', [foobarString]);
 	const destination = execa('stdin.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 	const secondPipePromise = secondSource.pipe(destination);
 
 	abortController.abort();
@@ -81,7 +81,7 @@ test('Can unpipe a process among other sources on the same process', async t => 
 	const abortController = new AbortController();
 	const source = execa('stdin-both.js');
 	const destination = execa('stdin.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 	const secondPipePromise = source.pipe(destination, {from: 'stderr'});
 
 	abortController.abort();
@@ -99,7 +99,7 @@ test('Can unpipe a process among other destinations', async t => {
 	const source = execa('stdin.js');
 	const destination = execa('stdin.js');
 	const secondDestination = execa('stdin.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 	const secondPipePromise = source.pipe(secondDestination);
 
 	abortController.abort();
@@ -118,7 +118,7 @@ test('Can unpipe then re-pipe a process', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin.js');
 	const destination = execa('stdin.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 
 	source.stdin.write('.');
 	const [firstWrite] = await once(source.stdout, 'data');
@@ -138,7 +138,7 @@ test('Can unpipe to prevent termination to propagate to source', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin.js');
 	const destination = execa('stdin.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 
 	abortController.abort();
 	await assertUnPipeError(t, pipePromise);
@@ -154,7 +154,7 @@ test('Can unpipe to prevent termination to propagate to destination', async t =>
 	const abortController = new AbortController();
 	const source = execa('noop-forever.js', [foobarString]);
 	const destination = execa('stdin.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 
 	abortController.abort();
 	await assertUnPipeError(t, pipePromise);

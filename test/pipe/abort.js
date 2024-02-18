@@ -152,7 +152,7 @@ test('Can unpipe to prevent termination to propagate to source', async t => {
 
 test('Can unpipe to prevent termination to propagate to destination', async t => {
 	const abortController = new AbortController();
-	const source = execa('noop.js', [foobarString]);
+	const source = execa('noop-forever.js', [foobarString]);
 	const destination = execa('stdin.js');
 	const pipePromise = source.pipe(destination, {signal: abortController.signal});
 

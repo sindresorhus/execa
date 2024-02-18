@@ -321,7 +321,7 @@ This is `undefined` if either:
 `pipeOptions`: [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<ChildProcessResult>`](#childprocessresult)
 
-[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' [result](#childprocessresult). If either process is rejected, this is rejected with either process' [error](#childprocessresult) instead.
+[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' [result](#childprocessresult). If either process is rejected, this is rejected with that process' [error](#childprocessresult) instead.
 
 This can be called multiple times to chain a series of processes.
 

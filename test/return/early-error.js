@@ -1,12 +1,17 @@
 import process from 'node:process';
 import test from 'ava';
-import {execa, execaSync} from '../../index.js';
+import {execa, execaSync, $} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
 
 const isWindows = process.platform === 'win32';
 const ENOENT_REGEXP = isWindows ? /failed with exit code 1/ : /spawn.* ENOENT/;
+
+const earlyErrorOptions = {killSignal: false};
+const getEarlyErrorProcess = options => execa('empty.js', {...earlyErrorOptions, ...options});
+const getEarlyErrorProcessSync = options => execaSync('empty.js', {...earlyErrorOptions, ...options});
+const expectedEarlyError = {code: 'ERR_INVALID_ARG_TYPE'};
 
 test('execaSync() throws error if ENOENT', t => {
 	t.throws(() => {
@@ -15,7 +20,7 @@ test('execaSync() throws error if ENOENT', t => {
 });
 
 const testEarlyErrorShape = async (t, reject) => {
-	const subprocess = execa('', {reject});
+	const subprocess = getEarlyErrorProcess({reject});
 	t.notThrows(() => {
 		subprocess.catch(() => {});
 		subprocess.unref();
@@ -27,24 +32,20 @@ test('child_process.spawn() early errors have correct shape', testEarlyErrorShap
 test('child_process.spawn() early errors have correct shape - reject false', testEarlyErrorShape, false);
 
 test('child_process.spawn() early errors are propagated', async t => {
-	const {failed} = await t.throwsAsync(execa(''));
-	t.true(failed);
+	await t.throwsAsync(getEarlyErrorProcess(), expectedEarlyError);
 });
 
 test('child_process.spawn() early errors are returned', async t => {
-	const {failed} = await execa('', {reject: false});
+	const {failed} = await getEarlyErrorProcess({reject: false});
 	t.true(failed);
 });
 
 test('child_process.spawnSync() early errors are propagated with a correct shape', t => {
-	const {failed} = t.throws(() => {
-		execaSync('');
-	});
-	t.true(failed);
+	t.throws(getEarlyErrorProcessSync, expectedEarlyError);
 });
 
 test('child_process.spawnSync() early errors are propagated with a correct shape - reject false', t => {
-	const {failed} = execaSync('', {reject: false});
+	const {failed} = getEarlyErrorProcessSync({reject: false});
 	t.true(failed);
 });
 
@@ -68,3 +69,26 @@ if (!isWindows) {
 		}
 	});
 }
+
+const testEarlyErrorPipe = async (t, getChildProcess) => {
+	await t.throwsAsync(getChildProcess(), expectedEarlyError);
+};
+
+test('child_process.spawn() early errors on source can use .pipe()', testEarlyErrorPipe, () => getEarlyErrorProcess().pipe(execa('empty.js')));
+test('child_process.spawn() early errors on destination can use .pipe()', testEarlyErrorPipe, () => execa('empty.js').pipe(getEarlyErrorProcess()));
+test('child_process.spawn() early errors on source and destination can use .pipe()', testEarlyErrorPipe, () => getEarlyErrorProcess().pipe(getEarlyErrorProcess()));
+test('child_process.spawn() early errors can use .pipe() multiple times', testEarlyErrorPipe, () => getEarlyErrorProcess().pipe(getEarlyErrorProcess()).pipe(getEarlyErrorProcess()));
+test('child_process.spawn() early errors can use .pipe``', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`);
+test('child_process.spawn() early errors can use .pipe`` multiple times', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`.pipe`empty.js`);
+
+const testEarlyErrorStream = async (t, getStreamProperty, all) => {
+	const childProcess = getEarlyErrorProcess({all});
+	getStreamProperty(childProcess).on('end', () => {});
+	await t.throwsAsync(childProcess);
+};
+
+test('child_process.spawn() early errors can use .stdin', testEarlyErrorStream, ({stdin}) => stdin, false);
+test('child_process.spawn() early errors can use .stdout', testEarlyErrorStream, ({stdout}) => stdout, false);
+test('child_process.spawn() early errors can use .stderr', testEarlyErrorStream, ({stderr}) => stderr, false);
+test('child_process.spawn() early errors can use .stdio', testEarlyErrorStream, ({stdio}) => stdio[1], false);
+test('child_process.spawn() early errors can use .all', testEarlyErrorStream, ({all}) => all, true);

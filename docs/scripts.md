@@ -415,6 +415,12 @@ Or:
 NODE_DEBUG=execa node file.js
 ```
 
+Which prints:
+
+```
+[19:49:00.360] $ echo example
+```
+
 ### Piping stdout to another command
 
 ```sh

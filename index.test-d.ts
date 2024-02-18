@@ -84,22 +84,60 @@ try {
 	const execaBufferPromise = execa('unicorns', {encoding: 'buffer', all: true});
 	const bufferResult = await execaBufferPromise;
 
+	const scriptPromise = $`unicorns`;
+
 	expectType<typeof bufferResult>(await execaPromise.pipe(execaBufferPromise));
+	expectType<typeof bufferResult>(await scriptPromise.pipe(execaBufferPromise));
 	expectNotType<typeof bufferResult>(await execaPromise.pipe(execaPromise));
+	expectNotType<typeof bufferResult>(await scriptPromise.pipe(execaPromise));
+	expectType<ExecaReturnValue<{}>>(await scriptPromise.pipe`stdin`);
 	expectType<typeof bufferResult>(await execaPromise.pipe(execaPromise).pipe(execaBufferPromise));
+	expectType<typeof bufferResult>(await scriptPromise.pipe(execaPromise).pipe(execaBufferPromise));
+	expectType <ExecaReturnValue<{}>>(await scriptPromise.pipe`stdin`.pipe`stdin`);
 	await execaPromise.pipe(execaPromise).pipe(execaBufferPromise, {from: 'stdout'});
+	await scriptPromise.pipe(execaPromise).pipe(execaBufferPromise, {from: 'stdout'});
+	await scriptPromise.pipe`stdin`.pipe({from: 'stdout'})`stdin`;
 	expectError(execaPromise.pipe(execaBufferPromise).stdout);
+	expectError(scriptPromise.pipe(execaBufferPromise).stdout);
+	expectError(scriptPromise.pipe`stdin`.stdout);
 	expectError(execaPromise.pipe(createWriteStream('output.txt')));
+	expectError(scriptPromise.pipe(createWriteStream('output.txt')));
 	expectError(execaPromise.pipe('output.txt'));
+	expectError(scriptPromise.pipe('output.txt'));
 	await execaPromise.pipe(execaBufferPromise, {});
+	await scriptPromise.pipe(execaBufferPromise, {});
+	await scriptPromise.pipe({})`stdin`;
 	expectError(execaPromise.pipe(execaBufferPromise, 'stdout'));
+	expectError(scriptPromise.pipe(execaBufferPromise, 'stdout'));
+	expectError(scriptPromise.pipe('stdout')`stdin`);
 	await execaPromise.pipe(execaBufferPromise, {from: 'stdout'});
+	await scriptPromise.pipe(execaBufferPromise, {from: 'stdout'});
+	await scriptPromise.pipe({from: 'stdout'})`stdin`;
 	await execaPromise.pipe(execaBufferPromise, {from: 'stderr'});
+	await scriptPromise.pipe(execaBufferPromise, {from: 'stderr'});
+	await scriptPromise.pipe({from: 'stderr'})`stdin`;
 	await execaPromise.pipe(execaBufferPromise, {from: 'all'});
+	await scriptPromise.pipe(execaBufferPromise, {from: 'all'});
+	await scriptPromise.pipe({from: 'all'})`stdin`;
 	await execaPromise.pipe(execaBufferPromise, {from: 3});
+	await scriptPromise.pipe(execaBufferPromise, {from: 3});
+	await scriptPromise.pipe({from: 3})`stdin`;
 	expectError(execaPromise.pipe(execaBufferPromise, {from: 'other'}));
+	expectError(scriptPromise.pipe(execaBufferPromise, {from: 'other'}));
+	expectError(scriptPromise.pipe({from: 'other'})`stdin`);
 	await execaPromise.pipe(execaBufferPromise, {signal: new AbortController().signal});
+	await scriptPromise.pipe(execaBufferPromise, {signal: new AbortController().signal});
+	await scriptPromise.pipe({signal: new AbortController().signal})`stdin`;
 	expectError(await execaPromise.pipe(execaBufferPromise, {signal: true}));
+	expectError(await scriptPromise.pipe(execaBufferPromise, {signal: true}));
+	expectError(await scriptPromise.pipe({signal: true})`stdin`);
+	expectError(await scriptPromise.pipe({})({}));
+	expectError(await scriptPromise.pipe({})(execaPromise));
+
+	const pipeResult = await scriptPromise.pipe`stdin`;
+	expectType<string>(pipeResult.stdout);
+	const ignorePipeResult = await scriptPromise.pipe({stdout: 'ignore'})`stdin`;
+	expectType<undefined>(ignorePipeResult.stdout);
 
 	expectType<Readable>(execaPromise.all);
 	const noAllPromise = execa('unicorns');
@@ -1322,8 +1360,8 @@ expectError(execa('unicorns').kill('SIGKILL', {}));
 expectError(execa('unicorns').kill(null, new Error('test')));
 
 expectError(execa(['unicorns', 'arg']));
-expectType<ExecaChildProcess>(execa('unicorns'));
-expectType<ExecaChildProcess>(execa(fileUrl));
+expectAssignable<ExecaChildProcess>(execa('unicorns'));
+expectAssignable<ExecaChildProcess>(execa(fileUrl));
 expectType<ExecaReturnValue>(await execa('unicorns'));
 expectAssignable<{stdout: string}>(await execa('unicorns'));
 expectAssignable<{stdout: Uint8Array}>(await execa('unicorns', {encoding: 'buffer'}));
@@ -1338,7 +1376,7 @@ expectAssignable<{stdout: Uint8Array}>(execaSync('unicorns', {encoding: 'buffer'
 expectAssignable<{stdout: string}>(execaSync('unicorns', ['foo']));
 expectAssignable<{stdout: Uint8Array}>(execaSync('unicorns', ['foo'], {encoding: 'buffer'}));
 
-expectType<ExecaChildProcess>(execaCommand('unicorns'));
+expectAssignable<ExecaChildProcess>(execaCommand('unicorns'));
 expectType<ExecaReturnValue>(await execaCommand('unicorns'));
 expectAssignable<{stdout: string}>(await execaCommand('unicorns'));
 expectAssignable<{stdout: Uint8Array}>(await execaCommand('unicorns', {encoding: 'buffer'}));
@@ -1352,7 +1390,7 @@ expectAssignable<{stdout: string}>(execaCommandSync('unicorns foo'));
 expectAssignable<{stdout: Uint8Array}>(execaCommandSync('unicorns foo', {encoding: 'buffer'}));
 
 expectError(execaNode(['unicorns', 'arg']));
-expectType<ExecaChildProcess>(execaNode('unicorns'));
+expectAssignable<ExecaChildProcess>(execaNode('unicorns'));
 expectType<ExecaReturnValue>(await execaNode('unicorns'));
 expectType<ExecaReturnValue>(await execaNode(fileUrl));
 expectAssignable<{stdout: string}>(await execaNode('unicorns'));

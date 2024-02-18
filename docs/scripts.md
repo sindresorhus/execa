@@ -413,7 +413,14 @@ await $`echo example`;
 Or:
 
 ```
-NODE_DEBUG=execa node file.js
+> NODE_DEBUG=execa node file.js
+```
+
+Which prints:
+
+```
+[19:49:00.360] [0] $ echo example
+example
 ```
 
 Which prints:

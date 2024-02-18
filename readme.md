@@ -405,7 +405,7 @@ Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stdout`.
 
-This is `undefined` if the [`stdout`](#stdout-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stdout`](#stdout-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true`, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### stderr
 
@@ -413,7 +413,7 @@ Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the process on `stderr`.
 
-This is `undefined` if the [`stderr`](#stderr-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
+This is `undefined` if the [`stderr`](#stderr-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true`, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### all
 
@@ -425,7 +425,7 @@ This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
 - both [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options are set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-This is an array if the [`lines` option](#lines) is `true, or if either the `stdout` or `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
+This is an array if the [`lines` option](#lines) is `true`, or if either the `stdout` or `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
 #### stdio
 

@@ -669,14 +669,14 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	/**
 	The output of the process on `stdout`.
 
-	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stdout` option is a transform in object mode.
+	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
 	*/
 	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the process on `stderr`.
 
-	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stderr` option is a transform in object mode.
+	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
 	*/
 	stderr: StdioOutput<'2', OptionsType>;
 

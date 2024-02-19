@@ -314,6 +314,27 @@ test('Process buffers stderr, which does not prevent exit if read and buffer is 
 test('Process buffers stdio[*], which does not prevent exit if read and buffer is false', testBufferRead, 3, false);
 test('Process buffers all, which does not prevent exit if read and buffer is false', testBufferRead, 1, true);
 
+test('Aborting stdout should not abort stderr nor all', async t => {
+	const subprocess = execa('empty.js', {all: true});
+
+	subprocess.stdout.destroy();
+	t.false(subprocess.stdout.readable);
+	t.true(subprocess.stderr.readable);
+	t.true(subprocess.all.readable);
+
+	await subprocess;
+
+	t.false(subprocess.stdout.readableEnded);
+	t.is(subprocess.stdout.errored, null);
+	t.true(subprocess.stdout.destroyed);
+	t.true(subprocess.stderr.readableEnded);
+	t.is(subprocess.stderr.errored, null);
+	t.true(subprocess.stderr.destroyed);
+	t.true(subprocess.all.readableEnded);
+	t.is(subprocess.all.errored, null);
+	t.true(subprocess.all.destroyed);
+});
+
 const getStreamInputProcess = index => execa('stdin-fd.js', [`${index}`], index === 3
 	? getStdio(3, [new Uint8Array(), infiniteGenerator])
 	: {});

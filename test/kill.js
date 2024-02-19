@@ -427,11 +427,14 @@ test('child process errors use killSignal', async t => {
 	t.is(thrownError.signal, 'SIGINT');
 });
 
-const testInvalidKillArgument = async (t, killArgument) => {
+const testInvalidKillArgument = async (t, killArgument, secondKillArgument) => {
 	const subprocess = execa('empty.js');
+	const message = secondKillArgument instanceof Error || secondKillArgument === undefined
+		? /error instance or a signal name/
+		: /second argument is optional/;
 	t.throws(() => {
-		subprocess.kill(killArgument);
-	}, {message: /error instance or a signal name/});
+		subprocess.kill(killArgument, secondKillArgument);
+	}, {message});
 	await subprocess;
 };
 
@@ -440,6 +443,9 @@ test('Cannot call .kill(0n)', testInvalidKillArgument, 0n);
 test('Cannot call .kill(true)', testInvalidKillArgument, true);
 test('Cannot call .kill(errorObject)', testInvalidKillArgument, {name: '', message: '', stack: ''});
 test('Cannot call .kill([error])', testInvalidKillArgument, [new Error('test')]);
+test('Cannot call .kill(undefined, true)', testInvalidKillArgument, undefined, true);
+test('Cannot call .kill("SIGTERM", true)', testInvalidKillArgument, 'SIGTERM', true);
+test('Cannot call .kill(true, error)', testInvalidKillArgument, true, new Error('test'));
 
 test('.kill(error) propagates error', async t => {
 	const subprocess = execa('forever.js');
@@ -458,8 +464,18 @@ test('.kill(error) propagates error', async t => {
 
 test('.kill(error) uses killSignal', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
-	subprocess.kill(new Error('test'));
-	t.like(await t.throwsAsync(subprocess), {signal: 'SIGINT'});
+	const error = new Error('test');
+	subprocess.kill(error);
+	t.is(await t.throwsAsync(subprocess), error);
+	t.is(error.signal, 'SIGINT');
+});
+
+test('.kill(signal, error) uses signal', async t => {
+	const subprocess = execa('forever.js');
+	const error = new Error('test');
+	subprocess.kill('SIGINT', error);
+	t.is(await t.throwsAsync(subprocess), error);
+	t.is(error.signal, 'SIGINT');
 });
 
 test('.kill(error) is a noop if process already exited', async t => {

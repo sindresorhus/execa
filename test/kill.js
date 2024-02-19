@@ -7,6 +7,7 @@ import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../index.js';
 import {setFixtureDir, FIXTURES_DIR} from './helpers/fixtures-dir.js';
+import {assertMaxListeners} from './helpers/listeners.js';
 
 setFixtureDir();
 
@@ -122,12 +123,7 @@ if (isWindows) {
 	});
 
 	test.serial('Can call `.kill()` with `forceKillAfterDelay` many times without triggering the maxListeners warning', async t => {
-		let warning;
-		const captureWarning = warningArgument => {
-			warning = warningArgument;
-		};
-
-		process.once('warning', captureWarning);
+		const checkMaxListeners = assertMaxListeners(t);
 
 		const subprocess = spawnNoKillableSimple();
 		for (let index = 0; index < defaultMaxListeners + 1; index += 1) {
@@ -138,8 +134,7 @@ if (isWindows) {
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
 
-		t.is(warning, undefined);
-		process.off('warning', captureWarning);
+		checkMaxListeners();
 	});
 
 	test('Can call `.kill()` with `forceKillAfterDelay` multiple times', async t => {

@@ -6,6 +6,7 @@ import {execa} from '../../index.js';
 import {STANDARD_STREAMS} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {assertMaxListeners} from '../helpers/listeners.js';
 
 setFixtureDir();
 
@@ -49,12 +50,7 @@ test.serial('Can spawn many processes in parallel', async t => {
 });
 
 const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
-	let warning;
-	const captureWarning = warningArgument => {
-		warning = warningArgument;
-	};
-
-	process.on('warning', captureWarning);
+	const checkMaxListeners = assertMaxListeners(t);
 
 	for (const standardStream of STANDARD_STREAMS) {
 		standardStream.setMaxListeners(maxListenersCount);
@@ -65,17 +61,15 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 			Array.from({length: processesCount}, () => execa('empty.js', getComplexStdio(isMultiple))),
 		);
 		t.true(results.every(({exitCode}) => exitCode === 0));
-		t.is(warning, undefined);
 	} finally {
 		await setImmediate();
 		await setImmediate();
+		checkMaxListeners();
 
 		for (const standardStream of STANDARD_STREAMS) {
 			t.is(standardStream.getMaxListeners(), maxListenersCount);
 			standardStream.setMaxListeners(defaultMaxListeners);
 		}
-
-		process.off('warning', captureWarning);
 	}
 };
 

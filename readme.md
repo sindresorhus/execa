@@ -325,9 +325,11 @@ A `streamName` can be passed to pipe `"stderr"`, `"all"` (both `stdout` and `std
 
 Returns `execaChildProcess`, which allows chaining `.pipe()` then `await`ing the [final result](#childprocessresult).
 
-#### kill(signalOrError?)
+#### kill(signal, error?)
+#### kill(error?)
 
-`signalOrError`: `string | number | Error`\
+`signal`: `string | number`\
+`error`: `Error`\
 _Returns_: `boolean`
 
 Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the child process. The default signal is the [`killSignal`](#killsignal) option. `killSignal` defaults to `SIGTERM`, which [terminates](#isterminated) the child process.

@@ -247,7 +247,7 @@ test('Output streams are canceled on early process exit', testStreamEarlyExit, n
 const testInputDuplexStream = async (t, index) => {
 	const stream = new PassThrough();
 	stream.end(foobarString);
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [stream, 'pipe']));
+	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [stream, new Uint8Array()]));
 	t.is(stdout, foobarString);
 };
 

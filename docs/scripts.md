@@ -588,17 +588,19 @@ console.log('example');
 
 ```sh
 # Bash
-echo example | cat
+echo npm run build | sort | head -n2
 ```
 
 ```js
 // zx
-await $`echo example | cat`;
+await $`npm run build | sort | head -n2`;
 ```
 
 ```js
 // Execa
-await $`echo example`.pipe($({stdin: 'pipe'})`cat`);
+await $`npm run build`
+	.pipe($({stdin: 'pipe'})`sort`)
+	.pipe($({stdin: 'pipe'})`head -n2`);
 ```
 
 ### Piping stdout and stderr to another command
@@ -619,7 +621,7 @@ await Promise.all([echo, cat]);
 
 ```js
 // Execa
-await $({all: true})`echo example`.pipe($({stdin: 'pipe'})`cat`, 'all');
+await $({all: true})`echo example`.pipe($({from: 'all', stdin: 'pipe'})`cat`);
 ```
 
 ### Piping stdout to a file

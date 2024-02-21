@@ -1,7 +1,7 @@
 import {type ChildProcess} from 'node:child_process';
 import {type Readable, type Writable} from 'node:stream';
 
-type IfAsync<IsSync extends boolean, AsyncValue> = IsSync extends true ? never : AsyncValue;
+type IfAsync<IsSync extends boolean, AsyncValue, SyncValue = never> = IsSync extends true ? SyncValue : AsyncValue;
 
 // When the `stdin`/`stdout`/`stderr`/`stdio` option is set to one of those values, no stream is created
 type NoStreamStdioOption =
@@ -669,14 +669,14 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	/**
 	The output of the process on `stdout`.
 
-	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stdout` option is a transform in object mode.
+	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
 	*/
 	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the process on `stderr`.
 
-	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true, or if the `stderr` option is a transform in object mode.
+	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
 	*/
 	stderr: StdioOutput<'2', OptionsType>;
 
@@ -737,9 +737,16 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	- the `all` option is `false` (default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-	This is an array if the `lines` option is `true, or if either the `stdout` or `stderr` option is a transform in object mode.
+	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
 	all: IfAsync<IsSync, AllOutput<OptionsType>>;
+
+	/**
+	Results of the other processes that were piped into this child process. This is useful to inspect a series of child processes piped with each other.
+
+	This array is initially empty and is populated each time the `.pipe()` method resolves.
+	*/
+	pipedFrom: IfAsync<IsSync, ExecaReturnValue[], []>;
 	// Workaround for a TypeScript bug: https://github.com/microsoft/TypeScript/issues/57062
 } & {};
 
@@ -811,6 +818,33 @@ type AllIfStderr<StderrResultIgnored extends boolean> = StderrResultIgnored exte
 	? undefined
 	: Readable;
 
+type PipeOptions = {
+	/**
+	Which stream to pipe. A file descriptor number can also be passed.
+
+	`"all"` pipes both `stdout` and `stderr`. This requires the `all` option to be `true`.
+	*/
+	readonly from?: 'stdout' | 'stderr' | 'all' | number;
+
+	/**
+	Unpipe the child process when the signal aborts.
+
+	The `.pipe()` method will be rejected with a cancellation error.
+	*/
+	readonly signal?: AbortSignal;
+};
+
+type PipableProcess = {
+	/**
+	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
+
+	This can be called multiple times to chain a series of processes.
+
+	Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
+	*/
+	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & PipableProcess;
+};
+
 export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	stdin: StreamUnlessIgnored<'0', OptionsType>;
 
@@ -832,17 +866,6 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	): Promise<ExecaReturnValue<OptionsType> | ResultType>;
 
 	/**
-	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to another Execa child process' `stdin`.
-
-	A `streamName` can be passed to pipe `"stderr"`, `"all"` (both `stdout` and `stderr`) or any another file descriptor instead of `stdout`.
-
-	`childProcess.stdout` (and/or `childProcess.stderr` depending on `streamName`) must not be `undefined`. When `streamName` is `"all"`, the `all` option must be set to `true`.
-
-	Returns `execaChildProcess`, which allows chaining `.pipe()` then `await`ing the final result.
-	*/
-	pipe<Target extends ExecaChildProcess>(target: Target, streamName?: 'stdout' | 'stderr' | 'all' | number): Target;
-
-	/**
 	Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the child process. The default signal is the `killSignal` option. `killSignal` defaults to `SIGTERM`, which terminates the child process.
 
 	This returns `false` when the signal could not be sent, for example when the child process has already exited.
@@ -853,7 +876,7 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 	*/
 	kill(signal: Parameters<ChildProcess['kill']>[0], error?: Error): ReturnType<ChildProcess['kill']>;
 	kill(error?: Error): ReturnType<ChildProcess['kill']>;
-};
+} & PipableProcess;
 
 export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &
 ExecaChildPromise<OptionsType> &

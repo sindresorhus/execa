@@ -4,7 +4,7 @@
 import * as process from 'node:process';
 import {Readable, Writable} from 'node:stream';
 import {createWriteStream} from 'node:fs';
-import {expectType, expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectType, expectNotType, expectError, expectAssignable, expectNotAssignable} from 'tsd';
 import {
 	$,
 	execa,
@@ -79,18 +79,27 @@ const asyncFinal = async function * () {
 
 try {
 	const execaPromise = execa('unicorns', {all: true});
+	const unicornsResult = await execaPromise;
 
 	const execaBufferPromise = execa('unicorns', {encoding: 'buffer', all: true});
-	const writeStream = createWriteStream('output.txt');
+	const bufferResult = await execaBufferPromise;
 
-	expectType<typeof execaPromise>(execaBufferPromise.pipe(execaPromise));
-	expectError(execaBufferPromise.pipe(writeStream));
-	expectError(execaBufferPromise.pipe('output.txt'));
-	await execaBufferPromise.pipe(execaPromise, 'stdout');
-	await execaBufferPromise.pipe(execaPromise, 'stderr');
-	await execaBufferPromise.pipe(execaPromise, 'all');
-	await execaBufferPromise.pipe(execaPromise, 3);
-	expectError(execaBufferPromise.pipe(execaPromise, 'other'));
+	expectType<typeof bufferResult>(await execaPromise.pipe(execaBufferPromise));
+	expectNotType<typeof bufferResult>(await execaPromise.pipe(execaPromise));
+	expectType<typeof bufferResult>(await execaPromise.pipe(execaPromise).pipe(execaBufferPromise));
+	await execaPromise.pipe(execaPromise).pipe(execaBufferPromise, {from: 'stdout'});
+	expectError(execaPromise.pipe(execaBufferPromise).stdout);
+	expectError(execaPromise.pipe(createWriteStream('output.txt')));
+	expectError(execaPromise.pipe('output.txt'));
+	await execaPromise.pipe(execaBufferPromise, {});
+	expectError(execaPromise.pipe(execaBufferPromise, 'stdout'));
+	await execaPromise.pipe(execaBufferPromise, {from: 'stdout'});
+	await execaPromise.pipe(execaBufferPromise, {from: 'stderr'});
+	await execaPromise.pipe(execaBufferPromise, {from: 'all'});
+	await execaPromise.pipe(execaBufferPromise, {from: 3});
+	expectError(execaPromise.pipe(execaBufferPromise, {from: 'other'}));
+	await execaPromise.pipe(execaBufferPromise, {signal: new AbortController().signal});
+	expectError(await execaPromise.pipe(execaBufferPromise, {signal: true}));
 
 	expectType<Readable>(execaPromise.all);
 	const noAllPromise = execa('unicorns');
@@ -98,7 +107,6 @@ try {
 	const noAllResult = await noAllPromise;
 	expectType<undefined>(noAllResult.all);
 
-	const unicornsResult = await execaPromise;
 	expectType<string>(unicornsResult.command);
 	expectType<string>(unicornsResult.escapedCommand);
 	expectType<number | undefined>(unicornsResult.exitCode);
@@ -109,6 +117,7 @@ try {
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
+	expectType<ExecaReturnValue[]>(unicornsResult.pipedFrom);
 
 	expectType<undefined>(unicornsResult.stdio[0]);
 	expectType<string>(unicornsResult.stdout);
@@ -122,7 +131,6 @@ try {
 	expectType<Readable>(execaBufferPromise.stdout);
 	expectType<Readable>(execaBufferPromise.stderr);
 	expectType<Readable>(execaBufferPromise.all);
-	const bufferResult = await execaBufferPromise;
 	expectType<Uint8Array>(bufferResult.stdout);
 	expectType<Uint8Array>(bufferResult.stdio[1]);
 	expectType<Uint8Array>(bufferResult.stderr);
@@ -423,6 +431,7 @@ try {
 	expectType<string>(execaError.cwd);
 	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
+	expectType<ExecaReturnValue[]>(execaError.pipedFrom);
 
 	expectType<undefined>(execaError.stdio[0]);
 
@@ -568,6 +577,7 @@ try {
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
+	expectType<[]>(unicornsResult.pipedFrom);
 
 	expectType<undefined>(unicornsResult.stdio[0]);
 	expectType<string>(unicornsResult.stdout);
@@ -639,6 +649,7 @@ try {
 	expectType<string>(execaError.cwd);
 	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
+	expectType<[]>(execaError.pipedFrom);
 
 	expectType<undefined>(execaError.stdio[0]);
 

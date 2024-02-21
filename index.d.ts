@@ -737,7 +737,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	- the `all` option is `false` (default value)
 	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
 
-	This is an array if the `lines` option is `true, or if either the `stdout` or `stderr` option is a transform in object mode.
+	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
 	all: IfAsync<IsSync, AllOutput<OptionsType>>;
 

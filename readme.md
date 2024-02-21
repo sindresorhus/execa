@@ -325,7 +325,8 @@ A `streamName` can be passed to pipe `"stderr"`, `"all"` (both `stdout` and `std
 
 Returns `execaChildProcess`, which allows chaining `.pipe()` then `await`ing the [final result](#childprocessresult).
 
-#### kill(signal?, error?)
+#### kill(signal, error?)
+#### kill(error?)
 
 `signal`: `string | number`\
 `error`: `Error`\

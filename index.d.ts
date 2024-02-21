@@ -836,7 +836,7 @@ type PipeOptions = {
 
 type PipableProcess = {
 	/**
-	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with either process' error instead.
+	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
 
 	This can be called multiple times to chain a series of processes.
 

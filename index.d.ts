@@ -851,8 +851,8 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 
 	[More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 	*/
-	kill(signal: Parameters<ChildProcess['kill']>[0], error: Error): ReturnType<ChildProcess['kill']>;
-	kill(error: Error): ReturnType<ChildProcess['kill']>;
+	kill(signal: Parameters<ChildProcess['kill']>[0], error?: Error): ReturnType<ChildProcess['kill']>;
+	kill(error?: Error): ReturnType<ChildProcess['kill']>;
 };
 
 export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &

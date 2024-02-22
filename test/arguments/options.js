@@ -123,6 +123,26 @@ test('execa()\'s command argument must be a string or file URL', testInvalidComm
 test('execaSync()\'s command argument must be a string or file URL', testInvalidCommand, execaSync);
 test('execaNode()\'s command argument must be a string or file URL', testInvalidCommand, execaNode);
 
+const testInvalidArgs = async (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('echo', true);
+	}, {message: /Second argument must be either/});
+};
+
+test('execa()\'s second argument must be an array', testInvalidArgs, execa);
+test('execaSync()\'s second argument must be an array', testInvalidArgs, execaSync);
+test('execaNode()\'s second argument must be an array', testInvalidArgs, execaNode);
+
+const testInvalidOptions = async (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('echo', [], new Map());
+	}, {message: /Last argument must be an options object/});
+};
+
+test('execa()\'s third argument must be a plain object', testInvalidOptions, execa);
+test('execaSync()\'s third argument must be a plain object', testInvalidOptions, execaSync);
+test('execaNode()\'s third argument must be a plain object', testInvalidOptions, execaNode);
+
 test('use relative path with \'..\' chars', async t => {
 	const pathViaParentDir = join('..', basename(fileURLToPath(new URL('../..', import.meta.url))), 'test', 'fixtures', 'noop.js');
 	const {stdout} = await execa(pathViaParentDir, ['foo']);

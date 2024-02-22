@@ -150,6 +150,10 @@ test('$ trims', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
+test('$ must only use options or templates', t => {
+	t.throws(() => $(true)`noop.js`, {message: /Please use either/});
+});
+
 test('$.sync', t => {
 	const {stdout} = $.sync`echo.js foo bar`;
 	t.is(stdout, 'foo\nbar');
@@ -191,6 +195,10 @@ test('$.sync allows execa return value buffer array interpolation', t => {
 	const foo = $({encoding: 'buffer'}).sync`echo.js foo`;
 	const {stdout} = $.sync`echo.js ${[foo, 'bar']}`;
 	t.is(stdout, 'foo\nbar');
+});
+
+test('$.sync must only templates', t => {
+	t.throws(() => $.sync(true)`noop.js`, {message: /A template string must be used/});
 });
 
 const invalidExpression = test.macro({

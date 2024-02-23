@@ -124,6 +124,16 @@ await $$`echo rainbows`;
 //=> 'rainbows'
 ```
 
+#### Piping
+
+```js
+import {$} from 'execa';
+
+await $`npm run build`
+	.pipe`sort`
+	.pipe`head -n2`;
+```
+
 #### Verbose mode
 
 ```sh
@@ -326,6 +336,17 @@ _Returns_: [`Promise<ChildProcessResult>`](#childprocessresult)
 This can be called multiple times to chain a series of processes.
 
 Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
+
+When using [`$`](#command), the following [simpler syntax](docs/scripts.md#piping-stdout-to-another-command) can be used instead.
+
+```js
+import {$} from 'execa';
+
+await $`command`.pipe`secondCommand`;
+
+// To pass either child process options or pipe options
+await $`command`.pipe(options)`secondCommand`;
+```
 
 ##### pipeOptions
 

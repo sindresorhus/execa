@@ -841,8 +841,41 @@ type PipableProcess = {
 	This can be called multiple times to chain a series of processes.
 
 	Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
+
+	When using `$`, the following simpler syntax can be used instead.
+
+	```js
+ 	import {$} from 'execa';
+
+	await $`command`.pipe`secondCommand`;
+
+	// To pass either child process options or pipe options
+	await $`command`.pipe(options)`secondCommand`;
+	```
 	*/
 	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & PipableProcess;
+};
+
+type ScriptPipableProcess = PipableProcess & {
+	/**
+	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
+
+	This can be called multiple times to chain a series of processes.
+
+	Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
+
+	When using `$`, the following simpler syntax can be used instead.
+
+	```js
+	await $`command`.pipe`secondCommand`;
+	// To pass either child process options or pipe options
+	await $`command`.pipe(options)`secondCommand`;
+	```
+	*/
+	pipe(templates: TemplateStringsArray, ...expressions: TemplateExpression[]): Promise<ExecaReturnValue<{}>> & ScriptPipableProcess;
+	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
+	(templates: TemplateStringsArray, ...expressions: TemplateExpression[])
+	=> Promise<ExecaReturnValue<OptionsType>> & ScriptPipableProcess;
 };
 
 export type ExecaChildPromise<OptionsType extends Options = Options> = {
@@ -1146,11 +1179,10 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	```
 	*/
 	<NewOptionsType extends CommonOptions = {}>
-	(options: NewOptionsType):
-	Execa$<OptionsType & NewOptionsType>;
+	(options: NewOptionsType): Execa$<OptionsType & NewOptionsType>;
 
 	(templates: TemplateStringsArray, ...expressions: TemplateExpression[]):
-	ExecaChildProcess<StricterOptions<OptionsType, Options>>;
+	ExecaChildProcess<StricterOptions<OptionsType, Options>> & ScriptPipableProcess;
 
 	/**
 	Same as $\`command\` but synchronous.

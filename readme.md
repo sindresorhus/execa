@@ -627,9 +627,9 @@ Default: [`process.execPath`](https://nodejs.org/api/process.html#process_proces
 
 Path to the Node.js executable.
 
-When the [`node`](#node) option is `true`, this is used to to create the child process. When the [`preferLocal`](#preferlocal) option is `true`, this is used in the child process itself.
-
 For example, this can be used together with [`get-node`](https://github.com/ehmicky/get-node) to run a specific Node.js version.
+
+Requires the [`node`](#node) option to be `true`.
 
 #### verbose
 

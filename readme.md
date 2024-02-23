@@ -340,7 +340,10 @@ Multiple child processes can be piped to the same process. Conversely, the same 
 When using [`$`](#command), the following [simpler syntax](docs/scripts.md#piping-stdout-to-another-command) can be used instead.
 
 ```js
+import {$} from 'execa';
+
 await $`command`.pipe`secondCommand`;
+
 // To pass either child process options or pipe options
 await $`command`.pipe(options)`secondCommand`;
 ```

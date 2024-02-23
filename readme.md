@@ -256,6 +256,8 @@ This is the preferred method when executing multiple commands in a script file.
 
 The `command` string can inject any `${value}` with the following types: string, number, [`childProcess`](#childprocess) or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${childProcess}`, the process's `stdout` is used.
 
+The `command` string can use [multiple lines and indentation](docs/scripts.md#multiline-commands).
+
 For more information, please see [this section](#scripts-interface) and [this page](docs/scripts.md).
 
 #### $(options)

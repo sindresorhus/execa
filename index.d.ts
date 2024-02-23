@@ -845,7 +845,10 @@ type PipableProcess = {
 	When using `$`, the following simpler syntax can be used instead.
 
 	```js
+ 	import {$} from 'execa';
+
 	await $`command`.pipe`secondCommand`;
+
 	// To pass either child process options or pipe options
 	await $`command`.pipe(options)`secondCommand`;
 	```

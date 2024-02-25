@@ -98,7 +98,7 @@ if (isWindows) {
 
 	test('`forceKillAfterDelay` works with the "signal" option', async t => {
 		const abortController = new AbortController();
-		const subprocess = spawnNoKillableSimple({signal: abortController.signal});
+		const subprocess = spawnNoKillableSimple({cancelSignal: abortController.signal});
 		await once(subprocess, 'spawn');
 		abortController.abort();
 		const {isTerminated, signal, isCanceled} = await t.throwsAsync(subprocess);
@@ -280,7 +280,7 @@ test('child process errors are handled after spawn', async t => {
 
 test('child process double errors are handled after spawn', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('forever.js', {signal: abortController.signal});
+	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
 	await once(subprocess, 'spawn');
 	const error = new Error('test');
 	subprocess.emit('error', error);

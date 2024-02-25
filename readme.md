@@ -315,7 +315,7 @@ This is the preferred method when executing Node.js files.
 
 Same as [`execa()`](#execacommandcommand-options), [`execaCommand()`](#execacommand-command-options), [$\`command\`](#command) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -525,7 +525,7 @@ Whether the process timed out.
 
 Type: `boolean`
 
-Whether the process was canceled using the [`signal`](#signal-1) option.
+Whether the process was canceled using the [`cancelSignal`](#cancelsignal) option.
 
 #### isTerminated
 
@@ -541,7 +541,7 @@ Type: `number | undefined`
 
 The numeric exit code of the process that was run.
 
-This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal-1).
+This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal).
 
 #### signal
 
@@ -850,7 +850,7 @@ Default: `0`
 
 If `timeout` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
-#### signal
+#### cancelSignal
 
 Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
@@ -868,7 +868,7 @@ If the child process is terminated but does not exit, forcefully exit it by send
 The grace period is 5 seconds by default. This feature can be disabled with `false`.
 
 This works when the child process is terminated by either:
-- the [`signal`](#signal-1), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
+- the [`cancelSignal`](#cancelsignal), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
 - calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
 This does not work when the child process is terminated by either:
@@ -884,7 +884,7 @@ Type: `string | number`\
 Default: `SIGTERM`
 
 Signal used to terminate the child process when:
-- using the [`signal`](#signal-1), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
+- using the [`cancelSignal`](#cancelsignal), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
 - calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
 This can be either a name (like `"SIGTERM"`) or a number (like `9`).
@@ -973,7 +973,7 @@ console.log(await pRetry(run, {retries: 5}));
 import {execa} from 'execa';
 
 const abortController = new AbortController();
-const subprocess = execa('node', [], {signal: abortController.signal});
+const subprocess = execa('node', [], {cancelSignal: abortController.signal});
 
 setTimeout(() => {
 	abortController.abort();

@@ -145,25 +145,6 @@ await $`npm run build
 	--example-flag-two`
 ```
 
-### Subcommands
-
-```sh
-# Bash
-echo "$(echo example)"
-```
-
-```js
-// zx
-const example = await $`echo example`;
-await $`echo ${example}`;
-```
-
-```js
-// Execa
-const example = await $`echo example`;
-await $`echo ${example}`;
-```
-
 ### Concatenation
 
 ```sh
@@ -184,73 +165,6 @@ const tmpDir = '/tmp'
 await $`mkdir ${tmpDir}/filename`;
 ```
 
-### Parallel commands
-
-```sh
-# Bash
-echo one &
-echo two &
-```
-
-```js
-// zx
-await Promise.all([$`echo one`, $`echo two`]);
-```
-
-```js
-// Execa
-await Promise.all([$`echo one`, $`echo two`]);
-```
-
-### Serial commands
-
-```sh
-# Bash
-echo one && echo two
-```
-
-```js
-// zx
-await $`echo one && echo two`;
-```
-
-```js
-// Execa
-await $`echo one`;
-await $`echo two`;
-```
-
-### Local binaries
-
-```sh
-# Bash
-npx tsc --version
-```
-
-```js
-// zx
-await $`npx tsc --version`;
-```
-
-```js
-// Execa
-await $`tsc --version`;
-```
-
-### Builtin utilities
-
-```js
-// zx
-const content = await stdin();
-```
-
-```js
-// Execa
-import getStdin from 'get-stdin';
-
-const content = await getStdin();
-```
-
 ### Variable substitution
 
 ```sh
@@ -266,25 +180,6 @@ await $`echo $LANG`;
 ```js
 // Execa
 await $`echo ${process.env.LANG}`;
-```
-
-### Environment variables
-
-```sh
-# Bash
-EXAMPLE=1 example_command
-```
-
-```js
-// zx
-$.env.EXAMPLE = '1';
-await $`example_command`;
-delete $.env.EXAMPLE;
-```
-
-```js
-// Execa
-await $({env: {EXAMPLE: '1'}})`example_command`;
 ```
 
 ### Escaping
@@ -321,26 +216,172 @@ await $`echo ${['one two', '$']}`;
 await $`echo ${['one two', '$']}`;
 ```
 
-### Current filename
+### Subcommands
 
 ```sh
 # Bash
-echo "$(basename "$0")"
+echo "$(echo example)"
 ```
 
 ```js
 // zx
-await $`echo ${__filename}`;
+const example = await $`echo example`;
+await $`echo ${example}`;
 ```
 
 ```js
 // Execa
-import {fileURLToPath} from 'node:url';
-import path from 'node:path';
+const example = await $`echo example`;
+await $`echo ${example}`;
+```
 
-const __filename = path.basename(fileURLToPath(import.meta.url));
+### Serial commands
 
-await $`echo ${__filename}`;
+```sh
+# Bash
+echo one && echo two
+```
+
+```js
+// zx
+await $`echo one && echo two`;
+```
+
+```js
+// Execa
+await $`echo one`;
+await $`echo two`;
+```
+
+### Parallel commands
+
+```sh
+# Bash
+echo one &
+echo two &
+```
+
+```js
+// zx
+await Promise.all([$`echo one`, $`echo two`]);
+```
+
+```js
+// Execa
+await Promise.all([$`echo one`, $`echo two`]);
+```
+
+### Global/shared options
+
+```sh
+# Bash
+options="timeout 5"
+$options echo one
+$options echo two
+$options echo three
+```
+
+```js
+// zx
+const timeout = '5s';
+await $`echo one`.timeout(timeout);
+await $`echo two`.timeout(timeout);
+await $`echo three`.timeout(timeout);
+```
+
+```js
+// Execa
+import {$ as $_} from 'execa';
+
+const $ = $_({timeout: 5000});
+
+await $`echo one`;
+await $`echo two`;
+await $`echo three`;
+```
+
+### Environment variables
+
+```sh
+# Bash
+EXAMPLE=1 example_command
+```
+
+```js
+// zx
+$.env.EXAMPLE = '1';
+await $`example_command`;
+delete $.env.EXAMPLE;
+```
+
+```js
+// Execa
+await $({env: {EXAMPLE: '1'}})`example_command`;
+```
+
+### Local binaries
+
+```sh
+# Bash
+npx tsc --version
+```
+
+```js
+// zx
+await $`npx tsc --version`;
+```
+
+```js
+// Execa
+await $`tsc --version`;
+```
+
+### Builtin utilities
+
+```js
+// zx
+const content = await stdin();
+```
+
+```js
+// Execa
+import getStdin from 'get-stdin';
+
+const content = await getStdin();
+```
+
+### Printing to stdout
+
+```sh
+# Bash
+echo example
+```
+
+```js
+// zx
+echo`example`;
+```
+
+```js
+// Execa
+console.log('example');
+```
+
+### Silent stderr
+
+```sh
+# Bash
+echo example 2> /dev/null
+```
+
+```js
+// zx
+await $`echo example`.stdio('inherit', 'pipe', 'ignore');
+```
+
+```js
+// Execa does not print stdout/stderr by default
+await $`echo example`;
 ```
 
 ### Verbose mode
@@ -374,104 +415,81 @@ Or:
 NODE_DEBUG=execa node file.js
 ```
 
-### Current directory
+### Piping stdout to another command
 
 ```sh
 # Bash
-cd project
+echo npm run build | sort | head -n2
 ```
 
 ```js
 // zx
-cd('project');
-
-// or:
-$.cwd = 'project';
+await $`npm run build | sort | head -n2`;
 ```
 
 ```js
 // Execa
-const $$ = $({cwd: 'project'});
+await $`npm run build`
+	.pipe`sort`
+	.pipe`head -n2`;
 ```
 
-### Multiple current directories
+### Piping stdout and stderr to another command
 
 ```sh
 # Bash
-pushd project
-pwd
-popd
-pwd
+echo example |& cat
 ```
 
 ```js
 // zx
-within(async () => {
-	cd('project');
-	await $`pwd`;
-});
-
-await $`pwd`;
+const echo = $`echo example`;
+const cat = $`cat`;
+echo.pipe(cat)
+echo.stderr.pipe(cat.stdin);
+await Promise.all([echo, cat]);
 ```
 
 ```js
 // Execa
-await $({cwd: 'project'})`pwd`;
-await $`pwd`;
+await $({all: true})`echo example`
+	.pipe({from: 'all'})`cat`;
 ```
 
-### Exit codes
+### Piping stdout to a file
 
 ```sh
 # Bash
-false
-echo $?
+echo example > file.txt
 ```
 
 ```js
 // zx
-const {exitCode} = await $`false`.nothrow();
-echo`${exitCode}`;
+await $`echo example`.pipe(fs.createWriteStream('file.txt'));
 ```
 
 ```js
 // Execa
-const {exitCode} = await $({reject: false})`false`;
-console.log(exitCode);
+await $({stdout: {file: 'file.txt'}})`echo example`;
 ```
 
-### Timeouts
+### Piping stdin from a file
 
 ```sh
 # Bash
-timeout 5 echo example
+echo example < file.txt
 ```
 
 ```js
 // zx
-await $`echo example`.timeout('5s');
+const cat = $`cat`
+fs.createReadStream('file.txt').pipe(cat.stdin)
+await cat
 ```
 
 ```js
 // Execa
-await $({timeout: 5000})`echo example`;
-```
-
-### PID
-
-```sh
-# Bash
-echo example &
-echo $!
-```
-
-```js
-// zx does not return `childProcess.pid`
-```
-
-```js
-// Execa
-const {pid} = $`echo example`;
+await $({inputFile: 'file.txt'})`cat`
 ```
 
 ### Errors
@@ -552,33 +570,109 @@ const {
 // }
 ```
 
-### Global/shared options
+### Exit codes
 
 ```sh
 # Bash
-options="timeout 5"
-$options echo one
-$options echo two
-$options echo three
+false
+echo $?
 ```
 
 ```js
 // zx
-const timeout = '5s';
-await $`echo one`.timeout(timeout);
-await $`echo two`.timeout(timeout);
-await $`echo three`.timeout(timeout);
+const {exitCode} = await $`false`.nothrow();
+echo`${exitCode}`;
 ```
 
 ```js
 // Execa
-import {$ as $_} from 'execa';
+const {exitCode} = await $({reject: false})`false`;
+console.log(exitCode);
+```
 
-const $ = $_({timeout: 5000});
+### Timeouts
 
-await $`echo one`;
-await $`echo two`;
-await $`echo three`;
+```sh
+# Bash
+timeout 5 echo example
+```
+
+```js
+// zx
+await $`echo example`.timeout('5s');
+```
+
+```js
+// Execa
+await $({timeout: 5000})`echo example`;
+```
+
+### Current filename
+
+```sh
+# Bash
+echo "$(basename "$0")"
+```
+
+```js
+// zx
+await $`echo ${__filename}`;
+```
+
+```js
+// Execa
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+
+const __filename = path.basename(fileURLToPath(import.meta.url));
+
+await $`echo ${__filename}`;
+```
+
+### Current directory
+
+```sh
+# Bash
+cd project
+```
+
+```js
+// zx
+cd('project');
+
+// or:
+$.cwd = 'project';
+```
+
+```js
+// Execa
+const $$ = $({cwd: 'project'});
+```
+
+### Multiple current directories
+
+```sh
+# Bash
+pushd project
+pwd
+popd
+pwd
+```
+
+```js
+// zx
+within(async () => {
+	cd('project');
+	await $`pwd`;
+});
+
+await $`pwd`;
+```
+
+```js
+// Execa
+await $({cwd: 'project'})`pwd`;
+await $`pwd`;
 ```
 
 ### Background processes
@@ -597,113 +691,19 @@ echo one &
 await $({detached: true})`echo one`;
 ```
 
-### Printing to stdout
+### PID
 
 ```sh
 # Bash
-echo example
+echo example &
+echo $!
 ```
 
 ```js
-// zx
-echo`example`;
+// zx does not return `childProcess.pid`
 ```
 
 ```js
 // Execa
-console.log('example');
-```
-
-### Piping stdout to another command
-
-```sh
-# Bash
-echo npm run build | sort | head -n2
-```
-
-```js
-// zx
-await $`npm run build | sort | head -n2`;
-```
-
-```js
-// Execa
-await $`npm run build`
-	.pipe`sort`
-	.pipe`head -n2`;
-```
-
-### Piping stdout and stderr to another command
-
-```sh
-# Bash
-echo example |& cat
-```
-
-```js
-// zx
-const echo = $`echo example`;
-const cat = $`cat`;
-echo.pipe(cat)
-echo.stderr.pipe(cat.stdin);
-await Promise.all([echo, cat]);
-```
-
-```js
-// Execa
-await $({all: true})`echo example`
-	.pipe({from: 'all'})`cat`;
-```
-
-### Piping stdout to a file
-
-```sh
-# Bash
-echo example > file.txt
-```
-
-```js
-// zx
-await $`echo example`.pipe(fs.createWriteStream('file.txt'));
-```
-
-```js
-// Execa
-await $({stdout: {file: 'file.txt'}})`echo example`;
-```
-
-### Piping stdin from a file
-
-```sh
-# Bash
-echo example < file.txt
-```
-
-```js
-// zx
-const cat = $`cat`
-fs.createReadStream('file.txt').pipe(cat.stdin)
-await cat
-```
-
-```js
-// Execa
-await $({inputFile: 'file.txt'})`cat`
-```
-
-### Silent stderr
-
-```sh
-# Bash
-echo example 2> /dev/null
-```
-
-```js
-// zx
-await $`echo example`.stdio('inherit', 'pipe', 'ignore');
-```
-
-```js
-// Execa does not forward stdout/stderr by default
-await $`echo example`;
+const {pid} = $`echo example`;
 ```

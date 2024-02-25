@@ -917,7 +917,7 @@ ExecaChildPromise<OptionsType> &
 Promise<ExecaReturnValue<OptionsType>>;
 
 /**
-Executes a command using `file ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a `childProcess`.
+Executes a command using `file ...arguments`.
 
 Arguments are automatically escaped. They can contain any character, including spaces.
 
@@ -1101,7 +1101,7 @@ export function execaSync<OptionsType extends SyncOptions = {}>(
 ): ExecaSyncReturnValue<OptionsType>;
 
 /**
-Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
+Executes a command. The `command` string includes both the `file` and its `arguments`.
 
 Arguments are automatically escaped. They can contain any character, but spaces must be escaped with a backslash like `execaCommand('echo has\\ space')`.
 
@@ -1295,9 +1295,9 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 };
 
 /**
-Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a `childProcess`.
+Executes a command. The `command` string includes both the `file` and its `arguments`.
 
-Arguments are automatically escaped. They can contain any character, but spaces must use `${}` like `` $`echo ${'has space'}` ``.
+Arguments are automatically escaped. They can contain any character, but spaces, tabs and newlines must use `${}` like `` $`echo ${'has space'}` ``.
 
 This is the preferred method when executing multiple commands in a script file.
 
@@ -1353,6 +1353,8 @@ export const $: Execa$;
 Same as `execa()` but using the `node` option.
 
 Executes a Node.js file using `node scriptPath ...arguments`.
+
+This is the preferred method when executing Node.js files.
 
 @param scriptPath - Node.js script to execute, as a string or file URL
 @param arguments - Arguments to pass to `scriptPath` on execution.

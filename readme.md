@@ -110,17 +110,17 @@ await $({stdio: 'inherit'})`echo unicorns`;
 //=> 'unicorns'
 ```
 
-#### Shared options
+#### Global/shared options
 
 ```js
-import {$} from 'execa';
+import {$ as $_} from 'execa';
 
-const $$ = $({stdio: 'inherit'});
+const $ = $_({stdio: 'inherit'});
 
-await $$`echo unicorns`;
+await $`echo unicorns`;
 //=> 'unicorns'
 
-await $$`echo rainbows`;
+await $`echo rainbows`;
 //=> 'rainbows'
 ```
 

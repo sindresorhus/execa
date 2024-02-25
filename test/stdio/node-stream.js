@@ -266,3 +266,43 @@ const testOutputDuplexStream = async (t, fdNumber) => {
 test('Can pass Duplex streams to stdout', testOutputDuplexStream, 1);
 test('Can pass Duplex streams to stderr', testOutputDuplexStream, 2);
 test('Can pass Duplex streams to output stdio[*]', testOutputDuplexStream, 3);
+
+const testInputStreamAbort = async (t, fdNumber) => {
+	const stream = new PassThrough();
+	stream.destroy();
+
+	const childProcess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, new Uint8Array()]));
+	await childProcess;
+	t.true(childProcess.stdio[fdNumber].writableEnded);
+};
+
+test('childProcess.stdin is ended when an input stream aborts', testInputStreamAbort, 0);
+test('childProcess.stdio[*] is ended when an input stream aborts', testInputStreamAbort, 3);
+
+const testInputStreamError = async (t, fdNumber) => {
+	const stream = new PassThrough();
+	const error = new Error(foobarString);
+	stream.destroy(error);
+
+	const childProcess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, new Uint8Array()]));
+	t.is(await t.throwsAsync(childProcess), error);
+	t.true(childProcess.stdio[fdNumber].writableEnded);
+};
+
+test('childProcess.stdin is ended when an input stream errors', testInputStreamError, 0);
+test('childProcess.stdio[*] is ended when an input stream errors', testInputStreamError, 3);
+
+const testOutputStreamError = async (t, fdNumber) => {
+	const stream = new PassThrough();
+	const error = new Error(foobarString);
+	stream.destroy(error);
+
+	const childProcess = execa('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, 'pipe']));
+	t.is(await t.throwsAsync(childProcess), error);
+	t.true(childProcess.stdio[fdNumber].readableAborted);
+	t.is(childProcess.stdio[fdNumber].errored, null);
+};
+
+test('childProcess.stdout is aborted when an output stream errors', testOutputStreamError, 1);
+test('childProcess.stderr is aborted when an output stream errors', testOutputStreamError, 2);
+test('childProcess.stdio[*] is aborted when an output stream errors', testOutputStreamError, 3);

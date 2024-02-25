@@ -117,24 +117,6 @@ test('Throws abort error when output stdio[*] option aborts with no more writes,
 test('Throws abort error when output stdio[*] Duplex option aborts with no more writes, with a transform', testStreamAbortFail, destroyOptionStream, noopDuplex(), 3, true);
 
 // eslint-disable-next-line max-params
-const testStreamEpipeSuccess = async (t, streamMethod, stream, fdNumber, useTransform) => {
-	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStreamStdio(fdNumber, stream, useTransform));
-	streamMethod({stream, childProcess, fdNumber});
-	childProcess.stdin.end(foobarString);
-
-	const {stdio} = await childProcess;
-	t.is(stdio[fdNumber], foobarString);
-	t.true(stream.destroyed);
-};
-
-test('Passes when stdout option ends with more writes', testStreamEpipeSuccess, endOptionStream, noopWritable(), 1, false);
-test('Passes when stderr option ends with more writes', testStreamEpipeSuccess, endOptionStream, noopWritable(), 2, false);
-test('Passes when output stdio[*] option ends with more writes', testStreamEpipeSuccess, endOptionStream, noopWritable(), 3, false);
-test('Passes when stdout option ends with more writes, with a transform', testStreamEpipeSuccess, endOptionStream, noopWritable(), 1, true);
-test('Passes when stderr option ends with more writes, with a transform', testStreamEpipeSuccess, endOptionStream, noopWritable(), 2, true);
-test('Passes when output stdio[*] option ends with more writes, with a transform', testStreamEpipeSuccess, endOptionStream, noopWritable(), 3, true);
-
-// eslint-disable-next-line max-params
 const testStreamEpipeFail = async (t, streamMethod, stream, fdNumber, useTransform) => {
 	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStreamStdio(fdNumber, stream, useTransform));
 	streamMethod({stream, childProcess, fdNumber});
@@ -150,10 +132,13 @@ const testStreamEpipeFail = async (t, streamMethod, stream, fdNumber, useTransfo
 	}
 };
 
+test('Throws EPIPE when stdout option ends with more writes', testStreamEpipeFail, endOptionStream, noopWritable(), 1, false);
 test('Throws EPIPE when stdout option aborts with more writes', testStreamEpipeFail, destroyOptionStream, noopWritable(), 1, false);
 test('Throws EPIPE when stdout option Duplex aborts with more writes', testStreamEpipeFail, destroyOptionStream, noopDuplex(), 1, false);
+test('Throws EPIPE when stderr option ends with more writes', testStreamEpipeFail, endOptionStream, noopWritable(), 2, false);
 test('Throws EPIPE when stderr option aborts with more writes', testStreamEpipeFail, destroyOptionStream, noopWritable(), 2, false);
 test('Throws EPIPE when stderr option Duplex aborts with more writes', testStreamEpipeFail, destroyOptionStream, noopDuplex(), 2, false);
+test('Throws EPIPE when output stdio[*] option ends with more writes', testStreamEpipeFail, endOptionStream, noopWritable(), 3, false);
 test('Throws EPIPE when output stdio[*] option aborts with more writes', testStreamEpipeFail, destroyOptionStream, noopWritable(), 3, false);
 test('Throws EPIPE when output stdio[*] option Duplex aborts with more writes', testStreamEpipeFail, destroyOptionStream, noopDuplex(), 3, false);
 test('Throws EPIPE when childProcess.stdout aborts with more writes', testStreamEpipeFail, destroyChildStream, noopWritable(), 1, false);
@@ -162,10 +147,13 @@ test('Throws EPIPE when childProcess.stderr aborts with more writes', testStream
 test('Throws EPIPE when childProcess.stderr Duplex aborts with more writes', testStreamEpipeFail, destroyChildStream, noopDuplex(), 2, false);
 test('Throws EPIPE when output childProcess.stdio[*] aborts with more writes', testStreamEpipeFail, destroyChildStream, noopWritable(), 3, false);
 test('Throws EPIPE when output childProcess.stdio[*] Duplex aborts with more writes', testStreamEpipeFail, destroyChildStream, noopDuplex(), 3, false);
+test('Throws EPIPE when stdout option ends with more writes, with a transform', testStreamEpipeFail, endOptionStream, noopWritable(), 1, true);
 test('Throws EPIPE when stdout option aborts with more writes, with a transform', testStreamEpipeFail, destroyOptionStream, noopWritable(), 1, true);
 test('Throws EPIPE when stdout option Duplex aborts with more writes, with a transform', testStreamEpipeFail, destroyOptionStream, noopDuplex(), 1, true);
+test('Throws EPIPE when stderr option ends with more writes, with a transform', testStreamEpipeFail, endOptionStream, noopWritable(), 2, true);
 test('Throws EPIPE when stderr option aborts with more writes, with a transform', testStreamEpipeFail, destroyOptionStream, noopWritable(), 2, true);
 test('Throws EPIPE when stderr option Duplex aborts with more writes, with a transform', testStreamEpipeFail, destroyOptionStream, noopDuplex(), 2, true);
+test('Throws EPIPE when output stdio[*] option ends with more writes, with a transform', testStreamEpipeFail, endOptionStream, noopWritable(), 3, true);
 test('Throws EPIPE when output stdio[*] option aborts with more writes, with a transform', testStreamEpipeFail, destroyOptionStream, noopWritable(), 3, true);
 test('Throws EPIPE when output stdio[*] option Duplex aborts with more writes, with a transform', testStreamEpipeFail, destroyOptionStream, noopDuplex(), 3, true);
 test('Throws EPIPE when childProcess.stdout aborts with more writes, with a transform', testStreamEpipeFail, destroyChildStream, noopWritable(), 1, true);

@@ -2,13 +2,13 @@ import process from 'node:process';
 
 export const identity = value => value;
 
-export const getStdio = (indexOrName, stdioOption, length = 3) => {
-	if (typeof indexOrName === 'string') {
-		return {[indexOrName]: stdioOption};
+export const getStdio = (fdNumberOrName, stdioOption, length = 3) => {
+	if (typeof fdNumberOrName === 'string') {
+		return {[fdNumberOrName]: stdioOption};
 	}
 
 	const stdio = Array.from({length}).fill('pipe');
-	stdio[indexOrName] = stdioOption;
+	stdio[fdNumberOrName] = stdioOption;
 	return {stdio};
 };
 

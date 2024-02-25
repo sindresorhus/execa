@@ -5,8 +5,8 @@ import {fullStdio} from '../helpers/stdio.js';
 
 setFixtureDir();
 
-const pipeToProcess = async (t, index, from, options) => {
-	const {stdout} = await execa('noop-fd.js', [`${index}`, 'test'], options)
+const pipeToProcess = async (t, fdNumber, from, options) => {
+	const {stdout} = await execa('noop-fd.js', [`${fdNumber}`, 'test'], options)
 		.pipe(execa('stdin.js'), {from});
 	t.is(stdout, 'test');
 };

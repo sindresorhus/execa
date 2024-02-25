@@ -104,17 +104,17 @@ type BufferEncodingOption = 'buffer';
 
 // Whether `result.stdout|stderr|all` is an array of values due to `objectMode: true`
 type IsObjectStream<
-	StreamIndex extends string,
+	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IsObjectModeStream<StreamIndex, IsObjectOutputOptions<StreamOption<StreamIndex, OptionsType>>, OptionsType>;
+> = IsObjectModeStream<FdNumber, IsObjectOutputOptions<StreamOption<FdNumber, OptionsType>>, OptionsType>;
 
 type IsObjectModeStream<
-	StreamIndex extends string,
+	FdNumber extends string,
 	IsObjectModeStreamOption extends boolean,
 	OptionsType extends CommonOptions = CommonOptions,
 > = IsObjectModeStreamOption extends true
 	? true
-	: IsObjectOutputOptions<StdioProperty<StreamIndex, OptionsType>>;
+	: IsObjectOutputOptions<StdioProperty<FdNumber, OptionsType>>;
 
 type IsObjectOutputOptions<OutputOptions extends StdioOption> = IsObjectOutputOption<OutputOptions extends StdioSingleOption[]
 	? OutputOptions[number]
@@ -129,40 +129,40 @@ type BooleanObjectMode<ObjectModeOption extends StdioTransformFull['objectMode']
 
 // Whether `result.stdout|stderr|all` is `undefined`, excluding the `buffer` option
 type IgnoresStreamResult<
-	StreamIndex extends string,
+	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IgnoresStreamReturn<StreamIndex, IgnoresStdioResult<StreamOption<StreamIndex, OptionsType>>, OptionsType>;
+> = IgnoresStreamReturn<FdNumber, IgnoresStdioResult<StreamOption<FdNumber, OptionsType>>, OptionsType>;
 
 type IgnoresStreamReturn<
-	StreamIndex extends string,
+	FdNumber extends string,
 	IsIgnoredStreamOption extends boolean,
 	OptionsType extends CommonOptions = CommonOptions,
 > = IsIgnoredStreamOption extends true
 	? true
-	: IgnoresStdioResult<StdioProperty<StreamIndex, OptionsType>>;
+	: IgnoresStdioResult<StdioProperty<FdNumber, OptionsType>>;
 
 // Whether `result.stdio[*]` is `undefined`
 type IgnoresStdioResult<StdioOptionType extends StdioOption> = StdioOptionType extends NoStreamStdioOption ? true : false;
 
 // Whether `result.stdout|stderr|all` is `undefined`
 type IgnoresStreamOutput<
-	StreamIndex extends string,
+	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
 > = LacksBuffer<OptionsType['buffer']> extends true
 	? true
-	: IsInputStdioIndex<StreamIndex, OptionsType> extends true
+	: IsInputStdioDescriptor<FdNumber, OptionsType> extends true
 		? true
-		: IgnoresStreamResult<StreamIndex, OptionsType>;
+		: IgnoresStreamResult<FdNumber, OptionsType>;
 
 type LacksBuffer<BufferOption extends Options['buffer']> = BufferOption extends false ? true : false;
 
-// Whether `result.stdio[StreamIndex]` is an input stream
-type IsInputStdioIndex<
-	StreamIndex extends string,
+// Whether `result.stdio[FdNumber]` is an input stream
+type IsInputStdioDescriptor<
+	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = StreamIndex extends '0'
+> = FdNumber extends '0'
 	? true
-	: IsInputStdio<StdioProperty<StreamIndex, OptionsType>>;
+	: IsInputStdio<StdioProperty<FdNumber, OptionsType>>;
 
 // Whether `result.stdio[3+]` is an input stream
 type IsInputStdio<StdioOptionType extends StdioOption> = StdioOptionType extends StdinOption
@@ -173,44 +173,44 @@ type IsInputStdio<StdioOptionType extends StdioOption> = StdioOptionType extends
 
 // `options.stdin|stdout|stderr`
 type StreamOption<
-	StreamIndex extends string,
+	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = string extends StreamIndex ? StdioOption
-	: StreamIndex extends '0' ? OptionsType['stdin']
-		: StreamIndex extends '1' ? OptionsType['stdout']
-			: StreamIndex extends '2' ? OptionsType['stderr']
+> = string extends FdNumber ? StdioOption
+	: FdNumber extends '0' ? OptionsType['stdin']
+		: FdNumber extends '1' ? OptionsType['stdout']
+			: FdNumber extends '2' ? OptionsType['stderr']
 				: undefined;
 
-// `options.stdio[StreamIndex]`
+// `options.stdio[FdNumber]`
 type StdioProperty<
-	StreamIndex extends string,
+	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = StdioOptionProperty<StreamIndex, StdioArrayOption<OptionsType>>;
+> = StdioOptionProperty<FdNumber, StdioArrayOption<OptionsType>>;
 
 type StdioOptionProperty<
-	StreamIndex extends string,
+	FdNumber extends string,
 	StdioOptionsType extends StdioOptions,
-> = string extends StreamIndex
+> = string extends FdNumber
 	? StdioOption | undefined
 	: StdioOptionsType extends StdioOptionsArray
-		? StreamIndex extends keyof StdioOptionsType
-			? StdioOptionsType[StreamIndex]
+		? FdNumber extends keyof StdioOptionsType
+			? StdioOptionsType[FdNumber]
 			: undefined
 		: undefined;
 
 // Type of `result.stdout|stderr`
 type StdioOutput<
-	StreamIndex extends string,
+	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = StdioOutputResult<StreamIndex, IgnoresStreamOutput<StreamIndex, OptionsType>, OptionsType>;
+> = StdioOutputResult<FdNumber, IgnoresStreamOutput<FdNumber, OptionsType>, OptionsType>;
 
 type StdioOutputResult<
-	StreamIndex extends string,
+	FdNumber extends string,
 	StreamOutputIgnored extends boolean,
 	OptionsType extends CommonOptions = CommonOptions,
 > = StreamOutputIgnored extends true
 	? undefined
-	: StreamEncoding<IsObjectStream<StreamIndex, OptionsType>, OptionsType['lines'], OptionsType['encoding']>;
+	: StreamEncoding<IsObjectStream<FdNumber, OptionsType>, OptionsType['lines'], OptionsType['encoding']>;
 
 type StreamEncoding<
 	IsObjectResult extends boolean,
@@ -246,8 +246,8 @@ type MapStdioOptions<
 	StdioOptionsArrayType extends StdioOptionsArray,
 	OptionsType extends CommonOptions = CommonOptions,
 > = {
-	[StreamIndex in keyof StdioOptionsArrayType]: StdioOutput<
-	StreamIndex extends string ? StreamIndex : string,
+	[FdNumber in keyof StdioOptionsArrayType]: StdioOutput<
+	FdNumber extends string ? FdNumber : string,
 	OptionsType
 	>
 };
@@ -782,17 +782,17 @@ export type ExecaError<OptionsType extends Options = Options> = ExecaCommonRetur
 export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType> & ExecaCommonError;
 
 type StreamUnlessIgnored<
-	StreamIndex extends string,
+	FdNumber extends string,
 	OptionsType extends Options = Options,
-> = ChildProcessStream<StreamIndex, IgnoresStreamResult<StreamIndex, OptionsType>, OptionsType>;
+> = ChildProcessStream<FdNumber, IgnoresStreamResult<FdNumber, OptionsType>, OptionsType>;
 
 type ChildProcessStream<
-	StreamIndex extends string,
+	FdNumber extends string,
 	StreamResultIgnored extends boolean,
 	OptionsType extends Options = Options,
 > = StreamResultIgnored extends true
 	? null
-	: InputOutputStream<IsInputStdioIndex<StreamIndex, OptionsType>>;
+	: InputOutputStream<IsInputStdioDescriptor<FdNumber, OptionsType>>;
 
 type InputOutputStream<IsInput extends boolean> = IsInput extends true
 	? Writable

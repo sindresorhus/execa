@@ -17,24 +17,24 @@ const nonFileUrl = new URL('https://example.com');
 const getAbsolutePath = file => ({file});
 const getRelativePath = filePath => ({file: relative('.', filePath)});
 
-const getStdioFile = (index, file) => getStdio(index, index === 0 ? {file} : file);
+const getStdioFile = (fdNumber, file) => getStdio(fdNumber, fdNumber === 0 ? {file} : file);
 
-const getStdioInput = (index, file) => {
-	if (index === 'string') {
+const getStdioInput = (fdNumberOrName, file) => {
+	if (fdNumberOrName === 'string') {
 		return {input: 'foobar'};
 	}
 
-	if (index === 'binary') {
+	if (fdNumberOrName === 'binary') {
 		return {input: foobarUint8Array};
 	}
 
-	return getStdioFile(index, file);
+	return getStdioFile(fdNumberOrName, file);
 };
 
-const testStdinFile = async (t, mapFilePath, index, execaMethod) => {
+const testStdinFile = async (t, mapFilePath, fdNumber, execaMethod) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
-	const {stdout} = await execaMethod('stdin.js', getStdio(index, mapFilePath(filePath)));
+	const {stdout} = await execaMethod('stdin.js', getStdio(fdNumber, mapFilePath(filePath)));
 	t.is(stdout, 'foobar');
 	await rm(filePath);
 };
@@ -52,9 +52,9 @@ test('stdin can be an absolute file path - sync', testStdinFile, getAbsolutePath
 test('inputFile can be a relative file path - sync', testStdinFile, identity, 'inputFile', execaSync);
 test('stdin can be a relative file path - sync', testStdinFile, getRelativePath, 0, execaSync);
 
-const testOutputFile = async (t, mapFile, index, execaMethod) => {
+const testOutputFile = async (t, mapFile, fdNumber, execaMethod) => {
 	const filePath = tempfile();
-	await execaMethod('noop-fd.js', [`${index}`, 'foobar'], getStdio(index, mapFile(filePath)));
+	await execaMethod('noop-fd.js', [`${fdNumber}`, 'foobar'], getStdio(fdNumber, mapFile(filePath)));
 	t.is(await readFile(filePath, 'utf8'), 'foobar');
 	await rm(filePath);
 };
@@ -78,9 +78,9 @@ test('stdout can be a relative file path - sync', testOutputFile, getRelativePat
 test('stderr can be a relative file path - sync', testOutputFile, getRelativePath, 2, execaSync);
 test('stdio[*] can be a relative file path - sync', testOutputFile, getRelativePath, 3, execaSync);
 
-const testStdioNonFileUrl = (t, index, execaMethod) => {
+const testStdioNonFileUrl = (t, fdNumber, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(index, nonFileUrl));
+		execaMethod('empty.js', getStdio(fdNumber, nonFileUrl));
 	}, {message: /pathToFileURL/});
 };
 
@@ -104,14 +104,14 @@ const testInvalidInputFile = (t, execaMethod) => {
 test('inputFile must be a file URL or string', testInvalidInputFile, execa);
 test('inputFile must be a file URL or string - sync', testInvalidInputFile, execaSync);
 
-const testInputFileValidUrl = async (t, index, execaMethod) => {
+const testInputFileValidUrl = async (t, fdNumber, execaMethod) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
 	const currentCwd = process.cwd();
 	process.chdir(dirname(filePath));
 
 	try {
-		const {stdout} = await execaMethod('stdin.js', getStdioFile(index, basename(filePath)));
+		const {stdout} = await execaMethod('stdin.js', getStdioFile(fdNumber, basename(filePath)));
 		t.is(stdout, 'foobar');
 	} finally {
 		process.chdir(currentCwd);
@@ -124,9 +124,9 @@ test.serial('stdin does not need to start with . when being a relative file path
 test.serial('inputFile does not need to start with . when being a relative file path - sync', testInputFileValidUrl, 'inputFile', execaSync);
 test.serial('stdin does not need to start with . when being a relative file path - sync', testInputFileValidUrl, 0, execaSync);
 
-const testFilePathObject = (t, index, execaMethod) => {
+const testFilePathObject = (t, fdNumber, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(index, 'foobar'));
+		execaMethod('empty.js', getStdio(fdNumber, 'foobar'));
 	}, {message: /must be used/});
 };
 
@@ -139,9 +139,9 @@ test('stdout be an object when it is a file path string - sync', testFilePathObj
 test('stderr be an object when it is a file path string - sync', testFilePathObject, 2, execaSync);
 test('stdio[*] must be an object when it is a file path string - sync', testFilePathObject, 3, execaSync);
 
-const testFileError = async (t, fixtureName, mapFile, index) => {
+const testFileError = async (t, fixtureName, mapFile, fdNumber) => {
 	await t.throwsAsync(
-		execa(fixtureName, [`${index}`], getStdio(index, mapFile('./unknown/file'))),
+		execa(fixtureName, [`${fdNumber}`], getStdio(fdNumber, mapFile('./unknown/file'))),
 		{code: 'ENOENT'},
 	);
 };
@@ -157,9 +157,9 @@ test.serial('stdout file path errors should be handled', testFileError, 'noop-fd
 test.serial('stderr file path errors should be handled', testFileError, 'noop-fd.js', getAbsolutePath, 2);
 test.serial('stdio[*] file path errors should be handled', testFileError, 'noop-fd.js', getAbsolutePath, 3);
 
-const testFileErrorSync = (t, mapFile, index) => {
+const testFileErrorSync = (t, mapFile, fdNumber) => {
 	t.throws(() => {
-		execaSync('empty.js', getStdio(index, mapFile('./unknown/file')));
+		execaSync('empty.js', getStdio(fdNumber, mapFile('./unknown/file')));
 	}, {code: 'ENOENT'});
 };
 
@@ -177,7 +177,7 @@ test('stdio[*] file path errors should be handled - sync', testFileErrorSync, ge
 const testMultipleInputs = async (t, indices, execaMethod) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
-	const options = Object.assign({}, ...indices.map(index => getStdioInput(index, filePath)));
+	const options = Object.assign({}, ...indices.map(fdNumber => getStdioInput(fdNumber, filePath)));
 	const {stdout} = await execaMethod('stdin.js', options);
 	t.is(stdout, 'foobar'.repeat(indices.length));
 	await rm(filePath);

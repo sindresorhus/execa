@@ -58,17 +58,17 @@ const serializeResultItem = (resultItem, isUint8Array) => isUint8Array
 	: resultItem;
 
 // eslint-disable-next-line max-params
-const testLines = async (t, index, input, expectedLines, isUint8Array, objectMode) => {
+const testLines = async (t, fdNumber, input, expectedLines, isUint8Array, objectMode) => {
 	const lines = [];
-	const {stdio} = await execa('noop-fd.js', [`${index}`], {
-		...getStdio(index, [
+	const {stdio} = await execa('noop-fd.js', [`${fdNumber}`], {
+		...getStdio(fdNumber, [
 			{transform: inputGenerator.bind(undefined, stringsToUint8Arrays(input, isUint8Array)), objectMode},
 			{transform: resultGenerator.bind(undefined, lines), objectMode},
 		]),
 		encoding: isUint8Array ? 'buffer' : 'utf8',
 		stripFinalNewline: false,
 	});
-	t.is(input.join(''), serializeResult(stdio[index], isUint8Array, objectMode));
+	t.is(input.join(''), serializeResult(stdio[fdNumber], isUint8Array, objectMode));
 	t.deepEqual(lines, stringsToUint8Arrays(expectedLines, isUint8Array));
 };
 
@@ -146,13 +146,13 @@ test('Splits lines when "binary" is false, objectMode', testBinaryOption, false,
 test('Splits lines when "binary" is undefined, objectMode', testBinaryOption, undefined, simpleChunk, simpleLines, true);
 
 // eslint-disable-next-line max-params
-const testStreamLines = async (t, index, input, expectedLines, isUint8Array) => {
-	const {stdio} = await execa('noop-fd.js', [`${index}`, input], {
+const testStreamLines = async (t, fdNumber, input, expectedLines, isUint8Array) => {
+	const {stdio} = await execa('noop-fd.js', [`${fdNumber}`, input], {
 		...fullStdio,
 		lines: true,
 		encoding: isUint8Array ? 'buffer' : 'utf8',
 	});
-	t.deepEqual(stdio[index], stringsToUint8Arrays(expectedLines, isUint8Array));
+	t.deepEqual(stdio[fdNumber], stringsToUint8Arrays(expectedLines, isUint8Array));
 };
 
 test('"lines: true" splits lines, stdout, string', testStreamLines, 1, simpleChunk[0], simpleLines, false);

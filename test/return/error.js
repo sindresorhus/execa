@@ -72,8 +72,8 @@ test('error.message contains stdout/stderr/stdio even with encoding "buffer", ob
 test('error.message contains all if available, objectMode', testStdioMessage, 'utf8', true, true);
 test('error.message contains all even with encoding "buffer", objectMode', testStdioMessage, 'buffer', true, true);
 
-const testPartialIgnoreMessage = async (t, index, stdioOption, output) => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', getStdio(index, stdioOption, 4)));
+const testPartialIgnoreMessage = async (t, fdNumber, stdioOption, output) => {
+	const {message} = await t.throwsAsync(execa('echo-fail.js', getStdio(fdNumber, stdioOption, 4)));
 	t.true(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));
 };
 

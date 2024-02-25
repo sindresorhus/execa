@@ -38,10 +38,10 @@ const testAmbiguousDirection = async (t, execaMethod) => {
 test('stdio[*] default direction is output', testAmbiguousDirection, execa);
 test('stdio[*] default direction is output - sync', testAmbiguousDirection, execaSync);
 
-const testAmbiguousMultiple = async (t, index) => {
+const testAmbiguousMultiple = async (t, fdNumber) => {
 	const filePath = tempfile();
 	await writeFile(filePath, 'foobar');
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [{file: filePath}, ['foo', 'bar']]));
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [{file: filePath}, ['foo', 'bar']]));
 	t.is(stdout, 'foobarfoobar');
 	await rm(filePath);
 };

@@ -22,16 +22,16 @@ const destroyOptionStream = ({stream, error}) => {
 	stream.destroy(error);
 };
 
-const destroyChildStream = ({childProcess, index, error}) => {
-	childProcess.stdio[index].destroy(error);
+const destroyChildStream = ({childProcess, fdNumber, error}) => {
+	childProcess.stdio[fdNumber].destroy(error);
 };
 
-const getStreamStdio = (index, stream, useTransform) => getStdio(index, [stream, useTransform ? noopGenerator(false) : 'pipe']);
+const getStreamStdio = (fdNumber, stream, useTransform) => getStdio(fdNumber, [stream, useTransform ? noopGenerator(false) : 'pipe']);
 
 // eslint-disable-next-line max-params
-const testStreamAbortWait = async (t, streamMethod, stream, index, useTransform) => {
-	const childProcess = execa('noop-stdin-fd.js', [`${index}`], getStreamStdio(index, stream, useTransform));
-	streamMethod({stream, childProcess, index});
+const testStreamAbortWait = async (t, streamMethod, stream, fdNumber, useTransform) => {
+	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStreamStdio(fdNumber, stream, useTransform));
+	streamMethod({stream, childProcess, fdNumber});
 	childProcess.stdin.end();
 	await setImmediate();
 	stream.destroy();
@@ -49,9 +49,9 @@ test('Keeps running when stdin option is used and childProcess.stdin Duplex ends
 test('Keeps running when input stdio[*] option is used and input childProcess.stdio[*] ends, with a transform', testStreamAbortWait, noop, noopReadable(), 3, true);
 
 // eslint-disable-next-line max-params
-const testStreamAbortSuccess = async (t, streamMethod, stream, index, useTransform) => {
-	const childProcess = execa('noop-stdin-fd.js', [`${index}`], getStreamStdio(index, stream, useTransform));
-	streamMethod({stream, childProcess, index});
+const testStreamAbortSuccess = async (t, streamMethod, stream, fdNumber, useTransform) => {
+	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStreamStdio(fdNumber, stream, useTransform));
+	streamMethod({stream, childProcess, fdNumber});
 	childProcess.stdin.end();
 
 	const {stdout} = await childProcess;
@@ -85,10 +85,10 @@ test('Passes when output childProcess.stdio[*] aborts with no more writes, with 
 test('Passes when output childProcess.stdio[*] Duplex aborts with no more writes, with a transform', testStreamAbortSuccess, destroyChildStream, noopDuplex(), 3, true);
 
 // eslint-disable-next-line max-params
-const testStreamAbortFail = async (t, streamMethod, stream, index, useTransform) => {
-	const childProcess = execa('noop-stdin-fd.js', [`${index}`], getStreamStdio(index, stream, useTransform));
-	streamMethod({stream, childProcess, index});
-	if (index !== 0) {
+const testStreamAbortFail = async (t, streamMethod, stream, fdNumber, useTransform) => {
+	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStreamStdio(fdNumber, stream, useTransform));
+	streamMethod({stream, childProcess, fdNumber});
+	if (fdNumber !== 0) {
 		childProcess.stdin.end();
 	}
 
@@ -117,13 +117,13 @@ test('Throws abort error when output stdio[*] option aborts with no more writes,
 test('Throws abort error when output stdio[*] Duplex option aborts with no more writes, with a transform', testStreamAbortFail, destroyOptionStream, noopDuplex(), 3, true);
 
 // eslint-disable-next-line max-params
-const testStreamEpipeSuccess = async (t, streamMethod, stream, index, useTransform) => {
-	const childProcess = execa('noop-stdin-fd.js', [`${index}`], getStreamStdio(index, stream, useTransform));
-	streamMethod({stream, childProcess, index});
+const testStreamEpipeSuccess = async (t, streamMethod, stream, fdNumber, useTransform) => {
+	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStreamStdio(fdNumber, stream, useTransform));
+	streamMethod({stream, childProcess, fdNumber});
 	childProcess.stdin.end(foobarString);
 
 	const {stdio} = await childProcess;
-	t.is(stdio[index], foobarString);
+	t.is(stdio[fdNumber], foobarString);
 	t.true(stream.destroyed);
 };
 
@@ -135,17 +135,17 @@ test('Passes when stderr option ends with more writes, with a transform', testSt
 test('Passes when output stdio[*] option ends with more writes, with a transform', testStreamEpipeSuccess, endOptionStream, noopWritable(), 3, true);
 
 // eslint-disable-next-line max-params
-const testStreamEpipeFail = async (t, streamMethod, stream, index, useTransform) => {
-	const childProcess = execa('noop-stdin-fd.js', [`${index}`], getStreamStdio(index, stream, useTransform));
-	streamMethod({stream, childProcess, index});
+const testStreamEpipeFail = async (t, streamMethod, stream, fdNumber, useTransform) => {
+	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStreamStdio(fdNumber, stream, useTransform));
+	streamMethod({stream, childProcess, fdNumber});
 	await setImmediate();
 	childProcess.stdin.end(foobarString);
 
 	const {exitCode, stdio, stderr} = await t.throwsAsync(childProcess);
 	t.is(exitCode, 1);
-	t.is(stdio[index], '');
+	t.is(stdio[fdNumber], '');
 	t.true(stream.destroyed);
-	if (index !== 2 && !isWindows) {
+	if (fdNumber !== 2 && !isWindows) {
 		t.true(stderr.includes('EPIPE'));
 	}
 };
@@ -176,10 +176,10 @@ test('Throws EPIPE when output childProcess.stdio[*] aborts with more writes, wi
 test('Throws EPIPE when output childProcess.stdio[*] Duplex aborts with more writes, with a transform', testStreamEpipeFail, destroyChildStream, noopDuplex(), 3, true);
 
 // eslint-disable-next-line max-params
-const testStreamError = async (t, streamMethod, stream, index, useTransform) => {
-	const childProcess = execa('empty.js', getStreamStdio(index, stream, useTransform));
+const testStreamError = async (t, streamMethod, stream, fdNumber, useTransform) => {
+	const childProcess = execa('empty.js', getStreamStdio(fdNumber, stream, useTransform));
 	const error = new Error('test');
-	streamMethod({stream, childProcess, index, error});
+	streamMethod({stream, childProcess, fdNumber, error});
 
 	t.is(await t.throwsAsync(childProcess), error);
 	const {exitCode, signal, isTerminated, failed} = error;

@@ -6,14 +6,14 @@ import {noopGenerator} from '../helpers/generator.js';
 
 setFixtureDir();
 
-const testOutput = async (t, index, execaMethod) => {
-	const {stdout, stderr, stdio} = await execaMethod('noop-fd.js', [`${index}`, 'foobar'], fullStdio);
-	t.is(stdio[index], 'foobar');
+const testOutput = async (t, fdNumber, execaMethod) => {
+	const {stdout, stderr, stdio} = await execaMethod('noop-fd.js', [`${fdNumber}`, 'foobar'], fullStdio);
+	t.is(stdio[fdNumber], 'foobar');
 
-	if (index === 1) {
-		t.is(stdio[index], stdout);
-	} else if (index === 2) {
-		t.is(stdio[index], stderr);
+	if (fdNumber === 1) {
+		t.is(stdio[fdNumber], stdout);
+	} else if (fdNumber === 2) {
+		t.is(stdio[fdNumber], stderr);
 	}
 };
 
@@ -112,9 +112,9 @@ const testErrorOutput = async (t, execaMethod) => {
 test('error.stdout/stderr/stdio is defined', testErrorOutput, execa);
 test('error.stdout/stderr/stdio is defined - sync', testErrorOutput, execaSync);
 
-const testStripFinalNewline = async (t, index, stripFinalNewline, execaMethod) => {
-	const {stdio} = await execaMethod('noop-fd.js', [`${index}`, 'foobar\n'], {...fullStdio, stripFinalNewline});
-	t.is(stdio[index], `foobar${stripFinalNewline === false ? '\n' : ''}`);
+const testStripFinalNewline = async (t, fdNumber, stripFinalNewline, execaMethod) => {
+	const {stdio} = await execaMethod('noop-fd.js', [`${fdNumber}`, 'foobar\n'], {...fullStdio, stripFinalNewline});
+	t.is(stdio[fdNumber], `foobar${stripFinalNewline === false ? '\n' : ''}`);
 };
 
 test('stripFinalNewline: undefined with stdout', testStripFinalNewline, 1, undefined, execa);

@@ -7,23 +7,23 @@ import {getStdio} from '../helpers/stdio.js';
 
 setFixtureDir();
 
-const testReadableStream = async (t, index) => {
+const testReadableStream = async (t, fdNumber) => {
 	const readableStream = Readable.toWeb(Readable.from('foobar'));
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, readableStream));
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, readableStream));
 	t.is(stdout, 'foobar');
 };
 
 test('stdin can be a ReadableStream', testReadableStream, 0);
 test('stdio[*] can be a ReadableStream', testReadableStream, 3);
 
-const testWritableStream = async (t, index) => {
+const testWritableStream = async (t, fdNumber) => {
 	const result = [];
 	const writableStream = new WritableStream({
 		write(chunk) {
 			result.push(chunk);
 		},
 	});
-	await execa('noop-fd.js', [`${index}`, 'foobar'], getStdio(index, writableStream));
+	await execa('noop-fd.js', [`${fdNumber}`, 'foobar'], getStdio(fdNumber, writableStream));
 	t.is(result.join(''), 'foobar');
 };
 
@@ -31,9 +31,9 @@ test('stdout can be a WritableStream', testWritableStream, 1);
 test('stderr can be a WritableStream', testWritableStream, 2);
 test('stdio[*] can be a WritableStream', testWritableStream, 3);
 
-const testWebStreamSync = (t, StreamClass, index, optionName) => {
+const testWebStreamSync = (t, StreamClass, fdNumber, optionName) => {
 	t.throws(() => {
-		execaSync('empty.js', getStdio(index, new StreamClass()));
+		execaSync('empty.js', getStdio(fdNumber, new StreamClass()));
 	}, {message: `The \`${optionName}\` option cannot be a web stream in sync mode.`});
 };
 
@@ -43,7 +43,7 @@ test('stdout cannot be a WritableStream - sync', testWebStreamSync, WritableStre
 test('stderr cannot be a WritableStream - sync', testWebStreamSync, WritableStream, 2, 'stderr');
 test('stdio[*] cannot be a WritableStream - sync', testWebStreamSync, WritableStream, 3, 'stdio[3]');
 
-const testLongWritableStream = async (t, index) => {
+const testLongWritableStream = async (t, fdNumber) => {
 	let result = false;
 	const writableStream = new WritableStream({
 		async close() {
@@ -51,7 +51,7 @@ const testLongWritableStream = async (t, index) => {
 			result = true;
 		},
 	});
-	await execa('empty.js', getStdio(index, writableStream));
+	await execa('empty.js', getStdio(fdNumber, writableStream));
 	t.true(result);
 };
 
@@ -59,14 +59,14 @@ test('stdout waits for WritableStream completion', testLongWritableStream, 1);
 test('stderr waits for WritableStream completion', testLongWritableStream, 2);
 test('stdio[*] waits for WritableStream completion', testLongWritableStream, 3);
 
-const testWritableStreamError = async (t, index) => {
+const testWritableStreamError = async (t, fdNumber) => {
 	const error = new Error('foobar');
 	const writableStream = new WritableStream({
 		start(controller) {
 			controller.error(error);
 		},
 	});
-	const thrownError = await t.throwsAsync(execa('noop.js', getStdio(index, writableStream)));
+	const thrownError = await t.throwsAsync(execa('noop.js', getStdio(fdNumber, writableStream)));
 	t.is(thrownError, error);
 };
 
@@ -74,14 +74,14 @@ test('stdout option handles errors in WritableStream', testWritableStreamError, 
 test('stderr option handles errors in WritableStream', testWritableStreamError, 2);
 test('stdio[*] option handles errors in WritableStream', testWritableStreamError, 3);
 
-const testReadableStreamError = async (t, index) => {
+const testReadableStreamError = async (t, fdNumber) => {
 	const error = new Error('foobar');
 	const readableStream = new ReadableStream({
 		start(controller) {
 			controller.error(error);
 		},
 	});
-	const thrownError = await t.throwsAsync(execa('stdin-fd.js', [`${index}`], getStdio(index, readableStream)));
+	const thrownError = await t.throwsAsync(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, readableStream)));
 	t.is(thrownError, error);
 };
 

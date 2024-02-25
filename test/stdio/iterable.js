@@ -29,8 +29,8 @@ const asyncGenerator = async function * () {
 
 setFixtureDir();
 
-const testIterable = async (t, stdioOption, index) => {
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, stdioOption));
+const testIterable = async (t, stdioOption, fdNumber) => {
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, stdioOption));
 	t.is(stdout, 'foobar');
 };
 
@@ -53,8 +53,8 @@ const foobarAsyncObjectGenerator = function * () {
 	yield foobarObject;
 };
 
-const testObjectIterable = async (t, stdioOption, index) => {
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [stdioOption, serializeGenerator]));
+const testObjectIterable = async (t, stdioOption, fdNumber) => {
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stdioOption, serializeGenerator]));
 	t.is(stdout, foobarObjectString);
 };
 
@@ -65,9 +65,9 @@ test('stdio[*] option can be an iterable of objects', testObjectIterable, foobar
 test('stdin option can be an async iterable of objects', testObjectIterable, foobarAsyncObjectGenerator(), 0);
 test('stdio[*] option can be an async iterable of objects', testObjectIterable, foobarAsyncObjectGenerator(), 3);
 
-const testIterableSync = (t, stdioOption, index) => {
+const testIterableSync = (t, stdioOption, fdNumber) => {
 	t.throws(() => {
-		execaSync('empty.js', getStdio(index, stdioOption));
+		execaSync('empty.js', getStdio(fdNumber, stdioOption));
 	}, {message: /an iterable in sync mode/});
 };
 
@@ -83,17 +83,17 @@ const throwingGenerator = function * () {
 	throw new Error('generator error');
 };
 
-const testIterableError = async (t, index) => {
-	const {originalMessage} = await t.throwsAsync(execa('stdin-fd.js', [`${index}`], getStdio(index, throwingGenerator())));
+const testIterableError = async (t, fdNumber) => {
+	const {originalMessage} = await t.throwsAsync(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator())));
 	t.is(originalMessage, 'generator error');
 };
 
 test('stdin option handles errors in iterables', testIterableError, 0);
 test('stdio[*] option handles errors in iterables', testIterableError, 3);
 
-const testNoIterableOutput = (t, stdioOption, index, execaMethod) => {
+const testNoIterableOutput = (t, stdioOption, fdNumber, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(index, stdioOption));
+		execaMethod('empty.js', getStdio(fdNumber, stdioOption));
 	}, {message: /cannot be an iterable/});
 };
 
@@ -116,8 +116,8 @@ test('stdin option can be an infinite iterable', async t => {
 	t.deepEqual(await iterable.next(), {value: undefined, done: true});
 });
 
-const testMultipleIterable = async (t, index) => {
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [stringGenerator(), asyncGenerator()]));
+const testMultipleIterable = async (t, fdNumber) => {
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stringGenerator(), asyncGenerator()]));
 	t.is(stdout, 'foobarfoobar');
 };
 

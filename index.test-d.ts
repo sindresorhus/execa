@@ -21,6 +21,8 @@ import {
 	type ExecaSyncError,
 } from './index.js';
 
+const fileUrl = new URL('file:///test');
+
 type AnySyncChunk = string | Uint8Array | undefined;
 type AnyChunk = AnySyncChunk | string[] | Uint8Array[] | unknown[];
 expectType<Writable | null>({} as ExecaChildProcess['stdin']);
@@ -86,40 +88,66 @@ try {
 
 	const scriptPromise = $`unicorns`;
 
-	expectType<typeof bufferResult>(await execaPromise.pipe(execaBufferPromise));
-	expectType<typeof bufferResult>(await scriptPromise.pipe(execaBufferPromise));
-	expectNotType<typeof bufferResult>(await execaPromise.pipe(execaPromise));
-	expectNotType<typeof bufferResult>(await scriptPromise.pipe(execaPromise));
-	expectType<ExecaReturnValue<{}>>(await execaPromise.pipe`stdin`);
-	expectType<ExecaReturnValue<{}>>(await scriptPromise.pipe`stdin`);
-	expectType<typeof bufferResult>(await execaPromise.pipe(execaPromise).pipe(execaBufferPromise));
-	expectType<typeof bufferResult>(await scriptPromise.pipe(execaPromise).pipe(execaBufferPromise));
-	expectType<ExecaReturnValue<{}>>(await execaPromise.pipe`stdin`.pipe`stdin`);
-	expectType<ExecaReturnValue<{}>>(await scriptPromise.pipe`stdin`.pipe`stdin`);
-	expectType<ExecaReturnValue<{}>>(await execaPromise.pipe(execaPromise).pipe`stdin`);
-	expectType<ExecaReturnValue<{}>>(await scriptPromise.pipe(execaPromise).pipe`stdin`);
-	expectType<typeof bufferResult>(await execaPromise.pipe`stdin`.pipe(execaBufferPromise));
-	expectType<typeof bufferResult>(await scriptPromise.pipe`stdin`.pipe(execaBufferPromise));
+	const pipeOptions = {from: 'stderr', all: true} as const;
+
+	type BufferExecaReturnValue = typeof bufferResult;
+	type EmptyExecaReturnValue = ExecaReturnValue<{}>;
+	type ShortcutExecaReturnValue = ExecaReturnValue<typeof pipeOptions>;
+
+	expectType<BufferExecaReturnValue>(await execaPromise.pipe(execaBufferPromise));
+	expectType<BufferExecaReturnValue>(await scriptPromise.pipe(execaBufferPromise));
+	expectNotType<BufferExecaReturnValue>(await execaPromise.pipe(execaPromise));
+	expectNotType<BufferExecaReturnValue>(await scriptPromise.pipe(execaPromise));
+	expectType<EmptyExecaReturnValue>(await execaPromise.pipe`stdin`);
+	expectType<EmptyExecaReturnValue>(await scriptPromise.pipe`stdin`);
+	expectType<ShortcutExecaReturnValue>(await execaPromise.pipe('stdin', pipeOptions));
+	expectType<ShortcutExecaReturnValue>(await scriptPromise.pipe('stdin', pipeOptions));
+	expectType<BufferExecaReturnValue>(await execaPromise.pipe(execaPromise).pipe(execaBufferPromise));
+	expectType<BufferExecaReturnValue>(await scriptPromise.pipe(execaPromise).pipe(execaBufferPromise));
+	expectType<EmptyExecaReturnValue>(await execaPromise.pipe(execaPromise).pipe`stdin`);
+	expectType<EmptyExecaReturnValue>(await scriptPromise.pipe(execaPromise).pipe`stdin`);
+	expectType<ShortcutExecaReturnValue>(await execaPromise.pipe(execaPromise).pipe('stdin', pipeOptions));
+	expectType<ShortcutExecaReturnValue>(await scriptPromise.pipe(execaPromise).pipe('stdin', pipeOptions));
+	expectType<BufferExecaReturnValue>(await execaPromise.pipe`stdin`.pipe(execaBufferPromise));
+	expectType<BufferExecaReturnValue>(await scriptPromise.pipe`stdin`.pipe(execaBufferPromise));
+	expectType<EmptyExecaReturnValue>(await execaPromise.pipe`stdin`.pipe`stdin`);
+	expectType<EmptyExecaReturnValue>(await scriptPromise.pipe`stdin`.pipe`stdin`);
+	expectType<ShortcutExecaReturnValue>(await execaPromise.pipe`stdin`.pipe('stdin', pipeOptions));
+	expectType<ShortcutExecaReturnValue>(await scriptPromise.pipe`stdin`.pipe('stdin', pipeOptions));
+	expectType<BufferExecaReturnValue>(await execaPromise.pipe('pipe').pipe(execaBufferPromise));
+	expectType<BufferExecaReturnValue>(await scriptPromise.pipe('pipe').pipe(execaBufferPromise));
+	expectType<EmptyExecaReturnValue>(await execaPromise.pipe('pipe').pipe`stdin`);
+	expectType<EmptyExecaReturnValue>(await scriptPromise.pipe('pipe').pipe`stdin`);
+	expectType<ShortcutExecaReturnValue>(await execaPromise.pipe('pipe').pipe('stdin', pipeOptions));
+	expectType<ShortcutExecaReturnValue>(await scriptPromise.pipe('pipe').pipe('stdin', pipeOptions));
 	await execaPromise.pipe(execaPromise).pipe(execaBufferPromise, {from: 'stdout'});
 	await scriptPromise.pipe(execaPromise).pipe(execaBufferPromise, {from: 'stdout'});
-	await execaPromise.pipe`stdin`.pipe({from: 'stdout'})`stdin`;
-	await scriptPromise.pipe`stdin`.pipe({from: 'stdout'})`stdin`;
-	await execaPromise.pipe`stdin`.pipe(execaBufferPromise, {from: 'stdout'});
-	await scriptPromise.pipe`stdin`.pipe(execaBufferPromise, {from: 'stdout'});
 	await execaPromise.pipe(execaBufferPromise, {from: 'stdout'}).pipe`stdin`;
 	await scriptPromise.pipe(execaBufferPromise, {from: 'stdout'}).pipe`stdin`;
+	await execaPromise.pipe(execaBufferPromise, {from: 'stdout'}).pipe('stdin');
+	await scriptPromise.pipe(execaBufferPromise, {from: 'stdout'}).pipe('stdin');
+	await execaPromise.pipe`stdin`.pipe(execaBufferPromise, {from: 'stdout'});
+	await scriptPromise.pipe`stdin`.pipe(execaBufferPromise, {from: 'stdout'});
+	await execaPromise.pipe`stdin`.pipe({from: 'stdout'})`stdin`;
+	await scriptPromise.pipe`stdin`.pipe({from: 'stdout'})`stdin`;
+	await execaPromise.pipe`stdin`.pipe('stdin', {from: 'stdout'});
+	await scriptPromise.pipe`stdin`.pipe('stdin', {from: 'stdout'});
 	expectError(execaPromise.pipe(execaBufferPromise).stdout);
 	expectError(scriptPromise.pipe(execaBufferPromise).stdout);
 	expectError(execaPromise.pipe`stdin`.stdout);
 	expectError(scriptPromise.pipe`stdin`.stdout);
+	expectError(execaPromise.pipe('stdin').stdout);
+	expectError(scriptPromise.pipe('stdin').stdout);
 	expectError(execaPromise.pipe(createWriteStream('output.txt')));
 	expectError(scriptPromise.pipe(createWriteStream('output.txt')));
-	expectError(execaPromise.pipe('output.txt'));
-	expectError(scriptPromise.pipe('output.txt'));
+	expectError(execaPromise.pipe(false));
+	expectError(scriptPromise.pipe(false));
 	await execaPromise.pipe(execaBufferPromise, {});
 	await scriptPromise.pipe(execaBufferPromise, {});
 	await execaPromise.pipe({})`stdin`;
 	await scriptPromise.pipe({})`stdin`;
+	await execaPromise.pipe('stdin', {});
+	await scriptPromise.pipe('stdin', {});
 	expectError(execaPromise.pipe(execaBufferPromise, 'stdout'));
 	expectError(scriptPromise.pipe(execaBufferPromise, 'stdout'));
 	expectError(execaPromise.pipe('stdout')`stdin`);
@@ -128,34 +156,68 @@ try {
 	await scriptPromise.pipe(execaBufferPromise, {from: 'stdout'});
 	await execaPromise.pipe({from: 'stdout'})`stdin`;
 	await scriptPromise.pipe({from: 'stdout'})`stdin`;
+	await execaPromise.pipe('stdin', {from: 'stdout'});
+	await scriptPromise.pipe('stdin', {from: 'stdout'});
 	await execaPromise.pipe(execaBufferPromise, {from: 'stderr'});
 	await scriptPromise.pipe(execaBufferPromise, {from: 'stderr'});
 	await execaPromise.pipe({from: 'stderr'})`stdin`;
 	await scriptPromise.pipe({from: 'stderr'})`stdin`;
+	await execaPromise.pipe('stdin', {from: 'stderr'});
+	await scriptPromise.pipe('stdin', {from: 'stderr'});
 	await execaPromise.pipe(execaBufferPromise, {from: 'all'});
 	await scriptPromise.pipe(execaBufferPromise, {from: 'all'});
 	await execaPromise.pipe({from: 'all'})`stdin`;
 	await scriptPromise.pipe({from: 'all'})`stdin`;
+	await execaPromise.pipe('stdin', {from: 'all'});
+	await scriptPromise.pipe('stdin', {from: 'all'});
 	await execaPromise.pipe(execaBufferPromise, {from: 3});
 	await scriptPromise.pipe(execaBufferPromise, {from: 3});
 	await execaPromise.pipe({from: 3})`stdin`;
 	await scriptPromise.pipe({from: 3})`stdin`;
+	await execaPromise.pipe('stdin', {from: 3});
+	await scriptPromise.pipe('stdin', {from: 3});
 	expectError(execaPromise.pipe(execaBufferPromise, {from: 'other'}));
 	expectError(scriptPromise.pipe(execaBufferPromise, {from: 'other'}));
 	expectError(execaPromise.pipe({from: 'other'})`stdin`);
 	expectError(scriptPromise.pipe({from: 'other'})`stdin`);
+	expectError(execaPromise.pipe('stdin', {from: 'other'}));
+	expectError(scriptPromise.pipe('stdin', {from: 'other'}));
 	await execaPromise.pipe(execaBufferPromise, {unpipeSignal: new AbortController().signal});
 	await scriptPromise.pipe(execaBufferPromise, {unpipeSignal: new AbortController().signal});
 	await execaPromise.pipe({unpipeSignal: new AbortController().signal})`stdin`;
 	await scriptPromise.pipe({unpipeSignal: new AbortController().signal})`stdin`;
+	await execaPromise.pipe('stdin', {unpipeSignal: new AbortController().signal});
+	await scriptPromise.pipe('stdin', {unpipeSignal: new AbortController().signal});
 	expectError(await execaPromise.pipe(execaBufferPromise, {unpipeSignal: true}));
 	expectError(await scriptPromise.pipe(execaBufferPromise, {unpipeSignal: true}));
 	expectError(await execaPromise.pipe({unpipeSignal: true})`stdin`);
 	expectError(await scriptPromise.pipe({unpipeSignal: true})`stdin`);
+	expectError(await execaPromise.pipe('stdin', {unpipeSignal: true}));
+	expectError(await scriptPromise.pipe('stdin', {unpipeSignal: true}));
 	expectError(await execaPromise.pipe({})({}));
 	expectError(await scriptPromise.pipe({})({}));
 	expectError(await execaPromise.pipe({})(execaPromise));
 	expectError(await scriptPromise.pipe({})(execaPromise));
+	expectError(await execaPromise.pipe({})('stdin'));
+	expectError(await scriptPromise.pipe({})('stdin'));
+
+	expectType<EmptyExecaReturnValue>(await execaPromise.pipe('stdin'));
+	await execaPromise.pipe('stdin');
+	await execaPromise.pipe(fileUrl);
+	await execaPromise.pipe('stdin', []);
+	await execaPromise.pipe('stdin', ['foo', 'bar']);
+	await execaPromise.pipe('stdin', ['foo', 'bar'], {});
+	await execaPromise.pipe('stdin', ['foo', 'bar'], {from: 'stderr', all: true});
+	await execaPromise.pipe('stdin', {from: 'stderr'});
+	await execaPromise.pipe('stdin', {all: true});
+	expectError(await execaPromise.pipe(['foo', 'bar']));
+	expectError(await execaPromise.pipe('stdin', 'foo'));
+	expectError(await execaPromise.pipe('stdin', [false]));
+	expectError(await execaPromise.pipe('stdin', [], false));
+	expectError(await execaPromise.pipe('stdin', {other: true}));
+	expectError(await execaPromise.pipe('stdin', [], {other: true}));
+	expectError(await execaPromise.pipe('stdin', {from: 'other'}));
+	expectError(await execaPromise.pipe('stdin', [], {from: 'other'}));
 
 	const pipeResult = await execaPromise.pipe`stdin`;
 	expectType<string>(pipeResult.stdout);
@@ -166,6 +228,16 @@ try {
 	expectType<string>(scriptPipeResult.stdout);
 	const ignoreScriptPipeResult = await scriptPromise.pipe({stdout: 'ignore'})`stdin`;
 	expectType<undefined>(ignoreScriptPipeResult.stdout);
+
+	const shortcutPipeResult = await execaPromise.pipe('stdin');
+	expectType<string>(shortcutPipeResult.stdout);
+	const ignoreShortcutPipeResult = await execaPromise.pipe('stdin', {stdout: 'ignore'});
+	expectType<undefined>(ignoreShortcutPipeResult.stdout);
+
+	const scriptShortcutPipeResult = await scriptPromise.pipe('stdin');
+	expectType<string>(scriptShortcutPipeResult.stdout);
+	const ignoreShortcutScriptPipeResult = await scriptPromise.pipe('stdin', {stdout: 'ignore'});
+	expectType<undefined>(ignoreShortcutScriptPipeResult.stdout);
 
 	expectType<Readable>(execaPromise.all);
 	const noAllPromise = execa('unicorns');
@@ -799,8 +871,6 @@ const binaryGenerator = function * () {
 const asyncStringGenerator = async function * () {
 	yield '';
 };
-
-const fileUrl = new URL('file:///test');
 
 expectAssignable<Options>({cleanup: false});
 expectNotAssignable<SyncOptions>({cleanup: false});

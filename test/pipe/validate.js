@@ -164,7 +164,7 @@ test('Destination stream is ended when first argument is invalid - $', async t =
 
 test('Source stream is aborted when second argument is invalid', async t => {
 	const source = execa('noop.js', [foobarString]);
-	const pipePromise = source.pipe('');
+	const pipePromise = source.pipe(false);
 
 	await assertPipeError(t, pipePromise, 'an Execa child process');
 	t.like(await source, {stdout: ''});
@@ -172,7 +172,7 @@ test('Source stream is aborted when second argument is invalid', async t => {
 
 test('Both arguments might be invalid', async t => {
 	const source = execa('empty.js', {stdout: 'ignore'});
-	const pipePromise = source.pipe('');
+	const pipePromise = source.pipe(false);
 
 	await assertPipeError(t, pipePromise, 'an Execa child process');
 	t.like(await source, {stdout: undefined});

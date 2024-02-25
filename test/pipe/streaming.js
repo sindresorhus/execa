@@ -179,7 +179,7 @@ test('Can pipe to same destination through multiple paths', async t => {
 	const destination = execa('stdin.js');
 	const secondDestination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
-	const secondPipePromise = destination.pipe(secondDestination);
+	const secondPipePromise = pipePromise.pipe(secondDestination);
 	const thirdPipePromise = source.pipe(secondDestination);
 
 	t.like(await source, {stdout: foobarString});
@@ -256,7 +256,7 @@ test('Can create a series of pipes', async t => {
 	const destination = execa('stdin.js');
 	const secondDestination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
-	const secondPipePromise = destination.pipe(secondDestination);
+	const secondPipePromise = pipePromise.pipe(secondDestination);
 
 	t.like(await source, {stdout: foobarString});
 	t.like(await destination, {stdout: foobarString});
@@ -284,7 +284,7 @@ test('Returns pipedFrom on deep success', async t => {
 	const destination = execa('stdin.js');
 	const secondDestination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
-	const secondPipePromise = destination.pipe(secondDestination);
+	const secondPipePromise = pipePromise.pipe(secondDestination);
 
 	const destinationResult = await destination;
 	t.deepEqual(destinationResult.pipedFrom, []);
@@ -344,7 +344,7 @@ test('Returns pipedFrom on deep failure', async t => {
 	const destination = execa('stdin-fail.js');
 	const secondDestination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
-	const secondPipePromise = destination.pipe(secondDestination);
+	const secondPipePromise = pipePromise.pipe(secondDestination);
 
 	const destinationResult = await t.throwsAsync(destination);
 	const secondDestinationResult = await secondDestination;

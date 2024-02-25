@@ -94,13 +94,13 @@ test('Source normal failure -> deep destination success', async t => {
 	const destination = execa('stdin.js');
 	const secondDestination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
-	const secondPipePromise = destination.pipe(secondDestination);
+	const secondPipePromise = pipePromise.pipe(secondDestination);
 
 	t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(source));
-	await secondPipePromise;
+	t.is(await t.throwsAsync(secondPipePromise), await t.throwsAsync(source));
 	t.like(await t.throwsAsync(source), {stdout: foobarString, exitCode: 2});
-	await destination;
-	await secondDestination;
+	t.like(await destination, {stdout: foobarString});
+	t.like(await secondDestination, {stdout: foobarString});
 });
 
 const testSourceTerminated = async (t, signal) => {
@@ -144,7 +144,7 @@ test('Destination normal failure -> deep source failure', async t => {
 	const destination = execa('stdin.js');
 	const secondDestination = execa('fail.js');
 	const pipePromise = source.pipe(destination);
-	const secondPipePromise = destination.pipe(secondDestination);
+	const secondPipePromise = pipePromise.pipe(secondDestination);
 
 	t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(destination));
 	t.is(await t.throwsAsync(secondPipePromise), await t.throwsAsync(secondDestination));

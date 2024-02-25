@@ -1,6 +1,10 @@
 import {setImmediate, setInterval} from 'node:timers/promises';
 import {foobarObject} from './input.js';
 
+export const addNoopGenerator = (transform, addNoopTransform) => addNoopTransform
+	? [transform, noopGenerator(undefined, true)]
+	: [transform];
+
 export const noopGenerator = (objectMode, binary) => ({
 	* transform(line) {
 		yield line;

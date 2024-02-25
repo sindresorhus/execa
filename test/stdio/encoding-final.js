@@ -7,7 +7,7 @@ import getStream, {getStreamAsBuffer} from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {outputObjectGenerator, getChunksGenerator} from '../helpers/generator.js';
+import {outputObjectGenerator, getChunksGenerator, addNoopGenerator} from '../helpers/generator.js';
 import {foobarObject} from '../helpers/input.js';
 
 const pExec = promisify(exec);
@@ -136,20 +136,27 @@ test('validate unknown encodings', t => {
 
 const foobarArray = ['fo', 'ob', 'ar', '..'];
 
-test('Handle multibyte characters', async t => {
-	const {stdout} = await execa('noop.js', {stdout: getChunksGenerator(foobarArray, false), encoding: 'base64'});
-	t.is(stdout, btoa(foobarArray.join('')));
-});
+const testMultibyteCharacters = async (t, objectMode, addNoopTransform) => {
+	const {stdout} = await execa('noop.js', {stdout: addNoopGenerator(getChunksGenerator(foobarArray, objectMode), addNoopTransform), encoding: 'base64'});
+	if (objectMode) {
+		t.deepEqual(stdout, foobarArray.map(chunk => btoa(chunk)));
+	} else {
+		t.is(stdout, btoa(foobarArray.join('')));
+	}
+};
 
-test('Handle multibyte characters, with objectMode', async t => {
-	const {stdout} = await execa('noop.js', {stdout: getChunksGenerator(foobarArray, true), encoding: 'base64'});
-	t.deepEqual(stdout, foobarArray.map(chunk => btoa(chunk)));
-});
+test('Handle multibyte characters', testMultibyteCharacters, false, false);
+test('Handle multibyte characters, noop transform', testMultibyteCharacters, false, true);
+test('Handle multibyte characters, with objectMode', testMultibyteCharacters, true, false);
+test('Handle multibyte characters, with objectMode, noop transform', testMultibyteCharacters, true, true);
 
-test('Other encodings work with transforms that return objects', async t => {
-	const {stdout} = await execa('noop.js', {stdout: outputObjectGenerator, encoding: 'base64'});
+const testObjectMode = async (t, addNoopTransform) => {
+	const {stdout} = await execa('noop.js', {stdout: addNoopGenerator(outputObjectGenerator, addNoopTransform), encoding: 'base64'});
 	t.deepEqual(stdout, [foobarObject]);
-});
+};
+
+test('Other encodings work with transforms that return objects', testObjectMode, false);
+test('Other encodings work with transforms that return objects, noop transform', testObjectMode, true);
 
 const testIgnoredEncoding = async (t, stdoutOption, isUndefined, options) => {
 	const {stdout} = await execa('empty.js', {stdout: stdoutOption, ...options});

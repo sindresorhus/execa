@@ -440,7 +440,9 @@ Type: `string`
 
 Same as [`command`](#command-1) but escaped.
 
-This is meant to be copied and pasted into a shell, for debugging purposes.
+Unlike `command`, control characters are escaped, which makes it safe to print in a terminal.
+
+This can also be copied and pasted into a shell, for debugging purposes.
 Since the escaping is fairly basic, this should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
 
 #### cwd

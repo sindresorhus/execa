@@ -397,9 +397,16 @@ Type: `object`
 Type: `"stdout" | "stderr" | "all" | number`\
 Default: `"stdout"`
 
-Which stream to pipe. A file descriptor number can also be passed.
+Which stream to pipe from the source subprocess. A file descriptor number can also be passed.
 
 `"all"` pipes both `stdout` and `stderr`. This requires the [`all` option](#all-2) to be `true`.
+
+##### pipeOptions.to
+
+Type: `"stdin" | number`\
+Default: `"stdin"`
+
+Which stream to pipe to the destination subprocess. A file descriptor number can also be passed.
 
 ##### pipeOptions.unpipeSignal
 

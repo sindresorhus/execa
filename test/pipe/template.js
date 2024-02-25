@@ -229,7 +229,7 @@ test('execa.pipe("file") forces "stdin: "pipe"', async t => {
 test('execa.pipe(subprocess) does not force "stdin: pipe"', async t => {
 	await t.throwsAsync(
 		execa('noop.js', [foobarString]).pipe(execa('stdin.js', {stdin: 'ignore'})),
-		{message: /stdin must be available/},
+		{message: /"stdin: 'ignore'" option is incompatible/},
 	);
 });
 

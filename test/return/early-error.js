@@ -79,7 +79,10 @@ test('child_process.spawn() early errors can use .pipe`` multiple times', testEa
 
 const testEarlyErrorStream = async (t, getStreamProperty, all) => {
 	const subprocess = getEarlyErrorSubprocess({all});
-	getStreamProperty(subprocess).on('end', () => {});
+	const stream = getStreamProperty(subprocess);
+	stream.on('close', () => {});
+	stream.read?.();
+	stream.end?.();
 	await t.throwsAsync(subprocess);
 };
 

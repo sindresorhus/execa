@@ -1,4 +1,5 @@
 import process from 'node:process';
+import {noopReadable} from './stream.js';
 
 export const identity = value => value;
 
@@ -13,6 +14,7 @@ export const getStdio = (fdNumberOrName, stdioOption, length = 3) => {
 };
 
 export const fullStdio = getStdio(3, 'pipe');
+export const fullReadableStdio = () => getStdio(3, ['pipe', noopReadable()]);
 
 export const STANDARD_STREAMS = [process.stdin, process.stdout, process.stderr];
 

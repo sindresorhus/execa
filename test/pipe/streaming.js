@@ -5,6 +5,7 @@ import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {foobarString} from '../helpers/input.js';
 import {assertMaxListeners} from '../helpers/listeners.js';
+import {fullReadableStdio} from '../helpers/stdio.js';
 
 setFixtureDir();
 
@@ -83,6 +84,18 @@ test('Can pipe two streams from same subprocess to same destination', async t =>
 
 	t.like(await source, {stdout: foobarString, stderr: foobarString});
 	t.like(await destination, {stdout: `${foobarString}\n${foobarString}`});
+	t.is(await pipePromise, await destination);
+	t.is(await secondPipePromise, await destination);
+});
+
+test('Can pipe same source to two streams from same subprocess', async t => {
+	const source = execa('noop-fd.js', ['1', foobarString]);
+	const destination = execa('stdin-fd-both.js', ['3'], fullReadableStdio());
+	const pipePromise = source.pipe(destination);
+	const secondPipePromise = source.pipe(destination, {to: 3});
+
+	t.like(await source, {stdout: foobarString});
+	t.like(await destination, {stdout: `${foobarString}${foobarString}`});
 	t.is(await pipePromise, await destination);
 	t.is(await secondPipePromise, await destination);
 });

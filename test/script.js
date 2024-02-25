@@ -240,6 +240,17 @@ test('$ splits expressions - \\u{0063}}', testScriptStdout, () => $`echo.js ${'a
 test('$ concatenates tokens - \\u{0063}}', testScriptStdout, () => $`echo.js \u{0063}}a\u{0063}} b`, 'c}ac}\nb');
 test('$ concatenates expressions - \\u{0063}}', testScriptStdout, () => $`echo.js \u{0063}}${'a'}\u{0063}} b`, 'c}ac}\nb');
 
+const testScriptErrorStdout = async (t, getChildProcess, expectedStdout) => {
+	const {command} = await t.throwsAsync(getChildProcess(), {code: 'ERR_INVALID_ARG_VALUE'});
+	t.is(command, `echo.js ${expectedStdout}`);
+};
+
+test('$ handles tokens - \\0', testScriptErrorStdout, () => $`echo.js \0`, '\0');
+test('$ splits tokens - \\0', testScriptErrorStdout, () => $`echo.js a\0b`, 'a\0b');
+test('$ splits expressions - \\0', testScriptErrorStdout, () => $`echo.js ${'a'}\0${'b'}`, 'a\0b');
+test('$ concatenates tokens - \\0', testScriptErrorStdout, () => $`echo.js \0a\0 b`, '\0a\0 b');
+test('$ concatenates expressions - \\0', testScriptErrorStdout, () => $`echo.js \0${'a'}\0 b`, '\0a\0 b');
+
 const testScriptStdoutSync = (t, getChildProcess, expectedStdout) => {
 	const {stdout} = getChildProcess();
 	t.is(stdout, expectedStdout);

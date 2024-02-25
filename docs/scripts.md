@@ -121,6 +121,30 @@ await $`echo example`;
 await $`echo example`;
 ```
 
+### Multiline commands
+
+```sh
+# Bash
+npm run build \
+  --example-flag-one \
+  --example-flag-two
+```
+
+```js
+// zx
+await $`npm run build ${[
+	'--example-flag-one',
+	'--example-flag-two',
+]}`;
+```
+
+```js
+// Execa
+await $`npm run build
+	--example-flag-one
+	--example-flag-two`
+```
+
 ### Subcommands
 
 ```sh

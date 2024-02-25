@@ -76,3 +76,10 @@ test('calling abort on a successfully completed process does not make result.isC
 	abortController.abort();
 	t.false(result.isCanceled);
 });
+
+test('Throws when using the former "signal" option name', t => {
+	const abortController = new AbortController();
+	t.throws(() => {
+		execa('noop.js', {signal: abortController.signal});
+	}, {message: /renamed to "cancelSignal"/});
+});

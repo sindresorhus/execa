@@ -398,7 +398,7 @@ test('Does not return nor set pipedFrom on signal abort', async t => {
 	const abortController = new AbortController();
 	const source = execa('empty.js');
 	const destination = execa('empty.js');
-	const pipePromise = source.pipe(destination, {signal: abortController.signal});
+	const pipePromise = source.pipe(destination, {unpipeSignal: abortController.signal});
 
 	abortController.abort();
 	t.like(await t.throwsAsync(pipePromise), {pipedFrom: []});

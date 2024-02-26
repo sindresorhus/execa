@@ -831,7 +831,7 @@ type PipeOptions = {
 
 	The `.pipe()` method will be rejected with a cancellation error.
 	*/
-	readonly signal?: AbortSignal;
+	readonly unpipeSignal?: AbortSignal;
 };
 
 type PipableProcess = {

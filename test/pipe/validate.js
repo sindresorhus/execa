@@ -53,7 +53,7 @@ const invalidDestination = async (t, getDestination) => {
 	);
 };
 
-test('pipe() cannot pipe to non-processes', invalidDestination, () => ({stdin: new PassThrough()}));
+test('pipe() cannot pipe to non-processes', invalidDestination, () => new PassThrough());
 test('pipe() cannot pipe to non-Execa processes', invalidDestination, () => spawn('node', ['--version']));
 
 test('pipe() "from" option cannot be "stdin"', async t => {
@@ -61,6 +61,15 @@ test('pipe() "from" option cannot be "stdin"', async t => {
 		t,
 		execa('empty.js')
 			.pipe(execa('empty.js'), {from: 'stdin'}),
+		'not be "stdin"',
+	);
+});
+
+test('$.pipe() "from" option cannot be "stdin"', async t => {
+	await assertPipeError(
+		t,
+		execa('empty.js')
+			.pipe({from: 'stdin'})`empty.js`,
 		'not be "stdin"',
 	);
 });
@@ -148,6 +157,11 @@ test('Destination stream is ended when first argument is invalid', async t => {
 	t.like(await destination, {stdout: ''});
 });
 
+test('Destination stream is ended when first argument is invalid - $', async t => {
+	const pipePromise = execa('empty.js', {stdout: 'ignore'}).pipe`stdin.js`;
+	await assertPipeError(t, pipePromise, 'option is incompatible');
+});
+
 test('Source stream is aborted when second argument is invalid', async t => {
 	const source = execa('noop.js', [foobarString]);
 	const pipePromise = source.pipe('');
@@ -162,6 +176,16 @@ test('Both arguments might be invalid', async t => {
 
 	await assertPipeError(t, pipePromise, 'an Execa child process');
 	t.like(await source, {stdout: undefined});
+});
+
+test('Sets the right error message when the "all" option is incompatible - execa.$', async t => {
+	await assertPipeError(
+		t,
+		execa('empty.js')
+			.pipe({all: false})`stdin.js`
+			.pipe(execa('empty.js'), {from: 'all'}),
+		'"all" option must be true',
+	);
 });
 
 test('Sets the right error message when the "all" option is incompatible - execa.execa', async t => {

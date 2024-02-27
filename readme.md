@@ -351,16 +351,14 @@ This can be called multiple times to chain a series of processes.
 
 Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
 
-When using [`$`](#command), the following [simpler syntax](docs/scripts.md#piping-stdout-to-another-command) can be used instead.
+#### pipe`command`
+#### pipe(options)`command`
 
-```js
-import {$} from 'execa';
+`command`: `string`\
+`options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
+_Returns_: [`Promise<ChildProcessResult>`](#childprocessresult)
 
-await $`command`.pipe`secondCommand`;
-
-// To pass either child process options or pipe options
-await $`command`.pipe(options)`secondCommand`;
-```
+Like [`.pipe(secondChildProcess)`](#pipesecondchildprocess-pipeoptions) but using a [`command` template string](docs/scripts.md#piping-stdout-to-another-command) instead. This follows the same syntax as [`$`](#command). `options` can be used to specify both [pipe options](#pipeoptions) and [regular options](#options-1).
 
 ##### pipeOptions
 

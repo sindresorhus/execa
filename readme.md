@@ -240,17 +240,27 @@ try {
 
 #### execa(file, arguments?, options?)
 
-Executes a command using `file ...arguments`. `file` is a string or a file URL. `arguments` are an array of strings. Returns a [`childProcess`](#childprocess).
+`file`: `string | URL`\
+`arguments`: `string[]`\
+`options`: [`Options`](#options-1)\
+_Returns_: [`ChildProcess`](#childprocess)
+
+Executes a command using `file ...arguments`.
 
 Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces.
 
 This is the preferred method when executing single commands.
 
 #### $\`command\`
+#### $(options)\`command\`
 
-Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a [`childProcess`](#childprocess).
+`command`: `string`\
+`options`: [`Options`](#options-1)\
+_Returns_: [`ChildProcess`](#childprocess)
 
-Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces must use `${}` like `` $`echo ${'has space'}` ``.
+Executes a command. The `command` string includes both the `file` and its `arguments`.
+
+Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces, tabs and newlines must use `${}` like `` $`echo ${'has space'}` ``.
 
 This is the preferred method when executing multiple commands in a script file.
 
@@ -262,7 +272,10 @@ For more information, please see [this section](#scripts-interface) and [this pa
 
 #### $(options)
 
-Returns a new instance of [`$`](#command) but with different default `options`. Consecutive calls are merged to previous ones.
+`options`: [`Options`](#options-1)\
+_Returns_: [`$`](#command)
+
+Returns a new instance of [`$`](#command) but with different default [`options`](#options-1). Consecutive calls are merged to previous ones.
 
 This can be used to either:
 - Set options for a specific command: `` $(options)`command` ``
@@ -270,7 +283,11 @@ This can be used to either:
 
 #### execaCommand(command, options?)
 
-Executes a command. The `command` string includes both the `file` and its `arguments`. Returns a [`childProcess`](#childprocess).
+`command`: `string`\
+`options`: [`Options`](#options-1)\
+_Returns_: [`ChildProcess`](#childprocess)
+
+Executes a command. The `command` string includes both the `file` and its `arguments`.
 
 Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces must be escaped with a backslash like `execaCommand('echo has\\ space')`.
 
@@ -278,30 +295,25 @@ This is the preferred method when executing a user-supplied `command` string, su
 
 #### execaNode(scriptPath, arguments?, options?)
 
+`file`: `string | URL`\
+`arguments`: `string[]`\
+`options`: [`Options`](#options-1)\
+_Returns_: [`ChildProcess`](#childprocess)
+
 Same as [`execa()`](#execacommandcommand-options) but using the [`node`](#node) option.
 
 Executes a Node.js file using `node scriptPath ...arguments`.
 
+This is the preferred method when executing Node.js files.
+
 #### execaSync(file, arguments?, options?)
-
-Same as [`execa()`](#execacommandcommand-options) but synchronous.
-
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
-
-Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipesecondchildprocess-pipeoptions) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
-
+#### execaCommandSync(command, options?)
 #### $.sync\`command\`
 #### $.s\`command\`
+#### $.sync(options)\`command\`
+#### $.s(options)\`command\`
 
-Same as [$\`command\`](#command) but synchronous.
-
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
-
-Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipesecondchildprocess-pipeoptions) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
-
-#### execaCommandSync(command, options?)
-
-Same as [`execaCommand()`](#execacommand-command-options) but synchronous.
+Same as [`execa()`](#execacommandcommand-options), [`execaCommand()`](#execacommand-command-options), [$\`command\`](#command) but synchronous.
 
 Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`signal`](#signal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 

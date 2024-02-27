@@ -836,21 +836,44 @@ type PipeOptions = {
 
 type PipableProcess = {
 	/**
-	Like `.pipe(secondChildProcess)` but using a `command` template string instead. This follows the same syntax as `$`. `options` can be used to specify both pipe options and regular options.
-	*/
-	pipe(templates: TemplateStringsArray, ...expressions: TemplateExpression[]): Promise<ExecaReturnValue<{}>> & PipableProcess;
-	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
-	(templates: TemplateStringsArray, ...expressions: TemplateExpression[])
-	=> Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
-
-	/**
 	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
+
+	This follows the same syntax as `execa(file, arguments?, options?)` except both regular options and pipe-specific options can be specified.
 
 	This can be called multiple times to chain a series of processes.
 
 	Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
+
+	This is usually the preferred method to pipe processes.
 	*/
-	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions): Promise<Awaited<Destination>> & PipableProcess;
+	pipe<OptionsType extends Options & PipeOptions = {}>(
+		file: string | URL,
+		arguments?: readonly string[],
+		options?: OptionsType,
+	): Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
+	pipe<OptionsType extends Options & PipeOptions = {}>(
+		file: string | URL,
+		options?: OptionsType,
+	): Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
+
+	/**
+	Like `.pipe(file, arguments?, options?)` but using a `command` template string instead. This follows the same syntax as `$`.
+
+	This is the preferred method to pipe processes when using `$`.
+	*/
+	pipe(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
+	Promise<ExecaReturnValue<{}>> & PipableProcess;
+	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
+	(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[])
+	=> Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
+
+	/**
+	Like `.pipe(file, arguments?, options?)` but using the return value of another `execa()` call instead.
+
+	This is the most advanced method to pipe processes. It is useful in specific cases, such as piping multiple child processes to the same process.
+	*/
+	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions):
+	Promise<Awaited<Destination>> & PipableProcess;
 };
 
 export type ExecaChildPromise<OptionsType extends Options = Options> = {
@@ -1156,7 +1179,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	<NewOptionsType extends CommonOptions = {}>
 	(options: NewOptionsType): Execa$<OptionsType & NewOptionsType>;
 
-	(templates: TemplateStringsArray, ...expressions: TemplateExpression[]):
+	(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
 	ExecaChildProcess<StricterOptions<OptionsType, Options>> & PipableProcess;
 
 	/**
@@ -1210,7 +1233,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	*/
 	sync(
 		templates: TemplateStringsArray,
-		...expressions: TemplateExpression[]
+		...expressions: readonly TemplateExpression[]
 	): ExecaSyncReturnValue<StricterOptions<OptionsType, SyncOptions>>;
 
 	/**
@@ -1264,7 +1287,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	*/
 	s(
 		templates: TemplateStringsArray,
-		...expressions: TemplateExpression[]
+		...expressions: readonly TemplateExpression[]
 	): ExecaSyncReturnValue<StricterOptions<OptionsType, SyncOptions>>;
 };
 

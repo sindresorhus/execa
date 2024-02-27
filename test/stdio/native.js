@@ -6,13 +6,13 @@ import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-const testRedirect = async (t, stdioOption, index, isInput) => {
+const testRedirect = async (t, stdioOption, fdNumber, isInput) => {
 	const {fixtureName, ...options} = isInput
 		? {fixtureName: 'stdin-fd.js', input: 'foobar'}
 		: {fixtureName: 'noop-fd.js'};
-	const {stdio} = await execa('nested-stdio.js', [JSON.stringify(stdioOption), `${index}`, fixtureName, 'foobar'], options);
-	const resultIndex = isStderrDescriptor(stdioOption) ? 2 : 1;
-	t.is(stdio[resultIndex], 'foobar');
+	const {stdio} = await execa('nested-stdio.js', [JSON.stringify(stdioOption), `${fdNumber}`, fixtureName, 'foobar'], options);
+	const resultFdNumber = isStderrDescriptor(stdioOption) ? 2 : 1;
+	t.is(stdio[resultFdNumber], 'foobar');
 };
 
 const isStderrDescriptor = stdioOption => stdioOption === 2
@@ -76,8 +76,8 @@ const testInheritStderr = async (t, stderr) => {
 test('stderr can be ["inherit", "pipe"]', testInheritStderr, ['inherit', 'pipe']);
 test('stderr can be [2, "pipe"]', testInheritStderr, [2, 'pipe']);
 
-const testOverflowStream = async (t, index, stdioOption) => {
-	const {stdout} = await execa('nested.js', [JSON.stringify(getStdio(index, stdioOption)), 'empty.js'], fullStdio);
+const testOverflowStream = async (t, fdNumber, stdioOption) => {
+	const {stdout} = await execa('nested.js', [JSON.stringify(getStdio(fdNumber, stdioOption)), 'empty.js'], fullStdio);
 	t.is(stdout, '');
 };
 
@@ -95,9 +95,9 @@ if (platform === 'linux') {
 test('stdio[*] can use "inherit"', testOverflowStream, 3, 'inherit');
 test('stdio[*] can use ["inherit"]', testOverflowStream, 3, ['inherit']);
 
-const testOverflowStreamArray = (t, index, stdioOption) => {
+const testOverflowStreamArray = (t, fdNumber, stdioOption) => {
 	t.throws(() => {
-		execa('empty.js', getStdio(index, stdioOption));
+		execa('empty.js', getStdio(fdNumber, stdioOption));
 	}, {message: /no such standard stream/});
 };
 

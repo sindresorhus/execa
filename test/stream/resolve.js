@@ -5,9 +5,9 @@ import {getStdio} from '../helpers/stdio.js';
 
 setFixtureDir();
 
-const testIgnore = async (t, index, execaMethod) => {
-	const result = await execaMethod('noop.js', getStdio(index, 'ignore'));
-	t.is(result.stdio[index], undefined);
+const testIgnore = async (t, fdNumber, execaMethod) => {
+	const result = await execaMethod('noop.js', getStdio(fdNumber, 'ignore'));
+	t.is(result.stdio[fdNumber], undefined);
 };
 
 test('stdout is undefined if ignored', testIgnore, 1, execa);

@@ -33,9 +33,9 @@ const getOutputObjectMode = objectMode => objectMode
 	? {generator: outputObjectGenerator, output: [foobarObject], getStreamMethod: getStreamAsArray}
 	: {generator: uppercaseGenerator, output: foobarUppercase, getStreamMethod: getStream};
 
-const testGeneratorInput = async (t, index, objectMode) => {
+const testGeneratorInput = async (t, fdNumber, objectMode) => {
 	const {input, generator, output} = getInputObjectMode(objectMode);
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, [input, generator]));
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [input, generator]));
 	t.is(stdout, output);
 };
 
@@ -74,11 +74,11 @@ test('Can use generators with childProcess.stdio[*] as input', testGeneratorStdi
 test('Can use generators with childProcess.stdio[*] as input, objectMode', testGeneratorStdioInputPipe, true);
 
 // eslint-disable-next-line max-params
-const testGeneratorOutput = async (t, index, reject, useShortcutProperty, objectMode) => {
+const testGeneratorOutput = async (t, fdNumber, reject, useShortcutProperty, objectMode) => {
 	const {generator, output} = getOutputObjectMode(objectMode);
 	const fixtureName = reject ? 'noop-fd.js' : 'noop-fail.js';
-	const {stdout, stderr, stdio} = await execa(fixtureName, [`${index}`, foobarString], {...getStdio(index, generator), reject});
-	const result = useShortcutProperty ? [stdout, stderr][index - 1] : stdio[index];
+	const {stdout, stderr, stdio} = await execa(fixtureName, [`${fdNumber}`, foobarString], {...getStdio(fdNumber, generator), reject});
+	const result = useShortcutProperty ? [stdout, stderr][fdNumber - 1] : stdio[fdNumber];
 	t.deepEqual(result, output);
 };
 
@@ -103,10 +103,10 @@ test('Can use generators with error.stdio[2], objectMode', testGeneratorOutput, 
 test('Can use generators with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true);
 test('Can use generators with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true);
 
-const testGeneratorOutputPipe = async (t, index, useShortcutProperty, objectMode) => {
+const testGeneratorOutputPipe = async (t, fdNumber, useShortcutProperty, objectMode) => {
 	const {generator, output, getStreamMethod} = getOutputObjectMode(objectMode);
-	const childProcess = execa('noop-fd.js', [`${index}`, foobarString], {...getStdio(index, generator), buffer: false});
-	const stream = useShortcutProperty ? [childProcess.stdout, childProcess.stderr][index - 1] : childProcess.stdio[index];
+	const childProcess = execa('noop-fd.js', [`${fdNumber}`, foobarString], {...getStdio(fdNumber, generator), buffer: false});
+	const stream = useShortcutProperty ? [childProcess.stdout, childProcess.stderr][fdNumber - 1] : childProcess.stdio[fdNumber];
 	const [result] = await Promise.all([getStreamMethod(stream), childProcess]);
 	t.deepEqual(result, output);
 };

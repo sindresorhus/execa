@@ -7,10 +7,10 @@ import {getStdio} from '../helpers/stdio.js';
 
 setFixtureDir();
 
-const testFileDescriptorOption = async (t, index, execaMethod) => {
+const testFileDescriptorOption = async (t, fdNumber, execaMethod) => {
 	const filePath = tempfile();
 	const fileDescriptor = await open(filePath, 'w');
-	await execaMethod('noop-fd.js', [`${index}`, 'foobar'], getStdio(index, fileDescriptor));
+	await execaMethod('noop-fd.js', [`${fdNumber}`, 'foobar'], getStdio(fdNumber, fileDescriptor));
 	t.is(await readFile(filePath, 'utf8'), 'foobar');
 	await rm(filePath);
 	await fileDescriptor.close();
@@ -23,9 +23,9 @@ test('pass `stdout` to a file descriptor - sync', testFileDescriptorOption, 1, e
 test('pass `stderr` to a file descriptor - sync', testFileDescriptorOption, 2, execaSync);
 test('pass `stdio[*]` to a file descriptor - sync', testFileDescriptorOption, 3, execaSync);
 
-const testStdinWrite = async (t, index) => {
-	const subprocess = execa('stdin-fd.js', [`${index}`], getStdio(index, 'pipe'));
-	subprocess.stdio[index].end('unicorns');
+const testStdinWrite = async (t, fdNumber) => {
+	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, 'pipe'));
+	subprocess.stdio[fdNumber].end('unicorns');
 	const {stdout} = await subprocess;
 	t.is(stdout, 'unicorns');
 };

@@ -5,9 +5,9 @@ import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-const testEmptyArray = (t, index, optionName, execaMethod) => {
+const testEmptyArray = (t, fdNumber, optionName, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(index, []));
+		execaMethod('empty.js', getStdio(fdNumber, []));
 	}, {message: `The \`${optionName}\` option must not be an empty array.`});
 };
 
@@ -20,9 +20,9 @@ test('Cannot pass an empty array to stdout - sync', testEmptyArray, 1, 'stdout',
 test('Cannot pass an empty array to stderr - sync', testEmptyArray, 2, 'stderr', execaSync);
 test('Cannot pass an empty array to stdio[*] - sync', testEmptyArray, 3, 'stdio[3]', execaSync);
 
-const testNoPipeOption = async (t, stdioOption, index) => {
-	const childProcess = execa('empty.js', getStdio(index, stdioOption));
-	t.is(childProcess.stdio[index], null);
+const testNoPipeOption = async (t, stdioOption, fdNumber) => {
+	const childProcess = execa('empty.js', getStdio(fdNumber, stdioOption));
+	t.is(childProcess.stdio[fdNumber], null);
 	await childProcess;
 };
 
@@ -63,9 +63,9 @@ test('stdio[*] can be ["inherit"]', testNoPipeOption, ['inherit'], 3);
 test('stdio[*] can be 3', testNoPipeOption, 3, 3);
 test('stdio[*] can be [3]', testNoPipeOption, [3], 3);
 
-const testInvalidArrayValue = (t, invalidStdio, index, execaMethod) => {
+const testInvalidArrayValue = (t, invalidStdio, fdNumber, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(index, ['pipe', invalidStdio]));
+		execaMethod('empty.js', getStdio(fdNumber, ['pipe', invalidStdio]));
 	}, {message: /must not include/});
 };
 

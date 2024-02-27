@@ -14,24 +14,24 @@ const pExec = promisify(exec);
 
 setFixtureDir();
 
-const checkEncoding = async (t, encoding, index, execaMethod) => {
-	const {stdio} = await execaMethod('noop-fd.js', [`${index}`, STRING_TO_ENCODE], {...fullStdio, encoding});
-	compareValues(t, stdio[index], encoding);
+const checkEncoding = async (t, encoding, fdNumber, execaMethod) => {
+	const {stdio} = await execaMethod('noop-fd.js', [`${fdNumber}`, STRING_TO_ENCODE], {...fullStdio, encoding});
+	compareValues(t, stdio[fdNumber], encoding);
 
 	if (execaMethod !== execaSync) {
-		const childProcess = execaMethod('noop-fd.js', [`${index}`, STRING_TO_ENCODE], {...fullStdio, encoding, buffer: false});
+		const childProcess = execaMethod('noop-fd.js', [`${fdNumber}`, STRING_TO_ENCODE], {...fullStdio, encoding, buffer: false});
 		const getStreamMethod = encoding === 'buffer' ? getStreamAsBuffer : getStream;
-		const result = await getStreamMethod(childProcess.stdio[index]);
+		const result = await getStreamMethod(childProcess.stdio[fdNumber]);
 		compareValues(t, result, encoding);
 		await childProcess;
 	}
 
-	if (index === 3) {
+	if (fdNumber === 3) {
 		return;
 	}
 
-	const {stdout, stderr} = await pExec(`node noop-fd.js ${index} ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
-	compareValues(t, index === 1 ? stdout : stderr, encoding);
+	const {stdout, stderr} = await pExec(`node noop-fd.js ${fdNumber} ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
+	compareValues(t, fdNumber === 1 ? stdout : stderr, encoding);
 };
 
 const compareValues = (t, value, encoding) => {

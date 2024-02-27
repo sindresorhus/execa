@@ -10,9 +10,9 @@ const uppercaseGenerator = function * (line) {
 	yield line.toUpperCase();
 };
 
-const testInvalidGenerator = (t, index, stdioOption) => {
+const testInvalidGenerator = (t, fdNumber, stdioOption) => {
 	t.throws(() => {
-		execa('empty.js', getStdio(index, {...noopGenerator(), ...stdioOption}));
+		execa('empty.js', getStdio(fdNumber, {...noopGenerator(), ...stdioOption}));
 	}, {message: /must be a generator/});
 };
 
@@ -25,9 +25,9 @@ test('Cannot use invalid "final" with stdout', testInvalidGenerator, 1, {final: 
 test('Cannot use invalid "final" with stderr', testInvalidGenerator, 2, {final: true});
 test('Cannot use invalid "final" with stdio[*]', testInvalidGenerator, 3, {final: true});
 
-const testInvalidBinary = (t, index, optionName) => {
+const testInvalidBinary = (t, fdNumber, optionName) => {
 	t.throws(() => {
-		execa('empty.js', getStdio(index, {transform: uppercaseGenerator, [optionName]: 'true'}));
+		execa('empty.js', getStdio(fdNumber, {transform: uppercaseGenerator, [optionName]: 'true'}));
 	}, {message: /a boolean/});
 };
 
@@ -40,9 +40,9 @@ test('Cannot use invalid "objectMode" with stdout', testInvalidBinary, 1, 'objec
 test('Cannot use invalid "objectMode" with stderr', testInvalidBinary, 2, 'objectMode');
 test('Cannot use invalid "objectMode" with stdio[*]', testInvalidBinary, 3, 'objectMode');
 
-const testSyncMethods = (t, index) => {
+const testSyncMethods = (t, fdNumber) => {
 	t.throws(() => {
-		execaSync('empty.js', getStdio(index, uppercaseGenerator));
+		execaSync('empty.js', getStdio(fdNumber, uppercaseGenerator));
 	}, {message: /cannot be a generator/});
 };
 

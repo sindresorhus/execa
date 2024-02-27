@@ -8,11 +8,11 @@ import {foobarString} from '../helpers/input.js';
 
 setFixtureDir();
 
-const testLateStream = async (t, index, all) => {
-	const subprocess = execa('noop-fd-ipc.js', [`${index}`, foobarString], {...getStdio(4, 'ipc', 4), buffer: false, all});
+const testLateStream = async (t, fdNumber, all) => {
+	const subprocess = execa('noop-fd-ipc.js', [`${fdNumber}`, foobarString], {...getStdio(4, 'ipc', 4), buffer: false, all});
 	await once(subprocess, 'message');
 	const [output, allOutput] = await Promise.all([
-		getStream(subprocess.stdio[index]),
+		getStream(subprocess.stdio[fdNumber]),
 		all ? getStream(subprocess.all) : undefined,
 		subprocess,
 	]);
@@ -35,19 +35,19 @@ const getFirstDataEvent = async stream => {
 };
 
 // eslint-disable-next-line max-params
-const testIterationBuffer = async (t, index, buffer, useDataEvents, all) => {
-	const subprocess = execa('noop-fd.js', [`${index}`, foobarString], {...fullStdio, buffer, all});
+const testIterationBuffer = async (t, fdNumber, buffer, useDataEvents, all) => {
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`, foobarString], {...fullStdio, buffer, all});
 	const getOutput = useDataEvents ? getFirstDataEvent : getStream;
 	const [result, output, allOutput] = await Promise.all([
 		subprocess,
-		getOutput(subprocess.stdio[index]),
+		getOutput(subprocess.stdio[fdNumber]),
 		all ? getOutput(subprocess.all) : undefined,
 	]);
 
 	const expectedProcessResult = buffer ? foobarString : undefined;
 	const expectedOutput = !buffer || useDataEvents ? foobarString : '';
 
-	t.is(result.stdio[index], expectedProcessResult);
+	t.is(result.stdio[fdNumber], expectedProcessResult);
 	t.is(output, expectedOutput);
 
 	if (all) {
@@ -73,9 +73,9 @@ test('Can listen to `data` events on stderr when `buffer` set to `true`', testIt
 test('Can listen to `data` events on stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, true, false);
 test('Can listen to `data` events on all when `buffer` set to `true`', testIterationBuffer, 1, true, true, true);
 
-const testNoBufferStreamError = async (t, index, all) => {
-	const subprocess = execa('noop-fd.js', [`${index}`], {...fullStdio, buffer: false, all});
-	const stream = all ? subprocess.all : subprocess.stdio[index];
+const testNoBufferStreamError = async (t, fdNumber, all) => {
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`], {...fullStdio, buffer: false, all});
+	const stream = all ? subprocess.all : subprocess.stdio[fdNumber];
 	const error = new Error('test');
 	stream.destroy(error);
 	t.is(await t.throwsAsync(subprocess), error);
@@ -95,11 +95,11 @@ test('buffer: false > promise rejects when process returns non-zero', async t =>
 	t.is(exitCode, 2);
 });
 
-const testStreamEnd = async (t, index, buffer) => {
+const testStreamEnd = async (t, fdNumber, buffer) => {
 	const subprocess = execa('wrong command', {...fullStdio, buffer});
 	await Promise.all([
 		t.throwsAsync(subprocess, {message: /wrong command/}),
-		once(subprocess.stdio[index], 'end'),
+		once(subprocess.stdio[fdNumber], 'end'),
 	]);
 };
 

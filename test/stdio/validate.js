@@ -8,8 +8,8 @@ import {serializeGenerator, getOutputGenerator, convertTransformToFinal} from '.
 setFixtureDir();
 
 // eslint-disable-next-line max-params
-const testGeneratorReturn = async (t, index, generators, fixtureName, isNull) => {
-	const childProcess = execa(fixtureName, [`${index}`], getStdio(index, generators));
+const testGeneratorReturn = async (t, fdNumber, generators, fixtureName, isNull) => {
+	const childProcess = execa(fixtureName, [`${fdNumber}`], getStdio(fdNumber, generators));
 	const message = isNull ? /not be called at all/ : /a string or an Uint8Array/;
 	await t.throwsAsync(childProcess, {message});
 };

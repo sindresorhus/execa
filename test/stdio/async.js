@@ -31,9 +31,9 @@ const testListenersCleanup = async (t, isMultiple) => {
 		await onStdinRemoveListener();
 	}
 
-	for (const [index, streamNewListeners] of Object.entries(getStandardStreamsListeners())) {
+	for (const [fdNumber, streamNewListeners] of Object.entries(getStandardStreamsListeners())) {
 		const defaultListeners = Object.fromEntries(Reflect.ownKeys(streamNewListeners).map(eventName => [eventName, []]));
-		t.deepEqual(streamNewListeners, {...defaultListeners, ...streamsPreviousListeners[index]});
+		t.deepEqual(streamNewListeners, {...defaultListeners, ...streamsPreviousListeners[fdNumber]});
 	}
 };
 

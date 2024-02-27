@@ -90,9 +90,9 @@ test('Next generator argument is Uint8Array with encoding "hex", with Uint8Array
 test('Next generator argument is object with default encoding, with object writes, objectMode first', testGeneratorNextEncoding, foobarObject, 'utf8', true, false, 'Object');
 test('Next generator argument is object with default encoding, with object writes, objectMode both', testGeneratorNextEncoding, foobarObject, 'utf8', true, true, 'Object');
 
-const testFirstOutputGeneratorArgument = async (t, index) => {
-	const {stdio} = await execa('noop-fd.js', [`${index}`], getStdio(index, getTypeofGenerator(true)));
-	t.deepEqual(stdio[index], ['[object String]']);
+const testFirstOutputGeneratorArgument = async (t, fdNumber) => {
+	const {stdio} = await execa('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, getTypeofGenerator(true)));
+	t.deepEqual(stdio[fdNumber], ['[object String]']);
 };
 
 test('The first generator with result.stdout does not receive an object argument even in objectMode', testFirstOutputGeneratorArgument, 1);

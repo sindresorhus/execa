@@ -6,8 +6,8 @@ import {foobarUint8Array} from '../helpers/input.js';
 
 setFixtureDir();
 
-const testUint8Array = async (t, index) => {
-	const {stdout} = await execa('stdin-fd.js', [`${index}`], getStdio(index, foobarUint8Array));
+const testUint8Array = async (t, fdNumber) => {
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, foobarUint8Array));
 	t.is(stdout, 'foobar');
 };
 
@@ -16,9 +16,9 @@ test('stdio[*] option can be a Uint8Array', testUint8Array, 3);
 test('stdin option can be a Uint8Array - sync', testUint8Array, 0);
 test('stdio[*] option can be a Uint8Array - sync', testUint8Array, 3);
 
-const testNoUint8ArrayOutput = (t, index, execaMethod) => {
+const testNoUint8ArrayOutput = (t, fdNumber, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(index, foobarUint8Array));
+		execaMethod('empty.js', getStdio(fdNumber, foobarUint8Array));
 	}, {message: /cannot be a Uint8Array/});
 };
 

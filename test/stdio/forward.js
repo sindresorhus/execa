@@ -5,8 +5,8 @@ import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-const testOverlapped = async (t, index) => {
-	const {stdout} = await execa('noop.js', ['foobar'], getStdio(index, ['overlapped', 'pipe']));
+const testOverlapped = async (t, fdNumber) => {
+	const {stdout} = await execa('noop.js', ['foobar'], getStdio(fdNumber, ['overlapped', 'pipe']));
 	t.is(stdout, 'foobar');
 };
 

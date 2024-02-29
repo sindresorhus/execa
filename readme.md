@@ -356,8 +356,8 @@ Multiple child processes can be piped to the same process. Conversely, the same 
 
 This is usually the preferred method to pipe processes.
 
-#### pipe`command`
-#### pipe(options)`command`
+#### pipe\`command\`
+#### pipe(options)\`command\`
 
 `command`: `string`\
 `options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\

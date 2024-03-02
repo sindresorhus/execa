@@ -361,8 +361,11 @@ $.verbose = true;
 
 ```js
 // Execa
-const $$ = $({verbose: true});
-await $$`echo example`;
+import {$ as $_} from 'execa';
+
+const $ = $_({verbose: true});
+
+await $`echo example`;
 ```
 
 Or:
@@ -549,7 +552,7 @@ const {
 // }
 ```
 
-### Shared options
+### Global/shared options
 
 ```sh
 # Bash
@@ -569,10 +572,13 @@ await $`echo three`.timeout(timeout);
 
 ```js
 // Execa
-const $$ = $({timeout: 5000});
-await $$`echo one`;
-await $$`echo two`;
-await $$`echo three`;
+import {$ as $_} from 'execa';
+
+const $ = $_({timeout: 5000});
+
+await $`echo one`;
+await $`echo two`;
+await $`echo three`;
 ```
 
 ### Background processes

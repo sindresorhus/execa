@@ -133,6 +133,40 @@ test('execa()\'s second argument must be an array', testInvalidArgs, execa);
 test('execaSync()\'s second argument must be an array', testInvalidArgs, execaSync);
 test('execaNode()\'s second argument must be an array', testInvalidArgs, execaNode);
 
+const testInvalidArgsItems = async (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('echo', [{}]);
+	}, {message: 'Second argument must be an array of strings: [object Object]'});
+};
+
+test('execa()\'s second argument must not be objects', testInvalidArgsItems, execa);
+test('execaSync()\'s second argument must not be objects', testInvalidArgsItems, execaSync);
+test('execaNode()\'s second argument must not be objects', testInvalidArgsItems, execaNode);
+
+const testNullByteArg = async (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('echo', ['a\0b']);
+	}, {message: /null bytes/});
+};
+
+test('execa()\'s second argument must not include \\0', testNullByteArg, execa);
+test('execaSync()\'s second argument must not include \\0', testNullByteArg, execaSync);
+test('execaNode()\'s second argument must not include \\0', testNullByteArg, execaNode);
+
+const testSerializeArg = async (t, arg) => {
+	const {stdout} = await execa('noop.js', [arg]);
+	t.is(stdout, String(arg));
+};
+
+test('execa()\'s arguments can be numbers', testSerializeArg, 1);
+test('execa()\'s arguments can be booleans', testSerializeArg, true);
+test('execa()\'s arguments can be NaN', testSerializeArg, Number.NaN);
+test('execa()\'s arguments can be Infinity', testSerializeArg, Number.POSITIVE_INFINITY);
+test('execa()\'s arguments can be null', testSerializeArg, null);
+test('execa()\'s arguments can be undefined', testSerializeArg, undefined);
+test('execa()\'s arguments can be bigints', testSerializeArg, 1n);
+test('execa()\'s arguments can be symbols', testSerializeArg, Symbol('test'));
+
 const testInvalidOptions = async (t, execaMethod) => {
 	t.throws(() => {
 		execaMethod('echo', [], new Map());

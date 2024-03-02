@@ -1,10 +1,13 @@
+import {platform} from 'node:process';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-const normalizeTimestamp = output => output.replaceAll(/\d/g, '0');
+const isWindows = platform === 'win32';
+
+const normalizeTimestamp = stderr => stderr.replaceAll(/^\[\d{2}:\d{2}:\d{2}.\d{3}]/gm, testTimestamp);
 const testTimestamp = '[00:00:00.000]';
 
 test('Prints command when "verbose" is true', async t => {
@@ -21,13 +24,14 @@ test('Prints command with NODE_DEBUG=execa', async t => {
 
 test('Escape verbose command', async t => {
 	const {stderr} = await execa('nested.js', [JSON.stringify({verbose: true, stdio: 'inherit'}), 'noop.js', 'one two', '"'], {all: true});
-	t.true(stderr.endsWith('"one two" "\\""'));
+	t.true(stderr.endsWith(isWindows ? '"one two" """"' : '\'one two\' \'"\''));
 });
 
 test('Verbose option works with inherit', async t => {
 	const {all} = await execa('verbose-script.js', {all: true, env: {NODE_DEBUG: 'execa'}});
-	t.is(normalizeTimestamp(all), `${testTimestamp} node -e "console.error(\\"one\\")"
-one
-${testTimestamp} node -e "console.error(\\"two\\")"
-two`);
+	const quote = isWindows ? '"' : '\'';
+	t.is(normalizeTimestamp(all), `${testTimestamp} node -e ${quote}console.error(1)${quote}
+1
+${testTimestamp} node -e ${quote}console.error(2)${quote}
+2`);
 });

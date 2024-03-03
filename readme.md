@@ -215,22 +215,26 @@ try {
 	console.log(error);
 	/*
 	{
-		message: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
+		message: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
 		errno: -2,
 		code: 'ENOENT',
 		syscall: 'spawn unknown',
 		path: 'unknown',
 		spawnargs: ['command'],
+		shortMessage: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
 		originalMessage: 'spawn unknown ENOENT',
-		shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
 		command: 'unknown command',
 		escapedCommand: 'unknown command',
-		stdout: '',
-		stderr: '',
+		cwd: '/path/to/cwd',
+		durationMs: 28.217566,
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
-		isTerminated: false
+		isTerminated: false,
+		stdout: '',
+		stderr: '',
+		stdio: [undefined, '', ''],
+		pipedFrom: []
 	}
 	*/
 }
@@ -452,6 +456,12 @@ Since the escaping is fairly basic, this should not be executed directly as a pr
 Type: `string`
 
 The [current directory](#cwd-1) in which the command was run.
+
+#### durationMs
+
+Type: `number`
+
+Duration of the child process, in milliseconds.
 
 #### stdout
 

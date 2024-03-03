@@ -255,6 +255,7 @@ try {
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
+	expectType<number>(unicornsResult.durationMs);
 	expectType<ExecaReturnValue[]>(unicornsResult.pipedFrom);
 
 	expectType<undefined>(unicornsResult.stdio[0]);
@@ -567,6 +568,7 @@ try {
 	expectType<string | undefined>(execaError.signal);
 	expectType<string | undefined>(execaError.signalDescription);
 	expectType<string>(execaError.cwd);
+	expectType<number>(execaError.durationMs);
 	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
 	expectType<ExecaReturnValue[]>(execaError.pipedFrom);
@@ -715,6 +717,7 @@ try {
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
+	expectType<number>(unicornsResult.durationMs);
 	expectType<[]>(unicornsResult.pipedFrom);
 
 	expectType<undefined>(unicornsResult.stdio[0]);
@@ -785,6 +788,7 @@ try {
 	expectType<string | undefined>(execaError.signal);
 	expectType<string | undefined>(execaError.signalDescription);
 	expectType<string>(execaError.cwd);
+	expectType<number>(execaError.durationMs);
 	expectType<string>(execaError.shortMessage);
 	expectType<string | undefined>(execaError.originalMessage);
 	expectType<[]>(execaError.pipedFrom);

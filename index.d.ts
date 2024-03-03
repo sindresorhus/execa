@@ -733,6 +733,11 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	cwd: string;
 
 	/**
+	Duration of the child process, in milliseconds.
+	*/
+	durationMs: number;
+
+	/**
 	Whether the process was canceled using the `cancelSignal` option.
 	*/
 	isCanceled: boolean;
@@ -998,23 +1003,26 @@ try {
 	console.log(error);
 	/*
 	{
-		message: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
+		message: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
 		errno: -2,
 		code: 'ENOENT',
 		syscall: 'spawn unknown',
 		path: 'unknown',
 		spawnargs: ['command'],
+		shortMessage: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
 		originalMessage: 'spawn unknown ENOENT',
-		shortMessage: 'Command failed with ENOENT: unknown command spawn unknown ENOENT',
 		command: 'unknown command',
 		escapedCommand: 'unknown command',
-		stdout: '',
-		stderr: '',
+		cwd: '/path/to/cwd',
+		durationMs: 28.217566,
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
-		cwd: '/path/to/cwd'
+		stdout: '',
+		stderr: '',
+		stdio: [undefined, '', ''],
+		pipedFrom: []
 	}
 	\*\/
 }
@@ -1072,23 +1080,23 @@ try {
 	console.log(error);
 	/*
 	{
-		message: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
+		message: 'Command failed with ENOENT: unknown command\nspawnSync unknown ENOENT',
 		errno: -2,
 		code: 'ENOENT',
 		syscall: 'spawnSync unknown',
 		path: 'unknown',
 		spawnargs: ['command'],
+		shortMessage: 'Command failed with ENOENT: unknown command\nspawnSync unknown ENOENT',
 		originalMessage: 'spawnSync unknown ENOENT',
-		shortMessage: 'Command failed with ENOENT: unknown command spawnSync unknown ENOENT',
 		command: 'unknown command',
 		escapedCommand: 'unknown command',
-		stdout: '',
-		stderr: '',
+		cwd: '/path/to/cwd',
 		failed: true,
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
-		cwd: '/path/to/cwd'
+		stdio: [],
+		pipedFrom: []
 	}
 	\*\/
 }

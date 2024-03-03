@@ -1442,6 +1442,8 @@ execa('unicorns', {windowsHide: false});
 execaSync('unicorns', {windowsHide: false});
 execa('unicorns', {verbose: false});
 execaSync('unicorns', {verbose: false});
+expectError(execa('unicorns', {verbose: 'other'}));
+expectError(execaSync('unicorns', {verbose: 'other'}));
 /* eslint-enable @typescript-eslint/no-floating-promises */
 expectType<boolean>(execa('unicorns').kill());
 execa('unicorns').kill('SIGKILL');

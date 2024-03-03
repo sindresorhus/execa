@@ -142,9 +142,9 @@ unicorns
 rainbows
 
 > NODE_DEBUG=execa node file.js
-[16:50:03.305] echo unicorns
+[19:49:00.360] $ echo unicorns
 unicorns
-[16:50:03.308] echo rainbows
+[19:49:00.383] $ echo rainbows
 rainbows
 ```
 

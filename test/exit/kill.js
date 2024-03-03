@@ -46,7 +46,7 @@ const testInvalidForceKill = async (t, forceKillAfterDelay) => {
 test('`forceKillAfterDelay` should not be NaN', testInvalidForceKill, Number.NaN);
 test('`forceKillAfterDelay` should not be negative', testInvalidForceKill, -1);
 
-// `SIGTERM` cannot be caught on Windows, and it always aborts the process (like `SIGKILL` on Unix).
+// `SIGTERM` cannot be caught on Windows, and it always aborts the subprocess (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests must be different on Windows.
 if (isWindows) {
 	test('Can call `.kill()` with `forceKillAfterDelay` on Windows', async t => {
@@ -215,14 +215,14 @@ test('.kill(signal, error) uses signal', async t => {
 	t.is(error.signal, 'SIGINT');
 });
 
-test('.kill(error) is a noop if process already exited', async t => {
+test('.kill(error) is a noop if subprocess already exited', async t => {
 	const subprocess = execa('empty.js');
 	await subprocess;
 	t.false(isRunning(subprocess.pid));
 	t.false(subprocess.kill(new Error('test')));
 });
 
-test('.kill(error) terminates but does not change the error if the process already errored but did not exit yet', async t => {
+test('.kill(error) terminates but does not change the error if the subprocess already errored but did not exit yet', async t => {
 	const subprocess = execa('forever.js');
 	const error = new Error('first');
 	subprocess.stdout.destroy(error);
@@ -253,7 +253,7 @@ test('.kill(error) does not emit the "error" event', async t => {
 	t.is(await Promise.race([t.throwsAsync(subprocess), once(subprocess, 'error')]), error);
 });
 
-test('child process errors are handled before spawn', async t => {
+test('subprocess errors are handled before spawn', async t => {
 	const subprocess = execa('forever.js');
 	const error = new Error('test');
 	subprocess.emit('error', error);
@@ -265,7 +265,7 @@ test('child process errors are handled before spawn', async t => {
 	t.false(thrownError.isTerminated);
 });
 
-test('child process errors are handled after spawn', async t => {
+test('subprocess errors are handled after spawn', async t => {
 	const subprocess = execa('forever.js');
 	await once(subprocess, 'spawn');
 	const error = new Error('test');
@@ -278,7 +278,7 @@ test('child process errors are handled after spawn', async t => {
 	t.true(thrownError.isTerminated);
 });
 
-test('child process double errors are handled after spawn', async t => {
+test('subprocess double errors are handled after spawn', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
 	await once(subprocess, 'spawn');
@@ -293,7 +293,7 @@ test('child process double errors are handled after spawn', async t => {
 	t.true(thrownError.isTerminated);
 });
 
-test('child process errors use killSignal', async t => {
+test('subprocess errors use killSignal', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
 	await once(subprocess, 'spawn');
 	const error = new Error('test');

@@ -46,14 +46,14 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - [Scripts interface](#scripts-interface), like `zx`.
 - Improved [Windows support](https://github.com/IndigoUnited/node-cross-spawn#why), including [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries.
 - Executes [locally installed binaries](#preferlocal) without `npx`.
-- [Cleans up](#cleanup) child processes when the parent process ends.
+- [Cleans up](#cleanup) subprocesses when the current process ends.
 - Redirect [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1) from/to files, streams, iterables, strings, `Uint8Array` or [objects](docs/transform.md#object-mode).
 - [Transform](docs/transform.md) `stdin`/`stdout`/`stderr` with simple functions.
-- Iterate over [each text line](docs/transform.md#binary-data) output by the process.
-- [Fail-safe process termination](#forcekillafterdelay).
+- Iterate over [each text line](docs/transform.md#binary-data) output by the subprocess.
+- [Fail-safe subprocess termination](#forcekillafterdelay).
 - Get [interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
-- Convenience methods to pipe processes' [input](#input) and [output](#redirect-output-to-a-file).
+- Convenience methods to pipe subprocesses' [input](#input) and [output](#redirect-output-to-a-file).
 - Can specify file and arguments [as a single string](#execacommandcommand-options) without a shell.
 - [Verbose mode](#verbose-mode) for debugging.
 - More descriptive errors.
@@ -178,7 +178,7 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
-#### Save and pipe output from a child process
+#### Save and pipe output from a subprocess
 
 ```js
 import {execa} from 'execa';
@@ -189,7 +189,7 @@ console.log(stdout);
 // Also returns 'unicorns'
 ```
 
-#### Pipe multiple processes
+#### Pipe multiple subprocesses
 
 ```js
 import {execa} from 'execa';
@@ -249,7 +249,7 @@ try {
 `file`: `string | URL`\
 `arguments`: `string[]`\
 `options`: [`Options`](#options-1)\
-_Returns_: [`ChildProcess`](#childprocess)
+_Returns_: [`Subprocess`](#subprocess)
 
 Executes a command using `file ...arguments`.
 
@@ -262,7 +262,7 @@ This is the preferred method when executing single commands.
 
 `command`: `string`\
 `options`: [`Options`](#options-1)\
-_Returns_: [`ChildProcess`](#childprocess)
+_Returns_: [`Subprocess`](#subprocess)
 
 Executes a command. The `command` string includes both the `file` and its `arguments`.
 
@@ -270,7 +270,7 @@ Arguments are [automatically escaped](#shell-syntax). They can contain any chara
 
 This is the preferred method when executing multiple commands in a script file.
 
-The `command` string can inject any `${value}` with the following types: string, number, [`childProcess`](#childprocess) or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${childProcess}`, the process's `stdout` is used.
+The `command` string can inject any `${value}` with the following types: string, number, [`subprocess`](#subprocess) or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${subprocess}`, the subprocess's `stdout` is used.
 
 The `command` string can use [multiple lines and indentation](docs/scripts.md#multiline-commands).
 
@@ -291,7 +291,7 @@ This can be used to either:
 
 `command`: `string`\
 `options`: [`Options`](#options-1)\
-_Returns_: [`ChildProcess`](#childprocess)
+_Returns_: [`Subprocess`](#subprocess)
 
 Executes a command. The `command` string includes both the `file` and its `arguments`.
 
@@ -304,7 +304,7 @@ This is the preferred method when executing a user-supplied `command` string, su
 `file`: `string | URL`\
 `arguments`: `string[]`\
 `options`: [`Options`](#options-1)\
-_Returns_: [`ChildProcess`](#childprocess)
+_Returns_: [`Subprocess`](#subprocess)
 
 Same as [`execa()`](#execacommandcommand-options) but using the [`node`](#node) option.
 
@@ -323,16 +323,16 @@ Same as [`execa()`](#execacommandcommand-options), [`execaCommand()`](#execacomm
 
 Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal), [`lines`](#lines) and [`verbose: 'full'`](#verbose). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable, a [transform](docs/transform.md) or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
-Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a [`subprocessResult`](#subprocessResult). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 ### Shell syntax
 
 For all the [methods above](#methods), no shell interpreter (Bash, cmd.exe, etc.) is used unless the [`shell` option](#shell) is set. This means shell-specific characters and expressions (`$variable`, `&&`, `||`, `;`, `|`, etc.) have no special meaning and do not need to be escaped.
 
-### childProcess
+### subprocess
 
 The return value of all [asynchronous methods](#methods) is both:
-- a `Promise` resolving or rejecting with a [`childProcessResult`](#childProcessResult).
+- a `Promise` resolving or rejecting with a [`subprocessResult`](#subprocessResult).
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following additional methods and properties.
 
 #### all
@@ -350,38 +350,38 @@ This is `undefined` if either:
 `file`: `string | URL`\
 `arguments`: `string[]`\
 `options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
-_Returns_: [`Promise<ChildProcessResult>`](#childprocessresult)
+_Returns_: [`Promise<SubprocessResult>`](#subprocessresult)
 
-[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' [result](#childprocessresult). If either process is rejected, this is rejected with that process' [error](#childprocessresult) instead.
+[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the subprocess' `stdout` to a second Execa subprocess' `stdin`. This resolves with that second subprocess' [result](#subprocessresult). If either subprocess is rejected, this is rejected with that subprocess' [error](#subprocessresult) instead.
 
 This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile-arguments-options) except both [regular options](#options-1) and [pipe-specific options](#pipeoptions) can be specified.
 
-This can be called multiple times to chain a series of processes.
+This can be called multiple times to chain a series of subprocesses.
 
-Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
+Multiple subprocesses can be piped to the same subprocess. Conversely, the same subprocess can be piped to multiple other subprocesses.
 
-This is usually the preferred method to pipe processes.
+This is usually the preferred method to pipe subprocesses.
 
 #### pipe\`command\`
 #### pipe(options)\`command\`
 
 `command`: `string`\
 `options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
-_Returns_: [`Promise<ChildProcessResult>`](#childprocessresult)
+_Returns_: [`Promise<SubprocessResult>`](#subprocessresult)
 
 Like [`.pipe(file, arguments?, options?)`](#pipefile-arguments-options) but using a [`command` template string](docs/scripts.md#piping-stdout-to-another-command) instead. This follows the same syntax as [`$`](#command).
 
-This is the preferred method to pipe processes when using [`$`](#command).
+This is the preferred method to pipe subprocesses when using [`$`](#command).
 
-#### pipe(secondChildProcess, pipeOptions?)
+#### pipe(secondSubprocess, pipeOptions?)
 
-`secondChildProcess`: [`execa()` return value](#childprocess)\
+`secondSubprocess`: [`execa()` return value](#subprocess)\
 `pipeOptions`: [`PipeOptions`](#pipeoptions)\
-_Returns_: [`Promise<ChildProcessResult>`](#childprocessresult)
+_Returns_: [`Promise<SubprocessResult>`](#subprocessresult)
 
-Like [`.pipe(file, arguments?, options?)`](#pipefile-arguments-options) but using the [return value](#childprocess) of another `execa()` call instead.
+Like [`.pipe(file, arguments?, options?)`](#pipefile-arguments-options) but using the [return value](#subprocess) of another `execa()` call instead.
 
-This is the most advanced method to pipe processes. It is useful in specific cases, such as piping multiple child processes to the same process.
+This is the most advanced method to pipe subprocesses. It is useful in specific cases, such as piping multiple subprocesses to the same subprocess.
 
 ##### pipeOptions
 
@@ -400,7 +400,7 @@ Which stream to pipe. A file descriptor number can also be passed.
 
 Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
-Unpipe the child process when the signal aborts.
+Unpipe the subprocess when the signal aborts.
 
 The [`.pipe()`](#pipefile-arguments-options) method will be rejected with a cancellation error.
 
@@ -411,26 +411,26 @@ The [`.pipe()`](#pipefile-arguments-options) method will be rejected with a canc
 `error`: `Error`\
 _Returns_: `boolean`
 
-Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the child process. The default signal is the [`killSignal`](#killsignal) option. `killSignal` defaults to `SIGTERM`, which [terminates](#isterminated) the child process.
+Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the subprocess. The default signal is the [`killSignal`](#killsignal) option. `killSignal` defaults to `SIGTERM`, which [terminates](#isterminated) the subprocess.
 
-This returns `false` when the signal could not be sent, for example when the child process has already exited.
+This returns `false` when the signal could not be sent, for example when the subprocess has already exited.
 
-When an error is passed as argument, its message and stack trace are kept in the [child process' error](#childprocessresult). The child process is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
+When an error is passed as argument, its message and stack trace are kept in the [subprocess' error](#subprocessresult). The subprocess is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
 
 [More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 
-### childProcessResult
+### SubprocessResult
 
 Type: `object`
 
-Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
+Result of a subprocess execution. On success this is a plain object. On failure this is also an `Error` instance.
 
-The child process [fails](#failed) when:
+The subprocess [fails](#failed) when:
 - its [exit code](#exitcode) is not `0`
 - it was [terminated](#isterminated) with a [signal](#signal)
 - [timing out](#timedout)
 - [being canceled](#iscanceled)
-- there's not enough memory or there are already too many child processes
+- there's not enough memory or there are already too many subprocesses
 
 #### command
 
@@ -438,7 +438,7 @@ Type: `string`
 
 The file and arguments that were run, for logging purposes.
 
-This is not escaped and should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
+This is not escaped and should not be executed directly as a subprocess, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
 
 #### escapedCommand
 
@@ -449,7 +449,7 @@ Same as [`command`](#command-1) but escaped.
 Unlike `command`, control characters are escaped, which makes it safe to print in a terminal.
 
 This can also be copied and pasted into a shell, for debugging purposes.
-Since the escaping is fairly basic, this should not be executed directly as a process, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
+Since the escaping is fairly basic, this should not be executed directly as a subprocess, including using [`execa()`](#execafile-arguments-options) or [`execaCommand()`](#execacommandcommand-options).
 
 #### cwd
 
@@ -461,13 +461,13 @@ The [current directory](#cwd-1) in which the command was run.
 
 Type: `number`
 
-Duration of the child process, in milliseconds.
+Duration of the subprocess, in milliseconds.
 
 #### stdout
 
 Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
-The output of the process on `stdout`.
+The output of the subprocess on `stdout`.
 
 This is `undefined` if the [`stdout`](#stdout-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true`, or if the `stdout` option is a [transform in object mode](docs/transform.md#object-mode).
 
@@ -475,7 +475,7 @@ This is `undefined` if the [`stdout`](#stdout-1) option is set to only [`'inheri
 
 Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
-The output of the process on `stderr`.
+The output of the subprocess on `stderr`.
 
 This is `undefined` if the [`stderr`](#stderr-1) option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the [`lines` option](#lines) is `true`, or if the `stderr` option is a [transform in object mode](docs/transform.md#object-mode).
 
@@ -483,7 +483,7 @@ This is `undefined` if the [`stderr`](#stderr-1) option is set to only [`'inheri
 
 Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
-The output of the process with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
+The output of the subprocess with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
 
 This is `undefined` if either:
 - the [`all` option](#all-2) is `false` (the default value)
@@ -495,7 +495,7 @@ This is an array if the [`lines` option](#lines) is `true`, or if either the `st
 
 Type: `Array<string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined>`
 
-The output of the process on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [other file descriptors](#stdio-1).
+The output of the subprocess on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [other file descriptors](#stdio-1).
 
 Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a [transform in object mode](docs/transform.md#object-mode).
 
@@ -503,47 +503,47 @@ Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set
 
 Type: `string`
 
-Error message when the child process failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the child process errored.
+Error message when the subprocess failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the subprocess errored.
 
-The child process [`stderr`](#stderr), [`stdout`](#stdout) and other [file descriptors' output](#stdio) are appended to the end, separated with newlines and not interleaved.
+The subprocess [`stderr`](#stderr), [`stdout`](#stdout) and other [file descriptors' output](#stdio) are appended to the end, separated with newlines and not interleaved.
 
 #### shortMessage
 
 Type: `string`
 
-This is the same as the [`message` property](#message) except it does not include the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio).
+This is the same as the [`message` property](#message) except it does not include the subprocess [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio).
 
 #### originalMessage
 
 Type: `string | undefined`
 
-Original error message. This is the same as the `message` property excluding the child process [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio) and some additional information added by Execa.
+Original error message. This is the same as the `message` property excluding the subprocess [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio) and some additional information added by Execa.
 
-This is `undefined` unless the child process exited due to an `error` event or a timeout.
+This is `undefined` unless the subprocess exited due to an `error` event or a timeout.
 
 #### failed
 
 Type: `boolean`
 
-Whether the process failed to run.
+Whether the subprocess failed to run.
 
 #### timedOut
 
 Type: `boolean`
 
-Whether the process timed out.
+Whether the subprocess timed out.
 
 #### isCanceled
 
 Type: `boolean`
 
-Whether the process was canceled using the [`cancelSignal`](#cancelsignal) option.
+Whether the subprocess was canceled using the [`cancelSignal`](#cancelsignal) option.
 
 #### isTerminated
 
 Type: `boolean`
 
-Whether the process was terminated by a signal (like `SIGTERM`) sent by either:
+Whether the subprocess was terminated by a signal (like `SIGTERM`) sent by either:
 - The current process.
 - Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
@@ -551,33 +551,33 @@ Whether the process was terminated by a signal (like `SIGTERM`) sent by either:
 
 Type: `number | undefined`
 
-The numeric exit code of the process that was run.
+The numeric exit code of the subprocess that was run.
 
-This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal).
+This is `undefined` when the subprocess could not be spawned or was terminated by a [signal](#signal).
 
 #### signal
 
 Type: `string | undefined`
 
-The name of the signal (like `SIGTERM`) that terminated the process, sent by either:
+The name of the signal (like `SIGTERM`) that terminated the subprocess, sent by either:
 - The current process.
 - Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
-If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
+If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`.
 
 #### signalDescription
 
 Type: `string | undefined`
 
-A human-friendly description of the signal that was used to terminate the process. For example, `Floating point arithmetic error`.
+A human-friendly description of the signal that was used to terminate the subprocess. For example, `Floating point arithmetic error`.
 
-If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
+If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 
 #### pipedFrom
 
-Type: [`ChildProcessResult[]`](#childprocessresult)
+Type: [`SubprocessResult[]`](#subprocessresult)
 
-Results of the other processes that were [piped](#pipe-multiple-processes) into this child process. This is useful to inspect a series of child processes piped with each other.
+Results of the other subprocesses that were [piped](#pipe-multiple-subprocesses) into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
 
 This array is initially empty and is populated each time the [`.pipe()`](#pipefile-arguments-options) method resolves.
 
@@ -611,7 +611,7 @@ We recommend against using this option since it is:
 Type: `string | URL`\
 Default: `process.cwd()`
 
-Current working directory of the child process.
+Current working directory of the subprocess.
 
 This is also used to resolve the [`nodePath`](#nodepath) option when it is a relative path.
 
@@ -622,14 +622,14 @@ Default: `process.env`
 
 Environment key-value pairs.
 
-Unless the [`extendEnv` option](#extendenv) is `false`, the child process also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+Unless the [`extendEnv` option](#extendenv) is `false`, the subprocess also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 
 #### extendEnv
 
 Type: `boolean`\
 Default: `true`
 
-If `true`, the child process uses both the [`env` option](#env) and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+If `true`, the subprocess uses both the [`env` option](#env) and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 If `false`, only the `env` option is used, not `process.env`.
 
 #### preferLocal
@@ -683,7 +683,7 @@ If `verbose` is `'short'` or `'full'`, [prints each command](#verbose-mode) on `
 
 If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
 - the [`stdout`](#stdout-1)/[`stderr`](#stderr-1) option is `ignore` or `inherit`.
-- the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), [a file](#stdout-1), a file descriptor, or [another child process](#pipefile-arguments-options).
+- the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), [a file](#stdout-1), a file descriptor, or [another subprocess](#pipefile-arguments-options).
 - the [`encoding`](#encoding) option is set.
 
 This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
@@ -693,17 +693,17 @@ This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment v
 Type: `boolean`\
 Default: `true`
 
-Whether to return the child process' output using the [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) properties.
+Whether to return the subprocess' output using the [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) properties.
 
 On failure, the [`error.stdout`](#stdout), [`error.stderr`](#stderr), [`error.all`](#all-1) and [`error.stdio`](#stdio) properties are used instead.
 
-When `buffer` is `false`, the output can still be read using the [`childProcess.stdout`](#stdout-1), [`childProcess.stderr`](#stderr-1), [`childProcess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) and [`childProcess.all`](#all) streams. If the output is read, this should be done right away to avoid missing any data.
+When `buffer` is `false`, the output can still be read using the [`subprocess.stdout`](#stdout-1), [`subprocess.stderr`](#stderr-1), [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) and [`subprocess.all`](#all) streams. If the output is read, this should be done right away to avoid missing any data.
 
 #### input
 
 Type: `string | Uint8Array | stream.Readable`
 
-Write some input to the child process' `stdin`.
+Write some input to the subprocess' `stdin`.
 
 See also the [`inputFile`](#inputfile) and [`stdin`](#stdin) options.
 
@@ -711,7 +711,7 @@ See also the [`inputFile`](#inputfile) and [`stdin`](#stdin) options.
 
 Type: `string | URL`
 
-Use a file as input to the child process' `stdin`.
+Use a file as input to the subprocess' `stdin`.
 
 See also the [`input`](#input) and [`stdin`](#stdin) options.
 
@@ -720,8 +720,8 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 Type: `string | number | stream.Readable | ReadableStream | URL | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string> | AsyncIterable<Uint8Array> | AsyncIterable<unknown> | GeneratorFunction<string> | GeneratorFunction<Uint8Array> | GeneratorFunction<unknown>| AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)\
 Default: `inherit` with [`$`](#command), `pipe` otherwise
 
-[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
-- `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard input. This can be:
+- `'pipe'`: Sets [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stdin`.
 - `'inherit'`: Re-use the current process' `stdin`.
@@ -742,8 +742,8 @@ This can also be a generator function to transform the input. [Learn more.](docs
 Type: `string | number | stream.Writable | WritableStream | URL | GeneratorFunction<string> | GeneratorFunction<Uint8Array> | GeneratorFunction<unknown>| AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)\
 Default: `pipe`
 
-[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
-- `'pipe'`: Sets [`childProcessResult.stdout`](#stdout) (as a string or `Uint8Array`) and [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard output. This can be:
+- `'pipe'`: Sets [`subprocessResult.stdout`](#stdout) (as a string or `Uint8Array`) and [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stdout`.
 - `'inherit'`: Re-use the current process' `stdout`.
@@ -762,8 +762,8 @@ This can also be a generator function to transform the output. [Learn more.](doc
 Type: `string | number | stream.Writable | WritableStream | URL | GeneratorFunction<string> | GeneratorFunction<Uint8Array> | GeneratorFunction<unknown>| AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)\
 Default: `pipe`
 
-[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
-- `'pipe'`: Sets [`childProcessResult.stderr`](#stderr) (as a string or `Uint8Array`) and [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
+[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard error. This can be:
+- `'pipe'`: Sets [`subprocessResult.stderr`](#stderr) (as a string or `Uint8Array`) and [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
 - `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 - `'ignore'`: Do not use `stderr`.
 - `'inherit'`: Re-use the current process' `stderr`.
@@ -793,7 +793,7 @@ The array can have more than 3 items, to create additional file descriptors beyo
 Type: `boolean`\
 Default: `false`
 
-Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the process with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
+Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). The property contains the output of the subprocess with `stdout` and `stderr` [interleaved](#ensuring-all-output-is-interleaved).
 
 #### lines
 
@@ -802,7 +802,7 @@ Default: `false`
 
 Split `stdout` and `stderr` into lines.
 - [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) are arrays of lines.
-- [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`childProcess.all`](#all) and [`childProcess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) iterate over lines instead of arbitrary chunks.
+- [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all) and [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) iterate over lines instead of arbitrary chunks.
 - Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
 
 #### encoding
@@ -831,14 +831,14 @@ Largest amount of data in bytes allowed on [`stdout`](#stdout), [`stderr`](#stde
 Type: `boolean`\
 Default: `true` if the [`node`](#node) option is enabled, `false` otherwise
 
-Enables exchanging messages with the child process using [`childProcess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`childProcess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
+Enables exchanging messages with the subprocess using [`subprocess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`subprocess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
 
 #### serialization
 
 Type: `string`\
 Default: `'json'`
 
-Specify the kind of serialization used for sending messages between processes when using the [`ipc`](#ipc) option:
+Specify the kind of serialization used for sending messages between subprocesses when using the [`ipc`](#ipc) option:
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 
@@ -849,29 +849,29 @@ Specify the kind of serialization used for sending messages between processes wh
 Type: `boolean`\
 Default: `false`
 
-Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
+Prepare subprocess to run independently of the current process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
 #### cleanup
 
 Type: `boolean`\
 Default: `true`
 
-Kill the spawned process when the parent process exits unless either:
-	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+Kill the subprocess when the current process exits unless either:
+	- the subprocess is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+	- the current process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
 
 #### timeout
 
 Type: `number`\
 Default: `0`
 
-If `timeout` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
+If `timeout` is greater than `0`, the subprocess will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
 #### cancelSignal
 
 Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
-You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
 When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `true`.
 
@@ -880,27 +880,27 @@ When `AbortController.abort()` is called, [`.isCanceled`](#iscanceled) becomes `
 Type: `number | false`\
 Default: `5000`
 
-If the child process is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
 
 The grace period is 5 seconds by default. This feature can be disabled with `false`.
 
-This works when the child process is terminated by either:
+This works when the subprocess is terminated by either:
 - the [`cancelSignal`](#cancelsignal), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
 - calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
-This does not work when the child process is terminated by either:
+This does not work when the subprocess is terminated by either:
 - calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with an argument
 - calling [`process.kill(subprocess.pid)`](https://nodejs.org/api/process.html#processkillpid-signal)
 - sending a termination signal from another process
 
-Also, this does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events): `SIGKILL` and `SIGTERM` both terminate the process immediately. Other packages (such as [`taskkill`](https://github.com/sindresorhus/taskkill)) can be used to achieve fail-safe termination on Windows.
+Also, this does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events): `SIGKILL` and `SIGTERM` both terminate the subprocess immediately. Other packages (such as [`taskkill`](https://github.com/sindresorhus/taskkill)) can be used to achieve fail-safe termination on Windows.
 
 #### killSignal
 
 Type: `string | number`\
 Default: `SIGTERM`
 
-Signal used to terminate the child process when:
+Signal used to terminate the subprocess when:
 - using the [`cancelSignal`](#cancelsignal), [`timeout`](#timeout), [`maxBuffer`](#maxbuffer) or [`cleanup`](#cleanup) option
 - calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
@@ -910,19 +910,19 @@ This can be either a name (like `"SIGTERM"`) or a number (like `9`).
 
 Type: `string`
 
-Explicitly set the value of `argv[0]` sent to the child process. This will be set to `file` if not specified.
+Explicitly set the value of `argv[0]` sent to the subprocess. This will be set to `file` if not specified.
 
 #### uid
 
 Type: `number`
 
-Sets the user identity of the process.
+Sets the user identity of the subprocess.
 
 #### gid
 
 Type: `number`
 
-Sets the group identity of the process.
+Sets the group identity of the subprocess.
 
 #### windowsVerbatimArguments
 
@@ -950,7 +950,7 @@ const {stdout} = await execa('npm', ['install'], {stdout: ['inherit', './output.
 console.log(stdout);
 ```
 
-When combining `inherit` with other values, please note that the child process will not be an interactive TTY, even if the parent process is one.
+When combining `inherit` with other values, please note that the subprocess will not be an interactive TTY, even if the current process is one.
 
 ### Redirect a Node.js stream from/to stdin/stdout/stderr
 
@@ -984,7 +984,7 @@ const run = async () => {
 console.log(await pRetry(run, {retries: 5}));
 ```
 
-### Cancelling a spawned process
+### Cancelling a subprocess
 
 ```js
 import {execa} from 'execa';
@@ -1019,7 +1019,7 @@ await execa(binPath);
 
 The `all` [stream](#all) and [string/`Uint8Array`](#all-1) properties are guaranteed to interleave [`stdout`](#stdout) and [`stderr`](#stderr).
 
-However, for performance reasons, the child process might buffer and merge multiple simultaneous writes to `stdout` or `stderr`. This prevents proper interleaving.
+However, for performance reasons, the subprocess might buffer and merge multiple simultaneous writes to `stdout` or `stderr`. This prevents proper interleaving.
 
 For example, this prints `1 3 2` instead of `1 2 3` because both `console.log()` are merged into a single write.
 

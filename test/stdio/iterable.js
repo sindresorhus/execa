@@ -108,10 +108,10 @@ test('stderr option cannot be an iterable - sync', testNoIterableOutput, stringG
 
 test('stdin option can be an infinite iterable', async t => {
 	const iterable = infiniteGenerator();
-	const childProcess = execa('stdin.js', getStdio(0, iterable));
-	await once(childProcess.stdout, 'data');
-	childProcess.kill();
-	const {stdout} = await t.throwsAsync(childProcess);
+	const subprocess = execa('stdin.js', getStdio(0, iterable));
+	await once(subprocess.stdout, 'data');
+	subprocess.kill();
+	const {stdout} = await t.throwsAsync(subprocess);
 	t.true(stdout.startsWith('foo'));
 	t.deepEqual(await iterable.next(), {value: undefined, done: true});
 });
@@ -124,7 +124,7 @@ const testMultipleIterable = async (t, fdNumber) => {
 test('stdin option can be multiple iterables', testMultipleIterable, 0);
 test('stdio[*] option can be multiple iterables', testMultipleIterable, 3);
 
-test('stdin option iterable is canceled on process error', async t => {
+test('stdin option iterable is canceled on subprocess error', async t => {
 	const iterable = infiniteGenerator();
 	await t.throwsAsync(execa('stdin.js', {stdin: iterable, timeout: 1}), {message: /timed out/});
 	// eslint-disable-next-line no-unused-vars, no-empty

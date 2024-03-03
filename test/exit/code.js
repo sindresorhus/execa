@@ -74,7 +74,7 @@ test('result.signal is undefined for successful execution', async t => {
 	t.is(signal, undefined);
 });
 
-test('result.signal is undefined if process failed, but was not killed', async t => {
+test('result.signal is undefined if subprocess failed, but was not killed', async t => {
 	const {signal} = await t.throwsAsync(execa('fail.js'));
 	t.is(signal, undefined);
 });

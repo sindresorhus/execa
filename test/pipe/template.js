@@ -7,17 +7,17 @@ import {foobarString} from '../helpers/input.js';
 
 setFixtureDir();
 
-test('$.pipe(childProcess)', async t => {
+test('$.pipe(subprocess)', async t => {
 	const {stdout} = await $`noop.js ${foobarString}`.pipe($({stdin: 'pipe'})`stdin.js`);
 	t.is(stdout, foobarString);
 });
 
-test('execa.$.pipe(childProcess)', async t => {
+test('execa.$.pipe(subprocess)', async t => {
 	const {stdout} = await execa('noop.js', [foobarString]).pipe($({stdin: 'pipe'})`stdin.js`);
 	t.is(stdout, foobarString);
 });
 
-test('$.pipe.pipe(childProcess)', async t => {
+test('$.pipe.pipe(subprocess)', async t => {
 	const {stdout} = await $`noop.js ${foobarString}`
 		.pipe($({stdin: 'pipe'})`stdin.js`)
 		.pipe($({stdin: 'pipe'})`stdin.js`);
@@ -80,17 +80,17 @@ test('$.pipe.pipe("file", args, options)', async t => {
 	t.is(stdout, foobarString);
 });
 
-test('$.pipe(childProcess, pipeOptions)', async t => {
+test('$.pipe(subprocess, pipeOptions)', async t => {
 	const {stdout} = await $`noop-fd.js 2 ${foobarString}`.pipe($({stdin: 'pipe'})`stdin.js`, {from: 'stderr'});
 	t.is(stdout, foobarString);
 });
 
-test('execa.$.pipe(childProcess, pipeOptions)', async t => {
+test('execa.$.pipe(subprocess, pipeOptions)', async t => {
 	const {stdout} = await execa('noop-fd.js', ['2', foobarString]).pipe($({stdin: 'pipe'})`stdin.js`, {from: 'stderr'});
 	t.is(stdout, foobarString);
 });
 
-test('$.pipe.pipe(childProcess, pipeOptions)', async t => {
+test('$.pipe.pipe(subprocess, pipeOptions)', async t => {
 	const {stdout} = await $`noop-fd.js 2 ${foobarString}`
 		.pipe($({stdin: 'pipe'})`noop-stdin-fd.js 2`, {from: 'stderr'})
 		.pipe($({stdin: 'pipe'})`stdin.js`, {from: 'stderr'});
@@ -165,34 +165,34 @@ test('$.pipe.pipe("file", options)', async t => {
 	t.is(stdout, `${foobarString}\n`);
 });
 
-test('$.pipe(pipeAndProcessOptions)`command`', async t => {
+test('$.pipe(pipeAndSubprocessOptions)`command`', async t => {
 	const {stdout} = await $`noop-fd.js 2 ${foobarString}\n`.pipe({from: 'stderr', stripFinalNewline: false})`stdin.js`;
 	t.is(stdout, `${foobarString}\n`);
 });
 
-test('execa.$.pipe(pipeAndProcessOptions)`command`', async t => {
+test('execa.$.pipe(pipeAndSubprocessOptions)`command`', async t => {
 	const {stdout} = await execa('noop-fd.js', ['2', `${foobarString}\n`]).pipe({from: 'stderr', stripFinalNewline: false})`stdin.js`;
 	t.is(stdout, `${foobarString}\n`);
 });
 
-test('$.pipe.pipe(pipeAndProcessOptions)`command`', async t => {
+test('$.pipe.pipe(pipeAndSubprocessOptions)`command`', async t => {
 	const {stdout} = await $`noop-fd.js 2 ${foobarString}\n`
 		.pipe({from: 'stderr'})`noop-stdin-fd.js 2`
 		.pipe({from: 'stderr', stripFinalNewline: false})`stdin.js`;
 	t.is(stdout, `${foobarString}\n`);
 });
 
-test('$.pipe("file", pipeAndProcessOptions)', async t => {
+test('$.pipe("file", pipeAndSubprocessOptions)', async t => {
 	const {stdout} = await $`noop-fd.js 2 ${foobarString}\n`.pipe('stdin.js', {from: 'stderr', stripFinalNewline: false});
 	t.is(stdout, `${foobarString}\n`);
 });
 
-test('execa.$.pipe("file", pipeAndProcessOptions)', async t => {
+test('execa.$.pipe("file", pipeAndSubprocessOptions)', async t => {
 	const {stdout} = await execa('noop-fd.js', ['2', `${foobarString}\n`]).pipe('stdin.js', {from: 'stderr', stripFinalNewline: false});
 	t.is(stdout, `${foobarString}\n`);
 });
 
-test('$.pipe.pipe("file", pipeAndProcessOptions)', async t => {
+test('$.pipe.pipe("file", pipeAndSubprocessOptions)', async t => {
 	const {stdout} = await $`noop-fd.js 2 ${foobarString}\n`
 		.pipe({from: 'stderr'})`noop-stdin-fd.js 2`
 		.pipe('stdin.js', {from: 'stderr', stripFinalNewline: false});
@@ -226,21 +226,21 @@ test('execa.pipe("file") forces "stdin: "pipe"', async t => {
 	t.is(stdout, foobarString);
 });
 
-test('execa.pipe(childProcess) does not force "stdin: pipe"', async t => {
+test('execa.pipe(subprocess) does not force "stdin: pipe"', async t => {
 	await t.throwsAsync(
 		execa('noop.js', [foobarString]).pipe(execa('stdin.js', {stdin: 'ignore'})),
 		{message: /stdin must be available/},
 	);
 });
 
-test('$.pipe(options)(childProcess) fails', async t => {
+test('$.pipe(options)(subprocess) fails', async t => {
 	await t.throwsAsync(
 		$`empty.js`.pipe({stdout: 'pipe'})($`empty.js`),
 		{message: /Please use \.pipe/},
 	);
 });
 
-test('execa.$.pipe(options)(childProcess) fails', async t => {
+test('execa.$.pipe(options)(subprocess) fails', async t => {
 	await t.throwsAsync(
 		execa('empty.js').pipe({stdout: 'pipe'})($`empty.js`),
 		{message: /Please use \.pipe/},
@@ -268,5 +268,5 @@ const testInvalidPipe = async (t, ...args) => {
 	);
 };
 
-test('$.pipe(nonExecaChildProcess) fails', testInvalidPipe, spawn('node', ['--version']));
+test('$.pipe(nonExecaSubprocess) fails', testInvalidPipe, spawn('node', ['--version']));
 test('$.pipe(false) fails', testInvalidPipe, false);

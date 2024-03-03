@@ -71,11 +71,11 @@ const createFileWriteStream = async () => {
 	return {stream, filePath};
 };
 
-const assertFileStreamError = async (t, childProcess, stream, filePath) => {
+const assertFileStreamError = async (t, subprocess, stream, filePath) => {
 	const error = new Error('test');
 	stream.destroy(error);
 
-	t.is(await t.throwsAsync(childProcess), error);
+	t.is(await t.throwsAsync(subprocess), error);
 	t.is(error.exitCode, 0);
 	t.is(error.signal, undefined);
 
@@ -102,9 +102,9 @@ const testFileReadableError = async (t, fdNumber) => {
 	const {stream, filePath} = await createFileReadStream();
 
 	const fdNumberString = fdNumber === 'input' ? '0' : `${fdNumber}`;
-	const childProcess = execa('stdin-fd.js', [fdNumberString], getStdio(fdNumber, stream));
+	const subprocess = execa('stdin-fd.js', [fdNumberString], getStdio(fdNumber, stream));
 
-	await assertFileStreamError(t, childProcess, stream, filePath);
+	await assertFileStreamError(t, subprocess, stream, filePath);
 };
 
 test.serial('input handles errors from a Node.js Readable with a file descriptor', testFileReadableError, 'input');
@@ -150,10 +150,10 @@ test('stdio[*] can be a Node.js Writable with a file descriptor - sync', testFil
 const testFileWritableError = async (t, fdNumber) => {
 	const {stream, filePath} = await createFileWriteStream();
 
-	const childProcess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, stream));
-	childProcess.stdin.end(foobarString);
+	const subprocess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, stream));
+	subprocess.stdin.end(foobarString);
 
-	await assertFileStreamError(t, childProcess, stream, filePath);
+	await assertFileStreamError(t, subprocess, stream, filePath);
 };
 
 test.serial('stdout handles errors from a Node.js Writable with a file descriptor', testFileWritableError, 1);
@@ -211,7 +211,7 @@ test('stdout can be [Writable, "pipe"] without a file descriptor', testLazyFileW
 test('stderr can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 2);
 test('stdio[*] can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 3);
 
-test('Waits for custom streams destroy on process errors', async t => {
+test('Waits for custom streams destroy on subprocess errors', async t => {
 	let waitedForDestroy = false;
 	const stream = new Writable({
 		destroy: callbackify(async error => {
@@ -225,7 +225,7 @@ test('Waits for custom streams destroy on process errors', async t => {
 	t.true(waitedForDestroy);
 });
 
-test('Handles custom streams destroy errors on process success', async t => {
+test('Handles custom streams destroy errors on subprocess success', async t => {
 	const error = new Error('test');
 	const stream = new Writable({
 		destroy(destroyError, done) {
@@ -241,8 +241,8 @@ const testStreamEarlyExit = async (t, stream, streamName) => {
 	t.true(stream.destroyed);
 };
 
-test('Input streams are canceled on early process exit', testStreamEarlyExit, noopReadable(), 'stdin');
-test('Output streams are canceled on early process exit', testStreamEarlyExit, noopWritable(), 'stdout');
+test('Input streams are canceled on early subprocess exit', testStreamEarlyExit, noopReadable(), 'stdin');
+test('Output streams are canceled on early subprocess exit', testStreamEarlyExit, noopWritable(), 'stdout');
 
 const testInputDuplexStream = async (t, fdNumber) => {
 	const stream = new PassThrough();
@@ -271,38 +271,38 @@ const testInputStreamAbort = async (t, fdNumber) => {
 	const stream = new PassThrough();
 	stream.destroy();
 
-	const childProcess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, new Uint8Array()]));
-	await childProcess;
-	t.true(childProcess.stdio[fdNumber].writableEnded);
+	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, new Uint8Array()]));
+	await subprocess;
+	t.true(subprocess.stdio[fdNumber].writableEnded);
 };
 
-test('childProcess.stdin is ended when an input stream aborts', testInputStreamAbort, 0);
-test('childProcess.stdio[*] is ended when an input stream aborts', testInputStreamAbort, 3);
+test('subprocess.stdin is ended when an input stream aborts', testInputStreamAbort, 0);
+test('subprocess.stdio[*] is ended when an input stream aborts', testInputStreamAbort, 3);
 
 const testInputStreamError = async (t, fdNumber) => {
 	const stream = new PassThrough();
 	const error = new Error(foobarString);
 	stream.destroy(error);
 
-	const childProcess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, new Uint8Array()]));
-	t.is(await t.throwsAsync(childProcess), error);
-	t.true(childProcess.stdio[fdNumber].writableEnded);
+	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, new Uint8Array()]));
+	t.is(await t.throwsAsync(subprocess), error);
+	t.true(subprocess.stdio[fdNumber].writableEnded);
 };
 
-test('childProcess.stdin is ended when an input stream errors', testInputStreamError, 0);
-test('childProcess.stdio[*] is ended when an input stream errors', testInputStreamError, 3);
+test('subprocess.stdin is ended when an input stream errors', testInputStreamError, 0);
+test('subprocess.stdio[*] is ended when an input stream errors', testInputStreamError, 3);
 
 const testOutputStreamError = async (t, fdNumber) => {
 	const stream = new PassThrough();
 	const error = new Error(foobarString);
 	stream.destroy(error);
 
-	const childProcess = execa('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, 'pipe']));
-	t.is(await t.throwsAsync(childProcess), error);
-	t.true(childProcess.stdio[fdNumber].readableAborted);
-	t.is(childProcess.stdio[fdNumber].errored, null);
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, 'pipe']));
+	t.is(await t.throwsAsync(subprocess), error);
+	t.true(subprocess.stdio[fdNumber].readableAborted);
+	t.is(subprocess.stdio[fdNumber].errored, null);
 };
 
-test('childProcess.stdout is aborted when an output stream errors', testOutputStreamError, 1);
-test('childProcess.stderr is aborted when an output stream errors', testOutputStreamError, 2);
-test('childProcess.stdio[*] is aborted when an output stream errors', testOutputStreamError, 3);
+test('subprocess.stdout is aborted when an output stream errors', testOutputStreamError, 1);
+test('subprocess.stderr is aborted when an output stream errors', testOutputStreamError, 2);
+test('subprocess.stdio[*] is aborted when an output stream errors', testOutputStreamError, 3);

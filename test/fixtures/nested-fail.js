@@ -3,6 +3,6 @@ import process from 'node:process';
 import {execa} from '../../index.js';
 
 const [options, file, ...args] = process.argv.slice(2);
-const childProcess = execa(file, args, JSON.parse(options));
-childProcess.kill(new Error(args[0]));
-await childProcess;
+const subprocess = execa(file, args, JSON.parse(options));
+subprocess.kill(new Error(args[0]));
+await subprocess;

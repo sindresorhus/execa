@@ -6,9 +6,9 @@ import {foobarString} from '../helpers/input.js';
 setFixtureDir();
 
 const testUnusualError = async (t, error, expectedOriginalMessage = String(error)) => {
-	const childProcess = execa('empty.js');
-	childProcess.emit('error', error);
-	const {originalMessage, shortMessage, message} = await t.throwsAsync(childProcess);
+	const subprocess = execa('empty.js');
+	subprocess.emit('error', error);
+	const {originalMessage, shortMessage, message} = await t.throwsAsync(subprocess);
 	t.is(originalMessage, expectedOriginalMessage);
 	t.true(shortMessage.includes(expectedOriginalMessage));
 	t.is(message, shortMessage);
@@ -27,15 +27,15 @@ test('error instance can be an error with an empty message', testUnusualError, n
 test('error instance can be undefined', testUnusualError, undefined, '');
 
 test('error instance can be a plain object', async t => {
-	const childProcess = execa('empty.js');
-	childProcess.emit('error', {message: foobarString});
-	await t.throwsAsync(childProcess, {message: new RegExp(foobarString)});
+	const subprocess = execa('empty.js');
+	subprocess.emit('error', {message: foobarString});
+	await t.throwsAsync(subprocess, {message: new RegExp(foobarString)});
 });
 
 const runAndFail = (t, fixtureName, argument, error) => {
-	const childProcess = execa(fixtureName, [argument]);
-	childProcess.emit('error', error);
-	return t.throwsAsync(childProcess);
+	const subprocess = execa(fixtureName, [argument]);
+	subprocess.emit('error', error);
+	return t.throwsAsync(subprocess);
 };
 
 const runAndClone = async (t, initialError) => {
@@ -116,17 +116,17 @@ test('error.stack is set even if memoized', async t => {
 	t.false(error.stack.includes(newMessage));
 	error.message = message;
 
-	const childProcess = execa('empty.js');
-	childProcess.emit('error', error);
-	t.is(await t.throwsAsync(childProcess), error);
+	const subprocess = execa('empty.js');
+	subprocess.emit('error', error);
+	t.is(await t.throwsAsync(subprocess), error);
 	t.is(error.message, `Command failed: empty.js\n${message}`);
 	t.true(error.stack.startsWith(`Error: ${error.message}`));
 });
 
 test('error.stack is set even if memoized with an unusual error.name', async t => {
-	const childProcess = execa('empty.js');
-	childProcess.stdin.destroy();
-	const error = await t.throwsAsync(childProcess);
+	const subprocess = execa('empty.js');
+	subprocess.stdin.destroy();
+	const error = await t.throwsAsync(subprocess);
 	t.is(error.message, 'Command failed with ERR_STREAM_PREMATURE_CLOSE: empty.js\nPremature close');
 	t.true(error.stack.startsWith(`Error [ERR_STREAM_PREMATURE_CLOSE]: ${error.message}`));
 });
@@ -136,13 +136,13 @@ test('Cloned errors keep the stack trace', async t => {
 	const error = new Error(message);
 	const stack = error.stack.split('\n').filter(line => line.trim().startsWith('at ')).join('\n');
 
-	const childProcess = execa('empty.js');
-	childProcess.emit('error', error);
-	t.is(await t.throwsAsync(childProcess), error);
+	const subprocess = execa('empty.js');
+	subprocess.emit('error', error);
+	t.is(await t.throwsAsync(subprocess), error);
 
-	const secondChildProcess = execa('empty.js');
-	secondChildProcess.emit('error', error);
-	const secondError = await t.throwsAsync(secondChildProcess);
+	const secondSubprocess = execa('empty.js');
+	secondSubprocess.emit('error', error);
+	const secondError = await t.throwsAsync(secondSubprocess);
 	t.not(secondError, error);
 	t.is(secondError.message, `Command failed: empty.js\n${message}`);
 	t.is(secondError.stack, `Error: Command failed: empty.js\n${message}\n${stack}`);

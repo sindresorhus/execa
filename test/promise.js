@@ -49,5 +49,5 @@ const testNoAwait = async (t, fixtureName, options, message) => {
 	t.true(stdout.includes(message));
 };
 
-test('Throws if promise is not awaited and process fails', testNoAwait, 'fail.js', {}, 'exit code 2');
-test('Throws if promise is not awaited and process times out', testNoAwait, 'forever.js', {timeout: 1}, 'timed out');
+test('Throws if promise is not awaited and subprocess fails', testNoAwait, 'fail.js', {}, 'exit code 2');
+test('Throws if promise is not awaited and subprocess times out', testNoAwait, 'forever.js', {timeout: 1}, 'timed out');

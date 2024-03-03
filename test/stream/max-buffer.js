@@ -96,10 +96,10 @@ test('do not hit maxBuffer when `buffer` is `false` with stderr', testNoMaxBuffe
 test('do not hit maxBuffer when `buffer` is `false` with stdio[*]', testNoMaxBufferOption, 3);
 
 const testMaxBufferAbort = async (t, fdNumber) => {
-	const childProcess = execa('max-buffer.js', [`${fdNumber}`, `${maxBuffer + 1}`], {...fullStdio, maxBuffer});
+	const subprocess = execa('max-buffer.js', [`${fdNumber}`, `${maxBuffer + 1}`], {...fullStdio, maxBuffer});
 	await Promise.all([
-		t.throwsAsync(childProcess, {message: /maxBuffer exceeded/}),
-		t.throwsAsync(getStream(childProcess.stdio[fdNumber]), {code: 'ABORT_ERR'}),
+		t.throwsAsync(subprocess, {message: /maxBuffer exceeded/}),
+		t.throwsAsync(getStream(subprocess.stdio[fdNumber]), {code: 'ABORT_ERR'}),
 	]);
 };
 

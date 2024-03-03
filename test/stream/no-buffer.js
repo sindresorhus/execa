@@ -44,14 +44,14 @@ const testIterationBuffer = async (t, fdNumber, buffer, useDataEvents, all) => {
 		all ? getOutput(subprocess.all) : undefined,
 	]);
 
-	const expectedProcessResult = buffer ? foobarString : undefined;
+	const expectedResult = buffer ? foobarString : undefined;
 	const expectedOutput = !buffer || useDataEvents ? foobarString : '';
 
-	t.is(result.stdio[fdNumber], expectedProcessResult);
+	t.is(result.stdio[fdNumber], expectedResult);
 	t.is(output, expectedOutput);
 
 	if (all) {
-		t.is(result.all, expectedProcessResult);
+		t.is(result.all, expectedResult);
 		t.is(allOutput, expectedOutput);
 	}
 };
@@ -90,7 +90,7 @@ test('buffer: false > promise resolves', async t => {
 	await t.notThrowsAsync(execa('noop.js', {buffer: false}));
 });
 
-test('buffer: false > promise rejects when process returns non-zero', async t => {
+test('buffer: false > promise rejects when subprocess returns non-zero', async t => {
 	const {exitCode} = await t.throwsAsync(execa('fail.js', {buffer: false}));
 	t.is(exitCode, 2);
 });

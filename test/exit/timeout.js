@@ -4,7 +4,7 @@ import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-test('timeout kills the process if it times out', async t => {
+test('timeout kills the subprocess if it times out', async t => {
 	const {isTerminated, signal, timedOut, originalMessage, shortMessage, message} = await t.throwsAsync(execa('forever.js', {timeout: 1}));
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');
@@ -14,7 +14,7 @@ test('timeout kills the process if it times out', async t => {
 	t.is(message, shortMessage);
 });
 
-test('timeout kills the process if it times out, in sync mode', async t => {
+test('timeout kills the subprocess if it times out, in sync mode', async t => {
 	const {isTerminated, signal, timedOut, originalMessage, shortMessage, message} = await t.throws(() => {
 		execaSync('node', ['forever.js'], {timeout: 1, cwd: FIXTURES_DIR});
 	});
@@ -26,7 +26,7 @@ test('timeout kills the process if it times out, in sync mode', async t => {
 	t.is(message, shortMessage);
 });
 
-test('timeout does not kill the process if it does not time out', async t => {
+test('timeout does not kill the subprocess if it does not time out', async t => {
 	const {timedOut} = await execa('delay.js', ['500'], {timeout: 1e8});
 	t.false(timedOut);
 });
@@ -67,9 +67,9 @@ test('timedOut is false if timeout is undefined and exit code is 0 in sync mode'
 });
 
 test('timedOut is true if the timeout happened after a different error occurred', async t => {
-	const childProcess = execa('forever.js', {timeout: 1e3});
+	const subprocess = execa('forever.js', {timeout: 1e3});
 	const error = new Error('test');
-	childProcess.emit('error', error);
-	t.is(await t.throwsAsync(childProcess), error);
+	subprocess.emit('error', error);
+	t.is(await t.throwsAsync(subprocess), error);
 	t.true(error.timedOut);
 });

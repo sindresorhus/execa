@@ -99,32 +99,32 @@ test('The "execPath" option cannot be used - "node" option sync', testFormerNode
 
 const nodePathArguments = ['-p', ['process.env.Path || process.env.PATH']];
 
-const testChildNodePath = async (t, execaMethod, mapPath) => {
+const testSubprocessNodePath = async (t, execaMethod, mapPath) => {
 	const nodePath = mapPath(await getNodePath());
 	const {stdout} = await execaMethod(...nodePathArguments, {nodePath});
 	t.true(stdout.includes(TEST_NODE_VERSION));
 };
 
-test.serial('The "nodePath" option impacts the child process - execaNode()', testChildNodePath, execaNode, identity);
-test.serial('The "nodePath" option impacts the child process - "node" option', testChildNodePath, runWithNodeOption, identity);
-test.serial('The "nodePath" option impacts the child process - "node" option sync', testChildNodePath, runWithNodeOptionSync, identity);
+test.serial('The "nodePath" option impacts the subprocess - execaNode()', testSubprocessNodePath, execaNode, identity);
+test.serial('The "nodePath" option impacts the subprocess - "node" option', testSubprocessNodePath, runWithNodeOption, identity);
+test.serial('The "nodePath" option impacts the subprocess - "node" option sync', testSubprocessNodePath, runWithNodeOptionSync, identity);
 
-const testChildNodePathDefault = async (t, execaMethod) => {
+const testSubprocessNodePathDefault = async (t, execaMethod) => {
 	const {stdout} = await execaMethod(...nodePathArguments);
 	t.true(stdout.includes(dirname(process.execPath)));
 };
 
-test('The "nodePath" option defaults to the current Node.js binary in the child process - execaNode()', testChildNodePathDefault, execaNode);
-test('The "nodePath" option defaults to the current Node.js binary in the child process - "node" option', testChildNodePathDefault, runWithNodeOption);
-test('The "nodePath" option defaults to the current Node.js binary in the child process - "node" option sync', testChildNodePathDefault, runWithNodeOptionSync);
+test('The "nodePath" option defaults to the current Node.js binary in the subprocess - execaNode()', testSubprocessNodePathDefault, execaNode);
+test('The "nodePath" option defaults to the current Node.js binary in the subprocess - "node" option', testSubprocessNodePathDefault, runWithNodeOption);
+test('The "nodePath" option defaults to the current Node.js binary in the subprocess - "node" option sync', testSubprocessNodePathDefault, runWithNodeOptionSync);
 
-test.serial('The "nodePath" option requires "node: true" to impact the child process', async t => {
+test.serial('The "nodePath" option requires "node: true" to impact the subprocess', async t => {
 	const nodePath = await getNodePath();
 	const {stdout} = await execa('node', nodePathArguments.flat(), {nodePath});
 	t.false(stdout.includes(TEST_NODE_VERSION));
 });
 
-const testChildNodePathCwd = async (t, execaMethod) => {
+const testSubprocessNodePathCwd = async (t, execaMethod) => {
 	const nodePath = await getNodePath();
 	const cwd = dirname(dirname(nodePath));
 	const relativeExecPath = relative(cwd, nodePath);
@@ -132,9 +132,9 @@ const testChildNodePathCwd = async (t, execaMethod) => {
 	t.true(stdout.includes(TEST_NODE_VERSION));
 };
 
-test.serial('The "nodePath" option is relative to "cwd" when used in the child process - execaNode()', testChildNodePathCwd, execaNode);
-test.serial('The "nodePath" option is relative to "cwd" when used in the child process - "node" option', testChildNodePathCwd, runWithNodeOption);
-test.serial('The "nodePath" option is relative to "cwd" when used in the child process - "node" option sync', testChildNodePathCwd, runWithNodeOptionSync);
+test.serial('The "nodePath" option is relative to "cwd" when used in the subprocess - execaNode()', testSubprocessNodePathCwd, execaNode);
+test.serial('The "nodePath" option is relative to "cwd" when used in the subprocess - "node" option', testSubprocessNodePathCwd, runWithNodeOption);
+test.serial('The "nodePath" option is relative to "cwd" when used in the subprocess - "node" option sync', testSubprocessNodePathCwd, runWithNodeOptionSync);
 
 const testCwdNodePath = async (t, execaMethod) => {
 	const nodePath = await getNodePath();
@@ -169,14 +169,14 @@ const testInspectRemoval = async (t, fakeExecArgv, execaMethod) => {
 	t.is(stdio[3], '');
 };
 
-test('The "nodeOptions" option removes --inspect without a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect', 'execaNode');
-test('The "nodeOptions" option removes --inspect without a port when defined by parent process - "node" option', testInspectRemoval, '--inspect', 'nodeOption');
-test('The "nodeOptions" option removes --inspect with a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect=9222', 'execaNode');
-test('The "nodeOptions" option removes --inspect with a port when defined by parent process - "node" option', testInspectRemoval, '--inspect=9222', 'nodeOption');
-test('The "nodeOptions" option removes --inspect-brk without a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect-brk', 'execaNode');
-test('The "nodeOptions" option removes --inspect-brk without a port when defined by parent process - "node" option', testInspectRemoval, '--inspect-brk', 'nodeOption');
-test('The "nodeOptions" option removes --inspect-brk with a port when defined by parent process - execaNode()', testInspectRemoval, '--inspect-brk=9223', 'execaNode');
-test('The "nodeOptions" option removes --inspect-brk with a port when defined by parent process - "node" option', testInspectRemoval, '--inspect-brk=9223', 'nodeOption');
+test('The "nodeOptions" option removes --inspect without a port when defined by current process - execaNode()', testInspectRemoval, '--inspect', 'execaNode');
+test('The "nodeOptions" option removes --inspect without a port when defined by current process - "node" option', testInspectRemoval, '--inspect', 'nodeOption');
+test('The "nodeOptions" option removes --inspect with a port when defined by current process - execaNode()', testInspectRemoval, '--inspect=9222', 'execaNode');
+test('The "nodeOptions" option removes --inspect with a port when defined by current process - "node" option', testInspectRemoval, '--inspect=9222', 'nodeOption');
+test('The "nodeOptions" option removes --inspect-brk without a port when defined by current process - execaNode()', testInspectRemoval, '--inspect-brk', 'execaNode');
+test('The "nodeOptions" option removes --inspect-brk without a port when defined by current process - "node" option', testInspectRemoval, '--inspect-brk', 'nodeOption');
+test('The "nodeOptions" option removes --inspect-brk with a port when defined by current process - execaNode()', testInspectRemoval, '--inspect-brk=9223', 'execaNode');
+test('The "nodeOptions" option removes --inspect-brk with a port when defined by current process - "node" option', testInspectRemoval, '--inspect-brk=9223', 'nodeOption');
 
 const testInspectDifferentPort = async (t, execaMethod) => {
 	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9225'], '', execaMethod, '--inspect=9224');
@@ -184,8 +184,8 @@ const testInspectDifferentPort = async (t, execaMethod) => {
 	t.true(stdio[3].includes('Debugger listening'));
 };
 
-test.serial('The "nodeOptions" option allows --inspect with a different port even when defined by parent process - execaNode()', testInspectDifferentPort, 'execaNode');
-test.serial('The "nodeOptions" option allows --inspect with a different port even when defined by parent process - "node" option', testInspectDifferentPort, 'nodeOption');
+test.serial('The "nodeOptions" option allows --inspect with a different port even when defined by current process - execaNode()', testInspectDifferentPort, 'execaNode');
+test.serial('The "nodeOptions" option allows --inspect with a different port even when defined by current process - "node" option', testInspectDifferentPort, 'nodeOption');
 
 const testInspectSamePort = async (t, execaMethod) => {
 	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9226'], '', execaMethod, '--inspect=9226');
@@ -193,8 +193,8 @@ const testInspectSamePort = async (t, execaMethod) => {
 	t.true(stdio[3].includes('address already in use'));
 };
 
-test.serial('The "nodeOptions" option forbids --inspect with the same port when defined by parent process - execaNode()', testInspectSamePort, 'execaNode');
-test.serial('The "nodeOptions" option forbids --inspect with the same port when defined by parent process - "node" option', testInspectSamePort, 'nodeOption');
+test.serial('The "nodeOptions" option forbids --inspect with the same port when defined by current process - execaNode()', testInspectSamePort, 'execaNode');
+test.serial('The "nodeOptions" option forbids --inspect with the same port when defined by current process - "node" option', testInspectSamePort, 'nodeOption');
 
 const testIpc = async (t, execaMethod, options) => {
 	const subprocess = execaMethod('send.js', [], options);

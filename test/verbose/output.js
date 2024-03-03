@@ -12,7 +12,7 @@ import {
 	nestedExeca,
 	nestedExecaAsync,
 	nestedExecaSync,
-	runErrorProcess,
+	runErrorSubprocess,
 	getOutputLine,
 	getOutputLines,
 	testTimestamp,
@@ -54,7 +54,7 @@ test('Does not print stdio[*], verbose "short", sync', testNoPrintOutput, 'short
 test('Does not print stdio[*], verbose "full", sync', testNoPrintOutput, 'full', 3, nestedExecaSync);
 
 test('Prints stdout after errors', async t => {
-	const stderr = await runErrorProcess(t, 'full', nestedExecaAsync);
+	const stderr = await runErrorSubprocess(t, 'full', nestedExecaAsync);
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 });
 
@@ -76,16 +76,16 @@ const testPipeOutput = async (t, fixtureName, sourceVerbose, destinationVerbose)
 
 test('Prints stdout if both verbose with .pipe("file")', testPipeOutput, 'file', true, true);
 test('Prints stdout if both verbose with .pipe`command`', testPipeOutput, 'script', true, true);
-test('Prints stdout if both verbose with .pipe(childProcess)', testPipeOutput, 'process', true, true);
+test('Prints stdout if both verbose with .pipe(subprocess)', testPipeOutput, 'subprocesses', true, true);
 test('Prints stdout if only second verbose with .pipe("file")', testPipeOutput, 'file', false, true);
 test('Prints stdout if only second verbose with .pipe`command`', testPipeOutput, 'script', false, true);
-test('Prints stdout if only second verbose with .pipe(childProcess)', testPipeOutput, 'process', false, true);
+test('Prints stdout if only second verbose with .pipe(subprocess)', testPipeOutput, 'subprocesses', false, true);
 test('Does not print stdout if only first verbose with .pipe("file")', testPipeOutput, 'file', true, false);
 test('Does not print stdout if only first verbose with .pipe`command`', testPipeOutput, 'script', true, false);
-test('Does not print stdout if only first verbose with .pipe(childProcess)', testPipeOutput, 'process', true, false);
+test('Does not print stdout if only first verbose with .pipe(subprocess)', testPipeOutput, 'subprocesses', true, false);
 test('Does not print stdout if neither verbose with .pipe("file")', testPipeOutput, 'file', false, false);
 test('Does not print stdout if neither verbose with .pipe`command`', testPipeOutput, 'script', false, false);
-test('Does not print stdout if neither verbose with .pipe(childProcess)', testPipeOutput, 'process', false, false);
+test('Does not print stdout if neither verbose with .pipe(subprocess)', testPipeOutput, 'subprocesses', false, false);
 
 test('Does not quote spaces from stdout', async t => {
 	const {stderr} = await nestedExecaAsync('noop.js', ['foo bar'], {verbose: 'full'});
@@ -113,8 +113,8 @@ test('Escapes control characters from stdout', async t => {
 });
 
 const testStdioSame = async (t, fdNumber) => {
-	const childProcess = execa('nested-send.js', [JSON.stringify({verbose: true}), 'noop-fd.js', `${fdNumber}`, foobarString], {ipc: true});
-	const [[{stdio}]] = await Promise.all([once(childProcess, 'message'), childProcess]);
+	const subprocess = execa('nested-send.js', [JSON.stringify({verbose: true}), 'noop-fd.js', `${fdNumber}`, foobarString], {ipc: true});
+	const [[{stdio}]] = await Promise.all([once(subprocess, 'message'), subprocess]);
 	t.is(stdio[fdNumber], foobarString);
 };
 
@@ -140,9 +140,9 @@ test('Prints stdout with big object transforms', async t => {
 });
 
 test('Prints stdout one line at a time', async t => {
-	const childProcess = nestedExecaAsync('noop-progressive.js', [foobarString], {verbose: 'full'});
+	const subprocess = nestedExecaAsync('noop-progressive.js', [foobarString], {verbose: 'full'});
 
-	for await (const chunk of on(childProcess.stderr, 'data')) {
+	for await (const chunk of on(subprocess.stderr, 'data')) {
 		const outputLine = getOutputLine(chunk.toString().trim());
 		if (outputLine !== undefined) {
 			t.is(outputLine, `${testTimestamp} [0]   ${foobarString}`);
@@ -150,15 +150,15 @@ test('Prints stdout one line at a time', async t => {
 		}
 	}
 
-	await childProcess;
+	await subprocess;
 });
 
 test('Prints stdout progressively, interleaved', async t => {
-	const childProcess = nestedExecaDouble('noop-repeat.js', ['1', `${foobarString}\n`], {verbose: 'full'});
+	const subprocess = nestedExecaDouble('noop-repeat.js', ['1', `${foobarString}\n`], {verbose: 'full'});
 
-	let firstProcessPrinted = false;
-	let secondProcessPrinted = false;
-	for await (const chunk of on(childProcess.stderr, 'data')) {
+	let firstSubprocessPrinted = false;
+	let secondSubprocessPrinted = false;
+	for await (const chunk of on(subprocess.stderr, 'data')) {
 		const outputLine = getOutputLine(chunk.toString().trim());
 		if (outputLine === undefined) {
 			continue;
@@ -166,19 +166,19 @@ test('Prints stdout progressively, interleaved', async t => {
 
 		if (outputLine.includes(foobarString)) {
 			t.is(outputLine, `${testTimestamp} [0]   ${foobarString}`);
-			firstProcessPrinted ||= true;
+			firstSubprocessPrinted ||= true;
 		} else {
 			t.is(outputLine, `${testTimestamp} [1]   ${foobarString.toUpperCase()}`);
-			secondProcessPrinted ||= true;
+			secondSubprocessPrinted ||= true;
 		}
 
-		if (firstProcessPrinted && secondProcessPrinted) {
+		if (firstSubprocessPrinted && secondSubprocessPrinted) {
 			break;
 		}
 	}
 
-	childProcess.kill();
-	await t.throwsAsync(childProcess);
+	subprocess.kill();
+	await t.throwsAsync(subprocess);
 });
 
 test('Prints stdout, single newline', async t => {
@@ -200,7 +200,7 @@ test('Does not print stdout, stdout 1', testNoOutputOptions, {stdout: 1});
 test('Does not print stdout, stdout Writable', testNoOutputOptions, {}, 'nested-writable.js');
 test('Does not print stdout, stdout WritableStream', testNoOutputOptions, {}, 'nested-writable-web.js');
 test('Does not print stdout, .pipe(stream)', testNoOutputOptions, {}, 'nested-pipe-stream.js');
-test('Does not print stdout, .pipe(childProcess)', testNoOutputOptions, {}, 'nested-pipe-child-process.js');
+test('Does not print stdout, .pipe(subprocess)', testNoOutputOptions, {}, 'nested-pipe-subprocess.js');
 
 const testStdoutFile = async (t, fixtureName, getStdout) => {
 	const file = tempfile();
@@ -231,4 +231,4 @@ const testPrintOutputFixture = async (t, fixtureName, ...args) => {
 };
 
 test('Prints stdout, .pipe(stream) + .unpipe()', testPrintOutputFixture, 'nested-pipe-stream.js', 'true');
-test('Prints stdout, .pipe(childProcess) + .unpipe()', testPrintOutputFixture, 'nested-pipe-child-process.js', 'true');
+test('Prints stdout, .pipe(subprocess) + .unpipe()', testPrintOutputFixture, 'nested-pipe-subprocess.js', 'true');

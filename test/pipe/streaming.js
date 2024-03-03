@@ -40,12 +40,12 @@ test('Can pipe three sources to same destination', async t => {
 	t.is(await thirdPromise, await destination);
 });
 
-const processesCount = 100;
+const subprocessesCount = 100;
 
 test.serial('Can pipe many sources to same destination', async t => {
 	const checkMaxListeners = assertMaxListeners(t);
 
-	const expectedResults = Array.from({length: processesCount}, (_, index) => `${index}`).sort();
+	const expectedResults = Array.from({length: subprocessesCount}, (_, index) => `${index}`).sort();
 	const sources = expectedResults.map(expectedResult => execa('noop.js', [expectedResult]));
 	const destination = execa('stdin.js');
 	const pipePromises = sources.map(source => source.pipe(destination));
@@ -63,7 +63,7 @@ test.serial('Can pipe same source to many destinations', async t => {
 	const checkMaxListeners = assertMaxListeners(t);
 
 	const source = execa('noop-fd.js', ['1', foobarString]);
-	const expectedResults = Array.from({length: processesCount}, (_, index) => `${index}`);
+	const expectedResults = Array.from({length: subprocessesCount}, (_, index) => `${index}`);
 	const destinations = expectedResults.map(expectedResult => execa('noop-stdin-double.js', [expectedResult]));
 	const pipePromises = destinations.map(destination => source.pipe(destination));
 
@@ -75,7 +75,7 @@ test.serial('Can pipe same source to many destinations', async t => {
 	checkMaxListeners();
 });
 
-test('Can pipe two streams from same process to same destination', async t => {
+test('Can pipe two streams from same subprocess to same destination', async t => {
 	const source = execa('noop-both.js', [foobarString]);
 	const destination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
@@ -162,7 +162,7 @@ test('Can pipe a new source to same destination after some but not all sources h
 	t.is(await thirdPipePromise, await destination);
 });
 
-test('Can pipe two processes already ended', async t => {
+test('Can pipe two subprocesses already ended', async t => {
 	const source = execa('noop.js', [foobarString]);
 	const destination = execa('stdin.js');
 	destination.stdin.end('.');
@@ -377,7 +377,7 @@ test('Returns pipedFrom from multiple sources', async t => {
 	t.deepEqual(secondSourceResult.pipedFrom, []);
 });
 
-test('Returns pipedFrom from already ended processes', async t => {
+test('Returns pipedFrom from already ended subprocesses', async t => {
 	const source = execa('noop.js', [foobarString]);
 	const destination = execa('stdin.js');
 	destination.stdin.end('.');

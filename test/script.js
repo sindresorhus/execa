@@ -12,8 +12,8 @@ const escapedCall = string => {
 	return $(templates);
 };
 
-const testScriptStdout = async (t, getChildProcess, expectedStdout) => {
-	const {stdout} = await getChildProcess();
+const testScriptStdout = async (t, getSubprocess, expectedStdout) => {
+	const {stdout} = await getSubprocess();
 	t.is(stdout, expectedStdout);
 };
 
@@ -238,8 +238,8 @@ test('$ splits expressions - \\u{0063}}', testScriptStdout, () => $`echo.js ${'a
 test('$ concatenates tokens - \\u{0063}}', testScriptStdout, () => $`echo.js \u{0063}}a\u{0063}} b`, 'c}ac}\nb');
 test('$ concatenates expressions - \\u{0063}}', testScriptStdout, () => $`echo.js \u{0063}}${'a'}\u{0063}} b`, 'c}ac}\nb');
 
-const testScriptErrorStdout = async (t, getChildProcess) => {
-	t.throws(getChildProcess, {message: /null bytes/});
+const testScriptErrorStdout = async (t, getSubprocess) => {
+	t.throws(getSubprocess, {message: /null bytes/});
 };
 
 test('$ handles tokens - \\0', testScriptErrorStdout, () => $`echo.js \0`);
@@ -248,8 +248,8 @@ test('$ splits expressions - \\0', testScriptErrorStdout, () => $`echo.js ${'a'}
 test('$ concatenates tokens - \\0', testScriptErrorStdout, () => $`echo.js \0a\0 b`);
 test('$ concatenates expressions - \\0', testScriptErrorStdout, () => $`echo.js \0${'a'}\0 b`);
 
-const testScriptStdoutSync = (t, getChildProcess, expectedStdout) => {
-	const {stdout} = getChildProcess();
+const testScriptStdoutSync = (t, getSubprocess, expectedStdout) => {
+	const {stdout} = getSubprocess();
 	t.is(stdout, expectedStdout);
 };
 
@@ -257,9 +257,9 @@ test('$.sync', testScriptStdoutSync, () => $.sync`echo.js foo bar`, 'foo\nbar');
 test('$.sync can be called $.s', testScriptStdoutSync, () => $.s`echo.js foo bar`, 'foo\nbar');
 test('$.sync accepts options', testScriptStdoutSync, () => $({stripFinalNewline: true}).sync`noop.js foo`, 'foo');
 
-const testReturnInterpolate = async (t, getChildProcess, expectedStdout, options = {}) => {
+const testReturnInterpolate = async (t, getSubprocess, expectedStdout, options = {}) => {
 	const foo = await $(options)`echo.js foo`;
-	const {stdout} = await getChildProcess(foo);
+	const {stdout} = await getSubprocess(foo);
 	t.is(stdout, expectedStdout);
 };
 
@@ -268,9 +268,9 @@ test('$ allows execa return value buffer interpolation', testReturnInterpolate, 
 test('$ allows execa return value array interpolation', testReturnInterpolate, foo => $`echo.js ${[foo, 'bar']}`, 'foo\nbar');
 test('$ allows execa return value buffer array interpolation', testReturnInterpolate, foo => $`echo.js ${[foo, 'bar']}`, 'foo\nbar', {encoding: 'buffer'});
 
-const testReturnInterpolateSync = (t, getChildProcess, expectedStdout, options = {}) => {
+const testReturnInterpolateSync = (t, getSubprocess, expectedStdout, options = {}) => {
 	const foo = $(options).sync`echo.js foo`;
-	const {stdout} = getChildProcess(foo);
+	const {stdout} = getSubprocess(foo);
 	t.is(stdout, expectedStdout);
 };
 
@@ -279,8 +279,8 @@ test('$.sync allows execa return value buffer interpolation', testReturnInterpol
 test('$.sync allows execa return value array interpolation', testReturnInterpolateSync, foo => $.sync`echo.js ${[foo, 'bar']}`, 'foo\nbar');
 test('$.sync allows execa return value buffer array interpolation', testReturnInterpolateSync, foo => $.sync`echo.js ${[foo, 'bar']}`, 'foo\nbar', {encoding: 'buffer'});
 
-const testInvalidSequence = (t, getChildProcess) => {
-	t.throws(getChildProcess, {message: /Invalid backslash sequence/});
+const testInvalidSequence = (t, getSubprocess) => {
+	t.throws(getSubprocess, {message: /Invalid backslash sequence/});
 };
 
 test('$ handles invalid escape sequence - \\1', testInvalidSequence, () => $`echo.js \1`);
@@ -298,8 +298,8 @@ test('$ handles invalid escape sequence - \\x0', testInvalidSequence, () => $`ec
 test('$ handles invalid escape sequence - \\xgg', testInvalidSequence, () => $`echo.js \xgg`);
 /* eslint-enable unicorn/no-hex-escape */
 
-const testEmptyScript = (t, getChildProcess) => {
-	t.throws(getChildProcess, {message: /Template script must not be empty/});
+const testEmptyScript = (t, getSubprocess) => {
+	t.throws(getSubprocess, {message: /Template script must not be empty/});
 };
 
 test('$``', testEmptyScript, () => $``);

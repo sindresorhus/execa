@@ -23,9 +23,9 @@ const onStdinRemoveListener = () => once(process.stdin, 'removeListener', {clean
 
 const testListenersCleanup = async (t, isMultiple) => {
 	const streamsPreviousListeners = getStandardStreamsListeners();
-	const childProcess = execa('empty.js', getComplexStdio(isMultiple));
+	const subprocess = execa('empty.js', getComplexStdio(isMultiple));
 	t.notDeepEqual(getStandardStreamsListeners(), streamsPreviousListeners);
-	await childProcess;
+	await subprocess;
 	await onStdinRemoveListener();
 	if (isMultiple) {
 		await onStdinRemoveListener();
@@ -40,11 +40,11 @@ const testListenersCleanup = async (t, isMultiple) => {
 test.serial('process.std* listeners are cleaned up on success with a single input', testListenersCleanup, false);
 test.serial('process.std* listeners are cleaned up on success with multiple inputs', testListenersCleanup, true);
 
-const processesCount = 100;
+const subprocessesCount = 100;
 
-test.serial('Can spawn many processes in parallel', async t => {
+test.serial('Can spawn many subprocesses in parallel', async t => {
 	const results = await Promise.all(
-		Array.from({length: processesCount}, () => execa('noop.js', [foobarString])),
+		Array.from({length: subprocessesCount}, () => execa('noop.js', [foobarString])),
 	);
 	t.true(results.every(({stdout}) => stdout === foobarString));
 });
@@ -58,7 +58,7 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 
 	try {
 		const results = await Promise.all(
-			Array.from({length: processesCount}, () => execa('empty.js', getComplexStdio(isMultiple))),
+			Array.from({length: subprocessesCount}, () => execa('empty.js', getComplexStdio(isMultiple))),
 		);
 		t.true(results.every(({exitCode}) => exitCode === 0));
 	} finally {

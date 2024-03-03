@@ -30,6 +30,7 @@
 		"exec",
 		"child",
 		"process",
+		"subprocess",
 		"execute",
 		"fork",
 		"execfile",

@@ -9,9 +9,9 @@ setFixtureDir();
 
 // eslint-disable-next-line max-params
 const testGeneratorReturn = async (t, fdNumber, generators, fixtureName, isNull) => {
-	const childProcess = execa(fixtureName, [`${fdNumber}`], getStdio(fdNumber, generators));
+	const subprocess = execa(fixtureName, [`${fdNumber}`], getStdio(fdNumber, generators));
 	const message = isNull ? /not be called at all/ : /a string or an Uint8Array/;
-	await t.throwsAsync(childProcess, {message});
+	await t.throwsAsync(subprocess, {message});
 };
 
 const lastInputGenerator = (input, objectMode) => [foobarUint8Array, getOutputGenerator(input, objectMode)];
@@ -34,6 +34,6 @@ test('Generators with result.stdout cannot return undefined if not in objectMode
 test('Generators with result.stdout cannot return undefined if in objectMode', testGeneratorReturn, 1, getOutputGenerator(undefined, true), 'noop-fd.js', true);
 
 test('Generators "final" return value is validated', async t => {
-	const childProcess = execa('noop.js', {stdout: convertTransformToFinal(getOutputGenerator(null, true), true)});
-	await t.throwsAsync(childProcess, {message: /not be called at all/});
+	const subprocess = execa('noop.js', {stdout: convertTransformToFinal(getOutputGenerator(null, true), true)});
+	await t.throwsAsync(subprocess, {message: /not be called at all/});
 });

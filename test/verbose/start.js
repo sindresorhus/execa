@@ -7,8 +7,8 @@ import {
 	QUOTE,
 	nestedExecaAsync,
 	nestedExecaSync,
-	runErrorProcess,
-	runEarlyErrorProcess,
+	runErrorSubprocess,
+	runEarlyErrorSubprocess,
 	getCommandLine,
 	getCommandLines,
 	testTimestamp,
@@ -36,7 +36,7 @@ test('Does not print command, verbose "none"', testNoPrintCommand, nestedExecaAs
 test('Does not print command, verbose "none", sync', testNoPrintCommand, nestedExecaSync);
 
 const testPrintCommandError = async (t, execaMethod) => {
-	const stderr = await runErrorProcess(t, 'short', execaMethod);
+	const stderr = await runErrorSubprocess(t, 'short', execaMethod);
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop-fail.js 1 ${foobarString}`);
 };
 
@@ -44,7 +44,7 @@ test('Prints command after errors', testPrintCommandError, nestedExecaAsync);
 test('Prints command after errors, sync', testPrintCommandError, nestedExecaSync);
 
 const testPrintCommandEarly = async (t, execaMethod) => {
-	const stderr = await runEarlyErrorProcess(t, execaMethod);
+	const stderr = await runEarlyErrorSubprocess(t, execaMethod);
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${foobarString}`);
 };
 
@@ -59,7 +59,7 @@ const testPipeCommand = async (t, fixtureName, sourceVerbose, destinationVerbose
 		JSON.stringify(getVerboseOption(destinationVerbose)),
 		'stdin.js',
 	]);
-	const pipeSymbol = fixtureName === 'process' ? '$' : '|';
+	const pipeSymbol = fixtureName === 'subprocesses' ? '$' : '|';
 	const lines = getCommandLines(stderr);
 	t.is(lines.includes(`${testTimestamp} [0] $ noop.js ${foobarString}`), sourceVerbose);
 	t.is(lines.includes(`${testTimestamp} [${sourceVerbose ? 1 : 0}] ${pipeSymbol} stdin.js`), destinationVerbose);
@@ -67,16 +67,16 @@ const testPipeCommand = async (t, fixtureName, sourceVerbose, destinationVerbose
 
 test('Prints both commands piped with .pipe("file")', testPipeCommand, 'file', true, true);
 test('Prints both commands piped with .pipe`command`', testPipeCommand, 'script', true, true);
-test('Prints both commands piped with .pipe(childProcess)', testPipeCommand, 'process', true, true);
+test('Prints both commands piped with .pipe(subprocess)', testPipeCommand, 'subprocesses', true, true);
 test('Prints first command piped with .pipe("file")', testPipeCommand, 'file', true, false);
 test('Prints first command piped with .pipe`command`', testPipeCommand, 'script', true, false);
-test('Prints first command piped with .pipe(childProcess)', testPipeCommand, 'process', true, false);
+test('Prints first command piped with .pipe(subprocess)', testPipeCommand, 'subprocesses', true, false);
 test('Prints second command piped with .pipe("file")', testPipeCommand, 'file', false, true);
 test('Prints second command piped with .pipe`command`', testPipeCommand, 'script', false, true);
-test('Prints second command piped with .pipe(childProcess)', testPipeCommand, 'process', false, true);
+test('Prints second command piped with .pipe(subprocess)', testPipeCommand, 'subprocesses', false, true);
 test('Prints neither commands piped with .pipe("file")', testPipeCommand, 'file', false, false);
 test('Prints neither commands piped with .pipe`command`', testPipeCommand, 'script', false, false);
-test('Prints neither commands piped with .pipe(childProcess)', testPipeCommand, 'process', false, false);
+test('Prints neither commands piped with .pipe(subprocess)', testPipeCommand, 'subprocesses', false, false);
 
 test('Quotes spaces from command', async t => {
 	const {stderr} = await nestedExecaAsync('noop.js', ['foo bar'], {verbose: 'short'});

@@ -32,7 +32,7 @@ const assertUnPipeError = async (t, pipePromise) => {
 	t.true(error.message.includes(error.shortMessage));
 };
 
-test('Can unpipe a single process', async t => {
+test('Can unpipe a single subprocess', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin.js');
 	const destination = execa('stdin.js');
@@ -58,7 +58,7 @@ test('Can use an already aborted signal', async t => {
 	await assertUnPipeError(t, pipePromise);
 });
 
-test('Can unpipe a process among other sources', async t => {
+test('Can unpipe a subprocess among other sources', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin.js');
 	const secondSource = execa('noop.js', [foobarString]);
@@ -77,7 +77,7 @@ test('Can unpipe a process among other sources', async t => {
 	t.like(await secondSource, {stdout: foobarString});
 });
 
-test('Can unpipe a process among other sources on the same process', async t => {
+test('Can unpipe a subprocess among other sources on the same subprocess', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin-both.js');
 	const destination = execa('stdin.js');
@@ -94,7 +94,7 @@ test('Can unpipe a process among other sources on the same process', async t => 
 	t.like(await source, {stdout: foobarString, stderr: foobarString});
 });
 
-test('Can unpipe a process among other destinations', async t => {
+test('Can unpipe a subprocess among other destinations', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin.js');
 	const destination = execa('stdin.js');
@@ -114,7 +114,7 @@ test('Can unpipe a process among other destinations', async t => {
 	t.like(await secondDestination, {stdout: foobarString});
 });
 
-test('Can unpipe then re-pipe a process', async t => {
+test('Can unpipe then re-pipe a subprocess', async t => {
 	const abortController = new AbortController();
 	const source = execa('stdin.js');
 	const destination = execa('stdin.js');

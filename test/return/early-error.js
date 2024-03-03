@@ -2,7 +2,7 @@ import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync, $} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {earlyErrorOptions, getEarlyErrorProcess, getEarlyErrorProcessSync, expectedEarlyError} from '../helpers/early-error.js';
+import {earlyErrorOptions, getEarlyErrorSubprocess, getEarlyErrorSubprocessSync, expectedEarlyError} from '../helpers/early-error.js';
 
 setFixtureDir();
 
@@ -16,7 +16,7 @@ test('execaSync() throws error if ENOENT', t => {
 });
 
 const testEarlyErrorShape = async (t, reject) => {
-	const subprocess = getEarlyErrorProcess({reject});
+	const subprocess = getEarlyErrorSubprocess({reject});
 	t.notThrows(() => {
 		subprocess.catch(() => {});
 		subprocess.unref();
@@ -28,20 +28,20 @@ test('child_process.spawn() early errors have correct shape', testEarlyErrorShap
 test('child_process.spawn() early errors have correct shape - reject false', testEarlyErrorShape, false);
 
 test('child_process.spawn() early errors are propagated', async t => {
-	await t.throwsAsync(getEarlyErrorProcess(), expectedEarlyError);
+	await t.throwsAsync(getEarlyErrorSubprocess(), expectedEarlyError);
 });
 
 test('child_process.spawn() early errors are returned', async t => {
-	const {failed} = await getEarlyErrorProcess({reject: false});
+	const {failed} = await getEarlyErrorSubprocess({reject: false});
 	t.true(failed);
 });
 
 test('child_process.spawnSync() early errors are propagated with a correct shape', t => {
-	t.throws(getEarlyErrorProcessSync, expectedEarlyError);
+	t.throws(getEarlyErrorSubprocessSync, expectedEarlyError);
 });
 
 test('child_process.spawnSync() early errors are propagated with a correct shape - reject false', t => {
-	const {failed} = getEarlyErrorProcessSync({reject: false});
+	const {failed} = getEarlyErrorSubprocessSync({reject: false});
 	t.true(failed);
 });
 
@@ -54,9 +54,9 @@ if (!isWindows) {
 		await t.throwsAsync(execa('non-executable.js', {input: 'Hey!'}), {message: /EACCES/});
 	});
 
-	test('write to fast-exit process', async t => {
+	test('write to fast-exit subprocess', async t => {
 		// Try-catch here is necessary, because this test is not 100% accurate
-		// Sometimes process can manage to accept input before exiting
+		// Sometimes subprocess can manage to accept input before exiting
 		try {
 			await execa(`fast-exit-${process.platform}`, [], {input: 'data'});
 			t.pass();
@@ -66,21 +66,21 @@ if (!isWindows) {
 	});
 }
 
-const testEarlyErrorPipe = async (t, getChildProcess) => {
-	await t.throwsAsync(getChildProcess(), expectedEarlyError);
+const testEarlyErrorPipe = async (t, getSubprocess) => {
+	await t.throwsAsync(getSubprocess(), expectedEarlyError);
 };
 
-test('child_process.spawn() early errors on source can use .pipe()', testEarlyErrorPipe, () => getEarlyErrorProcess().pipe(execa('empty.js')));
-test('child_process.spawn() early errors on destination can use .pipe()', testEarlyErrorPipe, () => execa('empty.js').pipe(getEarlyErrorProcess()));
-test('child_process.spawn() early errors on source and destination can use .pipe()', testEarlyErrorPipe, () => getEarlyErrorProcess().pipe(getEarlyErrorProcess()));
-test('child_process.spawn() early errors can use .pipe() multiple times', testEarlyErrorPipe, () => getEarlyErrorProcess().pipe(getEarlyErrorProcess()).pipe(getEarlyErrorProcess()));
+test('child_process.spawn() early errors on source can use .pipe()', testEarlyErrorPipe, () => getEarlyErrorSubprocess().pipe(execa('empty.js')));
+test('child_process.spawn() early errors on destination can use .pipe()', testEarlyErrorPipe, () => execa('empty.js').pipe(getEarlyErrorSubprocess()));
+test('child_process.spawn() early errors on source and destination can use .pipe()', testEarlyErrorPipe, () => getEarlyErrorSubprocess().pipe(getEarlyErrorSubprocess()));
+test('child_process.spawn() early errors can use .pipe() multiple times', testEarlyErrorPipe, () => getEarlyErrorSubprocess().pipe(getEarlyErrorSubprocess()).pipe(getEarlyErrorSubprocess()));
 test('child_process.spawn() early errors can use .pipe``', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`);
 test('child_process.spawn() early errors can use .pipe`` multiple times', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`.pipe`empty.js`);
 
 const testEarlyErrorStream = async (t, getStreamProperty, all) => {
-	const childProcess = getEarlyErrorProcess({all});
-	getStreamProperty(childProcess).on('end', () => {});
-	await t.throwsAsync(childProcess);
+	const subprocess = getEarlyErrorSubprocess({all});
+	getStreamProperty(subprocess).on('end', () => {});
+	await t.throwsAsync(subprocess);
 };
 
 test('child_process.spawn() early errors can use .stdin', testEarlyErrorStream, ({stdin}) => stdin, false);

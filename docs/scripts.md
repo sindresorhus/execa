@@ -5,7 +5,7 @@ With Execa, you can write scripts with Node.js instead of a shell language. [Com
   - [cross-platform](#shell): [no shell](../readme.md#shell-syntax) is used, only JavaScript.
   - [secure](#escaping): no shell injection.
   - [simple](#simplicity): minimalistic API, no [globals](#global-variables), no [binary](#main-binary), no [builtin CLI utilities](#builtin-utilities).
-  - [featureful](#simplicity): all Execa features are available ([process piping](#piping-stdout-to-another-command), [IPC](#ipc), [transforms](#transforms), [background processes](#background-processes), [cancellation](#cancellation), [local binaries](#local-binaries), [cleanup on exit](../readme.md#cleanup), [interleaved output](#interleaved-output), [forceful termination](../readme.md#forcekillafterdelay), etc.).
+  - [featureful](#simplicity): all Execa features are available ([subprocess piping](#piping-stdout-to-another-command), [IPC](#ipc), [transforms](#transforms), [background subprocesses](#background-subprocesses), [cancellation](#cancellation), [local binaries](#local-binaries), [cleanup on exit](../readme.md#cleanup), [interleaved output](#interleaved-output), [forceful termination](../readme.md#forcekillafterdelay), etc.).
   - [easy to debug](#debugging): [verbose mode](#verbose-mode), [detailed errors](#errors), [messages and stack traces](#cancellation), stateless API.
 
 ```js
@@ -644,7 +644,7 @@ await $({cwd: 'project'})`pwd`;
 await $`pwd`;
 ```
 
-### Background processes
+### Background subprocesses
 
 ```sh
 # Bash
@@ -672,11 +672,11 @@ await $({detached: true})`echo one`;
 
 ```js
 // Execa
-const childProcess = $({ipc: true})`node script.js`;
+const subprocess = $({ipc: true})`node script.js`;
 
-childProcess.on('message', message => {
+subprocess.on('message', message => {
 	if (message === 'ping') {
-		childProcess.send('pong');
+		subprocess.send('pong');
 	}
 });
 ```
@@ -711,13 +711,13 @@ kill $PID
 
 ```js
 // zx
-childProcess.kill();
+subprocess.kill();
 ```
 
 ```js
 // Execa
 // Can specify an error message and stack trace
-childProcess.kill(error);
+subprocess.kill(error);
 
 // Or use an `AbortSignal`
 const controller = new AbortController();
@@ -749,7 +749,7 @@ echo $!
 ```
 
 ```js
-// zx does not return `childProcess.pid`
+// zx does not return `subprocess.pid`
 ```
 
 ```js
@@ -781,7 +781,7 @@ Execa's scripting API mostly consists of only two methods: [`` $`command` ``](..
 
 [No special binary](#main-binary) is recommended, no [global variable](#global-variables) is injected: scripts are regular Node.js files.
 
-Execa is a thin wrapper around the core Node.js [`child_process` module](https://nodejs.org/api/child_process.html). Unlike zx, it lets you use [any of its native features](#background-processes): [`pid`](#pid), [IPC](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback), [`unref()`](https://nodejs.org/api/child_process.html#subprocessunref), [`detached`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`uid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`gid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`cancelSignal`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), etc.
+Execa is a thin wrapper around the core Node.js [`child_process` module](https://nodejs.org/api/child_process.html). Unlike zx, it lets you use [any of its native features](#background-subprocesses): [`pid`](#pid), [IPC](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback), [`unref()`](https://nodejs.org/api/child_process.html#subprocessunref), [`detached`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`uid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`gid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`cancelSignal`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), etc.
 
 ### Modularity
 
@@ -797,8 +797,8 @@ Also, [local binaries](#local-binaries) can be directly executed without using `
 
 ### Debugging
 
-Child processes can be hard to debug, which is why Execa includes a [`verbose` option](#verbose-mode).
+Subprocesses can be hard to debug, which is why Execa includes a [`verbose` option](#verbose-mode).
 
-Also, Execa's error messages and [properties](#errors) are very detailed to make it clear to determine why a process failed. Error messages and stack traces can be set with [`childProcess.kill(error)`](../readme.md#killerror).
+Also, Execa's error messages and [properties](#errors) are very detailed to make it clear to determine why a subprocess failed. Error messages and stack traces can be set with [`subprocess.kill(error)`](../readme.md#killerror).
 
 Finally, unlike Bash and zx, which are stateful (options, current directory, etc.), Execa is [purely functional](#current-directory), which also helps with debugging.

@@ -117,7 +117,7 @@ test('failed is true on failure', async t => {
 	t.true(failed);
 });
 
-test('error.isTerminated is true if process was killed directly', async t => {
+test('error.isTerminated is true if subprocess was killed directly', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
 
 	subprocess.kill();
@@ -130,12 +130,12 @@ test('error.isTerminated is true if process was killed directly', async t => {
 	t.is(message, shortMessage);
 });
 
-test('error.isTerminated is true if process was killed indirectly', async t => {
+test('error.isTerminated is true if subprocess was killed indirectly', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGHUP'});
 
 	process.kill(subprocess.pid, 'SIGINT');
 
-	// `process.kill()` is emulated by Node.js on Windows
+	// `subprocess.kill()` is emulated by Node.js on Windows
 	if (isWindows) {
 		const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /failed with exit code 1/});
 		t.is(isTerminated, false);
@@ -152,7 +152,7 @@ test('result.isTerminated is false if not killed', async t => {
 	t.false(isTerminated);
 });
 
-test('result.isTerminated is false if not killed and childProcess.kill() was called', async t => {
+test('result.isTerminated is false if not killed and subprocess.kill() was called', async t => {
 	const subprocess = execa('noop.js');
 	subprocess.kill(0);
 	t.true(subprocess.killed);
@@ -165,12 +165,12 @@ test('result.isTerminated is false if not killed, in sync mode', t => {
 	t.false(isTerminated);
 });
 
-test('result.isTerminated is false on process error', async t => {
+test('result.isTerminated is false on subprocess error', async t => {
 	const {isTerminated} = await t.throwsAsync(execa('wrong command'));
 	t.false(isTerminated);
 });
 
-test('result.isTerminated is false on process error, in sync mode', t => {
+test('result.isTerminated is false on subprocess error, in sync mode', t => {
 	const {isTerminated} = t.throws(() => {
 		execaSync('wrong command');
 	});

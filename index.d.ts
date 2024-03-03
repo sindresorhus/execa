@@ -499,7 +499,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	Signal used to terminate the child process when:
-	- using the `signal`, `timeout`, `maxBuffer` or `cleanup` option
+	- using the `cancelSignal`, `timeout`, `maxBuffer` or `cleanup` option
 	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
 	This can be either a name (like `"SIGTERM"`) or a number (like `9`).
@@ -514,7 +514,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	The grace period is 5 seconds by default. This feature can be disabled with `false`.
 
 	This works when the child process is terminated by either:
-	- the `signal`, `timeout`, `maxBuffer` or `cleanup` option
+	- the `cancelSignal`, `timeout`, `maxBuffer` or `cleanup` option
 	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
 	This does not work when the child process is terminated by either:
@@ -613,7 +613,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	import {execa} from 'execa';
 
 	const abortController = new AbortController();
-	const subprocess = execa('node', [], {signal: abortController.signal});
+	const subprocess = execa('node', [], {cancelSignal: abortController.signal});
 
 	setTimeout(() => {
 		abortController.abort();
@@ -627,7 +627,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	}
 	```
 	*/
-	readonly signal?: IfAsync<IsSync, AbortSignal>;
+	readonly cancelSignal?: IfAsync<IsSync, AbortSignal>;
 };
 
 export type Options = CommonOptions<false>;
@@ -664,7 +664,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	/**
 	The numeric exit code of the process that was run.
 
-	This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal-1).
+	This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal).
 	*/
 	exitCode?: number;
 
@@ -728,7 +728,7 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	cwd: string;
 
 	/**
-	Whether the process was canceled using the [`signal`](https://github.com/sindresorhus/execa#signal-1) option.
+	Whether the process was canceled using the `cancelSignal` option.
 	*/
 	isCanceled: boolean;
 
@@ -1028,7 +1028,7 @@ export function execa<OptionsType extends Options = {}>(
 /**
 Same as `execa()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -1129,7 +1129,7 @@ export function execaCommand<OptionsType extends Options = {}>(
 /**
 Same as `execaCommand()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -1187,7 +1187,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -1241,7 +1241,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `signal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 

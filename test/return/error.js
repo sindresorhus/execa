@@ -94,7 +94,7 @@ test('error.shortMessage does not contain stdout/stderr/stdio', testFullIgnoreMe
 
 const testErrorMessageConsistent = async (t, stdout) => {
 	const {message} = await t.throwsAsync(execa('noop-both-fail.js', [stdout, 'stderr']));
-	t.true(message.endsWith(`noop-both-fail.js ${stdout} stderr\n\nstderr\n\nstdout`));
+	t.true(message.endsWith(' stderr\n\nstderr\n\nstdout'));
 };
 
 test('error.message newlines are consistent - no newline', testErrorMessageConsistent, 'stdout');

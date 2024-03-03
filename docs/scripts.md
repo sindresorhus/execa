@@ -1,6 +1,12 @@
 # Node.js scripts
 
-With Execa, you can write scripts with Node.js instead of a shell language. It is [secure](#escaping), [performant](#performance), [simple](#simplicity) and [cross-platform](#shell).
+With Execa, you can write scripts with Node.js instead of a shell language. [Compared to Bash and zx](#differences-with-bash-and-zx), this is more:
+  - [performant](#performance)
+  - [cross-platform](#shell): [no shell](../readme.md#shell-syntax) is used, only JavaScript.
+  - [secure](#escaping): no shell injection.
+  - [simple](#simplicity): minimalistic API, no [globals](#global-variables), no [binary](#main-binary), no [builtin CLI utilities](#builtin-utilities).
+  - [featureful](#simplicity): all Execa features are available ([process piping](#piping-stdout-to-another-command), [IPC](#ipc), [transforms](#transforms), [background processes](#background-processes), [cancellation](#cancellation), [local binaries](#local-binaries), [cleanup on exit](../readme.md#cleanup), [interleaved output](#interleaved-output), [forceful termination](../readme.md#forcekillafterdelay), etc.).
+  - [easy to debug](#debugging): [verbose mode](#verbose-mode), [detailed errors](#errors), [messages and stack traces](#cancellation), stateless API.
 
 ```js
 import {$} from 'execa';
@@ -22,53 +28,7 @@ const dirName = 'foo bar';
 await $`mkdir /tmp/${dirName}`;
 ```
 
-## Summary
-
-This file describes the differences between Bash, Execa, and [zx](https://github.com/google/zx) (which inspired this feature).
-
-### Flexibility
-
-Unlike shell languages like Bash, libraries like Execa and zx enable you to write scripts with a more featureful programming language (JavaScript). This allows complex logic (such as [parallel execution](#parallel-commands)) to be expressed easily. This also lets you use [any Node.js package](#builtin-utilities).
-
-### Shell
-
-The main difference between Execa and zx is that Execa does not require any shell. Shell-specific keywords and features are [written in JavaScript](#variable-substitution) instead.
-
-This is more cross-platform. For example, your code works the same on Windows machines without Bash installed.
-
-Also, there is no shell syntax to remember: everything is just plain JavaScript.
-
-If you really need a shell though, the [`shell` option](../readme.md#shell) can be used.
-
-### Simplicity
-
-Execa's scripting API mostly consists of only two methods: [`` $`command` ``](../readme.md#command) and [`$(options)`](../readme.md#options).
-
-[No special binary](#main-binary) is recommended, no [global variable](#global-variables) is injected: scripts are regular Node.js files.
-
-Execa is a thin wrapper around the core Node.js [`child_process` module](https://nodejs.org/api/child_process.html). Unlike zx, it lets you use [any of its native features](#background-processes): [`pid`](#pid), [IPC](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback), [`unref()`](https://nodejs.org/api/child_process.html#subprocessunref), [`detached`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`uid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`gid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`cancelSignal`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), etc.
-
-### Modularity
-
-zx includes many builtin utilities: `fetch()`, `question()`, `sleep()`, `stdin()`, `retry()`, `spinner()`, `chalk`, `fs-extra`, `os`, `path`, `globby`, `yaml`, `minimist`, `which`, Markdown scripts, remote scripts.
-
-Execa does not include [any utility](#builtin-utilities): it focuses on being small and modular instead. Any Node.js package can be used in your scripts.
-
-### Performance
-
-Spawning a shell for every command comes at a performance cost, which Execa avoids.
-
-Also, [local binaries](#local-binaries) can be directly executed without using `npx`.
-
-### Debugging
-
-Child processes can be hard to debug, which is why Execa includes a [`verbose` option](#verbose-mode).
-
-Also, Execa's error messages and [properties](#errors) are very detailed to make it clear to determine why a process failed.
-
-Finally, unlike Bash and zx, which are stateful (options, current directory, etc.), Execa is [purely functional](#current-directory), which also helps with debugging.
-
-## Details
+## Examples
 
 ### Main binary
 
@@ -699,6 +659,86 @@ echo one &
 await $({detached: true})`echo one`;
 ```
 
+### IPC
+
+```sh
+# Bash does not allow simple IPC
+```
+
+```js
+// zx does not allow simple IPC
+```
+
+```js
+// Execa
+const childProcess = $({ipc: true})`node script.js`;
+
+childProcess.on('message', message => {
+	if (message === 'ping') {
+		childProcess.send('pong');
+	}
+});
+```
+
+### Transforms
+
+```sh
+# Bash does not allow transforms
+```
+
+```js
+// zx does not allow transforms
+```
+
+```js
+// Execa
+const transform = function * (line) {
+	if (!line.includes('secret')) {
+		yield line;
+	}
+};
+
+await $({stdout: [transform, 'inherit']})`echo ${'This is a secret.'}`;
+```
+
+### Cancellation
+
+```sh
+# Bash
+kill $PID
+```
+
+```js
+// zx
+childProcess.kill();
+```
+
+```js
+// Execa
+// Can specify an error message and stack trace
+childProcess.kill(error);
+
+// Or use an `AbortSignal`
+const controller = new AbortController();
+await $({signal: controller.signal})`node long-script.js`;
+```
+
+### Interleaved output
+
+```sh
+# Bash prints stdout and stderr interleaved
+```
+
+```js
+// zx separates stdout and stderr
+const {stdout, stderr} = await $`node example.js`;
+```
+
+```js
+// Execa can interleave stdout and stderr
+const {all} = await $({all: true})`node example.js`;
+```
+
 ### PID
 
 ```sh
@@ -715,3 +755,49 @@ echo $!
 // Execa
 const {pid} = $`echo example`;
 ```
+
+## Differences with Bash and zx
+
+This section describes the differences between Bash, Execa, and [zx](https://github.com/google/zx) (which inspired this feature).
+
+### Flexibility
+
+Unlike shell languages like Bash, libraries like Execa and zx enable you to write scripts with a more featureful programming language (JavaScript). This allows complex logic (such as [parallel execution](#parallel-commands)) to be expressed easily. This also lets you use [any Node.js package](#builtin-utilities).
+
+### Shell
+
+The main difference between Execa and zx is that Execa does not require any shell. Shell-specific keywords and features are [written in JavaScript](#variable-substitution) instead.
+
+This is more cross-platform. For example, your code works the same on Windows machines without Bash installed.
+
+Also, there is no shell syntax to remember: everything is just plain JavaScript.
+
+If you really need a shell though, the [`shell` option](../readme.md#shell) can be used.
+
+### Simplicity
+
+Execa's scripting API mostly consists of only two methods: [`` $`command` ``](../readme.md#command) and [`$(options)`](../readme.md#options).
+
+[No special binary](#main-binary) is recommended, no [global variable](#global-variables) is injected: scripts are regular Node.js files.
+
+Execa is a thin wrapper around the core Node.js [`child_process` module](https://nodejs.org/api/child_process.html). Unlike zx, it lets you use [any of its native features](#background-processes): [`pid`](#pid), [IPC](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback), [`unref()`](https://nodejs.org/api/child_process.html#subprocessunref), [`detached`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`uid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`gid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`cancelSignal`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), etc.
+
+### Modularity
+
+zx includes many builtin utilities: `fetch()`, `question()`, `sleep()`, `stdin()`, `retry()`, `spinner()`, `chalk`, `fs-extra`, `os`, `path`, `globby`, `yaml`, `minimist`, `which`, Markdown scripts, remote scripts.
+
+Execa does not include [any utility](#builtin-utilities): it focuses on being small and modular instead. Any Node.js package can be used in your scripts.
+
+### Performance
+
+Spawning a shell for every command comes at a performance cost, which Execa avoids.
+
+Also, [local binaries](#local-binaries) can be directly executed without using `npx`.
+
+### Debugging
+
+Child processes can be hard to debug, which is why Execa includes a [`verbose` option](#verbose-mode).
+
+Also, Execa's error messages and [properties](#errors) are very detailed to make it clear to determine why a process failed. Error messages and stack traces can be set with [`childProcess.kill(error)`](../readme.md#killerror).
+
+Finally, unlike Bash and zx, which are stateful (options, current directory, etc.), Execa is [purely functional](#current-directory), which also helps with debugging.

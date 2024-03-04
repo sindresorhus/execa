@@ -144,8 +144,10 @@ rainbows
 > NODE_DEBUG=execa node file.js
 [19:49:00.360] [0] $ echo unicorns
 unicorns
+[19:49:00.383] [0] √ (done in 23ms)
 [19:49:00.383] [1] $ echo rainbows
 rainbows
+[19:49:00.404] [1] √ (done in 21ms)
 ```
 
 ### Input/output
@@ -667,7 +669,7 @@ Requires the [`node`](#node) option to be `true`.
 Type: `'none' | 'short' | 'full'`\
 Default: `'none'`
 
-If `verbose` is `'short'` or `'full'`, [prints each command](#verbose-mode) on `stderr` before executing it.
+If `verbose` is `'short'` or `'full'`, [prints each command](#verbose-mode) on `stderr` before executing it. When the command completes, prints its duration.
 
 If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
 - the [`stdout`](#stdout-1)/[`stderr`](#stderr-1) option is `ignore` or `inherit`.

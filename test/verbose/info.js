@@ -19,7 +19,9 @@ test('Prints command, NODE_DEBUG=execa + "inherit"', async t => {
 	t.deepEqual(getNormalizedLines(all), [
 		`${testTimestamp} [0] $ node -e ${QUOTE}console.error(1)${QUOTE}`,
 		'1',
+		`${testTimestamp} [0] √ (done in 0ms)`,
 		`${testTimestamp} [1] $ node -e ${QUOTE}process.exit(2)${QUOTE}`,
+		`${testTimestamp} [1] ‼ (done in 0ms)`,
 	]);
 });
 

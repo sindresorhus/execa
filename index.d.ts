@@ -543,7 +543,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly windowsHide?: boolean;
 
 	/**
-	If `verbose` is `'short'` or `'full'`, prints each command on `stderr` before executing it.
+	If `verbose` is `'short'` or `'full'`, prints each command on `stderr` before executing it. When the command completes, prints its duration.
 
 	If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
 	- the `stdout`/`stderr` option is `ignore` or `inherit`.

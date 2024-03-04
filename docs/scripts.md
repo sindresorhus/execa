@@ -413,7 +413,7 @@ await $`echo example`;
 Or:
 
 ```
-> NODE_DEBUG=execa node file.js
+NODE_DEBUG=execa node file.js
 ```
 
 Which prints:

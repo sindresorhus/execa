@@ -1440,8 +1440,12 @@ execa('unicorns', {windowsVerbatimArguments: true});
 execaSync('unicorns', {windowsVerbatimArguments: true});
 execa('unicorns', {windowsHide: false});
 execaSync('unicorns', {windowsHide: false});
-execa('unicorns', {verbose: false});
-execaSync('unicorns', {verbose: false});
+execa('unicorns', {verbose: 'none'});
+execaSync('unicorns', {verbose: 'none'});
+execa('unicorns', {verbose: 'short'});
+execaSync('unicorns', {verbose: 'short'});
+execa('unicorns', {verbose: 'full'});
+execaSync('unicorns', {verbose: 'full'});
 expectError(execa('unicorns', {verbose: 'other'}));
 expectError(execaSync('unicorns', {verbose: 'other'}));
 /* eslint-enable @typescript-eslint/no-floating-promises */

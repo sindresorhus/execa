@@ -142,9 +142,9 @@ unicorns
 rainbows
 
 > NODE_DEBUG=execa node file.js
-[19:49:00.360] $ echo unicorns
+[19:49:00.360] [0] $ echo unicorns
 unicorns
-[19:49:00.383] $ echo rainbows
+[19:49:00.383] [1] $ echo rainbows
 rainbows
 ```
 
@@ -315,7 +315,7 @@ This is the preferred method when executing Node.js files.
 
 Same as [`execa()`](#execacommandcommand-options), [`execaCommand()`](#execacommand-command-options), [$\`command\`](#command) but synchronous.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal) and [`lines`](#lines). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal), [`lines`](#lines) and [`verbose: 'full'`](#verbose). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable, a [transform](docs/transform.md) or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 Returns or throws a [`childProcessResult`](#childProcessResult). The [`childProcess`](#childprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -664,12 +664,17 @@ Requires the [`node`](#node) option to be `true`.
 
 #### verbose
 
-Type: `boolean`\
-Default: `false`
+Type: `'none' | 'short' | 'full'`\
+Default: `'none'`
 
-[Print each command](#verbose-mode) on `stderr` before executing it.
+If `verbose` is `'short'` or `'full'`, [prints each command](#verbose-mode) on `stderr` before executing it.
 
-This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
+If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
+- the [`stdout`](#stdout-1)/[`stderr`](#stderr-1) option is `ignore` or `inherit`.
+- the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), [a file](#stdout-1), a file descriptor, or [another child process](#pipefile-arguments-options).
+- the [`encoding`](#encoding) option is set.
+
+This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
 
 #### buffer
 

@@ -69,3 +69,7 @@ export const infiniteGenerator = async function * () {
 		yield value;
 	}
 };
+
+export const uppercaseGenerator = function * (line) {
+	yield line.toUpperCase();
+};

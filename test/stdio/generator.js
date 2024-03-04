@@ -7,7 +7,7 @@ import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUint8Array, foobarBuffer, foobarObject, foobarObjectString} from '../helpers/input.js';
-import {serializeGenerator, outputObjectGenerator, addNoopGenerator} from '../helpers/generator.js';
+import {serializeGenerator, outputObjectGenerator, addNoopGenerator, uppercaseGenerator} from '../helpers/generator.js';
 
 setFixtureDir();
 
@@ -16,10 +16,6 @@ const textDecoder = new TextDecoder();
 
 const foobarUppercase = foobarString.toUpperCase();
 const foobarHex = foobarBuffer.toString('hex');
-
-const uppercaseGenerator = function * (line) {
-	yield line.toUpperCase();
-};
 
 const uppercaseBufferGenerator = function * (line) {
 	yield textDecoder.decode(line).toUpperCase();

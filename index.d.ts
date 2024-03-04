@@ -543,13 +543,18 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly windowsHide?: boolean;
 
 	/**
-	Print each command on `stderr` before executing it.
+	If `verbose` is `'short'` or `'full'`, prints each command on `stderr` before executing it.
 
-	This can also be enabled by setting the `NODE_DEBUG=execa` environment variable in the current process.
+	If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
+	- the `stdout`/`stderr` option is `ignore` or `inherit`.
+	- the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), a file, a file descriptor, or another child process.
+	- the `encoding` option is set.
 
-	@default false
+	This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
+
+	@default 'none'
 	*/
-	readonly verbose?: boolean;
+	readonly verbose?: 'none' | 'short' | 'full';
 
 	/**
 	Kill the spawned process when the parent process exits unless either:
@@ -1028,7 +1033,7 @@ export function execa<OptionsType extends Options = {}>(
 /**
 Same as `execa()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -1129,7 +1134,7 @@ export function execaCommand<OptionsType extends Options = {}>(
 /**
 Same as `execaCommand()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -1187,7 +1192,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
@@ -1241,7 +1246,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
 	Same as $\`command\` but synchronous.
 
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `lines`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 

@@ -54,7 +54,8 @@
 		"npm-run-path": "^5.2.0",
 		"pretty-ms": "^9.0.0",
 		"signal-exit": "^4.1.0",
-		"strip-final-newline": "^4.0.0"
+		"strip-final-newline": "^4.0.0",
+		"yoctocolors": "^2.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^20.8.9",
@@ -67,8 +68,7 @@
 		"tempfile": "^5.0.0",
 		"tsd": "^0.29.0",
 		"which": "^4.0.0",
-		"xo": "^0.56.0",
-		"yoctocolors": "^2.0.0"
+		"xo": "^0.56.0"
 	},
 	"c8": {
 		"reporter": [

@@ -23,6 +23,7 @@ export const runErrorProcess = async (t, verbose, execaMethod) => {
 
 export const runWarningProcess = async (t, execaMethod) => {
 	const {stderr} = await execaMethod('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false});
+	t.true(stderr.includes('exit code 2'));
 	return stderr;
 };
 
@@ -38,6 +39,9 @@ const isCommandLine = line => line.includes(' $ ') || line.includes(' | ');
 export const getOutputLine = stderr => getOutputLines(stderr)[0];
 export const getOutputLines = stderr => getNormalizedLines(stderr).filter(line => isOutputLine(line));
 const isOutputLine = line => line.includes(']   ');
+export const getErrorLine = stderr => getErrorLines(stderr)[0];
+export const getErrorLines = stderr => getNormalizedLines(stderr).filter(line => isErrorLine(line));
+const isErrorLine = line => (line.includes(' × ') || line.includes(' ‼ ')) && !isCompletionLine(line);
 export const getCompletionLine = stderr => getCompletionLines(stderr)[0];
 export const getCompletionLines = stderr => getNormalizedLines(stderr).filter(line => isCompletionLine(line));
 const isCompletionLine = line => line.includes('(done in');

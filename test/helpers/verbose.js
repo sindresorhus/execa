@@ -1,5 +1,6 @@
 import {platform} from 'node:process';
 import {stripVTControlCharacters} from 'node:util';
+import {replaceSymbols} from 'figures';
 import {execa} from '../../index.js';
 import {foobarString} from './input.js';
 
@@ -48,7 +49,7 @@ const isCompletionLine = line => line.includes('(done in');
 export const getNormalizedLines = stderr => splitLines(normalizeStderr(stderr));
 const splitLines = stderr => stderr.split('\n');
 
-const normalizeStderr = stderr => normalizeDuration(normalizeTimestamp(stripVTControlCharacters(stderr)));
+const normalizeStderr = stderr => replaceSymbols(normalizeDuration(normalizeTimestamp(stripVTControlCharacters(stderr))), {useFallback: true});
 export const testTimestamp = '[00:00:00.000]';
 const normalizeTimestamp = stderr => stderr.replaceAll(/^\[\d{2}:\d{2}:\d{2}.\d{3}]/gm, testTimestamp);
 const normalizeDuration = stderr => stderr.replaceAll(/\(done in [^)]+\)/g, '(done in 0ms)');

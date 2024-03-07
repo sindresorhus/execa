@@ -5,6 +5,7 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {foobarString} from '../helpers/input.js';
+import {getEarlyErrorProcess} from '../helpers/early-error.js';
 
 setFixtureDir();
 
@@ -201,7 +202,7 @@ test('Sets the right error message when the "all" option is incompatible - execa
 test('Sets the right error message when the "all" option is incompatible - early error', async t => {
 	await assertPipeError(
 		t,
-		execa('empty.js', {killSignal: false})
+		getEarlyErrorProcess()
 			.pipe(execa('stdin.js', {all: false}))
 			.pipe(execa('empty.js'), {from: 'all'}),
 		'"all" option must be true',

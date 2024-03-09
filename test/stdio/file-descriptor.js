@@ -30,5 +30,5 @@ const testStdinWrite = async (t, fdNumber) => {
 	t.is(stdout, 'unicorns');
 };
 
-test('you can write to child.stdin', testStdinWrite, 0);
-test('you can write to child.stdio[*]', testStdinWrite, 3);
+test('you can write to subprocess.stdin', testStdinWrite, 0);
+test('you can write to subprocess.stdio[*]', testStdinWrite, 3);

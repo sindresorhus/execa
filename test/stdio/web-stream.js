@@ -88,7 +88,7 @@ const testReadableStreamError = async (t, fdNumber) => {
 test('stdin option handles errors in ReadableStream', testReadableStreamError, 0);
 test('stdio[*] option handles errors in ReadableStream', testReadableStreamError, 3);
 
-test('ReadableStream with stdin is canceled on process exit', async t => {
+test('ReadableStream with stdin is canceled on subprocess exit', async t => {
 	let readableStream;
 	const promise = new Promise(resolve => {
 		readableStream = new ReadableStream({cancel: resolve});

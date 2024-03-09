@@ -69,7 +69,7 @@ test('calling abort twice should show the same behaviour as calling it once', as
 	t.true(isCanceled);
 });
 
-test('calling abort on a successfully completed process does not make result.isCanceled true', async t => {
+test('calling abort on a successfully completed subprocess does not make result.isCanceled true', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
 	const result = await subprocess;

@@ -2,7 +2,7 @@
 
 ## Summary
 
-Transforms map or filter the input or output of a child process. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) to the [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) or [`stdio`](../readme.md#stdio-1) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
+Transforms map or filter the input or output of a subprocess. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) to the [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) or [`stdio`](../readme.md#stdio-1) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
 
 ```js
 import {execa} from 'execa';
@@ -56,7 +56,7 @@ Please note the [`lines`](../readme.md#lines) option is unrelated: it has no imp
 
 ## Object mode
 
-By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`. However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null` or `undefined`. The process' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.
+By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`. However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null` or `undefined`. The subprocess' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.
 
 ```js
 const transform = function * (line) {

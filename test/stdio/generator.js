@@ -63,42 +63,42 @@ test('Can use generators with result.stdio[*] as input, objectMode, noop transfo
 // eslint-disable-next-line max-params
 const testGeneratorInputPipe = async (t, useShortcutProperty, objectMode, addNoopTransform, input) => {
 	const {generators, output} = getInputObjectMode(objectMode, addNoopTransform);
-	const childProcess = execa('stdin-fd.js', ['0'], getStdio(0, generators));
-	const stream = useShortcutProperty ? childProcess.stdin : childProcess.stdio[0];
+	const subprocess = execa('stdin-fd.js', ['0'], getStdio(0, generators));
+	const stream = useShortcutProperty ? subprocess.stdin : subprocess.stdio[0];
 	stream.end(...input);
-	const {stdout} = await childProcess;
+	const {stdout} = await subprocess;
 	t.is(stdout, output);
 };
 
-test('Can use generators with childProcess.stdio[0] and default encoding', testGeneratorInputPipe, false, false, false, [foobarString, 'utf8']);
-test('Can use generators with childProcess.stdin and default encoding', testGeneratorInputPipe, true, false, false, [foobarString, 'utf8']);
-test('Can use generators with childProcess.stdio[0] and encoding "buffer"', testGeneratorInputPipe, false, false, false, [foobarBuffer, 'buffer']);
-test('Can use generators with childProcess.stdin and encoding "buffer"', testGeneratorInputPipe, true, false, false, [foobarBuffer, 'buffer']);
-test('Can use generators with childProcess.stdio[0] and encoding "hex"', testGeneratorInputPipe, false, false, false, [foobarHex, 'hex']);
-test('Can use generators with childProcess.stdin and encoding "hex"', testGeneratorInputPipe, true, false, false, [foobarHex, 'hex']);
-test('Can use generators with childProcess.stdio[0], objectMode', testGeneratorInputPipe, false, true, false, [foobarObject]);
-test('Can use generators with childProcess.stdin, objectMode', testGeneratorInputPipe, true, true, false, [foobarObject]);
-test('Can use generators with childProcess.stdio[0] and default encoding, noop transform', testGeneratorInputPipe, false, false, true, [foobarString, 'utf8']);
-test('Can use generators with childProcess.stdin and default encoding, noop transform', testGeneratorInputPipe, true, false, true, [foobarString, 'utf8']);
-test('Can use generators with childProcess.stdio[0] and encoding "buffer", noop transform', testGeneratorInputPipe, false, false, true, [foobarBuffer, 'buffer']);
-test('Can use generators with childProcess.stdin and encoding "buffer", noop transform', testGeneratorInputPipe, true, false, true, [foobarBuffer, 'buffer']);
-test('Can use generators with childProcess.stdio[0] and encoding "hex", noop transform', testGeneratorInputPipe, false, false, true, [foobarHex, 'hex']);
-test('Can use generators with childProcess.stdin and encoding "hex", noop transform', testGeneratorInputPipe, true, false, true, [foobarHex, 'hex']);
-test('Can use generators with childProcess.stdio[0], objectMode, noop transform', testGeneratorInputPipe, false, true, true, [foobarObject]);
-test('Can use generators with childProcess.stdin, objectMode, noop transform', testGeneratorInputPipe, true, true, true, [foobarObject]);
+test('Can use generators with subprocess.stdio[0] and default encoding', testGeneratorInputPipe, false, false, false, [foobarString, 'utf8']);
+test('Can use generators with subprocess.stdin and default encoding', testGeneratorInputPipe, true, false, false, [foobarString, 'utf8']);
+test('Can use generators with subprocess.stdio[0] and encoding "buffer"', testGeneratorInputPipe, false, false, false, [foobarBuffer, 'buffer']);
+test('Can use generators with subprocess.stdin and encoding "buffer"', testGeneratorInputPipe, true, false, false, [foobarBuffer, 'buffer']);
+test('Can use generators with subprocess.stdio[0] and encoding "hex"', testGeneratorInputPipe, false, false, false, [foobarHex, 'hex']);
+test('Can use generators with subprocess.stdin and encoding "hex"', testGeneratorInputPipe, true, false, false, [foobarHex, 'hex']);
+test('Can use generators with subprocess.stdio[0], objectMode', testGeneratorInputPipe, false, true, false, [foobarObject]);
+test('Can use generators with subprocess.stdin, objectMode', testGeneratorInputPipe, true, true, false, [foobarObject]);
+test('Can use generators with subprocess.stdio[0] and default encoding, noop transform', testGeneratorInputPipe, false, false, true, [foobarString, 'utf8']);
+test('Can use generators with subprocess.stdin and default encoding, noop transform', testGeneratorInputPipe, true, false, true, [foobarString, 'utf8']);
+test('Can use generators with subprocess.stdio[0] and encoding "buffer", noop transform', testGeneratorInputPipe, false, false, true, [foobarBuffer, 'buffer']);
+test('Can use generators with subprocess.stdin and encoding "buffer", noop transform', testGeneratorInputPipe, true, false, true, [foobarBuffer, 'buffer']);
+test('Can use generators with subprocess.stdio[0] and encoding "hex", noop transform', testGeneratorInputPipe, false, false, true, [foobarHex, 'hex']);
+test('Can use generators with subprocess.stdin and encoding "hex", noop transform', testGeneratorInputPipe, true, false, true, [foobarHex, 'hex']);
+test('Can use generators with subprocess.stdio[0], objectMode, noop transform', testGeneratorInputPipe, false, true, true, [foobarObject]);
+test('Can use generators with subprocess.stdin, objectMode, noop transform', testGeneratorInputPipe, true, true, true, [foobarObject]);
 
 const testGeneratorStdioInputPipe = async (t, objectMode, addNoopTransform) => {
 	const {input, generators, output} = getInputObjectMode(objectMode, addNoopTransform);
-	const childProcess = execa('stdin-fd.js', ['3'], getStdio(3, [new Uint8Array(), ...generators]));
-	childProcess.stdio[3].write(Array.isArray(input) ? input[0] : input);
-	const {stdout} = await childProcess;
+	const subprocess = execa('stdin-fd.js', ['3'], getStdio(3, [new Uint8Array(), ...generators]));
+	subprocess.stdio[3].write(Array.isArray(input) ? input[0] : input);
+	const {stdout} = await subprocess;
 	t.is(stdout, output);
 };
 
-test('Can use generators with childProcess.stdio[*] as input', testGeneratorStdioInputPipe, false, false);
-test('Can use generators with childProcess.stdio[*] as input, objectMode', testGeneratorStdioInputPipe, true, false);
-test('Can use generators with childProcess.stdio[*] as input, noop transform', testGeneratorStdioInputPipe, false, true);
-test('Can use generators with childProcess.stdio[*] as input, objectMode, noop transform', testGeneratorStdioInputPipe, true, true);
+test('Can use generators with subprocess.stdio[*] as input', testGeneratorStdioInputPipe, false, false);
+test('Can use generators with subprocess.stdio[*] as input, objectMode', testGeneratorStdioInputPipe, true, false);
+test('Can use generators with subprocess.stdio[*] as input, noop transform', testGeneratorStdioInputPipe, false, true);
+test('Can use generators with subprocess.stdio[*] as input, objectMode, noop transform', testGeneratorStdioInputPipe, true, true);
 
 // eslint-disable-next-line max-params
 const testGeneratorOutput = async (t, fdNumber, reject, useShortcutProperty, objectMode, addNoopTransform) => {
@@ -153,32 +153,32 @@ test('Can use generators with error.stdio[*] as output, objectMode, noop transfo
 // eslint-disable-next-line max-params
 const testGeneratorOutputPipe = async (t, fdNumber, useShortcutProperty, objectMode, addNoopTransform) => {
 	const {generators, output, getStreamMethod} = getOutputObjectMode(objectMode, addNoopTransform);
-	const childProcess = execa('noop-fd.js', [`${fdNumber}`, foobarString], {...getStdio(fdNumber, generators), buffer: false});
-	const stream = useShortcutProperty ? [childProcess.stdout, childProcess.stderr][fdNumber - 1] : childProcess.stdio[fdNumber];
-	const [result] = await Promise.all([getStreamMethod(stream), childProcess]);
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`, foobarString], {...getStdio(fdNumber, generators), buffer: false});
+	const stream = useShortcutProperty ? [subprocess.stdout, subprocess.stderr][fdNumber - 1] : subprocess.stdio[fdNumber];
+	const [result] = await Promise.all([getStreamMethod(stream), subprocess]);
 	t.deepEqual(result, output);
 };
 
-test('Can use generators with childProcess.stdio[1]', testGeneratorOutputPipe, 1, false, false, false);
-test('Can use generators with childProcess.stdout', testGeneratorOutputPipe, 1, true, false, false);
-test('Can use generators with childProcess.stdio[2]', testGeneratorOutputPipe, 2, false, false, false);
-test('Can use generators with childProcess.stderr', testGeneratorOutputPipe, 2, true, false, false);
-test('Can use generators with childProcess.stdio[*] as output', testGeneratorOutputPipe, 3, false, false, false);
-test('Can use generators with childProcess.stdio[1], objectMode', testGeneratorOutputPipe, 1, false, true, false);
-test('Can use generators with childProcess.stdout, objectMode', testGeneratorOutputPipe, 1, true, true, false);
-test('Can use generators with childProcess.stdio[2], objectMode', testGeneratorOutputPipe, 2, false, true, false);
-test('Can use generators with childProcess.stderr, objectMode', testGeneratorOutputPipe, 2, true, true, false);
-test('Can use generators with childProcess.stdio[*] as output, objectMode', testGeneratorOutputPipe, 3, false, true, false);
-test('Can use generators with childProcess.stdio[1], noop transform', testGeneratorOutputPipe, 1, false, false, true);
-test('Can use generators with childProcess.stdout, noop transform', testGeneratorOutputPipe, 1, true, false, true);
-test('Can use generators with childProcess.stdio[2], noop transform', testGeneratorOutputPipe, 2, false, false, true);
-test('Can use generators with childProcess.stderr, noop transform', testGeneratorOutputPipe, 2, true, false, true);
-test('Can use generators with childProcess.stdio[*] as output, noop transform', testGeneratorOutputPipe, 3, false, false, true);
-test('Can use generators with childProcess.stdio[1], objectMode, noop transform', testGeneratorOutputPipe, 1, false, true, true);
-test('Can use generators with childProcess.stdout, objectMode, noop transform', testGeneratorOutputPipe, 1, true, true, true);
-test('Can use generators with childProcess.stdio[2], objectMode, noop transform', testGeneratorOutputPipe, 2, false, true, true);
-test('Can use generators with childProcess.stderr, objectMode, noop transform', testGeneratorOutputPipe, 2, true, true, true);
-test('Can use generators with childProcess.stdio[*] as output, objectMode, noop transform', testGeneratorOutputPipe, 3, false, true, true);
+test('Can use generators with subprocess.stdio[1]', testGeneratorOutputPipe, 1, false, false, false);
+test('Can use generators with subprocess.stdout', testGeneratorOutputPipe, 1, true, false, false);
+test('Can use generators with subprocess.stdio[2]', testGeneratorOutputPipe, 2, false, false, false);
+test('Can use generators with subprocess.stderr', testGeneratorOutputPipe, 2, true, false, false);
+test('Can use generators with subprocess.stdio[*] as output', testGeneratorOutputPipe, 3, false, false, false);
+test('Can use generators with subprocess.stdio[1], objectMode', testGeneratorOutputPipe, 1, false, true, false);
+test('Can use generators with subprocess.stdout, objectMode', testGeneratorOutputPipe, 1, true, true, false);
+test('Can use generators with subprocess.stdio[2], objectMode', testGeneratorOutputPipe, 2, false, true, false);
+test('Can use generators with subprocess.stderr, objectMode', testGeneratorOutputPipe, 2, true, true, false);
+test('Can use generators with subprocess.stdio[*] as output, objectMode', testGeneratorOutputPipe, 3, false, true, false);
+test('Can use generators with subprocess.stdio[1], noop transform', testGeneratorOutputPipe, 1, false, false, true);
+test('Can use generators with subprocess.stdout, noop transform', testGeneratorOutputPipe, 1, true, false, true);
+test('Can use generators with subprocess.stdio[2], noop transform', testGeneratorOutputPipe, 2, false, false, true);
+test('Can use generators with subprocess.stderr, noop transform', testGeneratorOutputPipe, 2, true, false, true);
+test('Can use generators with subprocess.stdio[*] as output, noop transform', testGeneratorOutputPipe, 3, false, false, true);
+test('Can use generators with subprocess.stdio[1], objectMode, noop transform', testGeneratorOutputPipe, 1, false, true, true);
+test('Can use generators with subprocess.stdout, objectMode, noop transform', testGeneratorOutputPipe, 1, true, true, true);
+test('Can use generators with subprocess.stdio[2], objectMode, noop transform', testGeneratorOutputPipe, 2, false, true, true);
+test('Can use generators with subprocess.stderr, objectMode, noop transform', testGeneratorOutputPipe, 2, true, true, true);
+test('Can use generators with subprocess.stdio[*] as output, objectMode, noop transform', testGeneratorOutputPipe, 3, false, true, true);
 
 const getAllStdioOption = (stdioOption, encoding, objectMode) => {
 	if (stdioOption) {
@@ -300,9 +300,9 @@ test('Can use generators to a Writable stream', async t => {
 
 test('Can use generators from a Readable stream', async t => {
 	const passThrough = new PassThrough();
-	const childProcess = execa('stdin-fd.js', ['0'], {stdin: [passThrough, uppercaseGenerator]});
+	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [passThrough, uppercaseGenerator]});
 	passThrough.end(foobarString);
-	const {stdout} = await childProcess;
+	const {stdout} = await subprocess;
 	t.is(stdout, foobarUppercase);
 });
 

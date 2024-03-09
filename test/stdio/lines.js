@@ -205,14 +205,14 @@ test('"lines: true" works with other encodings', async t => {
 });
 
 test('"lines: true" works with stream async iteration', async t => {
-	const childProcess = execa('noop.js', {lines: true, stdout: getChunksGenerator(simpleChunk), buffer: false});
-	const [stdout] = await Promise.all([childProcess.stdout.toArray(), childProcess]);
+	const subprocess = execa('noop.js', {lines: true, stdout: getChunksGenerator(simpleChunk), buffer: false});
+	const [stdout] = await Promise.all([subprocess.stdout.toArray(), subprocess]);
 	t.deepEqual(stdout, simpleLines);
 });
 
 test('"lines: true" works with stream "data" events', async t => {
-	const childProcess = execa('noop.js', {lines: true, stdout: getChunksGenerator(simpleChunk), buffer: false});
-	const [[firstLine]] = await Promise.all([once(childProcess.stdout, 'data'), childProcess]);
+	const subprocess = execa('noop.js', {lines: true, stdout: getChunksGenerator(simpleChunk), buffer: false});
+	const [[firstLine]] = await Promise.all([once(subprocess.stdout, 'data'), subprocess]);
 	t.is(firstLine, simpleLines[0]);
 });
 

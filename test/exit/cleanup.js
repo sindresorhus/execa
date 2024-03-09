@@ -10,7 +10,7 @@ setFixtureDir();
 
 const isWindows = process.platform === 'win32';
 
-// When child process exits before parent process
+// When subprocess exits before current process
 const spawnAndExit = async (t, cleanup, detached) => {
 	await t.notThrowsAsync(execa('nested.js', [JSON.stringify({cleanup, detached}), 'noop.js']));
 };
@@ -20,9 +20,9 @@ test('spawnAndExit cleanup', spawnAndExit, true, false);
 test('spawnAndExit detached', spawnAndExit, false, true);
 test('spawnAndExit cleanup detached', spawnAndExit, true, true);
 
-// When parent process exits before child process
+// When current process exits before subprocess
 const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
-	const subprocess = execa('sub-process.js', [cleanup, detached], {stdio: 'ignore', ipc: true});
+	const subprocess = execa('subprocess.js', [cleanup, detached], {stdio: 'ignore', ipc: true});
 
 	const pid = await pEvent(subprocess, 'message');
 	t.true(Number.isInteger(pid));
@@ -36,7 +36,7 @@ const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 	if (isKilled) {
 		await Promise.race([
 			setTimeout(1e4, undefined, {ref: false}),
-			pollForProcessExit(pid),
+			pollForSubprocessExit(pid),
 		]);
 		t.is(isRunning(pid), false);
 	} else {
@@ -45,7 +45,7 @@ const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
 	}
 };
 
-const pollForProcessExit = async pid => {
+const pollForSubprocessExit = async pid => {
 	while (isRunning(pid)) {
 		// eslint-disable-next-line no-await-in-loop
 		await setTimeout(100);
@@ -79,7 +79,7 @@ test('removes exit handler on exit', async t => {
 	t.false(exitListeners.includes(listener));
 });
 
-test('detach child process', async t => {
+test('detach subprocess', async t => {
 	const {stdout} = await execa('detach.js');
 	const pid = Number(stdout);
 	t.true(Number.isInteger(pid));

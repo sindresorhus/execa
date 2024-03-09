@@ -16,19 +16,19 @@ export const nestedExeca = (fixtureName, file, args, options, parentOptions) => 
 export const nestedExecaAsync = nestedExeca.bind(undefined, 'nested.js');
 export const nestedExecaSync = nestedExeca.bind(undefined, 'nested-sync.js');
 
-export const runErrorProcess = async (t, verbose, execaMethod) => {
+export const runErrorSubprocess = async (t, verbose, execaMethod) => {
 	const {stderr} = await t.throwsAsync(execaMethod('noop-fail.js', ['1', foobarString], {verbose}));
 	t.true(stderr.includes('exit code 2'));
 	return stderr;
 };
 
-export const runWarningProcess = async (t, execaMethod) => {
+export const runWarningSubprocess = async (t, execaMethod) => {
 	const {stderr} = await execaMethod('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false});
 	t.true(stderr.includes('exit code 2'));
 	return stderr;
 };
 
-export const runEarlyErrorProcess = async (t, execaMethod) => {
+export const runEarlyErrorSubprocess = async (t, execaMethod) => {
 	const {stderr} = await t.throwsAsync(execaMethod('noop.js', [foobarString], {verbose: 'short', cwd: true}));
 	t.true(stderr.includes('The "cwd" option must'));
 	return stderr;

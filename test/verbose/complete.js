@@ -6,9 +6,9 @@ import {foobarString} from '../helpers/input.js';
 import {
 	nestedExecaAsync,
 	nestedExecaSync,
-	runErrorProcess,
-	runWarningProcess,
-	runEarlyErrorProcess,
+	runErrorSubprocess,
+	runWarningSubprocess,
+	runEarlyErrorSubprocess,
 	getCompletionLine,
 	getCompletionLines,
 	testTimestamp,
@@ -36,7 +36,7 @@ test('Does not print completion, verbose "none"', testNoPrintCompletion, nestedE
 test('Does not print completion, verbose "none", sync', testNoPrintCompletion, nestedExecaSync);
 
 const testPrintCompletionError = async (t, execaMethod) => {
-	const stderr = await runErrorProcess(t, 'short', execaMethod);
+	const stderr = await runErrorSubprocess(t, 'short', execaMethod);
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] × (done in 0ms)`);
 };
 
@@ -44,7 +44,7 @@ test('Prints completion after errors', testPrintCompletionError, nestedExecaAsyn
 test('Prints completion after errors, sync', testPrintCompletionError, nestedExecaSync);
 
 const testPrintCompletionWarning = async (t, execaMethod) => {
-	const stderr = await runWarningProcess(t, execaMethod);
+	const stderr = await runWarningSubprocess(t, execaMethod);
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] ‼ (done in 0ms)`);
 };
 
@@ -52,7 +52,7 @@ test('Prints completion after errors, "reject" false', testPrintCompletionWarnin
 test('Prints completion after errors, "reject" false, sync', testPrintCompletionWarning, nestedExecaSync);
 
 const testPrintCompletionEarly = async (t, execaMethod) => {
-	const stderr = await runEarlyErrorProcess(t, execaMethod);
+	const stderr = await runEarlyErrorSubprocess(t, execaMethod);
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] × (done in 0ms)`);
 };
 
@@ -80,13 +80,13 @@ const testPipeDuration = async (t, fixtureName, sourceVerbose, destinationVerbos
 
 test('Prints both durations piped with .pipe("file")', testPipeDuration, 'file', true, true);
 test('Prints both durations piped with .pipe`command`', testPipeDuration, 'script', true, true);
-test('Prints both durations piped with .pipe(childProcess)', testPipeDuration, 'process', true, true);
+test('Prints both durations piped with .pipe(subprocess)', testPipeDuration, 'subprocesses', true, true);
 test('Prints first duration piped with .pipe("file")', testPipeDuration, 'file', true, false);
 test('Prints first duration piped with .pipe`command`', testPipeDuration, 'script', true, false);
-test('Prints first duration piped with .pipe(childProcess)', testPipeDuration, 'process', true, false);
+test('Prints first duration piped with .pipe(subprocess)', testPipeDuration, 'subprocesses', true, false);
 test('Prints second duration piped with .pipe("file")', testPipeDuration, 'file', false, true);
 test('Prints second duration piped with .pipe`command`', testPipeDuration, 'script', false, true);
-test('Prints second duration piped with .pipe(childProcess)', testPipeDuration, 'process', false, true);
+test('Prints second duration piped with .pipe(subprocess)', testPipeDuration, 'subprocesses', false, true);
 test('Prints neither durations piped with .pipe("file")', testPipeDuration, 'file', false, false);
 test('Prints neither durations piped with .pipe`command`', testPipeDuration, 'script', false, false);
-test('Prints neither durations piped with .pipe(childProcess)', testPipeDuration, 'process', false, false);
+test('Prints neither durations piped with .pipe(subprocess)', testPipeDuration, 'subprocesses', false, false);

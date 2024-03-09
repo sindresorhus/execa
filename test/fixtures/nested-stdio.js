@@ -10,17 +10,17 @@ optionValue = Array.isArray(optionValue) && typeof optionValue[0] === 'string'
 	: optionValue;
 const stdio = ['ignore', 'inherit', 'inherit'];
 stdio[fdNumber] = optionValue;
-const childProcess = execa(file, [`${fdNumber}`, ...args], {stdio});
+const subprocess = execa(file, [`${fdNumber}`, ...args], {stdio});
 
 const shouldPipe = Array.isArray(optionValue) && optionValue.includes('pipe');
-const hasPipe = childProcess.stdio[fdNumber] !== null;
+const hasPipe = subprocess.stdio[fdNumber] !== null;
 
 if (shouldPipe && !hasPipe) {
-	throw new Error(`childProcess.stdio[${fdNumber}] is null.`);
+	throw new Error(`subprocess.stdio[${fdNumber}] is null.`);
 }
 
 if (!shouldPipe && hasPipe) {
-	throw new Error(`childProcess.stdio[${fdNumber}] should be null.`);
+	throw new Error(`subprocess.stdio[${fdNumber}] should be null.`);
 }
 
-await childProcess;
+await subprocess;

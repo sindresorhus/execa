@@ -1,7 +1,7 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getEarlyErrorProcess, getEarlyErrorProcessSync} from '../helpers/early-error.js';
+import {getEarlyErrorSubprocess, getEarlyErrorSubprocessSync} from '../helpers/early-error.js';
 
 setFixtureDir();
 
@@ -36,12 +36,12 @@ test('error.durationMs - sync', t => {
 });
 
 test('error.durationMs - early validation', async t => {
-	const {durationMs} = await t.throwsAsync(getEarlyErrorProcess());
+	const {durationMs} = await t.throwsAsync(getEarlyErrorSubprocess());
 	assertDurationMs(t, durationMs);
 });
 
 test('error.durationMs - early validation, sync', t => {
-	const {durationMs} = t.throws(getEarlyErrorProcessSync);
+	const {durationMs} = t.throws(getEarlyErrorSubprocessSync);
 	assertDurationMs(t, durationMs);
 });
 

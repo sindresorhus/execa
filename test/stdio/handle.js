@@ -21,9 +21,9 @@ test('Cannot pass an empty array to stderr - sync', testEmptyArray, 2, 'stderr',
 test('Cannot pass an empty array to stdio[*] - sync', testEmptyArray, 3, 'stdio[3]', execaSync);
 
 const testNoPipeOption = async (t, stdioOption, fdNumber) => {
-	const childProcess = execa('empty.js', getStdio(fdNumber, stdioOption));
-	t.is(childProcess.stdio[fdNumber], null);
-	await childProcess;
+	const subprocess = execa('empty.js', getStdio(fdNumber, stdioOption));
+	t.is(subprocess.stdio[fdNumber], null);
+	await subprocess;
 };
 
 test('stdin can be "ignore"', testNoPipeOption, 'ignore', 0);

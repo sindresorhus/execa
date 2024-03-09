@@ -8,7 +8,7 @@ import {
 	nestedExeca,
 	nestedExecaAsync,
 	nestedExecaSync,
-	runEarlyErrorProcess,
+	runEarlyErrorSubprocess,
 	getErrorLine,
 	getErrorLines,
 	testTimestamp,
@@ -47,7 +47,7 @@ test('Does not print error if none', testPrintNoError, nestedExecaAsync);
 test('Does not print error if none, sync', testPrintNoError, nestedExecaSync);
 
 const testPrintErrorEarly = async (t, execaMethod) => {
-	const stderr = await runEarlyErrorProcess(t, execaMethod);
+	const stderr = await runEarlyErrorSubprocess(t, execaMethod);
 	t.is(getErrorLine(stderr), `${testTimestamp} [0] × TypeError: The "cwd" option must be a string or a file URL: true.`);
 };
 
@@ -80,16 +80,16 @@ const testPipeError = async (t, fixtureName, sourceVerbose, destinationVerbose) 
 
 test('Prints both errors piped with .pipe("file")', testPipeError, 'file', true, true);
 test('Prints both errors piped with .pipe`command`', testPipeError, 'script', true, true);
-test('Prints both errors piped with .pipe(childProcess)', testPipeError, 'process', true, true);
+test('Prints both errors piped with .pipe(subprocess)', testPipeError, 'subprocesses', true, true);
 test('Prints first error piped with .pipe("file")', testPipeError, 'file', true, false);
 test('Prints first error piped with .pipe`command`', testPipeError, 'script', true, false);
-test('Prints first error piped with .pipe(childProcess)', testPipeError, 'process', true, false);
+test('Prints first error piped with .pipe(subprocess)', testPipeError, 'subprocesses', true, false);
 test('Prints second error piped with .pipe("file")', testPipeError, 'file', false, true);
 test('Prints second error piped with .pipe`command`', testPipeError, 'script', false, true);
-test('Prints second error piped with .pipe(childProcess)', testPipeError, 'process', false, true);
+test('Prints second error piped with .pipe(subprocess)', testPipeError, 'subprocesses', false, true);
 test('Prints neither errors piped with .pipe("file")', testPipeError, 'file', false, false);
 test('Prints neither errors piped with .pipe`command`', testPipeError, 'script', false, false);
-test('Prints neither errors piped with .pipe(childProcess)', testPipeError, 'process', false, false);
+test('Prints neither errors piped with .pipe(subprocess)', testPipeError, 'subprocesses', false, false);
 
 test('Quotes spaces from error', async t => {
 	const {stderr} = await t.throwsAsync(nestedExecaFail('noop-forever.js', ['foo bar'], {verbose: 'short'}));

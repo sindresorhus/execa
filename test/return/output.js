@@ -83,7 +83,7 @@ test('empty error.stdio[0] even with input', async t => {
 // `error.code` is OS-specific here
 const SPAWN_ERROR_CODES = new Set(['EINVAL', 'ENOTSUP', 'EPERM']);
 
-test('stdout/stderr/stdio on process spawning errors', async t => {
+test('stdout/stderr/stdio on subprocess spawning errors', async t => {
 	const {code, stdout, stderr, stdio} = await t.throwsAsync(execa('empty.js', {uid: -1}));
 	t.true(SPAWN_ERROR_CODES.has(code));
 	t.is(stdout, undefined);
@@ -91,7 +91,7 @@ test('stdout/stderr/stdio on process spawning errors', async t => {
 	t.deepEqual(stdio, [undefined, undefined, undefined]);
 });
 
-test('stdout/stderr/all/stdio on process spawning errors - sync', t => {
+test('stdout/stderr/all/stdio on subprocess spawning errors - sync', t => {
 	const {code, stdout, stderr, stdio} = t.throws(() => {
 		execaSync('empty.js', {uid: -1});
 	});

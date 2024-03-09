@@ -313,22 +313,22 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly nodeOptions?: string[];
 
 	/**
-	Write some input to the child process' `stdin`.
+	Write some input to the subprocess' `stdin`.
 
 	See also the `inputFile` and `stdin` options.
 	*/
 	readonly input?: string | Uint8Array | Readable;
 
 	/**
-	Use a file as input to the child process' `stdin`.
+	Use a file as input to the subprocess' `stdin`.
 
 	See also the `input` and `stdin` options.
 	*/
 	readonly inputFile?: string | URL;
 
 	/**
-	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard input. This can be:
-	- `'pipe'`: Sets [`childProcess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
+	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard input. This can be:
+	- `'pipe'`: Sets [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdin`.
 	- `'inherit'`: Re-use the current process' `stdin`.
@@ -349,8 +349,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stdin?: StdinOption<IsSync>;
 
 	/**
-	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard output. This can be:
-	- `'pipe'`: Sets `childProcessResult.stdout` (as a string or `Uint8Array`) and [`childProcess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
+	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard output. This can be:
+	- `'pipe'`: Sets `subprocessResult.stdout` (as a string or `Uint8Array`) and [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdout`.
 	- `'inherit'`: Re-use the current process' `stdout`.
@@ -369,8 +369,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stdout?: StdoutStderrOption<IsSync>;
 
 	/**
-	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the child process' standard error. This can be:
-	- `'pipe'`: Sets `childProcessResult.stderr` (as a string or `Uint8Array`) and [`childProcess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
+	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard error. This can be:
+	- `'pipe'`: Sets `subprocessResult.stderr` (as a string or `Uint8Array`) and [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stderr`.
 	- `'inherit'`: Re-use the current process' `stderr`.
@@ -402,7 +402,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Split `stdout` and `stderr` into lines.
 	- `result.stdout`, `result.stderr`, `result.all` and `result.stdio` are arrays of lines.
-	- `childProcess.stdout`, `childProcess.stderr`, `childProcess.all` and `childProcess.stdio` iterate over lines instead of arbitrary chunks.
+	- `subprocess.stdout`, `subprocess.stderr`, `subprocess.all` and `subprocess.stdio` iterate over lines instead of arbitrary chunks.
 	- Any stream passed to the `stdout`, `stderr` or `stdio` option receives lines instead of arbitrary chunks.
 
 	@default false
@@ -424,7 +424,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stripFinalNewline?: boolean;
 
 	/**
-	If `true`, the child process uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 	If `false`, only the `env` option is used, not `process.env`.
 
 	@default true
@@ -432,7 +432,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly extendEnv?: boolean;
 
 	/**
-	Current working directory of the child process.
+	Current working directory of the subprocess.
 
 	This is also used to resolve the `nodePath` option when it is a relative path.
 
@@ -443,24 +443,24 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Environment key-value pairs.
 
-	Unless the `extendEnv` option is `false`, the child process also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+	Unless the `extendEnv` option is `false`, the subprocess also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 
 	@default process.env
 	*/
 	readonly env?: NodeJS.ProcessEnv;
 
 	/**
-	Explicitly set the value of `argv[0]` sent to the child process. This will be set to `command` or `file` if not specified.
+	Explicitly set the value of `argv[0]` sent to the subprocess. This will be set to `command` or `file` if not specified.
 	*/
 	readonly argv0?: string;
 
 	/**
-	Sets the user identity of the process.
+	Sets the user identity of the subprocess.
 	*/
 	readonly uid?: number;
 
 	/**
-	Sets the group identity of the process.
+	Sets the group identity of the subprocess.
 	*/
 	readonly gid?: number;
 
@@ -484,7 +484,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly encoding?: EncodingOption;
 
 	/**
-	If `timeout` is greater than `0`, the child process will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
+	If `timeout` is greater than `0`, the subprocess will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
 
 	@default 0
 	*/
@@ -498,7 +498,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly maxBuffer?: number;
 
 	/**
-	Signal used to terminate the child process when:
+	Signal used to terminate the subprocess when:
 	- using the `cancelSignal`, `timeout`, `maxBuffer` or `cleanup` option
 	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
@@ -509,20 +509,20 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly killSignal?: string | number;
 
 	/**
-	If the child process is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+	If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
 
 	The grace period is 5 seconds by default. This feature can be disabled with `false`.
 
-	This works when the child process is terminated by either:
+	This works when the subprocess is terminated by either:
 	- the `cancelSignal`, `timeout`, `maxBuffer` or `cleanup` option
 	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
 
-	This does not work when the child process is terminated by either:
+	This does not work when the subprocess is terminated by either:
 	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with an argument
 	- calling [`process.kill(subprocess.pid)`](https://nodejs.org/api/process.html#processkillpid-signal)
 	- sending a termination signal from another process
 
-	Also, this does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events): `SIGKILL` and `SIGTERM` both terminate the process immediately. Other packages (such as [`taskkill`](https://github.com/sindresorhus/taskkill)) can be used to achieve fail-safe termination on Windows.
+	Also, this does not work on Windows, because Windows [doesn't support signals](https://nodejs.org/api/process.html#process_signal_events): `SIGKILL` and `SIGTERM` both terminate the subprocess immediately. Other packages (such as [`taskkill`](https://github.com/sindresorhus/taskkill)) can be used to achieve fail-safe termination on Windows.
 
 	@default 5000
 	*/
@@ -547,7 +547,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
 	- the `stdout`/`stderr` option is `ignore` or `inherit`.
-	- the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), a file, a file descriptor, or another child process.
+	- the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), a file, a file descriptor, or another subprocess.
 	- the `encoding` option is set.
 
 	This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
@@ -557,41 +557,41 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly verbose?: 'none' | 'short' | 'full';
 
 	/**
-	Kill the spawned process when the parent process exits unless either:
-	- the spawned process is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-	- the parent process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+	Kill the subprocess when the current process exits unless either:
+	- the subprocess is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
+	- the current process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
 
 	@default true
 	*/
 	readonly cleanup?: IfAsync<IsSync, boolean>;
 
 	/**
-	Whether to return the child process' output using the `result.stdout`, `result.stderr`, `result.all` and `result.stdio` properties.
+	Whether to return the subprocess' output using the `result.stdout`, `result.stderr`, `result.all` and `result.stdio` properties.
 
 	On failure, the `error.stdout`, `error.stderr`, `error.all` and `error.stdio` properties are used instead.
 
-	When `buffer` is `false`, the output can still be read using the `childProcess.stdout`, `childProcess.stderr`, `childProcess.stdio` and `childProcess.all` streams. If the output is read, this should be done right away to avoid missing any data.
+	When `buffer` is `false`, the output can still be read using the `subprocess.stdout`, `subprocess.stderr`, `subprocess.stdio` and `subprocess.all` streams. If the output is read, this should be done right away to avoid missing any data.
 
 	@default true
 	*/
 	readonly buffer?: IfAsync<IsSync, boolean>;
 
 	/**
-	Add an `.all` property on the promise and the resolved value. The property contains the output of the process with `stdout` and `stderr` interleaved.
+	Add an `.all` property on the promise and the resolved value. The property contains the output of the subprocess with `stdout` and `stderr` interleaved.
 
 	@default false
 	*/
 	readonly all?: IfAsync<IsSync, boolean>;
 
 	/**
-	Enables exchanging messages with the child process using [`childProcess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`childProcess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
+	Enables exchanging messages with the subprocess using [`subprocess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`subprocess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
 
 	@default `true` if the `node` option is enabled, `false` otherwise
 	*/
 	readonly ipc?: IfAsync<IsSync, boolean>;
 
 	/**
-	Specify the kind of serialization used for sending messages between processes when using the `ipc` option:
+	Specify the kind of serialization used for sending messages between subprocesses when using the `ipc` option:
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.
 	- `advanced`: Uses [`v8.serialize()`](https://nodejs.org/api/v8.html#v8_v8_serialize_value)
 
@@ -602,14 +602,14 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly serialization?: IfAsync<IsSync, 'json' | 'advanced'>;
 
 	/**
-	Prepare child to run independently of its parent process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
+	Prepare subprocess to run independently of the current process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
 	@default false
 	*/
 	readonly detached?: IfAsync<IsSync, boolean>;
 
 	/**
-	You can abort the spawned process using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+	You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
 	When `AbortController.abort()` is called, [`.isCanceled`](https://github.com/sindresorhus/execa#iscanceled) becomes `true`.
 
@@ -639,20 +639,20 @@ export type Options = CommonOptions<false>;
 export type SyncOptions = CommonOptions<true>;
 
 /**
-Result of a child process execution. On success this is a plain object. On failure this is also an `Error` instance.
+Result of a subprocess execution. On success this is a plain object. On failure this is also an `Error` instance.
 
-The child process fails when:
+The subprocess fails when:
 - its exit code is not `0`
 - it was terminated with a signal
 - timing out
 - being canceled
-- there's not enough memory or there are already too many child processes
+- there's not enough memory or there are already too many subprocesses
 */
-type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extends CommonOptions = CommonOptions> = {
+type ExecaCommonResult<IsSync extends boolean = boolean, OptionsType extends CommonOptions = CommonOptions> = {
 	/**
 	The file and arguments that were run, for logging purposes.
 
-	This is not escaped and should not be executed directly as a process, including using `execa()` or `execaCommand()`.
+	This is not escaped and should not be executed directly as a subprocess, including using `execa()` or `execaCommand()`.
 	*/
 	command: string;
 
@@ -662,68 +662,68 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	Unlike `command`, control characters are escaped, which makes it safe to print in a terminal.
 
 	This can also be copied and pasted into a shell, for debugging purposes.
-	Since the escaping is fairly basic, this should not be executed directly as a process, including using `execa()` or `execaCommand()`.
+	Since the escaping is fairly basic, this should not be executed directly as a subprocess, including using `execa()` or `execaCommand()`.
 	*/
 	escapedCommand: string;
 
 	/**
-	The numeric exit code of the process that was run.
+	The numeric exit code of the subprocess that was run.
 
-	This is `undefined` when the process could not be spawned or was terminated by a [signal](#signal).
+	This is `undefined` when the subprocess could not be spawned or was terminated by a [signal](#signal).
 	*/
 	exitCode?: number;
 
 	/**
-	The output of the process on `stdout`.
+	The output of the subprocess on `stdout`.
 
 	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
 	*/
 	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
-	The output of the process on `stderr`.
+	The output of the subprocess on `stderr`.
 
 	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
 	*/
 	stderr: StdioOutput<'2', OptionsType>;
 
 	/**
-	The output of the process on `stdin`, `stdout`, `stderr` and other file descriptors.
+	The output of the subprocess on `stdin`, `stdout`, `stderr` and other file descriptors.
 
 	Items are `undefined` when their corresponding `stdio` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
 	stdio: StdioArrayOutput<OptionsType>;
 
 	/**
-	Whether the process failed to run.
+	Whether the subprocess failed to run.
 	*/
 	failed: boolean;
 
 	/**
-	Whether the process timed out.
+	Whether the subprocess timed out.
 	*/
 	timedOut: boolean;
 
 	/**
-	Whether the process was terminated by a signal (like `SIGTERM`) sent by either:
+	Whether the subprocess was terminated by a signal (like `SIGTERM`) sent by either:
 	- The current process.
 	- Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 	*/
 	isTerminated: boolean;
 
 	/**
-	The name of the signal (like `SIGTERM`) that terminated the process, sent by either:
+	The name of the signal (like `SIGTERM`) that terminated the subprocess, sent by either:
 	- The current process.
 	- Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
-	If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`.
+	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`.
 	*/
 	signal?: string;
 
 	/**
-	A human-friendly description of the signal that was used to terminate the process. For example, `Floating point arithmetic error`.
+	A human-friendly description of the signal that was used to terminate the subprocess. For example, `Floating point arithmetic error`.
 
-	If a signal terminated the process, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
+	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 	*/
 	signalDescription?: string;
 
@@ -733,17 +733,17 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	cwd: string;
 
 	/**
-	Duration of the child process, in milliseconds.
+	Duration of the subprocess, in milliseconds.
 	*/
 	durationMs: number;
 
 	/**
-	Whether the process was canceled using the `cancelSignal` option.
+	Whether the subprocess was canceled using the `cancelSignal` option.
 	*/
 	isCanceled: boolean;
 
 	/**
-	The output of the process with `stdout` and `stderr` interleaved.
+	The output of the subprocess with `stdout` and `stderr` interleaved.
 
 	This is `undefined` if either:
 	- the `all` option is `false` (default value)
@@ -754,16 +754,16 @@ type ExecaCommonReturnValue<IsSync extends boolean = boolean, OptionsType extend
 	all: IfAsync<IsSync, AllOutput<OptionsType>>;
 
 	/**
-	Results of the other processes that were piped into this child process. This is useful to inspect a series of child processes piped with each other.
+	Results of the other subprocesses that were piped into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
 
 	This array is initially empty and is populated each time the `.pipe()` method resolves.
 	*/
-	pipedFrom: IfAsync<IsSync, ExecaReturnValue[], []>;
+	pipedFrom: IfAsync<IsSync, ExecaResult[], []>;
 	// Workaround for a TypeScript bug: https://github.com/microsoft/TypeScript/issues/57062
 } & {};
 
-export type ExecaReturnValue<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
-export type ExecaSyncReturnValue<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
+export type ExecaResult<OptionsType extends Options = Options> = ExecaCommonResult<false, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
+export type ExecaSyncResult<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonResult<true, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
 
 type ErrorUnlessReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false
 	? Partial<ExecaCommonError>
@@ -771,34 +771,34 @@ type ErrorUnlessReject<RejectOption extends CommonOptions['reject']> = RejectOpt
 
 type ExecaCommonError = {
 	/**
-	Error message when the child process failed to run. In addition to the underlying error message, it also contains some information related to why the child process errored.
+	Error message when the subprocess failed to run. In addition to the underlying error message, it also contains some information related to why the subprocess errored.
 
-	The child process `stderr`, `stdout` and other file descriptors' output are appended to the end, separated with newlines and not interleaved.
+	The subprocess `stderr`, `stdout` and other file descriptors' output are appended to the end, separated with newlines and not interleaved.
 	*/
 	message: string;
 
 	/**
-	This is the same as the `message` property except it does not include the child process `stdout`/`stderr`/`stdio`.
+	This is the same as the `message` property except it does not include the subprocess `stdout`/`stderr`/`stdio`.
 	*/
 	shortMessage: string;
 
 	/**
-	Original error message. This is the same as the `message` property excluding the child process `stdout`/`stderr`/`stdio` and some additional information added by Execa.
+	Original error message. This is the same as the `message` property excluding the subprocess `stdout`/`stderr`/`stdio` and some additional information added by Execa.
 
-	This is `undefined` unless the child process exited due to an `error` event or a timeout.
+	This is `undefined` unless the subprocess exited due to an `error` event or a timeout.
 	*/
 	originalMessage?: string;
 } & Error;
 
-export type ExecaError<OptionsType extends Options = Options> = ExecaCommonReturnValue<false, OptionsType> & ExecaCommonError;
-export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonReturnValue<true, OptionsType> & ExecaCommonError;
+export type ExecaError<OptionsType extends Options = Options> = ExecaCommonResult<false, OptionsType> & ExecaCommonError;
+export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonResult<true, OptionsType> & ExecaCommonError;
 
 type StreamUnlessIgnored<
 	FdNumber extends string,
 	OptionsType extends Options = Options,
-> = ChildProcessStream<FdNumber, IgnoresStreamResult<FdNumber, OptionsType>, OptionsType>;
+> = SubprocessStream<FdNumber, IgnoresStreamResult<FdNumber, OptionsType>, OptionsType>;
 
-type ChildProcessStream<
+type SubprocessStream<
 	FdNumber extends string,
 	StreamResultIgnored extends boolean,
 	OptionsType extends Options = Options,
@@ -839,56 +839,56 @@ type PipeOptions = {
 	readonly from?: 'stdout' | 'stderr' | 'all' | number;
 
 	/**
-	Unpipe the child process when the signal aborts.
+	Unpipe the subprocess when the signal aborts.
 
 	The `.pipe()` method will be rejected with a cancellation error.
 	*/
 	readonly unpipeSignal?: AbortSignal;
 };
 
-type PipableProcess = {
+type PipableSubprocess = {
 	/**
-	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the child process' `stdout` to a second Execa child process' `stdin`. This resolves with that second process' result. If either process is rejected, this is rejected with that process' error instead.
+	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the subprocess' `stdout` to a second Execa subprocess' `stdin`. This resolves with that second subprocess' result. If either subprocess is rejected, this is rejected with that subprocess' error instead.
 
 	This follows the same syntax as `execa(file, arguments?, options?)` except both regular options and pipe-specific options can be specified.
 
-	This can be called multiple times to chain a series of processes.
+	This can be called multiple times to chain a series of subprocesses.
 
-	Multiple child processes can be piped to the same process. Conversely, the same child process can be piped to multiple other processes.
+	Multiple subprocesses can be piped to the same subprocess. Conversely, the same subprocess can be piped to multiple other subprocesses.
 
-	This is usually the preferred method to pipe processes.
+	This is usually the preferred method to pipe subprocesses.
 	*/
 	pipe<OptionsType extends Options & PipeOptions = {}>(
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: OptionsType,
-	): Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
+	): Promise<ExecaResult<OptionsType>> & PipableSubprocess;
 	pipe<OptionsType extends Options & PipeOptions = {}>(
 		file: string | URL,
 		options?: OptionsType,
-	): Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
+	): Promise<ExecaResult<OptionsType>> & PipableSubprocess;
 
 	/**
 	Like `.pipe(file, arguments?, options?)` but using a `command` template string instead. This follows the same syntax as `$`.
 
-	This is the preferred method to pipe processes when using `$`.
+	This is the preferred method to pipe subprocesses when using `$`.
 	*/
 	pipe(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
-	Promise<ExecaReturnValue<{}>> & PipableProcess;
+	Promise<ExecaResult<{}>> & PipableSubprocess;
 	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
 	(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[])
-	=> Promise<ExecaReturnValue<OptionsType>> & PipableProcess;
+	=> Promise<ExecaResult<OptionsType>> & PipableSubprocess;
 
 	/**
 	Like `.pipe(file, arguments?, options?)` but using the return value of another `execa()` call instead.
 
-	This is the most advanced method to pipe processes. It is useful in specific cases, such as piping multiple child processes to the same process.
+	This is the most advanced method to pipe subprocesses. It is useful in specific cases, such as piping multiple subprocesses to the same subprocess.
 	*/
-	pipe<Destination extends ExecaChildProcess>(destination: Destination, options?: PipeOptions):
-	Promise<Awaited<Destination>> & PipableProcess;
+	pipe<Destination extends ExecaSubprocess>(destination: Destination, options?: PipeOptions):
+	Promise<Awaited<Destination>> & PipableSubprocess;
 };
 
-export type ExecaChildPromise<OptionsType extends Options = Options> = {
+export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	stdin: StreamUnlessIgnored<'0', OptionsType>;
 
 	stdout: StreamUnlessIgnored<'1', OptionsType>;
@@ -906,24 +906,24 @@ export type ExecaChildPromise<OptionsType extends Options = Options> = {
 
 	catch<ResultType = never>(
 		onRejected?: (reason: ExecaError<OptionsType>) => ResultType | PromiseLike<ResultType>
-	): Promise<ExecaReturnValue<OptionsType> | ResultType>;
+	): Promise<ExecaResult<OptionsType> | ResultType>;
 
 	/**
-	Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the child process. The default signal is the `killSignal` option. `killSignal` defaults to `SIGTERM`, which terminates the child process.
+	Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the subprocess. The default signal is the `killSignal` option. `killSignal` defaults to `SIGTERM`, which terminates the subprocess.
 
-	This returns `false` when the signal could not be sent, for example when the child process has already exited.
+	This returns `false` when the signal could not be sent, for example when the subprocess has already exited.
 
-	When an error is passed as argument, its message and stack trace are kept in the child process' error. The child process is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
+	When an error is passed as argument, its message and stack trace are kept in the subprocess' error. The subprocess is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
 
 	[More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 	*/
 	kill(signal: Parameters<ChildProcess['kill']>[0], error?: Error): ReturnType<ChildProcess['kill']>;
 	kill(error?: Error): ReturnType<ChildProcess['kill']>;
-} & PipableProcess;
+} & PipableSubprocess;
 
-export type ExecaChildProcess<OptionsType extends Options = Options> = ChildProcess &
-ExecaChildPromise<OptionsType> &
-Promise<ExecaReturnValue<OptionsType>>;
+export type ExecaSubprocess<OptionsType extends Options = Options> = ChildProcess &
+ExecaResultPromise<OptionsType> &
+Promise<ExecaResult<OptionsType>>;
 
 /**
 Executes a command using `file ...arguments`.
@@ -934,10 +934,10 @@ This is the preferred method when executing single commands.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
-@returns An `ExecaChildProcess` that is both:
-- a `Promise` resolving or rejecting with a `childProcessResult`.
+@returns An `ExecaSubprocess` that is both:
+- a `Promise` resolving or rejecting with a `subprocessResult`.
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `childProcessResult` error
+@throws A `subprocessResult` error
 
 @example <caption>Promise interface</caption>
 ```
@@ -972,7 +972,7 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
-@example <caption>Save and pipe output from a child process</caption>
+@example <caption>Save and pipe output from a subprocess</caption>
 ```
 import {execa} from 'execa';
 
@@ -982,7 +982,7 @@ console.log(stdout);
 // Also returns 'unicorns'
 ```
 
-@example <caption>Pipe multiple processes</caption>
+@example <caption>Pipe multiple subprocesses</caption>
 ```
 import {execa} from 'execa';
 
@@ -1032,23 +1032,23 @@ export function execa<OptionsType extends Options = {}>(
 	file: string | URL,
 	arguments?: readonly string[],
 	options?: OptionsType,
-): ExecaChildProcess<OptionsType>;
+): ExecaSubprocess<OptionsType>;
 export function execa<OptionsType extends Options = {}>(
 	file: string | URL,
 	options?: OptionsType,
-): ExecaChildProcess<OptionsType>;
+): ExecaSubprocess<OptionsType>;
 
 /**
 Same as `execa()` but synchronous.
 
 Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
-Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
-@returns A `childProcessResult` object
-@throws A `childProcessResult` error
+@returns A `subprocessResult` object
+@throws A `subprocessResult` error
 
 @example <caption>Promise interface</caption>
 ```
@@ -1106,11 +1106,11 @@ export function execaSync<OptionsType extends SyncOptions = {}>(
 	file: string | URL,
 	arguments?: readonly string[],
 	options?: OptionsType,
-): ExecaSyncReturnValue<OptionsType>;
+): ExecaSyncResult<OptionsType>;
 export function execaSync<OptionsType extends SyncOptions = {}>(
 	file: string | URL,
 	options?: OptionsType,
-): ExecaSyncReturnValue<OptionsType>;
+): ExecaSyncResult<OptionsType>;
 
 /**
 Executes a command. The `command` string includes both the `file` and its `arguments`.
@@ -1120,10 +1120,10 @@ Arguments are automatically escaped. They can contain any character, but spaces 
 This is the preferred method when executing a user-supplied `command` string, such as in a REPL.
 
 @param command - The program/script to execute and its arguments.
-@returns An `ExecaChildProcess` that is both:
-- a `Promise` resolving or rejecting with a `childProcessResult`.
+@returns An `ExecaSubprocess` that is both:
+- a `Promise` resolving or rejecting with a `subprocessResult`.
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `childProcessResult` error
+@throws A `subprocessResult` error
 
 @example
 ```
@@ -1137,18 +1137,18 @@ console.log(stdout);
 export function execaCommand<OptionsType extends Options = {}>(
 	command: string,
 	options?: OptionsType
-): ExecaChildProcess<OptionsType>;
+): ExecaSubprocess<OptionsType>;
 
 /**
 Same as `execaCommand()` but synchronous.
 
 Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
-Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 @param command - The program/script to execute and its arguments.
-@returns A `childProcessResult` object
-@throws A `childProcessResult` error
+@returns A `subprocessResult` object
+@throws A `subprocessResult` error
 
 @example
 ```
@@ -1162,10 +1162,10 @@ console.log(stdout);
 export function execaCommandSync<OptionsType extends SyncOptions = {}>(
 	command: string,
 	options?: OptionsType
-): ExecaSyncReturnValue<OptionsType>;
+): ExecaSyncResult<OptionsType>;
 
-type TemplateExpression = string | number | ExecaCommonReturnValue
-| Array<string | number | ExecaCommonReturnValue>;
+type TemplateExpression = string | number | ExecaCommonResult
+| Array<string | number | ExecaCommonResult>;
 
 type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**
@@ -1195,17 +1195,17 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	(options: NewOptionsType): Execa$<OptionsType & NewOptionsType>;
 
 	(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
-	ExecaChildProcess<StricterOptions<OptionsType, Options>> & PipableProcess;
+	ExecaSubprocess<StricterOptions<OptionsType, Options>> & PipableSubprocess;
 
 	/**
 	Same as $\`command\` but synchronous.
 
 	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
-	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+	Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-	@returns A `childProcessResult` object
-	@throws A `childProcessResult` error
+	@returns A `subprocessResult` object
+	@throws A `subprocessResult` error
 
 	@example <caption>Basic</caption>
 	```
@@ -1249,17 +1249,17 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	sync(
 		templates: TemplateStringsArray,
 		...expressions: readonly TemplateExpression[]
-	): ExecaSyncReturnValue<StricterOptions<OptionsType, SyncOptions>>;
+	): ExecaSyncResult<StricterOptions<OptionsType, SyncOptions>>;
 
 	/**
 	Same as $\`command\` but synchronous.
 
 	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
-	Returns or throws a `childProcessResult`. The `childProcess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+	Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-	@returns A `childProcessResult` object
-	@throws A `childProcessResult` error
+	@returns A `subprocessResult` object
+	@throws A `subprocessResult` error
 
 	@example <caption>Basic</caption>
 	```
@@ -1303,7 +1303,7 @@ type Execa$<OptionsType extends CommonOptions = {}> = {
 	s(
 		templates: TemplateStringsArray,
 		...expressions: readonly TemplateExpression[]
-	): ExecaSyncReturnValue<StricterOptions<OptionsType, SyncOptions>>;
+	): ExecaSyncResult<StricterOptions<OptionsType, SyncOptions>>;
 };
 
 /**
@@ -1313,12 +1313,12 @@ Arguments are automatically escaped. They can contain any character, but spaces,
 
 This is the preferred method when executing multiple commands in a script file.
 
-The `command` string can inject any `${value}` with the following types: string, number, `childProcess` or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${childProcess}`, the process's `stdout` is used.
+The `command` string can inject any `${value}` with the following types: string, number, `subprocess` or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${subprocess}`, the subprocess's `stdout` is used.
 
-@returns An `ExecaChildProcess` that is both:
-	- a `Promise` resolving or rejecting with a `childProcessResult`.
+@returns An `ExecaSubprocess` that is both:
+	- a `Promise` resolving or rejecting with a `subprocessResult`.
 	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `childProcessResult` error
+@throws A `subprocessResult` error
 
 @example <caption>Basic</caption>
 ```
@@ -1370,10 +1370,10 @@ This is the preferred method when executing Node.js files.
 
 @param scriptPath - Node.js script to execute, as a string or file URL
 @param arguments - Arguments to pass to `scriptPath` on execution.
-@returns An `ExecaChildProcess` that is both:
-- a `Promise` resolving or rejecting with a `childProcessResult`.
+@returns An `ExecaSubprocess` that is both:
+- a `Promise` resolving or rejecting with a `subprocessResult`.
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `childProcessResult` error
+@throws A `subprocessResult` error
 
 @example
 ```
@@ -1386,8 +1386,8 @@ export function execaNode<OptionsType extends Options = {}>(
 	scriptPath: string | URL,
 	arguments?: readonly string[],
 	options?: OptionsType
-): ExecaChildProcess<OptionsType>;
+): ExecaSubprocess<OptionsType>;
 export function execaNode<OptionsType extends Options = {}>(
 	scriptPath: string | URL,
 	options?: OptionsType
-): ExecaChildProcess<OptionsType>;
+): ExecaSubprocess<OptionsType>;

@@ -105,8 +105,8 @@ const manyYieldGenerator = async function * () {
 };
 
 const testManyYields = async (t, final) => {
-	const childProcess = execa('noop.js', {stdout: convertTransformToFinal(manyYieldGenerator, final), buffer: false});
-	const [chunks] = await Promise.all([getStreamAsArray(childProcess.stdout), childProcess]);
+	const subprocess = execa('noop.js', {stdout: convertTransformToFinal(manyYieldGenerator, final), buffer: false});
+	const [chunks] = await Promise.all([getStreamAsArray(subprocess.stdout), subprocess]);
 	const expectedChunk = Buffer.alloc(getDefaultHighWaterMark(false) * chunksPerCall).fill('\n');
 	t.deepEqual(chunks, Array.from({length: callCount}).fill(expectedChunk));
 };
@@ -162,43 +162,43 @@ const testThrowingGenerator = async (t, final) => {
 	);
 };
 
-test('Generators "transform" errors make process fail', testThrowingGenerator, false);
-test('Generators "final" errors make process fail', testThrowingGenerator, true);
+test('Generators "transform" errors make subprocess fail', testThrowingGenerator, false);
+test('Generators "final" errors make subprocess fail', testThrowingGenerator, true);
 
-test('Generators errors make process fail even when other output generators do not throw', async t => {
+test('Generators errors make subprocess fail even when other output generators do not throw', async t => {
 	await t.throwsAsync(
 		execa('noop-fd.js', ['1', foobarString], {stdout: [noopGenerator(false), throwingGenerator, noopGenerator(false)]}),
 		{message: GENERATOR_ERROR_REGEXP},
 	);
 });
 
-test('Generators errors make process fail even when other input generators do not throw', async t => {
-	const childProcess = execa('stdin-fd.js', ['0'], {stdin: [noopGenerator(false), throwingGenerator, noopGenerator(false)]});
-	childProcess.stdin.write('foobar\n');
-	await t.throwsAsync(childProcess, {message: GENERATOR_ERROR_REGEXP});
+test('Generators errors make subprocess fail even when other input generators do not throw', async t => {
+	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [noopGenerator(false), throwingGenerator, noopGenerator(false)]});
+	subprocess.stdin.write('foobar\n');
+	await t.throwsAsync(subprocess, {message: GENERATOR_ERROR_REGEXP});
 });
 
 const testGeneratorCancel = async (t, error) => {
-	const childProcess = execa('noop.js', {stdout: infiniteGenerator});
-	await once(childProcess.stdout, 'data');
-	childProcess.stdout.destroy(error);
-	await (error === undefined ? t.notThrowsAsync(childProcess) : t.throwsAsync(childProcess));
+	const subprocess = execa('noop.js', {stdout: infiniteGenerator});
+	await once(subprocess.stdout, 'data');
+	subprocess.stdout.destroy(error);
+	await (error === undefined ? t.notThrowsAsync(subprocess) : t.throwsAsync(subprocess));
 };
 
-test('Running generators are canceled on process abort', testGeneratorCancel, undefined);
-test('Running generators are canceled on process error', testGeneratorCancel, new Error('test'));
+test('Running generators are canceled on subprocess abort', testGeneratorCancel, undefined);
+test('Running generators are canceled on subprocess error', testGeneratorCancel, new Error('test'));
 
 const testGeneratorDestroy = async (t, transform) => {
-	const childProcess = execa('forever.js', {stdout: transform});
+	const subprocess = execa('forever.js', {stdout: transform});
 	const error = new Error('test');
-	childProcess.stdout.destroy(error);
-	childProcess.kill();
-	t.is(await t.throwsAsync(childProcess), error);
+	subprocess.stdout.destroy(error);
+	subprocess.kill();
+	t.is(await t.throwsAsync(subprocess), error);
 };
 
-test('Generators are destroyed on process error, sync', testGeneratorDestroy, noopGenerator(false));
-test('Generators are destroyed on process error, async', testGeneratorDestroy, infiniteGenerator);
+test('Generators are destroyed on subprocess error, sync', testGeneratorDestroy, noopGenerator(false));
+test('Generators are destroyed on subprocess error, async', testGeneratorDestroy, infiniteGenerator);
 
-test('Generators are destroyed on early process exit', async t => {
+test('Generators are destroyed on early subprocess exit', async t => {
 	await t.throwsAsync(execa('noop.js', {stdout: infiniteGenerator, uid: -1}));
 });

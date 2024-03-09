@@ -20,9 +20,9 @@ const getTypeofGenerator = objectMode => ({
 
 // eslint-disable-next-line max-params
 const testGeneratorFirstEncoding = async (t, input, encoding, output, objectMode) => {
-	const childProcess = execa('stdin.js', {stdin: getTypeofGenerator(objectMode), encoding});
-	childProcess.stdin.end(input);
-	const {stdout} = await childProcess;
+	const subprocess = execa('stdin.js', {stdin: getTypeofGenerator(objectMode), encoding});
+	subprocess.stdin.end(input);
+	const {stdout} = await subprocess;
 	const result = Buffer.from(stdout, encoding).toString();
 	t.is(result, output);
 };
@@ -41,9 +41,9 @@ test('First generator argument can be objects with objectMode', testGeneratorFir
 
 const testEncodingIgnored = async (t, encoding) => {
 	const input = Buffer.from(foobarString).toString(encoding);
-	const childProcess = execa('stdin.js', {stdin: noopGenerator(true)});
-	childProcess.stdin.end(input, encoding);
-	const {stdout} = await childProcess;
+	const subprocess = execa('stdin.js', {stdin: noopGenerator(true)});
+	subprocess.stdin.end(input, encoding);
+	const {stdout} = await subprocess;
 	t.is(stdout, input);
 };
 
@@ -168,11 +168,11 @@ const breakingLength = multibyteUint8Array.length * 0.75;
 const brokenSymbol = '\uFFFD';
 
 const testMultibyte = async (t, objectMode) => {
-	const childProcess = execa('stdin.js', {stdin: noopGenerator(objectMode)});
-	childProcess.stdin.write(multibyteUint8Array.slice(0, breakingLength));
+	const subprocess = execa('stdin.js', {stdin: noopGenerator(objectMode)});
+	subprocess.stdin.write(multibyteUint8Array.slice(0, breakingLength));
 	await scheduler.yield();
-	childProcess.stdin.end(multibyteUint8Array.slice(breakingLength));
-	const {stdout} = await childProcess;
+	subprocess.stdin.end(multibyteUint8Array.slice(breakingLength));
+	const {stdout} = await subprocess;
 	t.is(stdout, multibyteString);
 };
 

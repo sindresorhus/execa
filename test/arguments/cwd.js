@@ -47,7 +47,7 @@ const testErrorCwdDefault = async (t, execaMethod) => {
 test('The "cwd" option defaults to process.cwd()', testErrorCwdDefault, execa);
 test('The "cwd" option defaults to process.cwd() - sync', testErrorCwdDefault, execaSync);
 
-// Windows does not allow removing a directory used as `cwd` of a running process
+// Windows does not allow removing a directory used as `cwd` of a running subprocess
 if (!isWindows) {
 	const testCwdPreSpawn = async (t, execaMethod) => {
 		const currentCwd = process.cwd();

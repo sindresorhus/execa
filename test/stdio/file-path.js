@@ -209,5 +209,5 @@ const testInputFileHanging = async (t, mapFilePath) => {
 	await rm(filePath);
 };
 
-test('Passing an input file path when process exits does not make promise hang', testInputFileHanging, getAbsolutePath);
-test('Passing an input file URL when process exits does not make promise hang', testInputFileHanging, pathToFileURL);
+test('Passing an input file path when subprocess exits does not make promise hang', testInputFileHanging, getAbsolutePath);
+test('Passing an input file URL when subprocess exits does not make promise hang', testInputFileHanging, pathToFileURL);

@@ -5,7 +5,7 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {foobarString} from '../helpers/input.js';
-import {getEarlyErrorProcess} from '../helpers/early-error.js';
+import {getEarlyErrorSubprocess} from '../helpers/early-error.js';
 
 setFixtureDir();
 
@@ -50,12 +50,12 @@ const invalidDestination = async (t, getDestination) => {
 		t,
 		execa('empty.js')
 			.pipe(getDestination()),
-		'an Execa child process',
+		'an Execa subprocess',
 	);
 };
 
-test('pipe() cannot pipe to non-processes', invalidDestination, () => new PassThrough());
-test('pipe() cannot pipe to non-Execa processes', invalidDestination, () => spawn('node', ['--version']));
+test('pipe() cannot pipe to non-subprocesses', invalidDestination, () => new PassThrough());
+test('pipe() cannot pipe to non-Execa subprocesses', invalidDestination, () => spawn('node', ['--version']));
 
 test('pipe() "from" option cannot be "stdin"', async t => {
 	await assertPipeError(
@@ -167,7 +167,7 @@ test('Source stream is aborted when second argument is invalid', async t => {
 	const source = execa('noop.js', [foobarString]);
 	const pipePromise = source.pipe(false);
 
-	await assertPipeError(t, pipePromise, 'an Execa child process');
+	await assertPipeError(t, pipePromise, 'an Execa subprocess');
 	t.like(await source, {stdout: ''});
 });
 
@@ -175,7 +175,7 @@ test('Both arguments might be invalid', async t => {
 	const source = execa('empty.js', {stdout: 'ignore'});
 	const pipePromise = source.pipe(false);
 
-	await assertPipeError(t, pipePromise, 'an Execa child process');
+	await assertPipeError(t, pipePromise, 'an Execa subprocess');
 	t.like(await source, {stdout: undefined});
 });
 
@@ -202,7 +202,7 @@ test('Sets the right error message when the "all" option is incompatible - execa
 test('Sets the right error message when the "all" option is incompatible - early error', async t => {
 	await assertPipeError(
 		t,
-		getEarlyErrorProcess()
+		getEarlyErrorSubprocess()
 			.pipe(execa('stdin.js', {all: false}))
 			.pipe(execa('empty.js'), {from: 'all'}),
 		'"all" option must be true',

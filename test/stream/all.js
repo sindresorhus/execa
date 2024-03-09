@@ -21,25 +21,25 @@ test('result.all is undefined if ignored', async t => {
 });
 
 const testAllProperties = async (t, options) => {
-	const childProcess = execa('empty.js', {...options, all: true});
-	t.is(childProcess.all.readableObjectMode, false);
-	t.is(childProcess.all.readableHighWaterMark, getDefaultHighWaterMark(false));
-	await childProcess;
+	const subprocess = execa('empty.js', {...options, all: true});
+	t.is(subprocess.all.readableObjectMode, false);
+	t.is(subprocess.all.readableHighWaterMark, getDefaultHighWaterMark(false));
+	await subprocess;
 };
 
-test('childProcess.all has the right objectMode and highWaterMark - stdout + stderr', testAllProperties, {});
-test('childProcess.all has the right objectMode and highWaterMark - stdout only', testAllProperties, {stderr: 'ignore'});
-test('childProcess.all has the right objectMode and highWaterMark - stderr only', testAllProperties, {stdout: 'ignore'});
+test('subprocess.all has the right objectMode and highWaterMark - stdout + stderr', testAllProperties, {});
+test('subprocess.all has the right objectMode and highWaterMark - stdout only', testAllProperties, {stderr: 'ignore'});
+test('subprocess.all has the right objectMode and highWaterMark - stderr only', testAllProperties, {stdout: 'ignore'});
 
 const testAllIgnore = async (t, streamName, otherStreamName) => {
-	const childProcess = execa('noop-both.js', {[otherStreamName]: 'ignore', all: true});
-	t.is(childProcess[otherStreamName], null);
-	t.not(childProcess[streamName], null);
-	t.not(childProcess.all, null);
-	t.is(childProcess.all.readableObjectMode, childProcess[streamName].readableObjectMode);
-	t.is(childProcess.all.readableHighWaterMark, childProcess[streamName].readableHighWaterMark);
+	const subprocess = execa('noop-both.js', {[otherStreamName]: 'ignore', all: true});
+	t.is(subprocess[otherStreamName], null);
+	t.not(subprocess[streamName], null);
+	t.not(subprocess.all, null);
+	t.is(subprocess.all.readableObjectMode, subprocess[streamName].readableObjectMode);
+	t.is(subprocess.all.readableHighWaterMark, subprocess[streamName].readableHighWaterMark);
 
-	const result = await childProcess;
+	const result = await subprocess;
 	t.is(result[otherStreamName], undefined);
 	t.is(result[streamName], 'foobar');
 	t.is(result.all, 'foobar');
@@ -49,12 +49,12 @@ test('can use all: true with stdout: ignore', testAllIgnore, 'stderr', 'stdout')
 test('can use all: true with stderr: ignore', testAllIgnore, 'stdout', 'stderr');
 
 test('can use all: true with stdout: ignore + stderr: ignore', async t => {
-	const childProcess = execa('noop-both.js', {stdout: 'ignore', stderr: 'ignore', all: true});
-	t.is(childProcess.stdout, null);
-	t.is(childProcess.stderr, null);
-	t.is(childProcess.all, undefined);
+	const subprocess = execa('noop-both.js', {stdout: 'ignore', stderr: 'ignore', all: true});
+	t.is(subprocess.stdout, null);
+	t.is(subprocess.stderr, null);
+	t.is(subprocess.all, undefined);
 
-	const {stdout, stderr, all} = await childProcess;
+	const {stdout, stderr, all} = await subprocess;
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
 	t.is(all, undefined);

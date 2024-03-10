@@ -105,10 +105,11 @@ const manyYieldGenerator = async function * () {
 };
 
 const testManyYields = async (t, final) => {
-	const subprocess = execa('noop.js', {stdout: convertTransformToFinal(manyYieldGenerator, final), buffer: false});
-	const [chunks] = await Promise.all([getStreamAsArray(subprocess.stdout), subprocess]);
-	const expectedChunk = Buffer.alloc(defaultHighWaterMark * chunksPerCall).fill('\n');
-	t.deepEqual(chunks, Array.from({length: callCount}).fill(expectedChunk));
+	const subprocess = execa('noop.js', {stdout: convertTransformToFinal(manyYieldGenerator, final), stripFinalNewline: false});
+	const [chunks, {stdout}] = await Promise.all([getStreamAsArray(subprocess.stdout), subprocess]);
+	const expectedChunk = Buffer.from(fullString);
+	t.deepEqual(chunks, Array.from({length: callCount * partsPerChunk * chunksPerCall}).fill(expectedChunk));
+	t.is(chunks.join(''), stdout);
 };
 
 test('Generator "transform" yields are sent right away', testManyYields, false);

@@ -50,7 +50,7 @@
 		"@sindresorhus/merge-streams": "^3.0.0",
 		"cross-spawn": "^7.0.3",
 		"figures": "^6.1.0",
-		"get-stream": "^8.0.1",
+		"get-stream": "^9.0.0",
 		"human-signals": "^6.0.0",
 		"is-plain-obj": "^4.1.0",
 		"is-stream": "^4.0.1",

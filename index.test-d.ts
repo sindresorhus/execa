@@ -590,7 +590,7 @@ try {
 		expectType<string>(error.cwd);
 		expectType<number>(error.durationMs);
 		expectType<string>(error.shortMessage);
-		expectType<string | undefined>(error.originalMessage);
+		expectType<string>(error.originalMessage);
 		expectType<string | undefined>(error.code);
 		expectType<unknown>(error.cause);
 		expectType<ExecaResult[]>(error.pipedFrom);
@@ -713,12 +713,12 @@ try {
 }
 
 const rejectsResult = await execa('unicorns');
-expectError(rejectsResult.stack);
-expectError(rejectsResult.message);
-expectError(rejectsResult.shortMessage);
-expectError(rejectsResult.originalMessage);
-expectError(rejectsResult.code);
-expectError(rejectsResult.cause);
+expectError(rejectsResult.stack?.toString());
+expectError(rejectsResult.message?.toString());
+expectError(rejectsResult.shortMessage?.toString());
+expectError(rejectsResult.originalMessage?.toString());
+expectError(rejectsResult.code?.toString());
+expectError(rejectsResult.cause?.valueOf());
 
 const noRejectsResult = await execa('unicorns', {reject: false});
 expectType<string | undefined>(noRejectsResult.stack);
@@ -816,7 +816,7 @@ try {
 		expectType<string>(error.cwd);
 		expectType<number>(error.durationMs);
 		expectType<string>(error.shortMessage);
-		expectType<string | undefined>(error.originalMessage);
+		expectType<string>(error.originalMessage);
 		expectType<string | undefined>(error.code);
 		expectType<unknown>(error.cause);
 		expectType<[]>(error.pipedFrom);
@@ -881,10 +881,12 @@ try {
 }
 
 const rejectsSyncResult = execaSync('unicorns');
-expectError(rejectsSyncResult.stack);
-expectError(rejectsSyncResult.message);
-expectError(rejectsSyncResult.shortMessage);
-expectError(rejectsSyncResult.originalMessage);
+expectError(rejectsSyncResult.stack?.toString());
+expectError(rejectsSyncResult.message?.toString());
+expectError(rejectsSyncResult.shortMessage?.toString());
+expectError(rejectsSyncResult.originalMessage?.toString());
+expectError(rejectsSyncResult.code?.toString());
+expectError(rejectsSyncResult.cause?.valueOf());
 
 const noRejectsSyncResult = execaSync('unicorns', {reject: false});
 expectType<string | undefined>(noRejectsSyncResult.stack);

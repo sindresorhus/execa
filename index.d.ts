@@ -638,12 +638,10 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 export type Options = CommonOptions<false>;
 export type SyncOptions = CommonOptions<true>;
 
-/**
-Result of a subprocess execution.
-
-When the subprocess fails, it is rejected with an `ExecaError` instead.
-*/
-type CommonResult<IsSync extends boolean = boolean, OptionsType extends CommonOptions = CommonOptions> = {
+declare abstract class CommonResult<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> {
 	/**
 	The file and arguments that were run, for logging purposes.
 
@@ -754,28 +752,18 @@ type CommonResult<IsSync extends boolean = boolean, OptionsType extends CommonOp
 	This array is initially empty and is populated each time the `.pipe()` method resolves.
 	*/
 	pipedFrom: IfAsync<IsSync, ExecaResult[], []>;
-	// Workaround for a TypeScript bug: https://github.com/microsoft/TypeScript/issues/57062
-} & {};
 
-export type ExecaResult<OptionsType extends Options = Options> = CommonResult<false, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
-export type ExecaSyncResult<OptionsType extends SyncOptions = SyncOptions> = CommonResult<true, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
-
-type ErrorUnlessReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false
-	? Partial<CommonError>
-	: {};
-
-type CommonError = {
 	/**
 	Error message when the subprocess failed to run. In addition to the underlying error message, it also contains some information related to why the subprocess errored.
 
 	The subprocess `stderr`, `stdout` and other file descriptors' output are appended to the end, separated with newlines and not interleaved.
 	*/
-	message: string;
+	message?: string;
 
 	/**
 	This is the same as the `message` property except it does not include the subprocess `stdout`/`stderr`/`stdio`.
 	*/
-	shortMessage: string;
+	shortMessage?: string;
 
 	/**
 	Original error message. This is the same as the `message` property excluding the subprocess `stdout`/`stderr`/`stdio` and some additional information added by Execa.
@@ -795,150 +783,58 @@ type CommonError = {
 	Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), when available.
 	*/
 	code?: string;
-} & Error;
 
-declare class CommonErrorClass<IsSync extends boolean, OptionsType extends Options = Options> extends Error {
-	/**
-	Error message when the subprocess failed to run. In addition to the underlying error message, it also contains some information related to why the subprocess errored.
+	// We cannot `extend Error` because `message` must be optional. So we copy its types here.
+	readonly name?: Error['name'];
+	stack?: Error['stack'];
+}
 
-	The subprocess `stderr`, `stdout` and other file descriptors' output are appended to the end, separated with newlines and not interleaved.
-	*/
-	message: CommonError['message'];
+type CommonResultInstance<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> = InstanceType<typeof CommonResult<IsSync, OptionsType>>;
 
-	/**
-	This is the same as the `message` property except it does not include the subprocess `stdout`/`stderr`/`stdio`.
-	*/
-	shortMessage: CommonError['shortMessage'];
+type SuccessResult<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> = CommonResultInstance<IsSync, OptionsType> & OmitErrorIfReject<OptionsType['reject']>;
 
-	/**
-	Original error message. This is the same as the `message` property excluding the subprocess `stdout`/`stderr`/`stdio` and some additional information added by Execa.
+type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false
+	? {}
+	: {[ErrorProperty in ErrorProperties]: never};
 
-	This is `undefined` unless the subprocess exited due to an `error` event or a timeout.
-	*/
-	originalMessage?: CommonError['originalMessage'];
+type ErrorProperties =
+  | 'name'
+  | 'message'
+  | 'stack'
+  | 'cause'
+  | 'shortMessage'
+  | 'originalMessage'
+  | 'code';
 
-	/**
-	Underlying error, if there is one. For example, this is set by `.kill(error)`.
+/**
+Result of a subprocess execution.
 
-	This is usually an `Error` instance.
-	*/
-	cause?: CommonError['cause'];
+When the subprocess fails, it is rejected with an `ExecaError` instead.
+*/
+export type ExecaResult<OptionsType extends Options = Options> = SuccessResult<false, OptionsType>;
 
-	/**
-	Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), when available.
-	*/
-	code?: CommonError['code'];
+/**
+Result of a subprocess execution.
 
-	/**
-	The file and arguments that were run, for logging purposes.
+When the subprocess fails, it is rejected with an `ExecaError` instead.
+*/
+export type ExecaSyncResult<OptionsType extends SyncOptions = SyncOptions> = SuccessResult<true, OptionsType>;
 
-	This is not escaped and should not be executed directly as a subprocess, including using `execa()` or `execaCommand()`.
-	*/
-	command: CommonResult<IsSync, OptionsType>['command'];
-
-	/**
-	Same as `command` but escaped.
-
-	Unlike `command`, control characters are escaped, which makes it safe to print in a terminal.
-
-	This can also be copied and pasted into a shell, for debugging purposes.
-	Since the escaping is fairly basic, this should not be executed directly as a subprocess, including using `execa()` or `execaCommand()`.
-	*/
-	escapedCommand: CommonResult<IsSync, OptionsType>['escapedCommand'];
-
-	/**
-	The numeric exit code of the subprocess that was run.
-
-	This is `undefined` when the subprocess could not be spawned or was terminated by a [signal](#signal).
-	*/
-	exitCode?: CommonResult<IsSync, OptionsType>['exitCode'];
-
-	/**
-	The output of the subprocess on `stdout`.
-
-	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
-	*/
-	stdout: CommonResult<IsSync, OptionsType>['stdout'];
-
-	/**
-	The output of the subprocess on `stderr`.
-
-	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
-	*/
-	stderr: CommonResult<IsSync, OptionsType>['stderr'];
-
-	/**
-	The output of the subprocess on `stdin`, `stdout`, `stderr` and other file descriptors.
-
-	Items are `undefined` when their corresponding `stdio` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a transform in object mode.
-	*/
-	stdio: CommonResult<IsSync, OptionsType>['stdio'];
-
-	/**
-	Whether the subprocess failed to run.
-	*/
-	failed: CommonResult<IsSync, OptionsType>['failed'];
-
-	/**
-	Whether the subprocess timed out.
-	*/
-	timedOut: CommonResult<IsSync, OptionsType>['timedOut'];
-
-	/**
-	Whether the subprocess was terminated by a signal (like `SIGTERM`) sent by either:
-	- The current process.
-	- Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
-	*/
-	isTerminated: CommonResult<IsSync, OptionsType>['isTerminated'];
-
-	/**
-	The name of the signal (like `SIGTERM`) that terminated the subprocess, sent by either:
-	- The current process.
-	- Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
-
-	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`.
-	*/
-	signal?: CommonResult<IsSync, OptionsType>['signal'];
-
-	/**
-	A human-friendly description of the signal that was used to terminate the subprocess. For example, `Floating point arithmetic error`.
-
-	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
-	*/
-	signalDescription?: CommonResult<IsSync, OptionsType>['signalDescription'];
-
-	/**
-	The current directory in which the command was run.
-	*/
-	cwd: CommonResult<IsSync, OptionsType>['cwd'];
-
-	/**
-	Duration of the subprocess, in milliseconds.
-	*/
-	durationMs: CommonResult<IsSync, OptionsType>['durationMs'];
-
-	/**
-	Whether the subprocess was canceled using the `cancelSignal` option.
-	*/
-	isCanceled: CommonResult<IsSync, OptionsType>['isCanceled'];
-
-	/**
-	The output of the subprocess with `stdout` and `stderr` interleaved.
-
-	This is `undefined` if either:
-	- the `all` option is `false` (default value)
-	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
-
-	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
-	*/
-	all: CommonResult<IsSync, OptionsType>['all'];
-
-	/**
-	Results of the other subprocesses that were piped into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
-
-	This array is initially empty and is populated each time the `.pipe()` method resolves.
-	*/
-	pipedFrom: CommonResult<IsSync, OptionsType>['pipedFrom'];
+declare abstract class CommonError<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> extends CommonResult<IsSync, OptionsType> {
+	readonly name: NonNullable<CommonResult['name']>;
+	message: NonNullable<CommonResult['message']>;
+	stack: NonNullable<CommonResult['stack']>;
+	shortMessage: NonNullable<CommonResult['shortMessage']>;
+	originalMessage: NonNullable<CommonResult['originalMessage']>;
 }
 
 /**
@@ -951,7 +847,7 @@ Exception thrown when the subprocess [fails](#failed), either:
 
 This has the same shape as successful results, with a few additional properties.
 */
-export class ExecaError<OptionsType extends Options = Options> extends CommonErrorClass<false, OptionsType> {
+export class ExecaError<OptionsType extends Options = Options> extends CommonError<false, OptionsType> {
 	readonly name: 'ExecaError';
 }
 
@@ -965,7 +861,7 @@ Exception thrown when the subprocess [fails](#failed), either:
 
 This has the same shape as successful results, with a few additional properties.
 */
-export class ExecaSyncError<OptionsType extends Options = Options> extends CommonErrorClass<true, OptionsType> {
+export class ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> extends CommonError<true, OptionsType> {
 	readonly name: 'ExecaSyncError';
 }
 
@@ -1352,8 +1248,8 @@ export function execaCommandSync<OptionsType extends SyncOptions = {}>(
 	options?: OptionsType
 ): ExecaSyncResult<OptionsType>;
 
-type TemplateExpression = string | number | CommonResult
-| Array<string | number | CommonResult>;
+type TemplateExpression = string | number | CommonResultInstance
+| Array<string | number | CommonResultInstance>;
 
 type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**

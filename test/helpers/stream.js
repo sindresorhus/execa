@@ -7,3 +7,4 @@ export const noopDuplex = () => new PassThrough().resume();
 export const simpleReadable = () => Readable.from([foobarString]);
 
 export const defaultHighWaterMark = getDefaultHighWaterMark(false);
+export const defaultObjectHighWaterMark = getDefaultHighWaterMark(true);

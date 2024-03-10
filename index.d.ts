@@ -1,5 +1,5 @@
 import {type ChildProcess} from 'node:child_process';
-import {type Readable, type Writable} from 'node:stream';
+import {type Readable, type Writable, type Duplex} from 'node:stream';
 
 type IfAsync<IsSync extends boolean, AsyncValue, SyncValue = never> = IsSync extends true ? SyncValue : AsyncValue;
 
@@ -402,7 +402,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Split `stdout` and `stderr` into lines.
 	- `result.stdout`, `result.stderr`, `result.all` and `result.stdio` are arrays of lines.
-	- `subprocess.stdout`, `subprocess.stderr`, `subprocess.all` and `subprocess.stdio` iterate over lines instead of arbitrary chunks.
+	- `subprocess.stdout`, `subprocess.stderr`, `subprocess.all`, `subprocess.stdio`, `subprocess.readable()` and `subprocess.duplex()` iterate over lines instead of arbitrary chunks.
 	- Any stream passed to the `stdout`, `stderr` or `stdio` option receives lines instead of arbitrary chunks.
 
 	@default false
@@ -902,18 +902,21 @@ type AllIfStderr<StderrResultIgnored extends boolean> = StderrResultIgnored exte
 	? undefined
 	: Readable;
 
+type FromOption = 'stdout' | 'stderr' | 'all' | number;
+type ToOption = 'stdin' | number;
+
 type PipeOptions = {
 	/**
 	Which stream to pipe from the source subprocess. A file descriptor number can also be passed.
 
 	`"all"` pipes both `stdout` and `stderr`. This requires the `all` option to be `true`.
 	*/
-	readonly from?: 'stdout' | 'stderr' | 'all' | number;
+	readonly from?: FromOption;
 
 	/**
 	Which stream to pipe to the destination subprocess. A file descriptor number can also be passed.
 	*/
-	readonly to?: 'stdin' | number;
+	readonly to?: ToOption;
 
 	/**
 	Unpipe the subprocess when the signal aborts.
@@ -965,6 +968,24 @@ type PipableSubprocess = {
 	Promise<Awaited<Destination>> & PipableSubprocess;
 };
 
+type ReadableStreamOptions = {
+	/**
+	Which stream to read from the subprocess. A file descriptor number can also be passed.
+
+	`"all"` reads both `stdout` and `stderr`. This requires the `all` option to be `true`.
+	*/
+	readonly from?: FromOption;
+};
+
+type WritableStreamOptions = {
+	/**
+	Which stream to write to the subprocess. A file descriptor number can also be passed.
+	*/
+	readonly to?: ToOption;
+};
+
+type DuplexStreamOptions = ReadableStreamOptions & WritableStreamOptions;
+
 export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	stdin: StreamUnlessIgnored<'0', OptionsType>;
 
@@ -996,6 +1017,33 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	*/
 	kill(signal: Parameters<ChildProcess['kill']>[0], error?: Error): ReturnType<ChildProcess['kill']>;
 	kill(error?: Error): ReturnType<ChildProcess['kill']>;
+
+	/**
+	Converts the subprocess to a readable stream.
+
+	Unlike [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
+
+	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
+	*/
+	readable(streamOptions?: ReadableStreamOptions): Readable;
+
+	/**
+	Converts the subprocess to a writable stream.
+
+	Unlike [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options) or [`await pipeline(stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) which throw an exception when the stream errors.
+
+	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
+	*/
+	writable(streamOptions?: WritableStreamOptions): Writable;
+
+	/**
+	Converts the subprocess to a duplex stream.
+
+	The stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
+
+	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
+	*/
+	duplex(streamOptions?: DuplexStreamOptions): Duplex;
 } & PipableSubprocess;
 
 export type ExecaSubprocess<OptionsType extends Options = Options> = ChildProcess &

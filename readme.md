@@ -438,6 +438,63 @@ When an error is passed as argument, it is set to the subprocess' [`error.cause`
 
 [More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 
+#### readable(streamOptions?)
+
+`streamOptions`: [`StreamOptions`](#streamoptions)\
+_Returns_: [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable) Node.js stream
+
+Converts the subprocess to a readable stream.
+
+Unlike [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](#subprocessresult). This means you do not need to `await` the subprocess' [promise](#subprocess). On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
+
+Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
+
+#### writable(streamOptions?)
+
+`streamOptions`: [`StreamOptions`](#streamoptions)\
+_Returns_: [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) Node.js stream
+
+Converts the subprocess to a writable stream.
+
+Unlike [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](#subprocessresult). This means you do not need to `await` the subprocess' [promise](#subprocess). On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options) or [`await pipeline(stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) which throw an exception when the stream errors.
+
+Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
+
+#### duplex(streamOptions?)
+
+`streamOptions`: [`StreamOptions`](#streamoptions)\
+_Returns_: [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) Node.js stream
+
+Converts the subprocess to a duplex stream.
+
+The stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](#subprocessresult). This means you do not need to `await` the subprocess' [promise](#subprocess). On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
+
+Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
+
+##### streamOptions
+
+Type: `object`
+
+##### streamOptions.from
+
+Type: `"stdout" | "stderr" | "all" | number`\
+Default: `"stdout"`
+
+Which stream to read from the subprocess. A file descriptor number can also be passed.
+
+`"all"` reads both `stdout` and `stderr`. This requires the [`all` option](#all-2) to be `true`.
+
+Only available with [`.readable()`](#readablestreamoptions) and [`.duplex()`](#duplexstreamoptions), not [`.writable()`](#writablestreamoptions).
+
+##### streamOptions.to
+
+Type: `"stdin" | number`\
+Default: `"stdin"`
+
+Which stream to write to the subprocess. A file descriptor number can also be passed.
+
+Only available with [`.writable()`](#writablestreamoptions) and [`.duplex()`](#duplexstreamoptions), not [`.readable()`](#readablestreamoptions).
+
 ### SubprocessResult
 
 Type: `object`
@@ -844,7 +901,7 @@ Default: `false`
 
 Split `stdout` and `stderr` into lines.
 - [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) are arrays of lines.
-- [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all) and [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio) iterate over lines instead of arbitrary chunks.
+- [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all), [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio), [`subprocess.readable()`](#readablestreamoptions) and [`subprocess.duplex`](#duplexstreamoptions) iterate over lines instead of arbitrary chunks.
 - Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
 
 #### encoding

@@ -12,13 +12,13 @@ import {
 	execaCommand,
 	execaCommandSync,
 	execaNode,
+	ExecaError,
+	ExecaSyncError,
 	type Options,
 	type ExecaResult,
 	type ExecaSubprocess,
-	type ExecaError,
 	type SyncOptions,
 	type ExecaSyncResult,
-	type ExecaSyncError,
 } from './index.js';
 
 const fileUrl = new URL('file:///test');
@@ -576,25 +576,28 @@ try {
 	expectType<string>(falseFalseObjectTransformResult.all);
 	expectType<[undefined, string, string]>(falseFalseObjectTransformResult.stdio);
 } catch (error: unknown) {
-	const execaError = error as ExecaError;
-
-	expectType<string>(execaError.message);
-	expectType<number | undefined>(execaError.exitCode);
-	expectType<boolean>(execaError.failed);
-	expectType<boolean>(execaError.timedOut);
-	expectType<boolean>(execaError.isCanceled);
-	expectType<boolean>(execaError.isTerminated);
-	expectType<string | undefined>(execaError.signal);
-	expectType<string | undefined>(execaError.signalDescription);
-	expectType<string>(execaError.cwd);
-	expectType<number>(execaError.durationMs);
-	expectType<string>(execaError.shortMessage);
-	expectType<string | undefined>(execaError.originalMessage);
-	expectType<ExecaResult[]>(execaError.pipedFrom);
-
-	expectType<undefined>(execaError.stdio[0]);
+	if (error instanceof ExecaError) {
+		expectAssignable<ExecaError>(error);
+		expectType<'ExecaError'>(error.name);
+		expectType<string>(error.message);
+		expectType<number | undefined>(error.exitCode);
+		expectType<boolean>(error.failed);
+		expectType<boolean>(error.timedOut);
+		expectType<boolean>(error.isCanceled);
+		expectType<boolean>(error.isTerminated);
+		expectType<string | undefined>(error.signal);
+		expectType<string | undefined>(error.signalDescription);
+		expectType<string>(error.cwd);
+		expectType<number>(error.durationMs);
+		expectType<string>(error.shortMessage);
+		expectType<string | undefined>(error.originalMessage);
+		expectType<string | undefined>(error.code);
+		expectType<unknown>(error.cause);
+		expectType<ExecaResult[]>(error.pipedFrom);
+	}
 
 	const noAllError = error as ExecaError<{}>;
+	expectType<undefined>(noAllError.stdio[0]);
 	expectType<undefined>(noAllError.all);
 
 	const execaStringError = error as ExecaError<{all: true}>;
@@ -714,12 +717,16 @@ expectError(rejectsResult.stack);
 expectError(rejectsResult.message);
 expectError(rejectsResult.shortMessage);
 expectError(rejectsResult.originalMessage);
+expectError(rejectsResult.code);
+expectError(rejectsResult.cause);
 
 const noRejectsResult = await execa('unicorns', {reject: false});
 expectType<string | undefined>(noRejectsResult.stack);
 expectType<string | undefined>(noRejectsResult.message);
 expectType<string | undefined>(noRejectsResult.shortMessage);
 expectType<string | undefined>(noRejectsResult.originalMessage);
+expectType<string | undefined>(noRejectsResult.code);
+expectType<unknown>(noRejectsResult.cause);
 
 try {
 	const unicornsResult = execaSync('unicorns');
@@ -795,26 +802,28 @@ try {
 	expectType<undefined>(numberStderrResult.stderr);
 	expectError(numberStderrResult.all.toString());
 } catch (error: unknown) {
-	const execaError = error as ExecaSyncError;
-
-	expectType<ExecaSyncError>(execaError);
-	expectType<string>(execaError.message);
-	expectType<number | undefined>(execaError.exitCode);
-	expectType<boolean>(execaError.failed);
-	expectType<boolean>(execaError.timedOut);
-	expectType<boolean>(execaError.isCanceled);
-	expectType<boolean>(execaError.isTerminated);
-	expectType<string | undefined>(execaError.signal);
-	expectType<string | undefined>(execaError.signalDescription);
-	expectType<string>(execaError.cwd);
-	expectType<number>(execaError.durationMs);
-	expectType<string>(execaError.shortMessage);
-	expectType<string | undefined>(execaError.originalMessage);
-	expectType<[]>(execaError.pipedFrom);
-
-	expectType<undefined>(execaError.stdio[0]);
+	if (error instanceof ExecaSyncError) {
+		expectAssignable<ExecaSyncError>(error);
+		expectType<'ExecaSyncError'>(error.name);
+		expectType<string>(error.message);
+		expectType<number | undefined>(error.exitCode);
+		expectType<boolean>(error.failed);
+		expectType<boolean>(error.timedOut);
+		expectType<boolean>(error.isCanceled);
+		expectType<boolean>(error.isTerminated);
+		expectType<string | undefined>(error.signal);
+		expectType<string | undefined>(error.signalDescription);
+		expectType<string>(error.cwd);
+		expectType<number>(error.durationMs);
+		expectType<string>(error.shortMessage);
+		expectType<string | undefined>(error.originalMessage);
+		expectType<string | undefined>(error.code);
+		expectType<unknown>(error.cause);
+		expectType<[]>(error.pipedFrom);
+	}
 
 	const execaStringError = error as ExecaSyncError<{}>;
+	expectType<undefined>(execaStringError.stdio[0]);
 	expectType<string>(execaStringError.stdout);
 	expectType<string>(execaStringError.stdio[1]);
 	expectType<string>(execaStringError.stderr);

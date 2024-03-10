@@ -166,15 +166,15 @@ test('Throws EPIPE when output subprocess.stdio[*] Duplex aborts with more write
 // eslint-disable-next-line max-params
 const testStreamError = async (t, streamMethod, stream, fdNumber, useTransform) => {
 	const subprocess = execa('empty.js', getStreamStdio(fdNumber, stream, useTransform));
-	const error = new Error('test');
-	streamMethod({stream, subprocess, fdNumber, error});
+	const cause = new Error('test');
+	streamMethod({stream, subprocess, fdNumber, error: cause});
 
-	t.is(await t.throwsAsync(subprocess), error);
-	const {exitCode, signal, isTerminated, failed} = error;
-	t.is(exitCode, 0);
-	t.is(signal, undefined);
-	t.false(isTerminated);
-	t.true(failed);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.is(error.exitCode, 0);
+	t.is(error.signal, undefined);
+	t.false(error.isTerminated);
+	t.true(error.failed);
 	t.true(stream.destroyed);
 };
 

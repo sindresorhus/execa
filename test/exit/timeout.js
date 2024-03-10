@@ -68,8 +68,9 @@ test('timedOut is false if timeout is undefined and exit code is 0 in sync mode'
 
 test('timedOut is true if the timeout happened after a different error occurred', async t => {
 	const subprocess = execa('forever.js', {timeout: 1e3});
-	const error = new Error('test');
-	subprocess.emit('error', error);
-	t.is(await t.throwsAsync(subprocess), error);
+	const cause = new Error('test');
+	subprocess.emit('error', cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	t.true(error.timedOut);
 });

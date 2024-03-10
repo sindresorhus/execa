@@ -60,14 +60,14 @@ test('stderr waits for WritableStream completion', testLongWritableStream, 2);
 test('stdio[*] waits for WritableStream completion', testLongWritableStream, 3);
 
 const testWritableStreamError = async (t, fdNumber) => {
-	const error = new Error('foobar');
+	const cause = new Error('foobar');
 	const writableStream = new WritableStream({
 		start(controller) {
-			controller.error(error);
+			controller.error(cause);
 		},
 	});
-	const thrownError = await t.throwsAsync(execa('noop.js', getStdio(fdNumber, writableStream)));
-	t.is(thrownError, error);
+	const error = await t.throwsAsync(execa('noop.js', getStdio(fdNumber, writableStream)));
+	t.is(error.cause, cause);
 };
 
 test('stdout option handles errors in WritableStream', testWritableStreamError, 1);
@@ -75,14 +75,14 @@ test('stderr option handles errors in WritableStream', testWritableStreamError, 
 test('stdio[*] option handles errors in WritableStream', testWritableStreamError, 3);
 
 const testReadableStreamError = async (t, fdNumber) => {
-	const error = new Error('foobar');
+	const cause = new Error('foobar');
 	const readableStream = new ReadableStream({
 		start(controller) {
-			controller.error(error);
+			controller.error(cause);
 		},
 	});
-	const thrownError = await t.throwsAsync(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, readableStream)));
-	t.is(thrownError, error);
+	const error = await t.throwsAsync(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, readableStream)));
+	t.is(error.cause, cause);
 };
 
 test('stdin option handles errors in ReadableStream', testReadableStreamError, 0);

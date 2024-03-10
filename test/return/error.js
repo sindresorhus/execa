@@ -47,6 +47,7 @@ test('Error properties are not missing and are ordered', async t => {
 		'exitCode',
 		'signal',
 		'signalDescription',
+		'code',
 		'stdout',
 		'stderr',
 		'all',

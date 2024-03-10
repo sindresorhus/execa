@@ -72,10 +72,11 @@ const createFileWriteStream = async () => {
 };
 
 const assertFileStreamError = async (t, subprocess, stream, filePath) => {
-	const error = new Error('test');
-	stream.destroy(error);
+	const cause = new Error('test');
+	stream.destroy(cause);
 
-	t.is(await t.throwsAsync(subprocess), error);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	t.is(error.exitCode, 0);
 	t.is(error.signal, undefined);
 
@@ -226,14 +227,14 @@ test('Waits for custom streams destroy on subprocess errors', async t => {
 });
 
 test('Handles custom streams destroy errors on subprocess success', async t => {
-	const error = new Error('test');
+	const cause = new Error('test');
 	const stream = new Writable({
 		destroy(destroyError, done) {
-			done(destroyError ?? error);
+			done(destroyError ?? cause);
 		},
 	});
-	const thrownError = await t.throwsAsync(execa('empty.js', {stdout: [stream, 'pipe']}));
-	t.is(thrownError, error);
+	const error = await t.throwsAsync(execa('empty.js', {stdout: [stream, 'pipe']}));
+	t.is(error.cause, cause);
 });
 
 const testStreamEarlyExit = async (t, stream, streamName) => {
@@ -281,11 +282,11 @@ test('subprocess.stdio[*] is ended when an input stream aborts', testInputStream
 
 const testInputStreamError = async (t, fdNumber) => {
 	const stream = new PassThrough();
-	const error = new Error(foobarString);
-	stream.destroy(error);
+	const cause = new Error(foobarString);
+	stream.destroy(cause);
 
 	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, new Uint8Array()]));
-	t.is(await t.throwsAsync(subprocess), error);
+	t.like(await t.throwsAsync(subprocess), {cause});
 	t.true(subprocess.stdio[fdNumber].writableEnded);
 };
 
@@ -294,11 +295,11 @@ test('subprocess.stdio[*] is ended when an input stream errors', testInputStream
 
 const testOutputStreamError = async (t, fdNumber) => {
 	const stream = new PassThrough();
-	const error = new Error(foobarString);
-	stream.destroy(error);
+	const cause = new Error(foobarString);
+	stream.destroy(cause);
 
 	const subprocess = execa('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stream, 'pipe']));
-	t.is(await t.throwsAsync(subprocess), error);
+	t.like(await t.throwsAsync(subprocess), {cause});
 	t.true(subprocess.stdio[fdNumber].readableAborted);
 	t.is(subprocess.stdio[fdNumber].errored, null);
 };

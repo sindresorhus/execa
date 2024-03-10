@@ -484,7 +484,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly encoding?: EncodingOption;
 
 	/**
-	If `timeout` is greater than `0`, the subprocess will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
+	If `timeout` is greater than `0`, the subprocess will be terminated if it runs for longer than that amount of milliseconds.
 
 	@default 0
 	*/
@@ -611,7 +611,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-	When `AbortController.abort()` is called, [`.isCanceled`](https://github.com/sindresorhus/execa#iscanceled) becomes `true`.
+	When `AbortController.abort()` is called, `.isCanceled` becomes `true`.
 
 	@example
 	```
@@ -662,7 +662,7 @@ declare abstract class CommonResult<
 	/**
 	The numeric exit code of the subprocess that was run.
 
-	This is `undefined` when the subprocess could not be spawned or was terminated by a [signal](#signal).
+	This is `undefined` when the subprocess could not be spawned or was terminated by a signal.
 	*/
 	exitCode?: number;
 
@@ -838,7 +838,7 @@ declare abstract class CommonError<
 }
 
 /**
-Exception thrown when the subprocess [fails](#failed), either:
+Exception thrown when the subprocess fails, either:
 - its exit code is not `0`
 - it was terminated with a signal, including `.kill()`
 - timing out
@@ -852,7 +852,7 @@ export class ExecaError<OptionsType extends Options = Options> extends CommonErr
 }
 
 /**
-Exception thrown when the subprocess [fails](#failed), either:
+Exception thrown when the subprocess fails, either:
 - its exit code is not `0`
 - it was terminated with a signal, including `.kill()`
 - timing out

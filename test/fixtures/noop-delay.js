@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {writeSync} from 'node:fs';
 import {setTimeout} from 'node:timers/promises';
+import {getWriteStream} from '../helpers/fs.js';
+import {foobarString} from '../helpers/input.js';
 
-writeSync(Number(process.argv[2]), 'foobar');
+const fdNumber = Number(process.argv[2]);
+getWriteStream(fdNumber).write(foobarString);
 await setTimeout(100);

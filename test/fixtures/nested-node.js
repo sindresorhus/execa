@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {writeSync} from 'node:fs';
+import {getWriteStream} from '../helpers/fs.js';
 import {execa, execaNode} from '../../index.js';
 
 const [fakeExecArgv, execaMethod, nodeOptions, file, ...args] = process.argv.slice(2);
@@ -14,4 +14,4 @@ const {stdout, stderr} = await (execaMethod === 'execaNode'
 	? execaNode(file, args, {nodeOptions: filteredNodeOptions})
 	: execa(file, args, {nodeOptions: filteredNodeOptions, node: true}));
 console.log(stdout);
-writeSync(3, stderr);
+getWriteStream(3).write(stderr);

@@ -1,10 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {readFileSync} from 'node:fs';
+import {getReadStream} from '../helpers/fs.js';
 
 const fdNumber = Number(process.argv[2]);
-if (fdNumber === 0) {
-	process.stdin.pipe(process.stdout);
-} else {
-	process.stdout.write(readFileSync(fdNumber));
-}
+getReadStream(fdNumber).pipe(process.stdout);

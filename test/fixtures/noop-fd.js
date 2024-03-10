@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {writeSync} from 'node:fs';
+import {getWriteStream} from '../helpers/fs.js';
+import {foobarString} from '../helpers/input.js';
 
-writeSync(Number(process.argv[2]), process.argv[3] || 'foobar');
+const fdNumber = Number(process.argv[2]);
+const bytes = process.argv[3] || foobarString;
+getWriteStream(fdNumber).write(bytes);

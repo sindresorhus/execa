@@ -20,7 +20,7 @@ console.log(stdout); // HELLO
 
 The `line` argument passed to the transform is a string. If the [`encoding`](../readme.md#encoding) option is `buffer`, it is an `Uint8Array` instead.
 
-The transform can `yield` either a `string` or an `Uint8Array`, regardless of the `lines` argument's type.
+The transform can `yield` either a `string` or an `Uint8Array`, regardless of the `line` argument's type.
 
 ## Filtering
 
@@ -49,8 +49,8 @@ await execa('./binary.js', {stdout: {transform, binary: true}});
 ```
 
 This is more efficient and recommended if the data is either:
-	- Binary: Which does not have lines.
-	- Text: But the transform works even if a line or word is split across multiple chunks.
+- Binary: Which does not have lines.
+- Text: But the transform works even if a line or word is split across multiple chunks.
 
 Please note the [`lines`](../readme.md#lines) option is unrelated: it has no impact on transforms.
 

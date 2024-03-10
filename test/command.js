@@ -50,11 +50,13 @@ test('execaCommandSync() must use a string', testInvalidCommand, execaCommandSyn
 test('execaCommand() must have an argument', testInvalidCommand, execaCommand, undefined);
 test('execaCommandSync() must have an argument', testInvalidCommand, execaCommandSync, undefined);
 
-const testInvalidArgs = (t, execaCommand) => {
+const testInvalidArgs = (t, secondArgument, execaCommand) => {
 	t.throws(() => {
-		execaCommand('echo', ['']);
-	}, {message: /Last argument must be an options object/});
+		execaCommand('echo', secondArgument);
+	}, {message: /The command and its arguments must be passed as a single string/});
 };
 
-test('execaCommand() must not pass an array of arguments', testInvalidArgs, execaCommand);
-test('execaCommandSync() must not pass an array of arguments', testInvalidArgs, execaCommandSync);
+test('execaCommand() must not pass an array of arguments', testInvalidArgs, [''], execaCommand);
+test('execaCommandSync() must not pass an array of arguments', testInvalidArgs, [''], execaCommandSync);
+test('execaCommand() must not pass non-options as second argument', testInvalidArgs, '', execaCommand);
+test('execaCommandSync() must not pass non-options as second argument', testInvalidArgs, '', execaCommandSync);

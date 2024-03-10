@@ -848,7 +848,7 @@ Enables exchanging messages with the subprocess using [`subprocess.send(value)`]
 #### serialization
 
 Type: `string`\
-Default: `'json'`
+Default: `'advanced'`
 
 Specify the kind of serialization used for sending messages between subprocesses when using the [`ipc`](#ipc) option:
 	- `json`: Uses `JSON.stringify()` and `JSON.parse()`.

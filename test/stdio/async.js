@@ -19,14 +19,13 @@ const getComplexStdio = isMultiple => ({
 	stderr: ['pipe', 'inherit', ...(isMultiple ? [2, process.stderr] : [])],
 });
 
-const onStdinRemoveListener = () => once(process.stdin, 'removeListener', {cleanup: true});
+const onStdinRemoveListener = () => once(process.stdin, 'removeListener');
 
 const testListenersCleanup = async (t, isMultiple) => {
 	const streamsPreviousListeners = getStandardStreamsListeners();
 	const subprocess = execa('empty.js', getComplexStdio(isMultiple));
 	t.notDeepEqual(getStandardStreamsListeners(), streamsPreviousListeners);
-	await subprocess;
-	await onStdinRemoveListener();
+	await Promise.all([subprocess, onStdinRemoveListener()]);
 	if (isMultiple) {
 		await onStdinRemoveListener();
 	}

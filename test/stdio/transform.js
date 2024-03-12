@@ -1,7 +1,6 @@
 import {Buffer} from 'node:buffer';
 import {once} from 'node:events';
 import {setTimeout, scheduler} from 'node:timers/promises';
-import {getDefaultHighWaterMark} from 'node:stream';
 import test from 'ava';
 import {getStreamAsArray} from 'get-stream';
 import {execa} from '../../index.js';
@@ -15,6 +14,7 @@ import {
 	convertTransformToFinal,
 	noYieldGenerator,
 } from '../helpers/generator.js';
+import {defaultHighWaterMark} from '../helpers/stream.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -27,7 +27,7 @@ const testGeneratorFinal = async (t, fixtureName) => {
 test('Generators "final" can be used', testGeneratorFinal, 'noop.js');
 test('Generators "final" is used even on empty streams', testGeneratorFinal, 'empty.js');
 
-const repeatCount = getDefaultHighWaterMark() * 3;
+const repeatCount = defaultHighWaterMark * 3;
 
 const writerGenerator = function * () {
 	for (let index = 0; index < repeatCount; index += 1) {
@@ -90,7 +90,7 @@ test('Generator can yield "final" multiple times at different moments', testMult
 const partsPerChunk = 4;
 const chunksPerCall = 10;
 const callCount = 5;
-const fullString = '\n'.repeat(getDefaultHighWaterMark(false) / partsPerChunk);
+const fullString = '\n'.repeat(defaultHighWaterMark / partsPerChunk);
 
 const yieldFullStrings = function * () {
 	yield * Array.from({length: partsPerChunk * chunksPerCall}).fill(fullString);
@@ -107,7 +107,7 @@ const manyYieldGenerator = async function * () {
 const testManyYields = async (t, final) => {
 	const subprocess = execa('noop.js', {stdout: convertTransformToFinal(manyYieldGenerator, final), buffer: false});
 	const [chunks] = await Promise.all([getStreamAsArray(subprocess.stdout), subprocess]);
-	const expectedChunk = Buffer.alloc(getDefaultHighWaterMark(false) * chunksPerCall).fill('\n');
+	const expectedChunk = Buffer.alloc(defaultHighWaterMark * chunksPerCall).fill('\n');
 	t.deepEqual(chunks, Array.from({length: callCount}).fill(expectedChunk));
 };
 

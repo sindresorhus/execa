@@ -1,7 +1,7 @@
-import {getDefaultHighWaterMark} from 'node:stream';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {defaultHighWaterMark} from '../helpers/stream.js';
 
 setFixtureDir();
 
@@ -23,7 +23,7 @@ test('result.all is undefined if ignored', async t => {
 const testAllProperties = async (t, options) => {
 	const subprocess = execa('empty.js', {...options, all: true});
 	t.is(subprocess.all.readableObjectMode, false);
-	t.is(subprocess.all.readableHighWaterMark, getDefaultHighWaterMark(false));
+	t.is(subprocess.all.readableHighWaterMark, defaultHighWaterMark);
 	await subprocess;
 };
 

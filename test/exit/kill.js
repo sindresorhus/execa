@@ -179,7 +179,7 @@ test('Cannot call .kill(null)', testInvalidKillArgument, null);
 test('Cannot call .kill(0n)', testInvalidKillArgument, 0n);
 test('Cannot call .kill(true)', testInvalidKillArgument, true);
 test('Cannot call .kill(errorObject)', testInvalidKillArgument, {name: '', message: '', stack: ''});
-test('Cannot call .kill([error])', testInvalidKillArgument, [new Error('test')]);
+test('Cannot call .kill(errorArray)', testInvalidKillArgument, [new Error('test')]);
 test('Cannot call .kill(undefined, true)', testInvalidKillArgument, undefined, true);
 test('Cannot call .kill("SIGTERM", true)', testInvalidKillArgument, 'SIGTERM', true);
 test('Cannot call .kill(true, error)', testInvalidKillArgument, true, new Error('test'));

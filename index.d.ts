@@ -597,7 +597,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	[More info.](https://nodejs.org/api/child_process.html#child_process_advanced_serialization)
 
-	@default 'json'
+	@default 'advanced'
 	*/
 	readonly serialization?: IfAsync<IsSync, 'json' | 'advanced'>;
 

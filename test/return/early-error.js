@@ -2,6 +2,7 @@ import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync, $} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {fullStdio} from '../helpers/stdio.js';
 import {earlyErrorOptions, getEarlyErrorSubprocess, getEarlyErrorSubprocessSync, expectedEarlyError} from '../helpers/early-error.js';
 
 setFixtureDir();
@@ -77,8 +78,8 @@ test('child_process.spawn() early errors can use .pipe() multiple times', testEa
 test('child_process.spawn() early errors can use .pipe``', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`);
 test('child_process.spawn() early errors can use .pipe`` multiple times', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`.pipe`empty.js`);
 
-const testEarlyErrorStream = async (t, getStreamProperty, all) => {
-	const subprocess = getEarlyErrorSubprocess({all});
+const testEarlyErrorStream = async (t, getStreamProperty, options) => {
+	const subprocess = getEarlyErrorSubprocess(options);
 	const stream = getStreamProperty(subprocess);
 	stream.on('close', () => {});
 	stream.read?.();
@@ -86,8 +87,9 @@ const testEarlyErrorStream = async (t, getStreamProperty, all) => {
 	await t.throwsAsync(subprocess);
 };
 
-test('child_process.spawn() early errors can use .stdin', testEarlyErrorStream, ({stdin}) => stdin, false);
-test('child_process.spawn() early errors can use .stdout', testEarlyErrorStream, ({stdout}) => stdout, false);
-test('child_process.spawn() early errors can use .stderr', testEarlyErrorStream, ({stderr}) => stderr, false);
-test('child_process.spawn() early errors can use .stdio', testEarlyErrorStream, ({stdio}) => stdio[1], false);
-test('child_process.spawn() early errors can use .all', testEarlyErrorStream, ({all}) => all, true);
+test('child_process.spawn() early errors can use .stdin', testEarlyErrorStream, ({stdin}) => stdin);
+test('child_process.spawn() early errors can use .stdout', testEarlyErrorStream, ({stdout}) => stdout);
+test('child_process.spawn() early errors can use .stderr', testEarlyErrorStream, ({stderr}) => stderr);
+test('child_process.spawn() early errors can use .stdio[1]', testEarlyErrorStream, ({stdio}) => stdio[1]);
+test('child_process.spawn() early errors can use .stdio[3]', testEarlyErrorStream, ({stdio}) => stdio[3], fullStdio);
+test('child_process.spawn() early errors can use .all', testEarlyErrorStream, ({all}) => all, {all: true});

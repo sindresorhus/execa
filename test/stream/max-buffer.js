@@ -99,7 +99,7 @@ const testMaxBufferAbort = async (t, fdNumber) => {
 	const subprocess = execa('max-buffer.js', [`${fdNumber}`, `${maxBuffer + 1}`], {...fullStdio, maxBuffer});
 	await Promise.all([
 		t.throwsAsync(subprocess, {message: /maxBuffer exceeded/}),
-		t.throwsAsync(getStream(subprocess.stdio[fdNumber]), {code: 'ABORT_ERR'}),
+		t.throwsAsync(getStream(subprocess.stdio[fdNumber]), {code: 'ERR_STREAM_PREMATURE_CLOSE'}),
 	]);
 };
 

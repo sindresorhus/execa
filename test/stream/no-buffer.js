@@ -45,14 +45,13 @@ const testIterationBuffer = async (t, fdNumber, buffer, useDataEvents, all) => {
 	]);
 
 	const expectedResult = buffer ? foobarString : undefined;
-	const expectedOutput = !buffer || useDataEvents ? foobarString : '';
 
 	t.is(result.stdio[fdNumber], expectedResult);
-	t.is(output, expectedOutput);
+	t.is(output, foobarString);
 
 	if (all) {
 		t.is(result.all, expectedResult);
-		t.is(allOutput, expectedOutput);
+		t.is(allOutput, foobarString);
 	}
 };
 
@@ -60,10 +59,10 @@ test('Can iterate stdout when `buffer` set to `false`', testIterationBuffer, 1, 
 test('Can iterate stderr when `buffer` set to `false`', testIterationBuffer, 2, false, false, false);
 test('Can iterate stdio[*] when `buffer` set to `false`', testIterationBuffer, 3, false, false, false);
 test('Can iterate all when `buffer` set to `false`', testIterationBuffer, 1, false, false, true);
-test('Cannot iterate stdout when `buffer` set to `true`', testIterationBuffer, 1, true, false, false);
-test('Cannot iterate stderr when `buffer` set to `true`', testIterationBuffer, 2, true, false, false);
-test('Cannot iterate stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, false, false);
-test('Cannot iterate all when `buffer` set to `true`', testIterationBuffer, 1, true, false, true);
+test('Can iterate stdout when `buffer` set to `true`', testIterationBuffer, 1, true, false, false);
+test('Can iterate stderr when `buffer` set to `true`', testIterationBuffer, 2, true, false, false);
+test('Can iterate stdio[*] when `buffer` set to `true`', testIterationBuffer, 3, true, false, false);
+test('Can iterate all when `buffer` set to `true`', testIterationBuffer, 1, true, false, true);
 test('Can listen to `data` events on stdout when `buffer` set to `false`', testIterationBuffer, 1, false, true, false);
 test('Can listen to `data` events on stderr when `buffer` set to `false`', testIterationBuffer, 2, false, true, false);
 test('Can listen to `data` events on stdio[*] when `buffer` set to `false`', testIterationBuffer, 3, false, true, false);

@@ -29,7 +29,7 @@ const getMessage = input => {
 };
 
 const lastInputGenerator = (input, objectMode) => [foobarUint8Array, getOutputGenerator(input, objectMode)];
-const inputGenerator = (input, objectMode) => [...lastInputGenerator(input, objectMode), serializeGenerator];
+const inputGenerator = (input, objectMode) => [...lastInputGenerator(input, objectMode), serializeGenerator(true)];
 
 test('Generators with result.stdin cannot return an object if not in objectMode', testGeneratorReturn, 0, inputGenerator, foobarObject, false, true);
 test('Generators with result.stdio[*] as input cannot return an object if not in objectMode', testGeneratorReturn, 3, inputGenerator, foobarObject, false, true);

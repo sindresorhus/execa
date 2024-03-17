@@ -254,7 +254,7 @@ test('.writable() can be used with Stream.compose()', async t => {
 });
 
 test('.writable() works with objectMode', async t => {
-	const subprocess = getReadWriteSubprocess({stdin: serializeGenerator});
+	const subprocess = getReadWriteSubprocess({stdin: serializeGenerator(true, true)});
 	const stream = subprocess.writable();
 	t.true(stream.writableObjectMode);
 	t.is(stream.writableHighWaterMark, defaultObjectHighWaterMark);
@@ -265,7 +265,7 @@ test('.writable() works with objectMode', async t => {
 });
 
 test('.duplex() works with objectMode and writes', async t => {
-	const subprocess = getReadWriteSubprocess({stdin: serializeGenerator});
+	const subprocess = getReadWriteSubprocess({stdin: serializeGenerator(true, true)});
 	const stream = subprocess.duplex();
 	t.false(stream.readableObjectMode);
 	t.is(stream.readableHighWaterMark, defaultHighWaterMark);
@@ -319,7 +319,7 @@ const writeUntilFull = async (t, stream, subprocess) => {
 };
 
 test('.writable() waits when its buffer is full', async t => {
-	const subprocess = getReadWriteSubprocess({stdin: noopAsyncGenerator()});
+	const subprocess = getReadWriteSubprocess({stdin: noopAsyncGenerator(false, true)});
 	const stream = subprocess.writable();
 
 	const expectedOutput = await writeUntilFull(t, stream, subprocess);
@@ -328,7 +328,7 @@ test('.writable() waits when its buffer is full', async t => {
 });
 
 test('.duplex() waits when its buffer is full', async t => {
-	const subprocess = getReadWriteSubprocess({stdin: noopAsyncGenerator()});
+	const subprocess = getReadWriteSubprocess({stdin: noopAsyncGenerator(false, true)});
 	const stream = subprocess.duplex();
 
 	const expectedOutput = await writeUntilFull(t, stream, subprocess);

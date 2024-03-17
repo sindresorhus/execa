@@ -318,13 +318,13 @@ test('.readable() can iterate over lines', async t => {
 		lines.push(line);
 	}
 
-	const expectedLines = ['aaa\n', 'bbb\n', 'ccc'];
+	const expectedLines = ['aaa', 'bbb', 'ccc'];
 	t.deepEqual(lines, expectedLines);
 	await assertSubprocessOutput(t, subprocess, expectedLines);
 });
 
 test('.readable() can wait for data', async t => {
-	const subprocess = execa('noop.js', {stdout: getChunksGenerator([foobarString, foobarString])});
+	const subprocess = execa('noop.js', {stdout: getChunksGenerator([foobarString, foobarString], false, true)});
 	const stream = subprocess.readable();
 
 	t.is(stream.read(), null);

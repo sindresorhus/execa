@@ -54,6 +54,66 @@ This is more efficient and recommended if the data is either:
 
 Please note the [`lines`](../readme.md#lines) option is unrelated: it has no impact on transforms.
 
+## Newlines
+
+Unless [`{transform, binary: true}`](#binary-data) is used, the transform iterates over lines.
+By default, newlines are stripped from each `line` argument.
+
+```js
+// `line`'s value never ends with '\n'.
+const transform = function * (line) { /* ... */ };
+
+await execa('./run.js', {stdout: transform});
+```
+
+However, if a `{transform, newline: true}` plain object is passed, newlines are kept.
+
+```js
+// `line`'s value ends with '\n'.
+// The output's last `line` might or might not end with '\n', depending on the output.
+const transform = function * (line) { /* ... */ };
+
+await execa('./run.js', {stdout: {transform, newline: true}});
+```
+
+Each `yield` produces at least one line. Calling `yield` multiple times or calling `yield *` produces multiples lines.
+
+```js
+const transform = function * (line) {
+	yield 'Important note:';
+	yield 'Read the comments below.';
+
+	// Or:
+	yield * [
+		'Important note:',
+		'Read the comments below.',
+	];
+
+	// Is the same as:
+	yield 'Important note:\nRead the comments below.\n';
+
+	yield line
+};
+
+await execa('./run.js', {stdout: transform});
+```
+
+However, if a `{transform, newline: true}` plain object is passed, multiple `yield`s produce a single line instead.
+
+```js
+const transform = function * (line) {
+	yield 'Important note: ';
+	yield 'Read the comments below.\n';
+
+	// Is the same as:
+	yield 'Important note: Read the comments below.\n';
+
+	yield line
+};
+
+await execa('./run.js', {stdout: {transform, newline: true}});
+```
+
 ## Object mode
 
 By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`. However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null` or `undefined`. The subprocess' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.

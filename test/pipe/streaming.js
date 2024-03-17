@@ -227,7 +227,7 @@ test('Can pipe two sources to same destination in objectMode', async t => {
 
 	t.like(await source, {stdout: [[foobarString]]});
 	t.like(await secondSource, {stdout: [[foobarString]]});
-	t.like(await destination, {stdout: `${foobarString}${foobarString}`});
+	t.like(await destination, {stdout: `${foobarString}\n${foobarString}`});
 	t.is(await pipePromise, await destination);
 	t.is(await secondPipePromise, await destination);
 });

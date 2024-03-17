@@ -32,7 +32,7 @@ test('Generators "final" can be used', testGeneratorFinal, 'noop.js');
 test('Generators "final" is used even on empty streams', testGeneratorFinal, 'empty.js');
 
 const testFinalAlone = async (t, final) => {
-	const {stdout} = await execa('noop-fd.js', ['1', '.'], {stdout: {final: final(foobarString)}});
+	const {stdout} = await execa('noop-fd.js', ['1', '.'], {stdout: {final: final(foobarString), binary: true}});
 	t.is(stdout, `.${foobarString}`);
 };
 
@@ -101,7 +101,7 @@ const multipleYieldGenerator = async function * (line = foobarString) {
 
 const testMultipleYields = async (t, final) => {
 	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(multipleYieldGenerator, final)});
-	t.is(stdout, `${prefix}${foobarString}${suffix}`);
+	t.is(stdout, `${prefix}\n${foobarString}\n${suffix}`);
 };
 
 test('Generator can yield "transform" multiple times at different moments', testMultipleYields, false);
@@ -139,7 +139,10 @@ const maxBuffer = 10;
 
 test('Generators take "maxBuffer" into account', async t => {
 	const bigString = '.'.repeat(maxBuffer);
-	const {stdout} = await execa('noop.js', {maxBuffer, stdout: getOutputGenerator(bigString, false)});
+	const {stdout} = await execa('noop.js', {
+		maxBuffer,
+		stdout: getOutputGenerator(bigString, false, true),
+	});
 	t.is(stdout, bigString);
 
 	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: getOutputGenerator(`${bigString}.`, false)}));
@@ -147,7 +150,10 @@ test('Generators take "maxBuffer" into account', async t => {
 
 test('Generators take "maxBuffer" into account, objectMode', async t => {
 	const bigArray = Array.from({length: maxBuffer}).fill('.');
-	const {stdout} = await execa('noop.js', {maxBuffer, stdout: getOutputsGenerator(bigArray, true)});
+	const {stdout} = await execa('noop.js', {
+		maxBuffer,
+		stdout: getOutputsGenerator(bigArray, true, true),
+	});
 	t.is(stdout.length, maxBuffer);
 
 	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: getOutputsGenerator([...bigArray, ''], true)}));

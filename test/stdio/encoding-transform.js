@@ -70,11 +70,11 @@ test('Next generator argument is string with default encoding, with string write
 test('Next generator argument is string with default encoding, with string writes, objectMode first', testGeneratorNextEncoding, foobarString, 'utf8', true, false, 'String');
 test('Next generator argument is string with default encoding, with string writes, objectMode both', testGeneratorNextEncoding, foobarString, 'utf8', true, true, 'String');
 test('Next generator argument is string with default encoding, with Uint8Array writes', testGeneratorNextEncoding, foobarUint8Array, 'utf8', false, false, 'String');
-test('Next generator argument is string with default encoding, with Uint8Array writes, objectMode first', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, false, 'String');
-test('Next generator argument is string with default encoding, with Uint8Array writes, objectMode both', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, true, 'String');
+test('Next generator argument is Uint8Array with default encoding, with Uint8Array writes, objectMode first', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, false, 'Uint8Array');
+test('Next generator argument is string with default encoding, with Uint8Array writes, objectMode both', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, true, 'Uint8Array');
 test('Next generator argument is Uint8Array with encoding "buffer", with string writes', testGeneratorNextEncoding, foobarString, 'buffer', false, false, 'Uint8Array');
-test('Next generator argument is Uint8Array with encoding "buffer", with string writes, objectMode first', testGeneratorNextEncoding, foobarString, 'buffer', true, false, 'Uint8Array');
-test('Next generator argument is Uint8Array with encoding "buffer", with string writes, objectMode both', testGeneratorNextEncoding, foobarString, 'buffer', true, true, 'Uint8Array');
+test('Next generator argument is string with encoding "buffer", with string writes, objectMode first', testGeneratorNextEncoding, foobarString, 'buffer', true, false, 'String');
+test('Next generator argument is string with encoding "buffer", with string writes, objectMode both', testGeneratorNextEncoding, foobarString, 'buffer', true, true, 'String');
 test('Next generator argument is Uint8Array with encoding "buffer", with Uint8Array writes', testGeneratorNextEncoding, foobarUint8Array, 'buffer', false, false, 'Uint8Array');
 test('Next generator argument is Uint8Array with encoding "buffer", with Uint8Array writes, objectMode first', testGeneratorNextEncoding, foobarUint8Array, 'buffer', true, false, 'Uint8Array');
 test('Next generator argument is Uint8Array with encoding "buffer", with Uint8Array writes, objectMode both', testGeneratorNextEncoding, foobarUint8Array, 'buffer', true, true, 'Uint8Array');
@@ -101,7 +101,7 @@ const testGeneratorReturnType = async (t, input, encoding, reject, objectMode, f
 		reject,
 	});
 	const typeofChunk = Array.isArray(stdout) ? stdout[0] : stdout;
-	const output = Buffer.from(typeofChunk, encoding === 'buffer' ? undefined : encoding).toString();
+	const output = Buffer.from(typeofChunk, encoding === 'buffer' || objectMode ? undefined : encoding).toString();
 	t.is(output, foobarString);
 };
 
@@ -173,7 +173,12 @@ test('Generator handles multibyte characters with Uint8Array', testMultibyte, fa
 test('Generator handles multibyte characters with Uint8Array, objectMode', testMultibyte, true);
 
 const testMultibytePartial = async (t, objectMode) => {
-	const {stdout} = await execa('stdin.js', {stdin: [multibyteUint8Array.slice(0, breakingLength), noopGenerator(objectMode)]});
+	const {stdout} = await execa('stdin.js', {
+		stdin: [
+			[multibyteUint8Array.slice(0, breakingLength)],
+			noopGenerator(objectMode),
+		],
+	});
 	t.is(stdout, `${multibyteChar}${brokenSymbol}`);
 };
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
 import process from 'node:process';
 
-console.log(process.argv[2]);
+const bytes = process.argv[2];
+console.log(bytes);

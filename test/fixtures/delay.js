@@ -1,4 +1,5 @@
 #!/usr/bin/env node
 import process from 'node:process';
 
-setTimeout(() => {}, Number(process.argv[2]));
+const delay = Number(process.argv[2]);
+setTimeout(() => {}, delay);

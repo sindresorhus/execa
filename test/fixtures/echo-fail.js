@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {writeSync} from 'node:fs';
+import {getWriteStream} from '../helpers/fs.js';
 
 console.log('stdout');
 console.error('stderr');
-writeSync(3, 'fd3');
+getWriteStream(3).write('fd3');
 process.exitCode = 1;

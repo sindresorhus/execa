@@ -7,6 +7,8 @@ import {execa} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 import {
 	noopGenerator,
+	identityGenerator,
+	identityAsyncGenerator,
 	getOutputsGenerator,
 	getOutputGenerator,
 	infiniteGenerator,
@@ -28,6 +30,22 @@ const testGeneratorFinal = async (t, fixtureName) => {
 
 test('Generators "final" can be used', testGeneratorFinal, 'noop.js');
 test('Generators "final" is used even on empty streams', testGeneratorFinal, 'empty.js');
+
+const testFinalAlone = async (t, final) => {
+	const {stdout} = await execa('noop-fd.js', ['1', '.'], {stdout: {final: final(foobarString)}});
+	t.is(stdout, `.${foobarString}`);
+};
+
+test('Generators "final" can be used without "transform"', testFinalAlone, identityGenerator);
+test('Generators "final" can be used without "transform", async', testFinalAlone, identityAsyncGenerator);
+
+const testFinalNoOutput = async (t, final) => {
+	const {stdout} = await execa('empty.js', {stdout: {final: final(foobarString)}});
+	t.is(stdout, foobarString);
+};
+
+test('Generators "final" can be used without "transform" nor output', testFinalNoOutput, identityGenerator);
+test('Generators "final" can be used without "transform" nor output, async', testFinalNoOutput, identityAsyncGenerator);
 
 const repeatCount = defaultHighWaterMark * 3;
 

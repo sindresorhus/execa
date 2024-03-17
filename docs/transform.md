@@ -95,7 +95,7 @@ const transform = function * (line) {
 
 ## Finalizing
 
-To create additional lines after the last one, a `final` generator function can be used by passing a `{transform, final}` plain object.
+To create additional lines after the last one, a `final` generator function can be used by passing a `{final}` or `{transform, final}` plain object.
 
 ```js
 let count = 0;

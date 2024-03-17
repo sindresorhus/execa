@@ -1,6 +1,6 @@
 import {once} from 'node:events';
 import process from 'node:process';
-import {compose, Readable, Writable, PassThrough, getDefaultHighWaterMark} from 'node:stream';
+import {compose, Readable, Writable, PassThrough} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import {text} from 'node:stream/consumers';
 import {setTimeout} from 'node:timers/promises';
@@ -13,6 +13,7 @@ import {
 	assertWritableAborted,
 	assertProcessNormalExit,
 	assertStreamOutput,
+	assertStreamChunks,
 	assertStreamError,
 	assertStreamReadError,
 	assertSubprocessOutput,
@@ -247,7 +248,7 @@ test('.readable() works with objectMode', async t => {
 	t.true(stream.readableObjectMode);
 	t.is(stream.readableHighWaterMark, defaultObjectHighWaterMark);
 
-	t.deepEqual(await stream.toArray(), [foobarObject]);
+	await assertStreamChunks(t, stream, [foobarObject]);
 	await assertSubprocessOutput(t, subprocess, [foobarObject]);
 });
 
@@ -260,7 +261,7 @@ test('.duplex() works with objectMode and reads', async t => {
 	t.is(stream.writableHighWaterMark, defaultHighWaterMark);
 	stream.end(foobarString);
 
-	t.deepEqual(await stream.toArray(), [foobarObject]);
+	await assertStreamChunks(t, stream, [foobarObject]);
 	await assertSubprocessOutput(t, subprocess, [foobarObject]);
 });
 
@@ -269,7 +270,7 @@ test('.readable() works with default encoding', async t => {
 	const stream = subprocess.readable();
 	t.is(stream.readableEncoding, null);
 
-	t.deepEqual(await stream.toArray(), [foobarBuffer]);
+	await assertStreamChunks(t, stream, [foobarBuffer]);
 	await assertSubprocessOutput(t, subprocess, foobarString);
 });
 
@@ -279,7 +280,7 @@ test('.duplex() works with default encoding', async t => {
 	t.is(stream.readableEncoding, null);
 	stream.end(foobarString);
 
-	t.deepEqual(await stream.toArray(), [foobarBuffer]);
+	await assertStreamChunks(t, stream, [foobarBuffer]);
 	await assertSubprocessOutput(t, subprocess, foobarString);
 });
 
@@ -289,7 +290,7 @@ test('.readable() works with encoding "utf8"', async t => {
 	const stream = subprocess.readable();
 	t.is(stream.readableEncoding, 'utf8');
 
-	t.deepEqual(await stream.toArray(), [foobarString]);
+	await assertStreamChunks(t, stream, [foobarString]);
 	await assertSubprocessOutput(t, subprocess, foobarString);
 });
 
@@ -300,7 +301,7 @@ test('.duplex() works with encoding "utf8"', async t => {
 	t.is(stream.readableEncoding, 'utf8');
 	stream.end(foobarBuffer);
 
-	t.deepEqual(await stream.toArray(), [foobarString]);
+	await assertStreamChunks(t, stream, [foobarString]);
 	await assertSubprocessOutput(t, subprocess, foobarString);
 });
 
@@ -428,7 +429,7 @@ if (majorVersion >= 20) {
 			await Promise.race([onPause, once(subprocess.stdout, 'data')]);
 		}
 
-		const expectedCount = getDefaultHighWaterMark(true) + 1;
+		const expectedCount = defaultObjectHighWaterMark + 1;
 		const expectedOutput = '.'.repeat(expectedCount);
 		t.is(count, expectedCount);
 		subprocess.stdin.end();

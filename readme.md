@@ -438,9 +438,9 @@ When an error is passed as argument, it is set to the subprocess' [`error.cause`
 
 [More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 
-#### readable(streamOptions?)
+#### readable(readableOptions?)
 
-`streamOptions`: [`StreamOptions`](#streamoptions)\
+`readableOptions`: [`ReadableOptions`](#readableoptions)\
 _Returns_: [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable) Node.js stream
 
 Converts the subprocess to a readable stream.
@@ -449,9 +449,9 @@ Unlike [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subproces
 
 Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
 
-#### writable(streamOptions?)
+#### writable(writableOptions?)
 
-`streamOptions`: [`StreamOptions`](#streamoptions)\
+`writableOptions`: [`WritableOptions`](#writableoptions)\
 _Returns_: [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) Node.js stream
 
 Converts the subprocess to a writable stream.
@@ -460,9 +460,9 @@ Unlike [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocess
 
 Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
 
-#### duplex(streamOptions?)
+#### duplex(duplexOptions?)
 
-`streamOptions`: [`StreamOptions`](#streamoptions)\
+`duplexOptions`: [`ReadableOptions | WritableOptions`](#readableoptions)\
 _Returns_: [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) Node.js stream
 
 Converts the subprocess to a duplex stream.
@@ -471,11 +471,11 @@ The stream waits for the subprocess to end and emits an [`error`](https://nodejs
 
 Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
 
-##### streamOptions
+##### readableOptions
 
 Type: `object`
 
-##### streamOptions.from
+##### readableOptions.from
 
 Type: `"stdout" | "stderr" | "all" | "fd3" | "fd4" | ...`\
 Default: `"stdout"`
@@ -484,16 +484,32 @@ Which stream to read from the subprocess. A file descriptor like `"fd3"` can als
 
 `"all"` reads both `stdout` and `stderr`. This requires the [`all` option](#all-2) to be `true`.
 
-Only available with [`.readable()`](#readablestreamoptions) and [`.duplex()`](#duplexstreamoptions), not [`.writable()`](#writablestreamoptions).
+##### readableOptions.binary
 
-##### streamOptions.to
+Type: `boolean`\
+Default: `true`
+
+If `false`, the stream iterates over lines. Each line is a string. Also, the stream is in [object mode](https://nodejs.org/api/stream.html#object-mode).
+
+If `true`, the stream iterates over arbitrary chunks of data. Each line is a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer).
+
+##### readableOptions.preserveNewlines
+
+Type: `boolean`\
+Default: `true`
+
+If both this option and the [`binary` option](#readableoptionsbinary) is `false`, newlines are stripped from each line.
+
+##### writableOptions
+
+Type: `object`
+
+##### writableOptions.to
 
 Type: `"stdin" | "fd3" | "fd4" | ...`\
 Default: `"stdin"`
 
 Which stream to write to the subprocess. A file descriptor like `"fd3"` can also be passed.
-
-Only available with [`.writable()`](#writablestreamoptions) and [`.duplex()`](#duplexstreamoptions), not [`.readable()`](#readablestreamoptions).
 
 ### SubprocessResult
 
@@ -901,7 +917,7 @@ Default: `false`
 
 Split `stdout` and `stderr` into lines.
 - [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) are arrays of lines.
-- [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all), [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio), [`subprocess.readable()`](#readablestreamoptions) and [`subprocess.duplex`](#duplexstreamoptions) iterate over lines instead of arbitrary chunks.
+- [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all), [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio), [`subprocess.readable()`](#readablereadableoptions) and [`subprocess.duplex`](#duplexduplexoptions) iterate over lines instead of arbitrary chunks.
 - Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
 
 #### encoding

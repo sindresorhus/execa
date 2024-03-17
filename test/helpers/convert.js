@@ -27,6 +27,10 @@ export const assertStreamOutput = async (t, stream, expectedOutput = foobarStrin
 	t.is(await text(stream), expectedOutput);
 };
 
+export const assertStreamChunks = async (t, stream, expectedOutput) => {
+	t.deepEqual(await stream.toArray(), expectedOutput);
+};
+
 export const assertSubprocessOutput = async (t, subprocess, expectedOutput = foobarString, fdNumber = 1) => {
 	const result = await subprocess;
 	t.deepEqual(result.stdio[fdNumber], expectedOutput);
@@ -50,7 +54,7 @@ export const assertPromiseError = async (t, promise, error) => {
 	return thrownError;
 };
 
-export const getReadableSubprocess = () => execa('noop-fd.js', ['1', foobarString]);
+export const getReadableSubprocess = (output = foobarString, options = {}) => execa('noop-fd.js', ['1', output], options);
 
 export const getWritableSubprocess = () => execa('noop-stdin-fd.js', ['2']);
 

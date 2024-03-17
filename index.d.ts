@@ -978,23 +978,43 @@ type PipableSubprocess = {
 	Promise<Awaited<Destination>> & PipableSubprocess;
 };
 
-type ReadableStreamOptions = {
+type ReadableOptions = {
 	/**
 	Which stream to read from the subprocess. A file descriptor like `"fd3"` can also be passed.
 
 	`"all"` reads both `stdout` and `stderr`. This requires the `all` option to be `true`.
+
+	@default 'stdout'
 	*/
 	readonly from?: FromOption;
+
+	/**
+	If `false`, the stream iterates over lines. Each line is a string. Also, the stream is in [object mode](https://nodejs.org/api/stream.html#object-mode).
+
+	If `true`, the stream iterates over arbitrary chunks of data. Each line is a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer).
+
+	@default true
+	*/
+	readonly binary?: boolean;
+
+	/**
+	If both this option and the `binary` option is `false`, newlines are stripped from each line.
+
+	@default true
+	*/
+	readonly preserveNewlines?: boolean;
 };
 
-type WritableStreamOptions = {
+type WritableOptions = {
 	/**
 	Which stream to write to the subprocess. A file descriptor like `"fd3"` can also be passed.
+
+	@default 'stdin'
 	*/
 	readonly to?: ToOption;
 };
 
-type DuplexStreamOptions = ReadableStreamOptions & WritableStreamOptions;
+type DuplexOptions = ReadableOptions & WritableOptions;
 
 export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	stdin: StreamUnlessIgnored<'0', OptionsType>;
@@ -1035,7 +1055,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
 	*/
-	readable(streamOptions?: ReadableStreamOptions): Readable;
+	readable(readableOptions?: ReadableOptions): Readable;
 
 	/**
 	Converts the subprocess to a writable stream.
@@ -1044,7 +1064,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
 	*/
-	writable(streamOptions?: WritableStreamOptions): Writable;
+	writable(writableOptions?: WritableOptions): Writable;
 
 	/**
 	Converts the subprocess to a duplex stream.
@@ -1053,7 +1073,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
 	*/
-	duplex(streamOptions?: DuplexStreamOptions): Duplex;
+	duplex(duplexOptions?: DuplexOptions): Duplex;
 } & PipableSubprocess;
 
 export type ExecaSubprocess<OptionsType extends Options = Options> = ChildProcess &

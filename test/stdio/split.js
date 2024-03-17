@@ -14,6 +14,7 @@ import {
 	simpleChunks,
 	simpleLines,
 	simpleFullEndLines,
+	noNewlinesFull,
 	noNewlinesChunks,
 	getEncoding,
 	stringsToUint8Arrays,
@@ -28,7 +29,6 @@ const windowsFull = 'aaa\r\nbbb\r\nccc';
 const windowsFullEnd = `${windowsFull}\r\n`;
 const windowsChunks = [windowsFull];
 const windowsLines = ['aaa\r\n', 'bbb\r\n', 'ccc'];
-const noNewlinesFull = 'aaabbbccc';
 const noNewlinesFullEnd = `${noNewlinesFull}\n`;
 const noNewlinesLines = ['aaabbbccc'];
 const singleFull = 'aaa';

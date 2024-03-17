@@ -277,10 +277,15 @@ try {
 	scriptPromise.readable({from: 'stderr'});
 	scriptPromise.readable({from: 'all'});
 	scriptPromise.readable({from: 'fd3'});
+	scriptPromise.readable({binary: false});
+	scriptPromise.readable({preserveNewlines: false});
 	expectError(scriptPromise.readable('stdout'));
 	expectError(scriptPromise.readable({from: 'stdin'}));
 	expectError(scriptPromise.readable({from: 'fd'}));
 	expectError(scriptPromise.readable({from: 'fdNotANumber'}));
+	expectError(scriptPromise.readable({binary: 'false'}));
+	expectError(scriptPromise.readable({preserveNewlines: 'false'}));
+	expectError(scriptPromise.readable({to: 'stdin'}));
 	expectError(scriptPromise.readable({other: 'stdout'}));
 	scriptPromise.writable({});
 	scriptPromise.writable({to: 'stdin'});
@@ -289,6 +294,9 @@ try {
 	expectError(scriptPromise.writable({to: 'stdout'}));
 	expectError(scriptPromise.writable({to: 'fd'}));
 	expectError(scriptPromise.writable({to: 'fdNotANumber'}));
+	expectError(scriptPromise.writable({from: 'stdout'}));
+	expectError(scriptPromise.writable({binary: false}));
+	expectError(scriptPromise.writable({preserveNewlines: false}));
 	expectError(scriptPromise.writable({other: 'stdin'}));
 	scriptPromise.duplex({});
 	scriptPromise.duplex({from: 'stdout'});
@@ -297,6 +305,8 @@ try {
 	scriptPromise.duplex({from: 'fd3'});
 	scriptPromise.duplex({from: 'stdout', to: 'stdin'});
 	scriptPromise.duplex({from: 'stdout', to: 'fd3'});
+	scriptPromise.duplex({binary: false});
+	scriptPromise.duplex({preserveNewlines: false});
 	expectError(scriptPromise.duplex('stdout'));
 	expectError(scriptPromise.duplex({from: 'stdin'}));
 	expectError(scriptPromise.duplex({from: 'stderr', to: 'stdout'}));
@@ -304,6 +314,8 @@ try {
 	expectError(scriptPromise.duplex({from: 'fdNotANumber'}));
 	expectError(scriptPromise.duplex({to: 'fd'}));
 	expectError(scriptPromise.duplex({to: 'fdNotANumber'}));
+	expectError(scriptPromise.duplex({binary: 'false'}));
+	expectError(scriptPromise.duplex({preserveNewlines: 'false'}));
 	expectError(scriptPromise.duplex({other: 'stdout'}));
 
 	expectType<Readable>(execaPromise.all);

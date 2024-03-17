@@ -1,16 +1,13 @@
-import {platform} from 'node:process';
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {getStdio, prematureClose} from '../helpers/stdio.js';
+import {getStdio, prematureClose, assertEpipe} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {noopGenerator} from '../helpers/generator.js';
 import {noopReadable, noopWritable, noopDuplex} from '../helpers/stream.js';
 
 setFixtureDir();
-
-const isWindows = platform === 'win32';
 
 const noop = () => {};
 
@@ -127,9 +124,7 @@ const testStreamEpipeFail = async (t, streamMethod, stream, fdNumber, useTransfo
 	t.is(exitCode, 1);
 	t.is(stdio[fdNumber], '');
 	t.true(stream.destroyed);
-	if (fdNumber !== 2 && !isWindows) {
-		t.true(stderr.includes('EPIPE'));
-	}
+	assertEpipe(t, stderr, fdNumber);
 };
 
 test('Throws EPIPE when stdout option ends with more writes', testStreamEpipeFail, endOptionStream, noopWritable(), 1, false);

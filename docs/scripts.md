@@ -461,6 +461,33 @@ await cat
 await $({inputFile: 'file.txt'})`cat`
 ```
 
+### Iterate over output lines
+
+```sh
+# Bash
+while read
+do
+	if [[ "$REPLY" == *ERROR* ]]
+	then
+		echo "$REPLY"
+	fi
+done < <(npm run build)
+```
+
+```js
+// zx does not allow proper iteration.
+// For example, the iteration does not handle subprocess errors.
+```
+
+```js
+// Execa
+for await (const line of $`npm run build`) {
+	if (line.includes('ERROR')) {
+		console.log(line);
+	}
+}
+```
+
 ### Errors
 
 ```sh

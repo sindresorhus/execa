@@ -208,6 +208,18 @@ console.log(pipedFrom[0]); // Result of `sort`
 console.log(pipedFrom[0].pipedFrom[0]); // Result of `npm run build`
 ```
 
+#### Iterate over output lines
+
+```js
+import {execa} from 'execa';
+
+for await (const line of execa('npm', ['run', 'build'])) {
+	if (line.includes('ERROR')) {
+		console.log(line);
+	}
+}
+```
+
 ### Handling Errors
 
 ```js
@@ -438,6 +450,21 @@ When an error is passed as argument, it is set to the subprocess' [`error.cause`
 
 [More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 
+#### [Symbol.asyncIterator]()
+
+_Returns_: `AsyncIterable`
+
+Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
+
+The iteration waits for the subprocess to end. It throws if the subprocess [fails](#subprocessresult). This means you do not need to `await` the subprocess' [promise](#subprocess).
+
+#### iterable(readableOptions?)
+
+`readableOptions`: [`ReadableOptions`](#readableoptions)\
+_Returns_: `AsyncIterable`
+
+Same as [`subprocess[Symbol.asyncIterator]`](#symbolasynciterator) except [options](#readableoptions) can be provided.
+
 #### readable(readableOptions?)
 
 `readableOptions`: [`ReadableOptions`](#readableoptions)\
@@ -447,7 +474,7 @@ Converts the subprocess to a readable stream.
 
 Unlike [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](#subprocessresult). This means you do not need to `await` the subprocess' [promise](#subprocess). On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
 
-Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
+Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options, [`subprocess.pipe()`](#pipefile-arguments-options) or [`subprocess.iterable()`](#iterablereadableoptions).
 
 #### writable(writableOptions?)
 
@@ -458,7 +485,7 @@ Converts the subprocess to a writable stream.
 
 Unlike [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](#subprocessresult). This means you do not need to `await` the subprocess' [promise](#subprocess). On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options) or [`await pipeline(stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) which throw an exception when the stream errors.
 
-Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
+Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or [`subprocess.pipe()`](#pipefile-arguments-options).
 
 #### duplex(duplexOptions?)
 
@@ -469,7 +496,7 @@ Converts the subprocess to a duplex stream.
 
 The stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](#subprocessresult). This means you do not need to `await` the subprocess' [promise](#subprocess). On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
 
-Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options or the [`subprocess.pipe()`](#pipefile-arguments-options) method.
+Before using this method, please first consider the [`stdin`](#stdin)/[`stdout`](#stdout-1)/[`stderr`](#stderr-1)/[`stdio`](#stdio-1) options, [`subprocess.pipe()`](#pipefile-arguments-options) or [`subprocess.iterable()`](#iterablereadableoptions).
 
 ##### readableOptions
 
@@ -486,17 +513,18 @@ Which stream to read from the subprocess. A file descriptor like `"fd3"` can als
 
 ##### readableOptions.binary
 
-Type: `boolean`\
-Default: `true`
+Type: `boolean`
 
 If `false`, the stream iterates over lines. Each line is a string. Also, the stream is in [object mode](https://nodejs.org/api/stream.html#object-mode).
 
-If `true`, the stream iterates over arbitrary chunks of data. Each line is a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer).
+If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with [`.iterable()`](#iterablereadableoptions)) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
+
+With [`.readable()`](#readablereadableoptions)/[`.duplex()`](#duplexduplexoptions), the default value is `true`. With [`.iterable()`](#iterablereadableoptions), the default value is `true` if the [`encoding` option](#encoding) is `buffer`, otherwise it is `false`.
 
 ##### readableOptions.preserveNewlines
 
 Type: `boolean`\
-Default: `true`
+Default: `false` with [`.iterable()`](#iterablereadableoptions), `true` with [`.readable()`](#readablereadableoptions)/[`.duplex()`](#duplexduplexoptions)
 
 If both this option and the [`binary` option](#readableoptionsbinary) is `false`, newlines are stripped from each line.
 

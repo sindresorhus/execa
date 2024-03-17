@@ -4,19 +4,23 @@ import test from 'ava';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {
 	assertStreamOutput,
+	assertIterableChunks,
 	assertStreamChunks,
 	assertSubprocessOutput,
 	getReadableSubprocess,
 	getReadWriteSubprocess,
 } from '../helpers/convert.js';
 import {
+	stringToUint8Arrays,
 	simpleFull,
 	simpleChunks,
 	simpleChunksBuffer,
+	simpleChunksUint8Array,
 	simpleLines,
 	noNewlinesFull,
 	complexFull,
 	singleComplexBuffer,
+	singleComplexUint8Array,
 	complexChunks,
 	complexChunksEnd,
 } from '../helpers/lines.js';
@@ -38,25 +42,39 @@ const getSubprocess = (methodName, output, options) => {
 	return subprocess;
 };
 
-// eslint-disable-next-line max-params
-const testText = async (t, expectedChunks, methodName, binary, preserveNewlines) => {
-	const subprocess = getSubprocess(methodName, complexFull);
-	const stream = subprocess[methodName]({binary, preserveNewlines});
-
-	await assertStreamChunks(t, stream, expectedChunks);
-	await assertSubprocessOutput(t, subprocess, complexFull);
+const assertChunks = async (t, streamOrIterable, expectedChunks, methodName) => {
+	const assertMethod = methodName === 'iterable' ? assertIterableChunks : assertStreamChunks;
+	await assertMethod(t, streamOrIterable, expectedChunks);
 };
 
-test('.readable() can use "binary: true"', testText, singleComplexBuffer, 'readable', true, undefined);
-test('.readable() can use "binary: undefined"', testText, singleComplexBuffer, 'readable', undefined, undefined);
-test('.readable() can use "binary: false"', testText, complexChunksEnd, 'readable', false, undefined);
-test('.readable() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'readable', false, true);
-test('.readable() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'readable', false, false);
-test('.duplex() can use "binary: true"', testText, singleComplexBuffer, 'duplex', true, undefined);
-test('.duplex() can use "binary: undefined"', testText, singleComplexBuffer, 'duplex', undefined, undefined);
-test('.duplex() can use "binary: false"', testText, complexChunksEnd, 'duplex', false, undefined);
-test('.duplex() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'duplex', false, true);
-test('.duplex() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'duplex', false, false);
+// eslint-disable-next-line max-params
+const testText = async (t, expectedChunks, methodName, binary, preserveNewlines, isUint8Array) => {
+	const options = isUint8Array ? {encoding: 'buffer'} : {};
+	const subprocess = getSubprocess(methodName, complexFull, options);
+	const stream = subprocess[methodName]({binary, preserveNewlines});
+
+	await assertChunks(t, stream, expectedChunks, methodName);
+	await assertSubprocessOutput(t, subprocess, stringToUint8Arrays(complexFull, isUint8Array));
+};
+
+test('.iterable() can use "binary: true"', testText, singleComplexUint8Array, 'iterable', true, undefined, false);
+test('.iterable() can use "binary: undefined"', testText, complexChunks, 'iterable', undefined, undefined, false);
+test('.iterable() can use "binary: undefined" + "encoding: buffer"', testText, singleComplexUint8Array, 'iterable', undefined, undefined, true);
+test('.iterable() can use "binary: false"', testText, complexChunks, 'iterable', false, undefined, false);
+test('.iterable() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'iterable', false, true, false);
+test('.iterable() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'iterable', false, false, false);
+test('.readable() can use "binary: true"', testText, singleComplexBuffer, 'readable', true, undefined, false);
+test('.readable() can use "binary: undefined"', testText, singleComplexBuffer, 'readable', undefined, undefined, false);
+test('.readable() can use "binary: undefined" + "encoding: buffer"', testText, singleComplexBuffer, 'readable', undefined, undefined, true);
+test('.readable() can use "binary: false"', testText, complexChunksEnd, 'readable', false, undefined, false);
+test('.readable() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'readable', false, true, false);
+test('.readable() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'readable', false, false, false);
+test('.duplex() can use "binary: true"', testText, singleComplexBuffer, 'duplex', true, undefined, false);
+test('.duplex() can use "binary: undefined"', testText, singleComplexBuffer, 'duplex', undefined, undefined, false);
+test('.duplex() can use "binary: undefined" + "encoding: "buffer"', testText, singleComplexBuffer, 'duplex', undefined, undefined, true);
+test('.duplex() can use "binary: false"', testText, complexChunksEnd, 'duplex', false, undefined, false);
+test('.duplex() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'duplex', false, true, false);
+test('.duplex() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'duplex', false, false, false);
 
 const testTextOutput = async (t, expectedOutput, methodName, preserveNewlines) => {
 	const subprocess = getSubprocess(methodName, complexFull);
@@ -85,17 +103,29 @@ const testObjectMode = async (t, expectedChunks, methodName, encoding, initialOb
 	t.is(subprocess.stdout.readableHighWaterMark, getDefaultHighWaterMark(initialObjectMode));
 
 	const stream = subprocess[methodName]({binary, preserveNewlines: true});
-	t.is(stream.readableEncoding, encoding);
-	t.is(stream.readableObjectMode, finalObjectMode);
-	t.is(stream.readableHighWaterMark, getDefaultHighWaterMark(finalObjectMode));
+
+	if (methodName !== 'iterable') {
+		t.is(stream.readableEncoding, encoding);
+		t.is(stream.readableObjectMode, finalObjectMode);
+		t.is(stream.readableHighWaterMark, getDefaultHighWaterMark(finalObjectMode));
+	}
+
 	t.is(subprocess.stdout.readableEncoding, encoding);
 	t.is(subprocess.stdout.readableObjectMode, initialObjectMode);
 	t.is(subprocess.stdout.readableHighWaterMark, getDefaultHighWaterMark(initialObjectMode));
 
-	await assertStreamChunks(t, stream, expectedChunks);
+	await assertChunks(t, stream, expectedChunks, methodName);
 	await subprocess;
 };
 
+test('.iterable() uses Buffers with "binary: true"', testObjectMode, simpleChunksUint8Array, 'iterable', null, false, false, true);
+test('.iterable() uses strings with "binary: true" and .setEncoding("utf8")', testObjectMode, simpleChunks, 'iterable', 'utf8', false, false, true);
+test('.iterable() uses strings with "binary: true" and "encoding: buffer"', testObjectMode, simpleChunks, 'iterable', 'utf8', false, false, true, {encoding: 'buffer'});
+test('.iterable() uses strings in objectMode with "binary: true" and object transforms', testObjectMode, foobarObjectChunks, 'iterable', null, true, true, true, {stdout: outputObjectGenerator});
+test('.iterable() uses strings in objectMode with "binary: false"', testObjectMode, simpleLines, 'iterable', null, false, true, false);
+test('.iterable() uses strings in objectMode with "binary: false" and .setEncoding("utf8")', testObjectMode, simpleLines, 'iterable', 'utf8', false, true, false);
+test('.iterable() uses strings in objectMode with "binary: false" and "encoding: buffer"', testObjectMode, simpleLines, 'iterable', 'utf8', false, true, false, {encoding: 'buffer'});
+test('.iterable() uses strings in objectMode with "binary: false" and object transforms', testObjectMode, foobarObjectChunks, 'iterable', null, true, true, false, {stdout: outputObjectGenerator});
 test('.readable() uses Buffers with "binary: true"', testObjectMode, simpleChunksBuffer, 'readable', null, false, false, true);
 test('.readable() uses strings with "binary: true" and .setEncoding("utf8")', testObjectMode, simpleChunks, 'readable', 'utf8', false, false, true);
 test('.readable() uses strings with "binary: true" and "encoding: buffer"', testObjectMode, simpleChunks, 'readable', 'utf8', false, false, true, {encoding: 'buffer'});
@@ -116,22 +146,24 @@ test('.duplex() uses strings in objectMode with "binary: false" and object trans
 const testObjectSplit = async (t, methodName) => {
 	const subprocess = getSubprocess(methodName, foobarString, {stdout: getOutputGenerator(simpleFull, true)});
 	const stream = subprocess[methodName]({binary: false});
-	await assertStreamChunks(t, stream, [simpleFull]);
+	await assertChunks(t, stream, [simpleFull], methodName);
 	await subprocess;
 };
 
+test('.iterable() "binary: false" does not split lines of strings produced by object transforms', testObjectSplit, 'iterable');
 test('.readable() "binary: false" does not split lines of strings produced by object transforms', testObjectSplit, 'readable');
 test('.duplex() "binary: false" does not split lines of strings produced by object transforms', testObjectSplit, 'duplex');
 
 const testMultibyteCharacters = async (t, methodName) => {
 	const subprocess = getReadWriteSubprocess();
 	const stream = subprocess[methodName]({binary: false});
-	const assertPromise = assertStreamOutput(t, stream, `${multibyteChar}${brokenSymbol}`);
+	const assertPromise = assertChunks(t, stream, [`${multibyteChar}${brokenSymbol}`], methodName);
 	subprocess.stdin.write(multibyteUint8Array.slice(0, breakingLength));
 	await once(subprocess.stdout, 'data');
 	subprocess.stdin.end();
 	await assertPromise;
 };
 
+test('.iterable() "binary: false" handles partial multibyte characters', testMultibyteCharacters, 'iterable');
 test('.readable() "binary: false" handles partial multibyte characters', testMultibyteCharacters, 'readable');
 test('.duplex() "binary: false" handles partial multibyte characters', testMultibyteCharacters, 'duplex');

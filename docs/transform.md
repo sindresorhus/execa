@@ -12,7 +12,7 @@ const transform = function * (line) {
 	yield `${prefix}: ${line}`;
 };
 
-const {stdout} = await execa('echo', ['hello'], {stdout: transform});
+const {stdout} = await execa('./run.js', {stdout: transform});
 console.log(stdout); // HELLO
 ```
 
@@ -185,4 +185,17 @@ This also allows using multiple transforms.
 
 ```js
 await execa('echo', ['hello'], {stdout: [transform, otherTransform]});
+```
+
+## Async iteration
+
+In some cases, [iterating](../readme.md#iterablereadableoptions) over the subprocess can be an alternative to transforms.
+
+```js
+import {execa} from 'execa';
+
+for await (const line of execa('./run.js')) {
+	const prefix = line.includes('error') ? 'ERROR' : 'INFO';
+	console.log(`${prefix}: ${line}`);
+}
 ```

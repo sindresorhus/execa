@@ -75,11 +75,27 @@ const assertNodeStream = ({t, message, getSource, from, to, methodName}) => {
 	t.true(error.message.includes(getMessage(message)));
 };
 
+const testIterable = async (t, {
+	message,
+	sourceOptions = {},
+	getSource = () => execa('empty.js', sourceOptions),
+	from,
+}) => {
+	const error = t.throws(() => {
+		getSource().iterable({from});
+	});
+	t.true(error.message.includes(getMessage(message)));
+};
+
 test('Must set "all" option to "true" to use .pipe("all")', testPipeError, {
 	from: 'all',
 	message: '"all" option must be true',
 });
 test('Must set "all" option to "true" to use .duplex("all")', testNodeStream, {
+	from: 'all',
+	message: '"all" option must be true',
+});
+test('Must set "all" option to "true" to use .iterable("all")', testIterable, {
 	from: 'all',
 	message: '"all" option must be true',
 });
@@ -96,6 +112,10 @@ test('.pipe() "from" option cannot be "stdin"', testPipeError, {
 	message: '"from" must not be',
 });
 test('.duplex() "from" option cannot be "stdin"', testNodeStream, {
+	from: 'stdin',
+	message: '"from" must not be',
+});
+test('.iterable() "from" option cannot be "stdin"', testIterable, {
 	from: 'stdin',
 	message: '"from" must not be',
 });
@@ -125,6 +145,10 @@ test('.duplex() "from" option cannot be any string', testNodeStream, {
 	from: 'other',
 	message: 'must be "stdout", "stderr", "all"',
 });
+test('.iterable() "from" option cannot be any string', testIterable, {
+	from: 'other',
+	message: 'must be "stdout", "stderr", "all"',
+});
 test('.pipe() "to" option cannot be any string', testPipeError, {
 	to: 'other',
 	message: 'must be "stdin"',
@@ -138,6 +162,10 @@ test('.pipe() "from" option cannot be a number without "fd"', testPipeError, {
 	message: 'must be "stdout", "stderr", "all"',
 });
 test('.duplex() "from" option cannot be a number without "fd"', testNodeStream, {
+	from: '1',
+	message: 'must be "stdout", "stderr", "all"',
+});
+test('.iterable() "from" option cannot be a number without "fd"', testIterable, {
 	from: '1',
 	message: 'must be "stdout", "stderr", "all"',
 });
@@ -157,6 +185,10 @@ test('.duplex() "from" option cannot be just "fd"', testNodeStream, {
 	from: 'fd',
 	message: 'must be "stdout", "stderr", "all"',
 });
+test('.iterable() "from" option cannot be just "fd"', testIterable, {
+	from: 'fd',
+	message: 'must be "stdout", "stderr", "all"',
+});
 test('.pipe() "to" option cannot be just "fd"', testPipeError, {
 	to: 'fd',
 	message: 'must be "stdin"',
@@ -170,6 +202,10 @@ test('.pipe() "from" option cannot be a float', testPipeError, {
 	message: 'must be "stdout", "stderr", "all"',
 });
 test('.duplex() "from" option cannot be a float', testNodeStream, {
+	from: 'fd1.5',
+	message: 'must be "stdout", "stderr", "all"',
+});
+test('.iterable() "from" option cannot be a float', testIterable, {
 	from: 'fd1.5',
 	message: 'must be "stdout", "stderr", "all"',
 });
@@ -189,6 +225,10 @@ test('.duplex() "from" option cannot be a negative number', testNodeStream, {
 	from: 'fd-1',
 	message: 'must be "stdout", "stderr", "all"',
 });
+test('.iterable() "from" option cannot be a negative number', testIterable, {
+	from: 'fd-1',
+	message: 'must be "stdout", "stderr", "all"',
+});
 test('.pipe() "to" option cannot be a negative number', testPipeError, {
 	to: 'fd-1',
 	message: 'must be "stdin"',
@@ -202,6 +242,10 @@ test('.pipe() "from" option cannot be a non-existing file descriptor', testPipeE
 	message: 'file descriptor does not exist',
 });
 test('.duplex() "from" cannot be a non-existing file descriptor', testNodeStream, {
+	from: 'fd3',
+	message: 'file descriptor does not exist',
+});
+test('.iterable() "from" cannot be a non-existing file descriptor', testIterable, {
 	from: 'fd3',
 	message: 'file descriptor does not exist',
 });
@@ -219,6 +263,11 @@ test('.pipe() "from" option cannot be an input file descriptor', testPipeError, 
 	message: 'must be a readable stream',
 });
 test('.duplex() "from" option cannot be an input file descriptor', testNodeStream, {
+	sourceOptions: getStdio(3, new Uint8Array()),
+	from: 'fd3',
+	message: 'must be a readable stream',
+});
+test('.iterable() "from" option cannot be an input file descriptor', testIterable, {
 	sourceOptions: getStdio(3, new Uint8Array()),
 	from: 'fd3',
 	message: 'must be a readable stream',
@@ -251,6 +300,10 @@ test('Cannot set "stdout" option to "ignore" to use .duplex()', testNodeStream, 
 	sourceOptions: {stdout: 'ignore'},
 	message: ['stdout', '\'ignore\''],
 });
+test('Cannot set "stdout" option to "ignore" to use .iterable()', testIterable, {
+	sourceOptions: {stdout: 'ignore'},
+	message: ['stdout', '\'ignore\''],
+});
 test('Cannot set "stdin" option to "ignore" to use .pipe()', testPipeError, {
 	destinationOptions: {stdin: 'ignore'},
 	message: ['stdin', '\'ignore\''],
@@ -266,6 +319,11 @@ test('Cannot set "stdout" option to "ignore" to use .pipe(1)', testPipeError, {
 	message: ['stdout', '\'ignore\''],
 });
 test('Cannot set "stdout" option to "ignore" to use .duplex(1)', testNodeStream, {
+	sourceOptions: {stdout: 'ignore'},
+	from: 'fd1',
+	message: ['stdout', '\'ignore\''],
+});
+test('Cannot set "stdout" option to "ignore" to use .iterable(1)', testIterable, {
 	sourceOptions: {stdout: 'ignore'},
 	from: 'fd1',
 	message: ['stdout', '\'ignore\''],
@@ -290,6 +348,11 @@ test('Cannot set "stdout" option to "ignore" to use .duplex("stdout")', testNode
 	from: 'stdout',
 	message: ['stdout', '\'ignore\''],
 });
+test('Cannot set "stdout" option to "ignore" to use .iterable("stdout")', testIterable, {
+	sourceOptions: {stdout: 'ignore'},
+	from: 'stdout',
+	message: ['stdout', '\'ignore\''],
+});
 test('Cannot set "stdin" option to "ignore" to use .pipe("stdin")', testPipeError, {
 	destinationOptions: {stdin: 'ignore'},
 	message: ['stdin', '\'ignore\''],
@@ -308,12 +371,21 @@ test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex()', testN
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
 	message: ['stdout', '\'ignore\''],
 });
+test('Cannot set "stdout" + "stderr" option to "ignore" to use .iterable()', testIterable, {
+	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
+	message: ['stdout', '\'ignore\''],
+});
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe(1)', testPipeError, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
 	from: 'fd1',
 	message: ['stdout', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex(1)', testNodeStream, {
+	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
+	from: 'fd1',
+	message: ['stdout', '\'ignore\''],
+});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use .iterable(1)', testIterable, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
 	from: 'fd1',
 	message: ['stdout', '\'ignore\''],
@@ -328,11 +400,20 @@ test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex("stdout")
 	from: 'stdout',
 	message: ['stdout', '\'ignore\''],
 });
+test('Cannot set "stdout" + "stderr" option to "ignore" to use .iterable("stdout")', testIterable, {
+	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
+	from: 'stdout',
+	message: ['stdout', '\'ignore\''],
+});
 test('Cannot set "stdio[1]" option to "ignore" to use .pipe()', testPipeError, {
 	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
 	message: ['stdio[1]', '\'ignore\''],
 });
 test('Cannot set "stdio[1]" option to "ignore" to use .duplex()', testNodeStream, {
+	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
+	message: ['stdio[1]', '\'ignore\''],
+});
+test('Cannot set "stdio[1]" option to "ignore" to use .iterable()', testIterable, {
 	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
 	message: ['stdio[1]', '\'ignore\''],
 });
@@ -351,6 +432,11 @@ test('Cannot set "stdio[1]" option to "ignore" to use .pipe(1)', testPipeError, 
 	message: ['stdio[1]', '\'ignore\''],
 });
 test('Cannot set "stdio[1]" option to "ignore" to use .duplex(1)', testNodeStream, {
+	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
+	from: 'fd1',
+	message: ['stdio[1]', '\'ignore\''],
+});
+test('Cannot set "stdio[1]" option to "ignore" to use .iterable(1)', testIterable, {
 	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
 	from: 'fd1',
 	message: ['stdio[1]', '\'ignore\''],
@@ -375,6 +461,11 @@ test('Cannot set "stdio[1]" option to "ignore" to use .duplex("stdout")', testNo
 	from: 'stdout',
 	message: ['stdio[1]', '\'ignore\''],
 });
+test('Cannot set "stdio[1]" option to "ignore" to use .iterable("stdout")', testIterable, {
+	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
+	from: 'stdout',
+	message: ['stdio[1]', '\'ignore\''],
+});
 test('Cannot set "stdio[0]" option to "ignore" to use .pipe("stdin")', testPipeError, {
 	destinationOptions: {stdio: ['ignore', 'pipe', 'pipe']},
 	message: ['stdio[0]', '\'ignore\''],
@@ -395,12 +486,22 @@ test('Cannot set "stderr" option to "ignore" to use .duplex(2)', testNodeStream,
 	from: 'fd2',
 	message: ['stderr', '\'ignore\''],
 });
+test('Cannot set "stderr" option to "ignore" to use .iterable(2)', testIterable, {
+	sourceOptions: {stderr: 'ignore'},
+	from: 'fd2',
+	message: ['stderr', '\'ignore\''],
+});
 test('Cannot set "stderr" option to "ignore" to use .pipe("stderr")', testPipeError, {
 	sourceOptions: {stderr: 'ignore'},
 	from: 'stderr',
 	message: ['stderr', '\'ignore\''],
 });
 test('Cannot set "stderr" option to "ignore" to use .duplex("stderr")', testNodeStream, {
+	sourceOptions: {stderr: 'ignore'},
+	from: 'stderr',
+	message: ['stderr', '\'ignore\''],
+});
+test('Cannot set "stderr" option to "ignore" to use .iterable("stderr")', testIterable, {
 	sourceOptions: {stderr: 'ignore'},
 	from: 'stderr',
 	message: ['stderr', '\'ignore\''],
@@ -415,12 +516,22 @@ test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex(2)', test
 	from: 'fd2',
 	message: ['stderr', '\'ignore\''],
 });
+test('Cannot set "stdout" + "stderr" option to "ignore" to use .iterable(2)', testIterable, {
+	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
+	from: 'fd2',
+	message: ['stderr', '\'ignore\''],
+});
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe("stderr")', testPipeError, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
 	from: 'stderr',
 	message: ['stderr', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex("stderr")', testNodeStream, {
+	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
+	from: 'stderr',
+	message: ['stderr', '\'ignore\''],
+});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use .iterable("stderr")', testIterable, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
 	from: 'stderr',
 	message: ['stderr', '\'ignore\''],
@@ -435,12 +546,22 @@ test('Cannot set "stdio[2]" option to "ignore" to use .duplex(2)', testNodeStrea
 	from: 'fd2',
 	message: ['stdio[2]', '\'ignore\''],
 });
+test('Cannot set "stdio[2]" option to "ignore" to use .iterable(2)', testIterable, {
+	sourceOptions: {stdio: ['pipe', 'pipe', 'ignore']},
+	from: 'fd2',
+	message: ['stdio[2]', '\'ignore\''],
+});
 test('Cannot set "stdio[2]" option to "ignore" to use .pipe("stderr")', testPipeError, {
 	sourceOptions: {stdio: ['pipe', 'pipe', 'ignore']},
 	from: 'stderr',
 	message: ['stdio[2]', '\'ignore\''],
 });
 test('Cannot set "stdio[2]" option to "ignore" to use .duplex("stderr")', testNodeStream, {
+	sourceOptions: {stdio: ['pipe', 'pipe', 'ignore']},
+	from: 'stderr',
+	message: ['stdio[2]', '\'ignore\''],
+});
+test('Cannot set "stdio[2]" option to "ignore" to use .iterable("stderr")', testIterable, {
 	sourceOptions: {stdio: ['pipe', 'pipe', 'ignore']},
 	from: 'stderr',
 	message: ['stdio[2]', '\'ignore\''],
@@ -455,12 +576,22 @@ test('Cannot set "stdio[3]" option to "ignore" to use .duplex(3)', testNodeStrea
 	from: 'fd3',
 	message: ['stdio[3]', '\'ignore\''],
 });
+test('Cannot set "stdio[3]" option to "ignore" to use .iterable(3)', testIterable, {
+	sourceOptions: getStdio(3, 'ignore'),
+	from: 'fd3',
+	message: ['stdio[3]', '\'ignore\''],
+});
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe("all")', testPipeError, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore', all: true},
 	from: 'all',
 	message: ['stdout', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex("all")', testNodeStream, {
+	sourceOptions: {stdout: 'ignore', stderr: 'ignore', all: true},
+	from: 'all',
+	message: ['stdout', '\'ignore\''],
+});
+test('Cannot set "stdout" + "stderr" option to "ignore" to use .iterable("all")', testIterable, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore', all: true},
 	from: 'all',
 	message: ['stdout', '\'ignore\''],
@@ -475,11 +606,20 @@ test('Cannot set "stdio[1]" + "stdio[2]" option to "ignore" to use .duplex("all"
 	from: 'all',
 	message: ['stdio[1]', '\'ignore\''],
 });
+test('Cannot set "stdio[1]" + "stdio[2]" option to "ignore" to use .iterable("all")', testIterable, {
+	sourceOptions: {stdio: ['pipe', 'ignore', 'ignore'], all: true},
+	from: 'all',
+	message: ['stdio[1]', '\'ignore\''],
+});
 test('Cannot set "stdout" option to "inherit" to use .pipe()', testPipeError, {
 	sourceOptions: {stdout: 'inherit'},
 	message: ['stdout', '\'inherit\''],
 });
 test('Cannot set "stdout" option to "inherit" to use .duplex()', testNodeStream, {
+	sourceOptions: {stdout: 'inherit'},
+	message: ['stdout', '\'inherit\''],
+});
+test('Cannot set "stdout" option to "inherit" to use .iterable()', testIterable, {
 	sourceOptions: {stdout: 'inherit'},
 	message: ['stdout', '\'inherit\''],
 });
@@ -500,6 +640,10 @@ test('Cannot set "stdout" option to "ipc" to use .duplex()', testNodeStream, {
 	sourceOptions: {stdout: 'ipc'},
 	message: ['stdout', '\'ipc\''],
 });
+test('Cannot set "stdout" option to "ipc" to use .iterable()', testIterable, {
+	sourceOptions: {stdout: 'ipc'},
+	message: ['stdout', '\'ipc\''],
+});
 test('Cannot set "stdin" option to "ipc" to use .pipe()', testPipeError, {
 	destinationOptions: {stdin: 'ipc'},
 	message: ['stdin', '\'ipc\''],
@@ -514,6 +658,10 @@ test('Cannot set "stdout" option to file descriptors to use .pipe()', testPipeEr
 	message: ['stdout', '1'],
 });
 test('Cannot set "stdout" option to file descriptors to use .duplex()', testNodeStream, {
+	sourceOptions: {stdout: 1},
+	message: ['stdout', '1'],
+});
+test('Cannot set "stdout" option to file descriptors to use .iterable()', testIterable, {
 	sourceOptions: {stdout: 1},
 	message: ['stdout', '1'],
 });
@@ -534,6 +682,10 @@ test('Cannot set "stdout" option to Node.js streams to use .duplex()', testNodeS
 	sourceOptions: {stdout: process.stdout},
 	message: ['stdout', 'Stream'],
 });
+test('Cannot set "stdout" option to Node.js streams to use .iterable()', testIterable, {
+	sourceOptions: {stdout: process.stdout},
+	message: ['stdout', 'Stream'],
+});
 test('Cannot set "stdin" option to Node.js streams to use .pipe()', testPipeError, {
 	destinationOptions: {stdin: process.stdin},
 	message: ['stdin', 'Stream'],
@@ -549,6 +701,11 @@ test('Cannot set "stdio[3]" option to Node.js Writable streams to use .pipe()', 
 	from: 'fd3',
 });
 test('Cannot set "stdio[3]" option to Node.js Writable streams to use .duplex()', testNodeStream, {
+	sourceOptions: getStdio(3, process.stdout),
+	message: ['stdio[3]', 'Stream'],
+	from: 'fd3',
+});
+test('Cannot set "stdio[3]" option to Node.js Writable streams to use .iterable()', testIterable, {
 	sourceOptions: getStdio(3, process.stdout),
 	message: ['stdio[3]', 'Stream'],
 	from: 'fd3',

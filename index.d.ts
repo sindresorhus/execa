@@ -768,7 +768,7 @@ declare abstract class CommonResult<
 	/**
 	Original error message. This is the same as the `message` property excluding the subprocess `stdout`/`stderr`/`stdio` and some additional information added by Execa.
 
-	This is `undefined` unless the subprocess exited due to an `error` event or a timeout.
+	This exists only if the subprocess exited due to an `error` event or a timeout.
 	*/
 	originalMessage?: string;
 

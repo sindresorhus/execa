@@ -1069,13 +1069,13 @@ execa('unicorns', {stdin: {transform: unknownGenerator, final: asyncFinal}});
 expectError(execaSync('unicorns', {stdin: {transform: unknownGenerator, final: asyncFinal}}));
 expectError(execa('unicorns', {stdin: {}}));
 expectError(execa('unicorns', {stdin: {binary: true}}));
-expectError(execa('unicorns', {stdin: {newline: true}}));
+expectError(execa('unicorns', {stdin: {preserveNewlines: true}}));
 expectError(execa('unicorns', {stdin: {objectMode: true}}));
 expectError(execa('unicorns', {stdin: {final: unknownFinal}}));
 execa('unicorns', {stdin: {transform: unknownGenerator, binary: true}});
 expectError(execa('unicorns', {stdin: {transform: unknownGenerator, binary: 'true'}}));
-execa('unicorns', {stdin: {transform: unknownGenerator, newline: true}});
-expectError(execa('unicorns', {stdin: {transform: unknownGenerator, newline: 'true'}}));
+execa('unicorns', {stdin: {transform: unknownGenerator, preserveNewlines: true}});
+expectError(execa('unicorns', {stdin: {transform: unknownGenerator, preserveNewlines: 'true'}}));
 execa('unicorns', {stdin: {transform: unknownGenerator, objectMode: true}});
 expectError(execa('unicorns', {stdin: {transform: unknownGenerator, objectMode: 'true'}}));
 execa('unicorns', {stdin: undefined});
@@ -1170,13 +1170,13 @@ execa('unicorns', {stdout: {transform: unknownGenerator, final: asyncFinal}});
 expectError(execaSync('unicorns', {stdout: {transform: unknownGenerator, final: asyncFinal}}));
 expectError(execa('unicorns', {stdout: {}}));
 expectError(execa('unicorns', {stdout: {binary: true}}));
-expectError(execa('unicorns', {stdout: {newline: true}}));
+expectError(execa('unicorns', {stdout: {preserveNewlines: true}}));
 expectError(execa('unicorns', {stdout: {objectMode: true}}));
 expectError(execa('unicorns', {stdout: {final: unknownFinal}}));
 execa('unicorns', {stdout: {transform: unknownGenerator, binary: true}});
 expectError(execa('unicorns', {stdout: {transform: unknownGenerator, binary: 'true'}}));
-execa('unicorns', {stdout: {transform: unknownGenerator, newline: true}});
-expectError(execa('unicorns', {stdout: {transform: unknownGenerator, newline: 'true'}}));
+execa('unicorns', {stdout: {transform: unknownGenerator, preserveNewlines: true}});
+expectError(execa('unicorns', {stdout: {transform: unknownGenerator, preserveNewlines: 'true'}}));
 execa('unicorns', {stdout: {transform: unknownGenerator, objectMode: true}});
 expectError(execa('unicorns', {stdout: {transform: unknownGenerator, objectMode: 'true'}}));
 execa('unicorns', {stdout: undefined});
@@ -1271,13 +1271,13 @@ execa('unicorns', {stderr: {transform: unknownGenerator, final: asyncFinal}});
 expectError(execaSync('unicorns', {stderr: {transform: unknownGenerator, final: asyncFinal}}));
 expectError(execa('unicorns', {stderr: {}}));
 expectError(execa('unicorns', {stderr: {binary: true}}));
-expectError(execa('unicorns', {stderr: {newline: true}}));
+expectError(execa('unicorns', {stderr: {preserveNewlines: true}}));
 expectError(execa('unicorns', {stderr: {objectMode: true}}));
 expectError(execa('unicorns', {stderr: {final: unknownFinal}}));
 execa('unicorns', {stderr: {transform: unknownGenerator, binary: true}});
 expectError(execa('unicorns', {stderr: {transform: unknownGenerator, binary: 'true'}}));
-execa('unicorns', {stderr: {transform: unknownGenerator, newline: true}});
-expectError(execa('unicorns', {stderr: {transform: unknownGenerator, newline: 'true'}}));
+execa('unicorns', {stderr: {transform: unknownGenerator, preserveNewlines: true}});
+expectError(execa('unicorns', {stderr: {transform: unknownGenerator, preserveNewlines: 'true'}}));
 execa('unicorns', {stderr: {transform: unknownGenerator, objectMode: true}});
 expectError(execa('unicorns', {stderr: {transform: unknownGenerator, objectMode: 'true'}}));
 execa('unicorns', {stderr: undefined});
@@ -1373,7 +1373,7 @@ execa('unicorns', {
 		unknownGenerator,
 		{transform: unknownGenerator},
 		{transform: unknownGenerator, binary: true},
-		{transform: unknownGenerator, newline: true},
+		{transform: unknownGenerator, preserveNewlines: true},
 		{transform: unknownGenerator, objectMode: true},
 		{transform: unknownGenerator, final: unknownFinal},
 		undefined,
@@ -1424,7 +1424,7 @@ execa('unicorns', {
 		[unknownGenerator],
 		[{transform: unknownGenerator}],
 		[{transform: unknownGenerator, binary: true}],
-		[{transform: unknownGenerator, newline: true}],
+		[{transform: unknownGenerator, preserveNewlines: true}],
 		[{transform: unknownGenerator, objectMode: true}],
 		[{transform: unknownGenerator, final: unknownFinal}],
 		[undefined],

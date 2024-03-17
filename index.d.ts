@@ -28,7 +28,7 @@ type StdioTransformFull = {
 	transform: StdioTransform;
 	final?: StdioFinal;
 	binary?: boolean;
-	newline?: boolean;
+	preserveNewlines?: boolean;
 	objectMode?: boolean;
 };
 

@@ -66,14 +66,14 @@ const transform = function * (line) { /* ... */ };
 await execa('./run.js', {stdout: transform});
 ```
 
-However, if a `{transform, newline: true}` plain object is passed, newlines are kept.
+However, if a `{transform, preserveNewlines: true}` plain object is passed, newlines are kept.
 
 ```js
 // `line`'s value ends with '\n'.
 // The output's last `line` might or might not end with '\n', depending on the output.
 const transform = function * (line) { /* ... */ };
 
-await execa('./run.js', {stdout: {transform, newline: true}});
+await execa('./run.js', {stdout: {transform, preserveNewlines: true}});
 ```
 
 Each `yield` produces at least one line. Calling `yield` multiple times or calling `yield *` produces multiples lines.
@@ -98,7 +98,7 @@ const transform = function * (line) {
 await execa('./run.js', {stdout: transform});
 ```
 
-However, if a `{transform, newline: true}` plain object is passed, multiple `yield`s produce a single line instead.
+However, if a `{transform, preserveNewlines: true}` plain object is passed, multiple `yield`s produce a single line instead.
 
 ```js
 const transform = function * (line) {
@@ -111,7 +111,7 @@ const transform = function * (line) {
 	yield line
 };
 
-await execa('./run.js', {stdout: {transform, newline: true}});
+await execa('./run.js', {stdout: {transform, preserveNewlines: true}});
 ```
 
 ## Object mode

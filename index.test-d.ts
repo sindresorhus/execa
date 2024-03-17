@@ -88,7 +88,7 @@ try {
 
 	const scriptPromise = $`unicorns`;
 
-	const pipeOptions = {from: 'stderr', to: 3, all: true} as const;
+	const pipeOptions = {from: 'stderr', to: 'fd3', all: true} as const;
 
 	type BufferExecaReturnValue = typeof bufferResult;
 	type EmptyExecaReturnValue = ExecaResult<{}>;
@@ -170,12 +170,12 @@ try {
 	await scriptPromise.pipe({from: 'all'})`stdin`;
 	await execaPromise.pipe('stdin', {from: 'all'});
 	await scriptPromise.pipe('stdin', {from: 'all'});
-	await execaPromise.pipe(execaBufferPromise, {from: 3});
-	await scriptPromise.pipe(execaBufferPromise, {from: 3});
-	await execaPromise.pipe({from: 3})`stdin`;
-	await scriptPromise.pipe({from: 3})`stdin`;
-	await execaPromise.pipe('stdin', {from: 3});
-	await scriptPromise.pipe('stdin', {from: 3});
+	await execaPromise.pipe(execaBufferPromise, {from: 'fd3'});
+	await scriptPromise.pipe(execaBufferPromise, {from: 'fd3'});
+	await execaPromise.pipe({from: 'fd3'})`stdin`;
+	await scriptPromise.pipe({from: 'fd3'})`stdin`;
+	await execaPromise.pipe('stdin', {from: 'fd3'});
+	await scriptPromise.pipe('stdin', {from: 'fd3'});
 	expectError(execaPromise.pipe(execaBufferPromise, {from: 'stdin'}));
 	expectError(scriptPromise.pipe(execaBufferPromise, {from: 'stdin'}));
 	expectError(execaPromise.pipe({from: 'stdin'})`stdin`);
@@ -188,12 +188,12 @@ try {
 	await scriptPromise.pipe({to: 'stdin'})`stdin`;
 	await execaPromise.pipe('stdin', {to: 'stdin'});
 	await scriptPromise.pipe('stdin', {to: 'stdin'});
-	await execaPromise.pipe(execaBufferPromise, {to: 3});
-	await scriptPromise.pipe(execaBufferPromise, {to: 3});
-	await execaPromise.pipe({to: 3})`stdin`;
-	await scriptPromise.pipe({to: 3})`stdin`;
-	await execaPromise.pipe('stdin', {to: 3});
-	await scriptPromise.pipe('stdin', {to: 3});
+	await execaPromise.pipe(execaBufferPromise, {to: 'fd3'});
+	await scriptPromise.pipe(execaBufferPromise, {to: 'fd3'});
+	await execaPromise.pipe({to: 'fd3'})`stdin`;
+	await scriptPromise.pipe({to: 'fd3'})`stdin`;
+	await execaPromise.pipe('stdin', {to: 'fd3'});
+	await scriptPromise.pipe('stdin', {to: 'fd3'});
 	expectError(execaPromise.pipe(execaBufferPromise, {to: 'stdout'}));
 	expectError(scriptPromise.pipe(execaBufferPromise, {to: 'stdout'}));
 	expectError(execaPromise.pipe({to: 'stdout'})`stdin`);
@@ -235,8 +235,18 @@ try {
 	expectError(await execaPromise.pipe('stdin', [], false));
 	expectError(await execaPromise.pipe('stdin', {other: true}));
 	expectError(await execaPromise.pipe('stdin', [], {other: true}));
+	expectError(await execaPromise.pipe('stdin', {from: 'fd'}));
+	expectError(await execaPromise.pipe('stdin', [], {from: 'fd'}));
+	expectError(await execaPromise.pipe('stdin', {from: 'fdNotANumber'}));
+	expectError(await execaPromise.pipe('stdin', [], {from: 'fdNotANumber'}));
 	expectError(await execaPromise.pipe('stdin', {from: 'other'}));
 	expectError(await execaPromise.pipe('stdin', [], {from: 'other'}));
+	expectError(await execaPromise.pipe('stdin', {to: 'fd'}));
+	expectError(await execaPromise.pipe('stdin', [], {to: 'fd'}));
+	expectError(await execaPromise.pipe('stdin', {to: 'fdNotANumber'}));
+	expectError(await execaPromise.pipe('stdin', [], {to: 'fdNotANumber'}));
+	expectError(await execaPromise.pipe('stdin', {to: 'other'}));
+	expectError(await execaPromise.pipe('stdin', [], {to: 'other'}));
 
 	const pipeResult = await execaPromise.pipe`stdin`;
 	expectType<string>(pipeResult.stdout);
@@ -266,26 +276,34 @@ try {
 	scriptPromise.readable({from: 'stdout'});
 	scriptPromise.readable({from: 'stderr'});
 	scriptPromise.readable({from: 'all'});
-	scriptPromise.readable({from: 3});
+	scriptPromise.readable({from: 'fd3'});
 	expectError(scriptPromise.readable('stdout'));
 	expectError(scriptPromise.readable({from: 'stdin'}));
+	expectError(scriptPromise.readable({from: 'fd'}));
+	expectError(scriptPromise.readable({from: 'fdNotANumber'}));
 	expectError(scriptPromise.readable({other: 'stdout'}));
 	scriptPromise.writable({});
 	scriptPromise.writable({to: 'stdin'});
-	scriptPromise.writable({to: 3});
+	scriptPromise.writable({to: 'fd3'});
 	expectError(scriptPromise.writable('stdin'));
 	expectError(scriptPromise.writable({to: 'stdout'}));
+	expectError(scriptPromise.writable({to: 'fd'}));
+	expectError(scriptPromise.writable({to: 'fdNotANumber'}));
 	expectError(scriptPromise.writable({other: 'stdin'}));
 	scriptPromise.duplex({});
 	scriptPromise.duplex({from: 'stdout'});
 	scriptPromise.duplex({from: 'stderr'});
 	scriptPromise.duplex({from: 'all'});
-	scriptPromise.duplex({from: 3});
+	scriptPromise.duplex({from: 'fd3'});
 	scriptPromise.duplex({from: 'stdout', to: 'stdin'});
-	scriptPromise.duplex({from: 'stdout', to: 3});
+	scriptPromise.duplex({from: 'stdout', to: 'fd3'});
 	expectError(scriptPromise.duplex('stdout'));
 	expectError(scriptPromise.duplex({from: 'stdin'}));
 	expectError(scriptPromise.duplex({from: 'stderr', to: 'stdout'}));
+	expectError(scriptPromise.duplex({from: 'fd'}));
+	expectError(scriptPromise.duplex({from: 'fdNotANumber'}));
+	expectError(scriptPromise.duplex({to: 'fd'}));
+	expectError(scriptPromise.duplex({to: 'fdNotANumber'}));
 	expectError(scriptPromise.duplex({other: 'stdout'}));
 
 	expectType<Readable>(execaPromise.all);

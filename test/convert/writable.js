@@ -57,8 +57,8 @@ const testWritableDefault = async (t, fdNumber, to, options) => {
 	await assertSubprocessOutput(t, subprocess);
 };
 
-test('.writable() can use stdin', testWritableDefault, 0, 0, {});
-test('.writable() can use stdio[*]', testWritableDefault, 3, 3, fullReadableStdio());
+test('.writable() can use stdin', testWritableDefault, 0, 'stdin', {});
+test('.writable() can use stdio[*]', testWritableDefault, 3, 'fd3', fullReadableStdio());
 test('.writable() uses stdin by default', testWritableDefault, 0, undefined, {});
 
 test('.writable() hangs until ended', async t => {

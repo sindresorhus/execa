@@ -133,72 +133,114 @@ test('.duplex() "to" option cannot be any string', testNodeStream, {
 	to: 'other',
 	message: 'must be "stdin"',
 });
+test('.pipe() "from" option cannot be a number without "fd"', testPipeError, {
+	from: '1',
+	message: 'must be "stdout", "stderr", "all"',
+});
+test('.duplex() "from" option cannot be a number without "fd"', testNodeStream, {
+	from: '1',
+	message: 'must be "stdout", "stderr", "all"',
+});
+test('.pipe() "to" option cannot be a number without "fd"', testPipeError, {
+	to: '0',
+	message: 'must be "stdin"',
+});
+test('.duplex() "to" option cannot be a number without "fd"', testNodeStream, {
+	to: '0',
+	message: 'must be "stdin"',
+});
+test('.pipe() "from" option cannot be just "fd"', testPipeError, {
+	from: 'fd',
+	message: 'must be "stdout", "stderr", "all"',
+});
+test('.duplex() "from" option cannot be just "fd"', testNodeStream, {
+	from: 'fd',
+	message: 'must be "stdout", "stderr", "all"',
+});
+test('.pipe() "to" option cannot be just "fd"', testPipeError, {
+	to: 'fd',
+	message: 'must be "stdin"',
+});
+test('.duplex() "to" option cannot be just "fd"', testNodeStream, {
+	to: 'fd',
+	message: 'must be "stdin"',
+});
 test('.pipe() "from" option cannot be a float', testPipeError, {
-	from: 1.5,
+	from: 'fd1.5',
 	message: 'must be "stdout", "stderr", "all"',
 });
 test('.duplex() "from" option cannot be a float', testNodeStream, {
-	from: 1.5,
+	from: 'fd1.5',
 	message: 'must be "stdout", "stderr", "all"',
 });
 test('.pipe() "to" option cannot be a float', testPipeError, {
-	to: 1.5,
+	to: 'fd1.5',
 	message: 'must be "stdin"',
 });
 test('.duplex() "to" option cannot be a float', testNodeStream, {
-	to: 1.5,
+	to: 'fd1.5',
 	message: 'must be "stdin"',
 });
 test('.pipe() "from" option cannot be a negative number', testPipeError, {
-	from: -1,
+	from: 'fd-1',
 	message: 'must be "stdout", "stderr", "all"',
 });
 test('.duplex() "from" option cannot be a negative number', testNodeStream, {
-	from: -1,
+	from: 'fd-1',
 	message: 'must be "stdout", "stderr", "all"',
 });
 test('.pipe() "to" option cannot be a negative number', testPipeError, {
-	to: -1,
+	to: 'fd-1',
 	message: 'must be "stdin"',
 });
 test('.duplex() "to" option cannot be a negative number', testNodeStream, {
-	to: -1,
+	to: 'fd-1',
 	message: 'must be "stdin"',
 });
 test('.pipe() "from" option cannot be a non-existing file descriptor', testPipeError, {
-	from: 3,
+	from: 'fd3',
 	message: 'file descriptor does not exist',
 });
 test('.duplex() "from" cannot be a non-existing file descriptor', testNodeStream, {
-	from: 3,
+	from: 'fd3',
 	message: 'file descriptor does not exist',
 });
 test('.pipe() "to" option cannot be a non-existing file descriptor', testPipeError, {
-	to: 3,
+	to: 'fd3',
 	message: 'file descriptor does not exist',
 });
 test('.duplex() "to" cannot be a non-existing file descriptor', testNodeStream, {
-	to: 3,
+	to: 'fd3',
 	message: 'file descriptor does not exist',
 });
 test('.pipe() "from" option cannot be an input file descriptor', testPipeError, {
 	sourceOptions: getStdio(3, new Uint8Array()),
-	from: 3,
+	from: 'fd3',
 	message: 'must be a readable stream',
 });
 test('.duplex() "from" option cannot be an input file descriptor', testNodeStream, {
 	sourceOptions: getStdio(3, new Uint8Array()),
-	from: 3,
+	from: 'fd3',
 	message: 'must be a readable stream',
 });
 test('.pipe() "to" option cannot be an output file descriptor', testPipeError, {
 	destinationOptions: fullStdio,
-	to: 3,
+	to: 'fd3',
 	message: 'must be a writable stream',
 });
 test('.duplex() "to" option cannot be an output file descriptor', testNodeStream, {
 	sourceOptions: fullStdio,
-	to: 3,
+	to: 'fd3',
+	message: 'must be a writable stream',
+});
+test('.pipe() "to" option cannot be "all"', testPipeError, {
+	destinationOptions: fullStdio,
+	to: 'all',
+	message: 'must be a writable stream',
+});
+test('.duplex() "to" option cannot be "all"', testNodeStream, {
+	sourceOptions: fullStdio,
+	to: 'all',
 	message: 'must be a writable stream',
 });
 test('Cannot set "stdout" option to "ignore" to use .pipe()', testPipeError, {
@@ -220,23 +262,23 @@ test('Cannot set "stdin" option to "ignore" to use .duplex()', testNodeStream, {
 });
 test('Cannot set "stdout" option to "ignore" to use .pipe(1)', testPipeError, {
 	sourceOptions: {stdout: 'ignore'},
-	from: 1,
+	from: 'fd1',
 	message: ['stdout', '\'ignore\''],
 });
 test('Cannot set "stdout" option to "ignore" to use .duplex(1)', testNodeStream, {
 	sourceOptions: {stdout: 'ignore'},
-	from: 1,
+	from: 'fd1',
 	message: ['stdout', '\'ignore\''],
 });
 test('Cannot set "stdin" option to "ignore" to use .pipe(0)', testPipeError, {
 	destinationOptions: {stdin: 'ignore'},
 	message: ['stdin', '\'ignore\''],
-	to: 0,
+	to: 'fd0',
 });
 test('Cannot set "stdin" option to "ignore" to use .duplex(0)', testNodeStream, {
 	sourceOptions: {stdin: 'ignore'},
 	message: ['stdin', '\'ignore\''],
-	to: 0,
+	to: 'fd0',
 });
 test('Cannot set "stdout" option to "ignore" to use .pipe("stdout")', testPipeError, {
 	sourceOptions: {stdout: 'ignore'},
@@ -268,12 +310,12 @@ test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex()', testN
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe(1)', testPipeError, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
-	from: 1,
+	from: 'fd1',
 	message: ['stdout', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex(1)', testNodeStream, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
-	from: 1,
+	from: 'fd1',
 	message: ['stdout', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe("stdout")', testPipeError, {
@@ -305,23 +347,23 @@ test('Cannot set "stdio[0]" option to "ignore" to use .duplex()', testNodeStream
 });
 test('Cannot set "stdio[1]" option to "ignore" to use .pipe(1)', testPipeError, {
 	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
-	from: 1,
+	from: 'fd1',
 	message: ['stdio[1]', '\'ignore\''],
 });
 test('Cannot set "stdio[1]" option to "ignore" to use .duplex(1)', testNodeStream, {
 	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
-	from: 1,
+	from: 'fd1',
 	message: ['stdio[1]', '\'ignore\''],
 });
 test('Cannot set "stdio[0]" option to "ignore" to use .pipe(0)', testPipeError, {
 	destinationOptions: {stdio: ['ignore', 'pipe', 'pipe']},
 	message: ['stdio[0]', '\'ignore\''],
-	to: 0,
+	to: 'fd0',
 });
 test('Cannot set "stdio[0]" option to "ignore" to use .duplex(0)', testNodeStream, {
 	sourceOptions: {stdio: ['ignore', 'pipe', 'pipe']},
 	message: ['stdio[0]', '\'ignore\''],
-	to: 0,
+	to: 'fd0',
 });
 test('Cannot set "stdio[1]" option to "ignore" to use .pipe("stdout")', testPipeError, {
 	sourceOptions: {stdio: ['pipe', 'ignore', 'pipe']},
@@ -345,12 +387,12 @@ test('Cannot set "stdio[0]" option to "ignore" to use .duplex("stdin")', testNod
 });
 test('Cannot set "stderr" option to "ignore" to use .pipe(2)', testPipeError, {
 	sourceOptions: {stderr: 'ignore'},
-	from: 2,
+	from: 'fd2',
 	message: ['stderr', '\'ignore\''],
 });
 test('Cannot set "stderr" option to "ignore" to use .duplex(2)', testNodeStream, {
 	sourceOptions: {stderr: 'ignore'},
-	from: 2,
+	from: 'fd2',
 	message: ['stderr', '\'ignore\''],
 });
 test('Cannot set "stderr" option to "ignore" to use .pipe("stderr")', testPipeError, {
@@ -365,12 +407,12 @@ test('Cannot set "stderr" option to "ignore" to use .duplex("stderr")', testNode
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe(2)', testPipeError, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
-	from: 2,
+	from: 'fd2',
 	message: ['stderr', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex(2)', testNodeStream, {
 	sourceOptions: {stdout: 'ignore', stderr: 'ignore'},
-	from: 2,
+	from: 'fd2',
 	message: ['stderr', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe("stderr")', testPipeError, {
@@ -385,12 +427,12 @@ test('Cannot set "stdout" + "stderr" option to "ignore" to use .duplex("stderr")
 });
 test('Cannot set "stdio[2]" option to "ignore" to use .pipe(2)', testPipeError, {
 	sourceOptions: {stdio: ['pipe', 'pipe', 'ignore']},
-	from: 2,
+	from: 'fd2',
 	message: ['stdio[2]', '\'ignore\''],
 });
 test('Cannot set "stdio[2]" option to "ignore" to use .duplex(2)', testNodeStream, {
 	sourceOptions: {stdio: ['pipe', 'pipe', 'ignore']},
-	from: 2,
+	from: 'fd2',
 	message: ['stdio[2]', '\'ignore\''],
 });
 test('Cannot set "stdio[2]" option to "ignore" to use .pipe("stderr")', testPipeError, {
@@ -405,12 +447,12 @@ test('Cannot set "stdio[2]" option to "ignore" to use .duplex("stderr")', testNo
 });
 test('Cannot set "stdio[3]" option to "ignore" to use .pipe(3)', testPipeError, {
 	sourceOptions: getStdio(3, 'ignore'),
-	from: 3,
+	from: 'fd3',
 	message: ['stdio[3]', '\'ignore\''],
 });
 test('Cannot set "stdio[3]" option to "ignore" to use .duplex(3)', testNodeStream, {
 	sourceOptions: getStdio(3, 'ignore'),
-	from: 3,
+	from: 'fd3',
 	message: ['stdio[3]', '\'ignore\''],
 });
 test('Cannot set "stdout" + "stderr" option to "ignore" to use .pipe("all")', testPipeError, {
@@ -504,22 +546,22 @@ test('Cannot set "stdin" option to Node.js streams to use .duplex()', testNodeSt
 test('Cannot set "stdio[3]" option to Node.js Writable streams to use .pipe()', testPipeError, {
 	sourceOptions: getStdio(3, process.stdout),
 	message: ['stdio[3]', 'Stream'],
-	from: 3,
+	from: 'fd3',
 });
 test('Cannot set "stdio[3]" option to Node.js Writable streams to use .duplex()', testNodeStream, {
 	sourceOptions: getStdio(3, process.stdout),
 	message: ['stdio[3]', 'Stream'],
-	from: 3,
+	from: 'fd3',
 });
 test('Cannot set "stdio[3]" option to Node.js Readable streams to use .pipe()', testPipeError, {
 	destinationOptions: getStdio(3, process.stdin),
 	message: ['stdio[3]', 'Stream'],
-	to: 3,
+	to: 'fd3',
 });
 test('Cannot set "stdio[3]" option to Node.js Readable streams to use .duplex()', testNodeStream, {
 	sourceOptions: getStdio(3, process.stdin),
 	message: ['stdio[3]', 'Stream'],
-	to: 3,
+	to: 'fd3',
 });
 
 test('Destination stream is ended when first argument is invalid', async t => {

@@ -21,6 +21,9 @@ import {
 	complexFull,
 	singleComplexBuffer,
 	singleComplexUint8Array,
+	singleComplexHex,
+	singleComplexHexBuffer,
+	singleComplexHexUint8Array,
 	complexChunks,
 	complexChunksEnd,
 } from '../helpers/lines.js';
@@ -48,36 +51,44 @@ const assertChunks = async (t, streamOrIterable, expectedChunks, methodName) => 
 };
 
 // eslint-disable-next-line max-params
-const testText = async (t, expectedChunks, methodName, binary, preserveNewlines, isUint8Array) => {
-	const options = isUint8Array ? {encoding: 'buffer'} : {};
-	const subprocess = getSubprocess(methodName, complexFull, options);
+const testText = async (t, expectedChunks, methodName, binary, preserveNewlines, encoding) => {
+	const subprocess = getSubprocess(methodName, complexFull, {encoding});
 	const stream = subprocess[methodName]({binary, preserveNewlines});
 
 	await assertChunks(t, stream, expectedChunks, methodName);
-	await assertSubprocessOutput(t, subprocess, stringToUint8Arrays(complexFull, isUint8Array));
+	const expectedOutput = encoding === 'hex'
+		? singleComplexHex
+		: stringToUint8Arrays(complexFull, encoding === 'buffer');
+	await assertSubprocessOutput(t, subprocess, expectedOutput);
 };
 
-test('.iterable() can use "binary: true"', testText, [singleComplexUint8Array], 'iterable', true, undefined, false);
-test('.iterable() can use "binary: undefined"', testText, complexChunks, 'iterable', undefined, undefined, false);
-test('.iterable() can use "binary: undefined" + "encoding: buffer"', testText, [singleComplexUint8Array], 'iterable', undefined, undefined, true);
-test('.iterable() can use "binary: false"', testText, complexChunks, 'iterable', false, undefined, false);
-test('.iterable() can use "binary: false" + "encoding: buffer"', testText, [singleComplexUint8Array], 'iterable', false, undefined, true);
-test('.iterable() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'iterable', false, true, false);
-test('.iterable() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'iterable', false, false, false);
-test('.readable() can use "binary: true"', testText, singleComplexBuffer, 'readable', true, undefined, false);
-test('.readable() can use "binary: undefined"', testText, singleComplexBuffer, 'readable', undefined, undefined, false);
-test('.readable() can use "binary: undefined" + "encoding: buffer"', testText, singleComplexBuffer, 'readable', undefined, undefined, true);
-test('.readable() can use "binary: false"', testText, complexChunksEnd, 'readable', false, undefined, false);
-test('.readable() can use "binary: false" + "encoding: buffer"', testText, singleComplexBuffer, 'readable', false, undefined, true);
-test('.readable() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'readable', false, true, false);
-test('.readable() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'readable', false, false, false);
-test('.duplex() can use "binary: true"', testText, singleComplexBuffer, 'duplex', true, undefined, false);
-test('.duplex() can use "binary: undefined"', testText, singleComplexBuffer, 'duplex', undefined, undefined, false);
-test('.duplex() can use "binary: undefined" + "encoding: "buffer"', testText, singleComplexBuffer, 'duplex', undefined, undefined, true);
-test('.duplex() can use "binary: false"', testText, complexChunksEnd, 'duplex', false, undefined, false);
-test('.duplex() can use "binary: false" + "encoding: buffer"', testText, singleComplexBuffer, 'duplex', false, undefined, true);
-test('.duplex() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'duplex', false, true, false);
-test('.duplex() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'duplex', false, false, false);
+test('.iterable() can use "binary: true"', testText, [singleComplexUint8Array], 'iterable', true, undefined, 'utf8');
+test('.iterable() can use "binary: undefined"', testText, complexChunks, 'iterable', undefined, undefined, 'utf8');
+test('.iterable() can use "binary: undefined" + "encoding: buffer"', testText, [singleComplexUint8Array], 'iterable', undefined, undefined, 'buffer');
+test('.iterable() can use "binary: undefined" + "encoding: hex"', testText, [singleComplexHexUint8Array], 'iterable', undefined, undefined, 'hex');
+test('.iterable() can use "binary: false"', testText, complexChunks, 'iterable', false, undefined, 'utf8');
+test('.iterable() can use "binary: false" + "encoding: buffer"', testText, [singleComplexUint8Array], 'iterable', false, undefined, 'buffer');
+test('.iterable() can use "binary: false" + "encoding: hex"', testText, [singleComplexHexUint8Array], 'iterable', false, undefined, 'hex');
+test('.iterable() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'iterable', false, true, 'utf8');
+test('.iterable() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'iterable', false, false, 'utf8');
+test('.readable() can use "binary: true"', testText, singleComplexBuffer, 'readable', true, undefined, 'utf8');
+test('.readable() can use "binary: undefined"', testText, singleComplexBuffer, 'readable', undefined, undefined, 'utf8');
+test('.readable() can use "binary: undefined" + "encoding: buffer"', testText, singleComplexBuffer, 'readable', undefined, undefined, 'buffer');
+test('.readable() can use "binary: undefined" + "encoding: hex"', testText, [singleComplexHexBuffer], 'readable', undefined, undefined, 'hex');
+test('.readable() can use "binary: false"', testText, complexChunksEnd, 'readable', false, undefined, 'utf8');
+test('.readable() can use "binary: false" + "encoding: buffer"', testText, singleComplexBuffer, 'readable', false, undefined, 'buffer');
+test('.readable() can use "binary: false" + "encoding: hex"', testText, [singleComplexHexBuffer], 'readable', false, undefined, 'hex');
+test('.readable() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'readable', false, true, 'utf8');
+test('.readable() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'readable', false, false, 'utf8');
+test('.duplex() can use "binary: true"', testText, singleComplexBuffer, 'duplex', true, undefined, 'utf8');
+test('.duplex() can use "binary: undefined"', testText, singleComplexBuffer, 'duplex', undefined, undefined, 'utf8');
+test('.duplex() can use "binary: undefined" + "encoding: "buffer"', testText, singleComplexBuffer, 'duplex', undefined, undefined, 'buffer');
+test('.duplex() can use "binary: undefined" + "encoding: "hex"', testText, [singleComplexHexBuffer], 'duplex', undefined, undefined, 'hex');
+test('.duplex() can use "binary: false"', testText, complexChunksEnd, 'duplex', false, undefined, 'utf8');
+test('.duplex() can use "binary: false" + "encoding: buffer"', testText, singleComplexBuffer, 'duplex', false, undefined, 'buffer');
+test('.duplex() can use "binary: false" + "encoding: hex"', testText, [singleComplexHexBuffer], 'duplex', false, undefined, 'hex');
+test('.duplex() can use "binary: false" + "preserveNewlines: true"', testText, complexChunksEnd, 'duplex', false, true, 'utf8');
+test('.duplex() can use "binary: false" + "preserveNewlines: false"', testText, complexChunks, 'duplex', false, false, 'utf8');
 
 const testTextOutput = async (t, expectedOutput, methodName, preserveNewlines) => {
 	const subprocess = getSubprocess(methodName, complexFull);

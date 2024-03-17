@@ -37,16 +37,16 @@ test('First generator argument is string with default encoding, with Uint8Array 
 test('First generator argument is Uint8Array with encoding "buffer", with string writes', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false);
 test('First generator argument is Uint8Array with encoding "buffer", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'buffer', 'Uint8Array', false);
 test('First generator argument is Uint8Array with encoding "buffer", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'buffer', 'Uint8Array', false);
-test('First generator argument is string with encoding "hex", with string writes', testGeneratorFirstEncoding, foobarString, 'hex', 'String', false);
-test('First generator argument is string with encoding "hex", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'hex', 'String', false);
-test('First generator argument is string with encoding "hex", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'hex', 'String', false);
+test('First generator argument is Uint8Array with encoding "hex", with string writes', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false);
+test('First generator argument is Uint8Array with encoding "hex", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'hex', 'Uint8Array', false);
+test('First generator argument is Uint8Array with encoding "hex", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'hex', 'Uint8Array', false);
 test('First generator argument can be string with objectMode', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', true);
 test('First generator argument can be objects with objectMode', testGeneratorFirstEncoding, foobarObject, 'utf8', 'Object', true);
 test('First generator argument is string with default encoding, with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', false, false);
 test('First generator argument is Uint8Array with default encoding, with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'utf8', 'Uint8Array', false, true);
 test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false, false);
 test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false, true);
-test('First generator argument is string with encoding "hex", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'hex', 'String', false, false);
+test('First generator argument is Uint8Array with encoding "hex", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false, false);
 test('First generator argument is Uint8Array with encoding "hex", with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false, true);
 
 const testEncodingIgnored = async (t, encoding) => {
@@ -87,8 +87,8 @@ test('Next generator argument is string with encoding "buffer", with string writ
 test('Next generator argument is Uint8Array with encoding "buffer", with Uint8Array writes', testGeneratorNextEncoding, foobarUint8Array, 'buffer', false, false, 'Uint8Array');
 test('Next generator argument is Uint8Array with encoding "buffer", with Uint8Array writes, objectMode first', testGeneratorNextEncoding, foobarUint8Array, 'buffer', true, false, 'Uint8Array');
 test('Next generator argument is Uint8Array with encoding "buffer", with Uint8Array writes, objectMode both', testGeneratorNextEncoding, foobarUint8Array, 'buffer', true, true, 'Uint8Array');
-test('Next generator argument is Uint8Array with encoding "hex", with string writes', testGeneratorNextEncoding, foobarString, 'hex', false, false, 'String');
-test('Next generator argument is Uint8Array with encoding "hex", with Uint8Array writes', testGeneratorNextEncoding, foobarUint8Array, 'hex', false, false, 'String');
+test('Next generator argument is Uint8Array with encoding "hex", with string writes', testGeneratorNextEncoding, foobarString, 'hex', false, false, 'Uint8Array');
+test('Next generator argument is Uint8Array with encoding "hex", with Uint8Array writes', testGeneratorNextEncoding, foobarUint8Array, 'hex', false, false, 'Uint8Array');
 test('Next generator argument is object with default encoding, with object writes, objectMode first', testGeneratorNextEncoding, foobarObject, 'utf8', true, false, 'Object');
 test('Next generator argument is object with default encoding, with object writes, objectMode both', testGeneratorNextEncoding, foobarObject, 'utf8', true, true, 'Object');
 

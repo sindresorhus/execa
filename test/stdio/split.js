@@ -14,6 +14,7 @@ import {
 	simpleChunks,
 	simpleFullUint8Array,
 	simpleChunksUint8Array,
+	simpleFullHex,
 	simpleLines,
 	simpleFullEndLines,
 	noNewlinesFull,
@@ -152,6 +153,8 @@ test('Splits lines when "binary" is false', testBinaryOption, false, simpleChunk
 test('Splits lines when "binary" is undefined', testBinaryOption, undefined, simpleChunks, simpleLines, simpleFull, false, true);
 test('Does not split lines when "binary" is undefined, encoding "buffer"', testBinaryOption, undefined, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, true, 'buffer');
 test('Does not split lines when "binary" is false, encoding "buffer"', testBinaryOption, false, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, true, 'buffer');
+test('Does not split lines when "binary" is undefined, encoding "hex"', testBinaryOption, undefined, simpleChunks, simpleChunksUint8Array, simpleFullHex, false, true, 'hex');
+test('Does not split lines when "binary" is false, encoding "hex"', testBinaryOption, false, simpleChunks, simpleChunksUint8Array, simpleFullHex, false, true, 'hex');
 test('Does not split lines when "binary" is true, objectMode', testBinaryOption, true, simpleChunks, simpleChunksUint8Array, simpleChunksUint8Array, true, true);
 test('Splits lines when "binary" is false, objectMode', testBinaryOption, false, simpleChunks, simpleLines, simpleLines, true, true);
 test('Splits lines when "binary" is undefined, objectMode', testBinaryOption, undefined, simpleChunks, simpleLines, simpleLines, true, true);
@@ -161,6 +164,8 @@ test('Splits lines when "binary" is undefined, preserveNewlines', testBinaryOpti
 test('Does not split lines when "binary" is undefined, encoding "buffer", preserveNewlines', testBinaryOption, undefined, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, false, 'buffer');
 test('Does not split lines when "binary" is false, encoding "buffer", preserveNewlines', testBinaryOption, false, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, false, 'buffer');
 test('Does not split lines when "binary" is true, objectMode, preserveNewlines', testBinaryOption, true, simpleChunks, simpleChunksUint8Array, simpleChunksUint8Array, true, false);
+test('Does not split lines when "binary" is undefined, encoding "hex", preserveNewlines', testBinaryOption, undefined, simpleChunks, simpleChunksUint8Array, simpleFullHex, false, false, 'hex');
+test('Does not split lines when "binary" is false, encoding "hex", preserveNewlines', testBinaryOption, false, simpleChunks, simpleChunksUint8Array, simpleFullHex, false, false, 'hex');
 test('Splits lines when "binary" is false, objectMode, preserveNewlines', testBinaryOption, false, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false);
 test('Splits lines when "binary" is undefined, objectMode, preserveNewlines', testBinaryOption, undefined, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false);
 

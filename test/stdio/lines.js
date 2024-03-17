@@ -10,17 +10,13 @@ import {
 	simpleFull,
 	simpleChunks,
 	simpleFullUint8Array,
+	simpleFullHex,
 	simpleLines,
 	simpleFullEndLines,
 	noNewlinesChunks,
 } from '../helpers/lines.js';
 
 setFixtureDir();
-
-test('"lines: true" is a noop when using "encoding: buffer"', async t => {
-	const {stdout} = await execa('noop-fd.js', ['1', simpleFull], {lines: true, encoding: 'buffer'});
-	t.deepEqual(stdout, simpleFullUint8Array);
-});
 
 // eslint-disable-next-line max-params
 const testStreamLines = async (t, fdNumber, input, expectedOutput, stripFinalNewline) => {
@@ -80,20 +76,15 @@ test('"lines: true" is a noop with objects generators, objectMode', async t => {
 	t.deepEqual(stdout, [foobarObject]);
 });
 
-const singleLine = 'a\n';
-const singleLineStrip = 'a';
-
-const testOtherEncoding = async (t, stripFinalNewline, strippedLine) => {
-	const {stdout} = await execa('noop-fd.js', ['1', `${singleLine}${singleLine}`], {
-		lines: true,
-		encoding: 'base64',
-		stripFinalNewline,
-	});
-	t.deepEqual(stdout, [strippedLine, strippedLine]);
+const testOtherEncoding = async (t, expectedOutput, encoding, stripFinalNewline) => {
+	const {stdout} = await execa('noop-fd.js', ['1', simpleFull], {lines: true, encoding, stripFinalNewline});
+	t.deepEqual(stdout, expectedOutput);
 };
 
-test('"lines: true" does not work with other encodings', testOtherEncoding, false, singleLine);
-test('"lines: true" does not work with other encodings, stripFinalNewline', testOtherEncoding, true, singleLineStrip);
+test('"lines: true" is a noop with "encoding: buffer"', testOtherEncoding, simpleFullUint8Array, 'buffer', false);
+test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline', testOtherEncoding, simpleFullUint8Array, 'buffer', false);
+test('"lines: true" is a noop with "encoding: hex"', testOtherEncoding, simpleFullHex, 'hex', false);
+test('"lines: true" is a noop with "encoding: hex", stripFinalNewline', testOtherEncoding, simpleFullHex, 'hex', true);
 
 const getSimpleChunkSubprocess = (stripFinalNewline, options) => execa('noop-fd.js', ['1', ...simpleChunks], {
 	lines: true,

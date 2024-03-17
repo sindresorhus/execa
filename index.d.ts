@@ -85,23 +85,27 @@ type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption | StdioOptionsArray<IsSync>;
 
 type DefaultEncodingOption = 'utf8';
-type BufferEncodingOption = 'buffer';
-type EncodingOption =
+type TextEncodingOption =
   | DefaultEncodingOption
   // eslint-disable-next-line unicorn/text-encoding-identifier-case
   | 'utf-8'
   | 'utf16le'
   | 'utf-16le'
   | 'ucs2'
-  | 'ucs-2'
-  | 'latin1'
-  | 'binary'
-  | 'ascii'
+  | 'ucs-2';
+type BufferEncodingOption = 'buffer';
+type BinaryEncodingOption =
+  | BufferEncodingOption
   | 'hex'
   | 'base64'
   | 'base64url'
-  | BufferEncodingOption
-  | undefined;
+  | 'latin1'
+  | 'binary'
+  | 'ascii';
+type EncodingOption =
+	| TextEncodingOption
+	| BinaryEncodingOption
+	| undefined;
 
 // Whether `result.stdout|stderr|all` is an array of values due to `objectMode: true`
 type IsObjectStream<
@@ -408,7 +412,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	- `subprocess.stdout`, `subprocess.stderr`, `subprocess.all`, `subprocess.stdio`, `subprocess.readable()` and `subprocess.duplex()` iterate over lines instead of arbitrary chunks.
 	- Any stream passed to the `stdout`, `stderr` or `stdio` option receives lines instead of arbitrary chunks.
 
-	This cannot be used if the `encoding` option is `'buffer'`.
+	This cannot be used if the `encoding` option is binary.
 
 	@default false
 	*/
@@ -484,7 +488,13 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly shell?: boolean | string | URL;
 
 	/**
-	Specify the character encoding used to decode the `stdout`, `stderr` and `stdio` output. If set to `'buffer'`, then `stdout`, `stderr` and `stdio` will be `Uint8Array`s instead of strings.
+	If the subprocess outputs text, specifies its character encoding, either `'utf8'` or `'utf16le'`.
+
+	If it outputs binary data instead, this should be either:
+	- `'buffer'`: returns the binary output as an `Uint8Array`.
+	- `'hex'`, `'base64'`, `'base64url'`, [`'latin1'`](https://nodejs.org/api/buffer.html#buffers-and-character-encodings) or [`'ascii'`](https://nodejs.org/api/buffer.html#buffers-and-character-encodings): encodes the binary output as a string.
+
+	The output is available with `result.stdout`, `result.stderr` and `result.stdio`.
 
 	@default 'utf8'
 	*/
@@ -561,7 +571,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
 	- the `stdout`/`stderr` option is `ignore` or `inherit`.
 	- the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), a file, a file descriptor, or another subprocess.
-	- the `encoding` option is set.
+	- the `encoding` option is binary.
 
 	This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
 
@@ -997,7 +1007,7 @@ type ReadableOptions = {
 
 	If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with `.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
 
-	This is always `true` if the `encoding` option is `'buffer'`.
+	This is always `true` when the `encoding` option is binary.
 
 	@default `false` with `.iterable()`, `true` otherwise
 	*/
@@ -1026,7 +1036,7 @@ type SubprocessAsyncIterable<
 	BinaryOption extends boolean | undefined,
 	EncodingOption extends Options['encoding'],
 > = AsyncIterableIterator<
-EncodingOption extends BufferEncodingOption
+EncodingOption extends BinaryEncodingOption
 	? Uint8Array
 	: BinaryOption extends true
 		? Uint8Array

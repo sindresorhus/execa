@@ -86,6 +86,9 @@ try {
 	const execaBufferPromise = execa('unicorns', {encoding: 'buffer', all: true});
 	const bufferResult = await execaBufferPromise;
 
+	const execaHexPromise = execa('unicorns', {encoding: 'hex', all: true});
+	const hexResult = await execaHexPromise;
+
 	const scriptPromise = $`unicorns`;
 
 	const pipeOptions = {from: 'stderr', to: 'fd3', all: true} as const;
@@ -319,6 +322,10 @@ try {
 	expectType<AsyncIterableIterator<Uint8Array>>(execaBufferPromise.iterable({binary: false}));
 	expectType<AsyncIterableIterator<Uint8Array>>(execaBufferPromise.iterable({binary: true}));
 	expectType<AsyncIterableIterator<Uint8Array>>(execaBufferPromise.iterable({} as {binary: boolean}));
+	expectType<AsyncIterableIterator<Uint8Array>>(execaHexPromise.iterable());
+	expectType<AsyncIterableIterator<Uint8Array>>(execaHexPromise.iterable({binary: false}));
+	expectType<AsyncIterableIterator<Uint8Array>>(execaHexPromise.iterable({binary: true}));
+	expectType<AsyncIterableIterator<Uint8Array>>(execaHexPromise.iterable({} as {binary: boolean}));
 
 	expectType<Readable>(scriptPromise.readable());
 	expectType<Writable>(scriptPromise.writable());
@@ -421,6 +428,16 @@ try {
 	expectType<Uint8Array>(bufferResult.stderr);
 	expectType<Uint8Array>(bufferResult.stdio[2]);
 	expectType<Uint8Array>(bufferResult.all);
+
+	expectType<Writable>(execaHexPromise.stdin);
+	expectType<Readable>(execaHexPromise.stdout);
+	expectType<Readable>(execaHexPromise.stderr);
+	expectType<Readable>(execaHexPromise.all);
+	expectType<string>(hexResult.stdout);
+	expectType<string>(hexResult.stdio[1]);
+	expectType<string>(hexResult.stderr);
+	expectType<string>(hexResult.stdio[2]);
+	expectType<string>(hexResult.all);
 
 	const linesResult = await execa('unicorns', {lines: true, all: true});
 	expectType<string[]>(linesResult.stdout);
@@ -1046,6 +1063,30 @@ execa('unicorns', {localDir: '.'});
 execaSync('unicorns', {localDir: '.'});
 execa('unicorns', {localDir: fileUrl});
 execaSync('unicorns', {localDir: fileUrl});
+// eslint-disable-next-line unicorn/text-encoding-identifier-case
+execa('unicorns', {encoding: 'utf-8'});
+// eslint-disable-next-line unicorn/text-encoding-identifier-case
+execaSync('unicorns', {encoding: 'utf-8'});
+execa('unicorns', {encoding: 'utf16le'});
+execaSync('unicorns', {encoding: 'utf16le'});
+execa('unicorns', {encoding: 'utf-16le'});
+execaSync('unicorns', {encoding: 'utf-16le'});
+execa('unicorns', {encoding: 'ucs2'});
+execaSync('unicorns', {encoding: 'ucs2'});
+execa('unicorns', {encoding: 'ucs-2'});
+execaSync('unicorns', {encoding: 'ucs-2'});
+execa('unicorns', {encoding: 'hex'});
+execaSync('unicorns', {encoding: 'hex'});
+execa('unicorns', {encoding: 'base64'});
+execaSync('unicorns', {encoding: 'base64'});
+execa('unicorns', {encoding: 'base64url'});
+execaSync('unicorns', {encoding: 'base64url'});
+execa('unicorns', {encoding: 'latin1'});
+execaSync('unicorns', {encoding: 'latin1'});
+execa('unicorns', {encoding: 'binary'});
+execaSync('unicorns', {encoding: 'binary'});
+execa('unicorns', {encoding: 'ascii'});
+execaSync('unicorns', {encoding: 'ascii'});
 expectError(execa('unicorns', {encoding: 'unknownEncoding'}));
 expectError(execaSync('unicorns', {encoding: 'unknownEncoding'}));
 execa('unicorns', {buffer: false});

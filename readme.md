@@ -513,13 +513,14 @@ Which stream to read from the subprocess. A file descriptor like `"fd3"` can als
 
 ##### readableOptions.binary
 
-Type: `boolean`
+Type: `boolean`\
+Default: `false` with [`.iterable()`](#iterablereadableoptions), `true` with [`.readable()`](#readablereadableoptions)/[`.duplex()`](#duplexduplexoptions)
 
 If `false`, the stream iterates over lines. Each line is a string. Also, the stream is in [object mode](https://nodejs.org/api/stream.html#object-mode).
 
 If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with [`.iterable()`](#iterablereadableoptions)) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
 
-With [`.readable()`](#readablereadableoptions)/[`.duplex()`](#duplexduplexoptions), the default value is `true`. With [`.iterable()`](#iterablereadableoptions), the default value is `true` if the [`encoding` option](#encoding) is `buffer`, otherwise it is `false`.
+This is always `true` if the [`encoding` option](#encoding) is `'buffer'`.
 
 ##### readableOptions.preserveNewlines
 
@@ -947,6 +948,8 @@ Split `stdout` and `stderr` into lines.
 - [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) are arrays of lines.
 - [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all), [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio), [`subprocess.readable()`](#readablereadableoptions) and [`subprocess.duplex`](#duplexduplexoptions) iterate over lines instead of arbitrary chunks.
 - Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
+
+This cannot be used if the [`encoding` option](#encoding) is `'buffer'`.
 
 #### encoding
 

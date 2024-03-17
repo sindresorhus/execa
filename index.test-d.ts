@@ -24,7 +24,7 @@ import {
 const fileUrl = new URL('file:///test');
 
 type AnySyncChunk = string | Uint8Array | undefined;
-type AnyChunk = AnySyncChunk | string[] | Uint8Array[] | unknown[];
+type AnyChunk = AnySyncChunk | string[] | unknown[];
 expectType<Writable | null>({} as ExecaSubprocess['stdin']);
 expectType<Readable | null>({} as ExecaSubprocess['stdout']);
 expectType<Readable | null>({} as ExecaSubprocess['stderr']);
@@ -298,7 +298,7 @@ try {
 		}
 
 		for await (const line of execaBufferPromise.iterable({binary: false})) {
-			expectType<string>(line);
+			expectType<Uint8Array>(line);
 		}
 
 		for await (const line of execaBufferPromise.iterable({binary: true})) {
@@ -306,19 +306,19 @@ try {
 		}
 
 		for await (const line of execaBufferPromise.iterable({} as {binary: boolean})) {
-			expectType<string | Uint8Array>(line);
+			expectType<Uint8Array>(line);
 		}
 	};
 
 	await asyncIteration();
-	expectAssignable<AsyncIterable<string>>(scriptPromise.iterable());
-	expectAssignable<AsyncIterable<string>>(scriptPromise.iterable({binary: false}));
-	expectAssignable<AsyncIterable<Uint8Array>>(scriptPromise.iterable({binary: true}));
-	expectAssignable<AsyncIterable<string | Uint8Array>>(scriptPromise.iterable({} as {binary: boolean}));
-	expectAssignable<AsyncIterable<Uint8Array>>(execaBufferPromise.iterable());
-	expectAssignable<AsyncIterable<string>>(execaBufferPromise.iterable({binary: false}));
-	expectAssignable<AsyncIterable<Uint8Array>>(execaBufferPromise.iterable({binary: true}));
-	expectAssignable<AsyncIterable<string | Uint8Array>>(execaBufferPromise.iterable({} as {binary: boolean}));
+	expectType<AsyncIterableIterator<string>>(scriptPromise.iterable());
+	expectType<AsyncIterableIterator<string>>(scriptPromise.iterable({binary: false}));
+	expectType<AsyncIterableIterator<Uint8Array>>(scriptPromise.iterable({binary: true}));
+	expectType<AsyncIterableIterator<string | Uint8Array>>(scriptPromise.iterable({} as {binary: boolean}));
+	expectType<AsyncIterableIterator<Uint8Array>>(execaBufferPromise.iterable());
+	expectType<AsyncIterableIterator<Uint8Array>>(execaBufferPromise.iterable({binary: false}));
+	expectType<AsyncIterableIterator<Uint8Array>>(execaBufferPromise.iterable({binary: true}));
+	expectType<AsyncIterableIterator<Uint8Array>>(execaBufferPromise.iterable({} as {binary: boolean}));
 
 	expectType<Readable>(scriptPromise.readable());
 	expectType<Writable>(scriptPromise.writable());
@@ -430,11 +430,11 @@ try {
 	expectType<string[]>(linesResult.all);
 
 	const linesBufferResult = await execa('unicorns', {lines: true, encoding: 'buffer', all: true});
-	expectType<Uint8Array[]>(linesBufferResult.stdout);
-	expectType<Uint8Array[]>(linesBufferResult.stdio[1]);
-	expectType<Uint8Array[]>(linesBufferResult.stderr);
-	expectType<Uint8Array[]>(linesBufferResult.stdio[2]);
-	expectType<Uint8Array[]>(linesBufferResult.all);
+	expectType<Uint8Array>(linesBufferResult.stdout);
+	expectType<Uint8Array>(linesBufferResult.stdio[1]);
+	expectType<Uint8Array>(linesBufferResult.stderr);
+	expectType<Uint8Array>(linesBufferResult.stdio[2]);
+	expectType<Uint8Array>(linesBufferResult.all);
 
 	const noBufferPromise = execa('unicorns', {buffer: false, all: true});
 	expectType<Writable>(noBufferPromise.stdin);
@@ -631,7 +631,7 @@ try {
 	expectType<string[]>(linesFd3Result.stdio[3]);
 
 	const linesBufferFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], lines: true, encoding: 'buffer'});
-	expectType<Uint8Array[]>(linesBufferFd3Result.stdio[3]);
+	expectType<Uint8Array>(linesBufferFd3Result.stdio[3]);
 
 	const noBufferFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], buffer: false});
 	expectType<undefined>(noBufferFd3Result.stdio[3]);
@@ -749,11 +749,11 @@ try {
 	expectType<string[]>(execaLinesError.all);
 
 	const execaLinesBufferError = error as ExecaError<{lines: true; encoding: 'buffer'; all: true}>;
-	expectType<Uint8Array[]>(execaLinesBufferError.stdout);
-	expectType<Uint8Array[]>(execaLinesBufferError.stdio[1]);
-	expectType<Uint8Array[]>(execaLinesBufferError.stderr);
-	expectType<Uint8Array[]>(execaLinesBufferError.stdio[2]);
-	expectType<Uint8Array[]>(execaLinesBufferError.all);
+	expectType<Uint8Array>(execaLinesBufferError.stdout);
+	expectType<Uint8Array>(execaLinesBufferError.stdio[1]);
+	expectType<Uint8Array>(execaLinesBufferError.stderr);
+	expectType<Uint8Array>(execaLinesBufferError.stdio[2]);
+	expectType<Uint8Array>(execaLinesBufferError.all);
 
 	const noBufferError = error as ExecaError<{buffer: false; all: true}>;
 	expectType<undefined>(noBufferError.stdout);

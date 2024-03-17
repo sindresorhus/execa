@@ -84,8 +84,10 @@ type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 
 type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption | StdioOptionsArray<IsSync>;
 
+type DefaultEncodingOption = 'utf8';
+type BufferEncodingOption = 'buffer';
 type EncodingOption =
-  | 'utf8'
+  | DefaultEncodingOption
   // eslint-disable-next-line unicorn/text-encoding-identifier-case
   | 'utf-8'
   | 'utf16le'
@@ -98,10 +100,8 @@ type EncodingOption =
   | 'hex'
   | 'base64'
   | 'base64url'
-  | 'buffer'
+  | BufferEncodingOption
   | undefined;
-type DefaultEncodingOption = 'utf8';
-type BufferEncodingOption = 'buffer';
 
 // Whether `result.stdout|stderr|all` is an array of values due to `objectMode: true`
 type IsObjectStream<
@@ -218,9 +218,11 @@ type StreamEncoding<
 	LinesOption extends CommonOptions['lines'],
 	Encoding extends CommonOptions['encoding'],
 > = IsObjectResult extends true ? unknown[]
-	: LinesOption extends true
-		? Encoding extends 'buffer' ? Uint8Array[] : string[]
-		: Encoding extends 'buffer' ? Uint8Array : string;
+	: Encoding extends BufferEncodingOption
+		? Uint8Array
+		: LinesOption extends true
+			? string[]
+			: string;
 
 // Type of `result.all`
 type AllOutput<OptionsType extends Options = Options> = AllOutputProperty<OptionsType['all'], OptionsType>;
@@ -405,6 +407,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	- `result.stdout`, `result.stderr`, `result.all` and `result.stdio` are arrays of lines.
 	- `subprocess.stdout`, `subprocess.stderr`, `subprocess.all`, `subprocess.stdio`, `subprocess.readable()` and `subprocess.duplex()` iterate over lines instead of arbitrary chunks.
 	- Any stream passed to the `stdout`, `stderr` or `stdio` option receives lines instead of arbitrary chunks.
+
+	This cannot be used if the `encoding` option is `'buffer'`.
 
 	@default false
 	*/
@@ -993,7 +997,9 @@ type ReadableOptions = {
 
 	If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with `.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
 
-	@default `false` with `.iterable()` and `encoding: 'buffer'`, `true` otherwise
+	This is always `true` if the `encoding` option is `'buffer'`.
+
+	@default `false` with `.iterable()`, `true` otherwise
 	*/
 	readonly binary?: boolean;
 
@@ -1020,13 +1026,11 @@ type SubprocessAsyncIterable<
 	BinaryOption extends boolean | undefined,
 	EncodingOption extends Options['encoding'],
 > = AsyncIterableIterator<
-BinaryOption extends true
+EncodingOption extends BufferEncodingOption
 	? Uint8Array
-	: BinaryOption extends false
-		? string
-		: EncodingOption extends 'buffer'
-			? Uint8Array
-			: string
+	: BinaryOption extends true
+		? Uint8Array
+		: string
 >;
 
 export type ExecaResultPromise<OptionsType extends Options = Options> = {

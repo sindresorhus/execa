@@ -12,13 +12,12 @@ import {foobarString, foobarUint8Array, foobarObject, foobarObjectString} from '
 import {
 	simpleFull,
 	simpleChunks,
+	simpleFullUint8Array,
+	simpleChunksUint8Array,
 	simpleLines,
 	simpleFullEndLines,
 	noNewlinesFull,
 	noNewlinesChunks,
-	getEncoding,
-	stringsToUint8Arrays,
-	serializeResult,
 } from '../helpers/lines.js';
 
 setFixtureDir();
@@ -63,136 +62,78 @@ const resultGenerator = function * (lines, chunk) {
 };
 
 // eslint-disable-next-line max-params
-const testLines = async (t, fdNumber, input, expectedLines, expectedOutput, isUint8Array, objectMode, preserveNewlines) => {
+const testLines = async (t, fdNumber, input, expectedLines, expectedOutput, objectMode, preserveNewlines) => {
 	const lines = [];
 	const {stdio} = await execa('noop-fd.js', [`${fdNumber}`], {
 		...getStdio(fdNumber, [
 			getChunksGenerator(input, false, true),
 			{transform: resultGenerator.bind(undefined, lines), preserveNewlines, objectMode},
 		]),
-		encoding: getEncoding(isUint8Array),
 		stripFinalNewline: false,
 	});
-	const output = serializeResult(stdio[fdNumber], isUint8Array);
-	t.deepEqual(lines, stringsToUint8Arrays(expectedLines, isUint8Array));
-	t.deepEqual(output, expectedOutput);
+	t.deepEqual(lines, expectedLines);
+	t.deepEqual(stdio[fdNumber], expectedOutput);
 };
 
-test('Split string stdout - n newlines, 1 chunk', testLines, 1, simpleChunks, simpleLines, simpleFull, false, false, true);
-test('Split string stderr - n newlines, 1 chunk', testLines, 2, simpleChunks, simpleLines, simpleFull, false, false, true);
-test('Split string stdio[*] - n newlines, 1 chunk', testLines, 3, simpleChunks, simpleLines, simpleFull, false, false, true);
-test('Split string stdout - preserveNewlines, n chunks', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesFull, false, false, true);
-test('Split string stdout - 0 newlines, 1 chunk', testLines, 1, singleChunks, singleChunks, singleFull, false, false, true);
-test('Split string stdout - empty, 1 chunk', testLines, 1, emptyChunks, noLines, emptyFull, false, false, true);
-test('Split string stdout - Windows newlines', testLines, 1, windowsChunks, windowsLines, windowsFull, false, false, true);
-test('Split string stdout - chunk ends with newline', testLines, 1, simpleFullEndChunks, simpleFullEndLines, simpleFullEnd, false, false, true);
-test('Split string stdout - single newline', testLines, 1, newlineChunks, newlineChunks, newlineFull, false, false, true);
-test('Split string stdout - only newlines', testLines, 1, newlinesChunks, newlinesLines, newlinesFull, false, false, true);
-test('Split string stdout - only Windows newlines', testLines, 1, windowsNewlinesChunks, windowsNewlinesLines, windowsNewlinesFull, false, false, true);
-test('Split string stdout - line split over multiple chunks', testLines, 1, runOverChunks, simpleLines, simpleFull, false, false, true);
-test('Split string stdout - 0 newlines, big line', testLines, 1, bigChunks, bigChunks, bigFull, false, false, true);
-test('Split string stdout - 0 newlines, many chunks', testLines, 1, manyChunks, manyLines, manyFull, false, false, true);
-test('Split Uint8Array stdout - n newlines, 1 chunk', testLines, 1, simpleChunks, simpleLines, simpleFull, true, false, true);
-test('Split Uint8Array stderr - n newlines, 1 chunk', testLines, 2, simpleChunks, simpleLines, simpleFull, true, false, true);
-test('Split Uint8Array stdio[*] - n newlines, 1 chunk', testLines, 3, simpleChunks, simpleLines, simpleFull, true, false, true);
-test('Split Uint8Array stdout - preserveNewlines, n chunks', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesFull, true, false, true);
-test('Split Uint8Array stdout - empty, 1 chunk', testLines, 1, emptyChunks, noLines, emptyFull, true, false, true);
-test('Split Uint8Array stdout - 0 newlines, 1 chunk', testLines, 1, singleChunks, singleChunks, singleFull, true, false, true);
-test('Split Uint8Array stdout - Windows newlines', testLines, 1, windowsChunks, windowsLines, windowsFull, true, false, true);
-test('Split Uint8Array stdout - chunk ends with newline', testLines, 1, simpleFullEndChunks, simpleFullEndLines, simpleFullEnd, true, false, true);
-test('Split Uint8Array stdout - single newline', testLines, 1, newlineChunks, newlineChunks, newlineFull, true, false, true);
-test('Split Uint8Array stdout - only newlines', testLines, 1, newlinesChunks, newlinesLines, newlinesFull, true, false, true);
-test('Split Uint8Array stdout - only Windows newlines', testLines, 1, windowsNewlinesChunks, windowsNewlinesLines, windowsNewlinesFull, true, false, true);
-test('Split Uint8Array stdout - line split over multiple chunks', testLines, 1, runOverChunks, simpleLines, simpleFull, true, false, true);
-test('Split Uint8Array stdout - 0 newlines, big line', testLines, 1, bigChunks, bigChunks, bigFull, true, false, true);
-test('Split Uint8Array stdout - 0 newlines, many chunks', testLines, 1, manyChunks, manyLines, manyFull, true, false, true);
-test('Split string stdout - n newlines, 1 chunk, objectMode', testLines, 1, simpleChunks, simpleLines, simpleLines, false, true, true);
-test('Split string stderr - n newlines, 1 chunk, objectMode', testLines, 2, simpleChunks, simpleLines, simpleLines, false, true, true);
-test('Split string stdio[*] - n newlines, 1 chunk, objectMode', testLines, 3, simpleChunks, simpleLines, simpleLines, false, true, true);
-test('Split string stdout - preserveNewlines, n chunks, objectMode', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesLines, false, true, true);
-test('Split string stdout - empty, 1 chunk, objectMode', testLines, 1, emptyChunks, noLines, noLines, false, true, true);
-test('Split string stdout - 0 newlines, 1 chunk, objectMode', testLines, 1, singleChunks, singleChunks, singleChunks, false, true, true);
-test('Split string stdout - Windows newlines, objectMode', testLines, 1, windowsChunks, windowsLines, windowsLines, false, true, true);
-test('Split string stdout - chunk ends with newline, objectMode', testLines, 1, simpleFullEndChunks, simpleFullEndLines, simpleFullEndLines, false, true, true);
-test('Split string stdout - single newline, objectMode', testLines, 1, newlineChunks, newlineChunks, newlineChunks, false, true, true);
-test('Split string stdout - only newlines, objectMode', testLines, 1, newlinesChunks, newlinesLines, newlinesLines, false, true, true);
-test('Split string stdout - only Windows newlines, objectMode', testLines, 1, windowsNewlinesChunks, windowsNewlinesLines, windowsNewlinesLines, false, true, true);
-test('Split string stdout - line split over multiple chunks, objectMode', testLines, 1, runOverChunks, simpleLines, simpleLines, false, true, true);
-test('Split string stdout - 0 newlines, big line, objectMode', testLines, 1, bigChunks, bigChunks, bigChunks, false, true, true);
-test('Split string stdout - 0 newlines, many chunks, objectMode', testLines, 1, manyChunks, manyLines, manyLines, false, true, true);
-test('Split Uint8Array stdout - n newlines, 1 chunk, objectMode', testLines, 1, simpleChunks, simpleLines, simpleLines, true, true, true);
-test('Split Uint8Array stderr - n newlines, 1 chunk, objectMode', testLines, 2, simpleChunks, simpleLines, simpleLines, true, true, true);
-test('Split Uint8Array stdio[*] - n newlines, 1 chunk, objectMode', testLines, 3, simpleChunks, simpleLines, simpleLines, true, true, true);
-test('Split Uint8Array stdout - preserveNewlines, n chunks, objectMode', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesLines, true, true, true);
-test('Split Uint8Array stdout - empty, 1 chunk, objectMode', testLines, 1, emptyChunks, noLines, noLines, true, true, true);
-test('Split Uint8Array stdout - 0 newlines, 1 chunk, objectMode', testLines, 1, singleChunks, singleChunks, singleChunks, true, true, true);
-test('Split Uint8Array stdout - Windows newlines, objectMode', testLines, 1, windowsChunks, windowsLines, windowsLines, true, true, true);
-test('Split Uint8Array stdout - chunk ends with newline, objectMode', testLines, 1, simpleFullEndChunks, simpleFullEndLines, simpleFullEndLines, true, true, true);
-test('Split Uint8Array stdout - single newline, objectMode', testLines, 1, newlineChunks, newlineChunks, newlineChunks, true, true, true);
-test('Split Uint8Array stdout - only newlines, objectMode', testLines, 1, newlinesChunks, newlinesLines, newlinesLines, true, true, true);
-test('Split Uint8Array stdout - only Windows newlines, objectMode', testLines, 1, windowsNewlinesChunks, windowsNewlinesLines, windowsNewlinesLines, true, true, true);
-test('Split Uint8Array stdout - line split over multiple chunks, objectMode', testLines, 1, runOverChunks, simpleLines, simpleLines, true, true, true);
-test('Split Uint8Array stdout - 0 newlines, big line, objectMode', testLines, 1, bigChunks, bigChunks, bigChunks, true, true, true);
-test('Split Uint8Array stdout - 0 newlines, many chunks, objectMode', testLines, 1, manyChunks, manyLines, manyLines, true, true, true);
-test('Split string stdout - n newlines, 1 chunk, preserveNewlines', testLines, 1, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false, false);
-test('Split string stderr - n newlines, 1 chunk, preserveNewlines', testLines, 2, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false, false);
-test('Split string stdio[*] - n newlines, 1 chunk, preserveNewlines', testLines, 3, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false, false);
-test('Split string stdout - preserveNewlines, n chunks, preserveNewlines', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesFullEnd, false, false, false);
-test('Split string stdout - empty, 1 chunk, preserveNewlines', testLines, 1, emptyChunks, noLines, emptyFull, false, false, false);
-test('Split string stdout - 0 newlines, 1 chunk, preserveNewlines', testLines, 1, singleChunks, singleChunks, singleFullEnd, false, false, false);
-test('Split string stdout - Windows newlines, preserveNewlines', testLines, 1, windowsChunks, noNewlinesChunks, windowsFullEnd, false, false, false);
-test('Split string stdout - chunk ends with newline, preserveNewlines', testLines, 1, simpleFullEndChunks, noNewlinesChunks, simpleFullEnd, false, false, false);
-test('Split string stdout - single newline, preserveNewlines', testLines, 1, newlineChunks, emptyChunks, newlineFull, false, false, false);
-test('Split string stdout - only newlines, preserveNewlines', testLines, 1, newlinesChunks, manyEmptyChunks, newlinesFull, false, false, false);
-test('Split string stdout - only Windows newlines, preserveNewlines', testLines, 1, windowsNewlinesChunks, manyEmptyChunks, windowsNewlinesFull, false, false, false);
-test('Split string stdout - line split over multiple chunks, preserveNewlines', testLines, 1, runOverChunks, noNewlinesChunks, simpleFullEnd, false, false, false);
-test('Split string stdout - 0 newlines, big line, preserveNewlines', testLines, 1, bigChunks, bigChunks, bigFullEnd, false, false, false);
-test('Split string stdout - 0 newlines, many chunks, preserveNewlines', testLines, 1, manyChunks, manyLines, manyFullEnd, false, false, false);
-test('Split Uint8Array stdout - n newlines, 1 chunk, preserveNewlines', testLines, 1, simpleChunks, noNewlinesChunks, simpleFullEnd, true, false, false);
-test('Split Uint8Array stderr - n newlines, 1 chunk, preserveNewlines', testLines, 2, simpleChunks, noNewlinesChunks, simpleFullEnd, true, false, false);
-test('Split Uint8Array stdio[*] - n newlines, 1 chunk, preserveNewlines', testLines, 3, simpleChunks, noNewlinesChunks, simpleFullEnd, true, false, false);
-test('Split Uint8Array stdout - preserveNewlines, n chunks, preserveNewlines', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesFullEnd, true, false, false);
-test('Split Uint8Array stdout - empty, 1 chunk, preserveNewlines', testLines, 1, emptyChunks, noLines, emptyFull, true, false, false);
-test('Split Uint8Array stdout - 0 newlines, 1 chunk, preserveNewlines', testLines, 1, singleChunks, singleChunks, singleFullEnd, true, false, false);
-test('Split Uint8Array stdout - Windows newlines, preserveNewlines', testLines, 1, windowsChunks, noNewlinesChunks, windowsFullEnd, true, false, false);
-test('Split Uint8Array stdout - chunk ends with newline, preserveNewlines', testLines, 1, simpleFullEndChunks, noNewlinesChunks, simpleFullEnd, true, false, false);
-test('Split Uint8Array stdout - single newline, preserveNewlines', testLines, 1, newlineChunks, emptyChunks, newlineFull, true, false, false);
-test('Split Uint8Array stdout - only newlines, preserveNewlines', testLines, 1, newlinesChunks, manyEmptyChunks, newlinesFull, true, false, false);
-test('Split Uint8Array stdout - only Windows newlines, preserveNewlines', testLines, 1, windowsNewlinesChunks, manyEmptyChunks, windowsNewlinesFull, true, false, false);
-test('Split Uint8Array stdout - line split over multiple chunks, preserveNewlines', testLines, 1, runOverChunks, noNewlinesChunks, simpleFullEnd, true, false, false);
-test('Split Uint8Array stdout - 0 newlines, big line, preserveNewlines', testLines, 1, bigChunks, bigChunks, bigFullEnd, true, false, false);
-test('Split Uint8Array stdout - 0 newlines, many chunks, preserveNewlines', testLines, 1, manyChunks, manyLines, manyFullEnd, true, false, false);
-test('Split string stdout - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 1, simpleChunks, noNewlinesChunks, noNewlinesChunks, false, true, false);
-test('Split string stderr - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 2, simpleChunks, noNewlinesChunks, noNewlinesChunks, false, true, false);
-test('Split string stdio[*] - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 3, simpleChunks, noNewlinesChunks, noNewlinesChunks, false, true, false);
-test('Split string stdout - preserveNewlines, n chunks, objectMode, preserveNewlines', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesLines, false, true, false);
-test('Split string stdout - empty, 1 chunk, objectMode, preserveNewlines', testLines, 1, emptyChunks, noLines, noLines, false, true, false);
-test('Split string stdout - 0 newlines, 1 chunk, objectMode, preserveNewlines', testLines, 1, singleChunks, singleChunks, singleChunks, false, true, false);
-test('Split string stdout - Windows newlines, objectMode, preserveNewlines', testLines, 1, windowsChunks, noNewlinesChunks, noNewlinesChunks, false, true, false);
-test('Split string stdout - chunk ends with newline, objectMode, preserveNewlines', testLines, 1, simpleFullEndChunks, noNewlinesChunks, noNewlinesChunks, false, true, false);
-test('Split string stdout - single newline, objectMode, preserveNewlines', testLines, 1, newlineChunks, emptyChunks, emptyChunks, false, true, false);
-test('Split string stdout - only newlines, objectMode, preserveNewlines', testLines, 1, newlinesChunks, manyEmptyChunks, manyEmptyChunks, false, true, false);
-test('Split string stdout - only Windows newlines, objectMode, preserveNewlines', testLines, 1, windowsNewlinesChunks, manyEmptyChunks, manyEmptyChunks, false, true, false);
-test('Split string stdout - line split over multiple chunks, objectMode, preserveNewlines', testLines, 1, runOverChunks, noNewlinesChunks, noNewlinesChunks, false, true, false);
-test('Split string stdout - 0 newlines, big line, objectMode, preserveNewlines', testLines, 1, bigChunks, bigChunks, bigChunks, false, true, false);
-test('Split string stdout - 0 newlines, many chunks, objectMode, preserveNewlines', testLines, 1, manyChunks, manyLines, manyLines, false, true, false);
-test('Split Uint8Array stdout - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 1, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, true, false);
-test('Split Uint8Array stderr - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 2, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, true, false);
-test('Split Uint8Array stdio[*] - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 3, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, true, false);
-test('Split Uint8Array stdout - preserveNewlines, n chunks, objectMode, preserveNewlines', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesLines, true, true, false);
-test('Split Uint8Array stdout - empty, 1 chunk, objectMode, preserveNewlines', testLines, 1, emptyChunks, noLines, noLines, true, true, false);
-test('Split Uint8Array stdout - 0 newlines, 1 chunk, objectMode, preserveNewlines', testLines, 1, singleChunks, singleChunks, singleChunks, true, true, false);
-test('Split Uint8Array stdout - Windows newlines, objectMode, preserveNewlines', testLines, 1, windowsChunks, noNewlinesChunks, noNewlinesChunks, true, true, false);
-test('Split Uint8Array stdout - chunk ends with newline, objectMode, preserveNewlines', testLines, 1, simpleFullEndChunks, noNewlinesChunks, noNewlinesChunks, true, true, false);
-test('Split Uint8Array stdout - single newline, objectMode, preserveNewlines', testLines, 1, newlineChunks, emptyChunks, emptyChunks, true, true, false);
-test('Split Uint8Array stdout - only newlines, objectMode, preserveNewlines', testLines, 1, newlinesChunks, manyEmptyChunks, manyEmptyChunks, true, true, false);
-test('Split Uint8Array stdout - only Windows newlines, objectMode, preserveNewlines', testLines, 1, windowsNewlinesChunks, manyEmptyChunks, manyEmptyChunks, true, true, false);
-test('Split Uint8Array stdout - line split over multiple chunks, objectMode, preserveNewlines', testLines, 1, runOverChunks, noNewlinesChunks, noNewlinesChunks, true, true, false);
-test('Split Uint8Array stdout - 0 newlines, big line, objectMode, preserveNewlines', testLines, 1, bigChunks, bigChunks, bigChunks, true, true, false);
-test('Split Uint8Array stdout - 0 newlines, many chunks, objectMode, preserveNewlines', testLines, 1, manyChunks, manyLines, manyLines, true, true, false);
+test('Split stdout - n newlines, 1 chunk', testLines, 1, simpleChunks, simpleLines, simpleFull, false, true);
+test('Split stderr - n newlines, 1 chunk', testLines, 2, simpleChunks, simpleLines, simpleFull, false, true);
+test('Split stdio[*] - n newlines, 1 chunk', testLines, 3, simpleChunks, simpleLines, simpleFull, false, true);
+test('Split stdout - preserveNewlines, n chunks', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesFull, false, true);
+test('Split stdout - 0 newlines, 1 chunk', testLines, 1, singleChunks, singleChunks, singleFull, false, true);
+test('Split stdout - empty, 1 chunk', testLines, 1, emptyChunks, noLines, emptyFull, false, true);
+test('Split stdout - Windows newlines', testLines, 1, windowsChunks, windowsLines, windowsFull, false, true);
+test('Split stdout - chunk ends with newline', testLines, 1, simpleFullEndChunks, simpleFullEndLines, simpleFullEnd, false, true);
+test('Split stdout - single newline', testLines, 1, newlineChunks, newlineChunks, newlineFull, false, true);
+test('Split stdout - only newlines', testLines, 1, newlinesChunks, newlinesLines, newlinesFull, false, true);
+test('Split stdout - only Windows newlines', testLines, 1, windowsNewlinesChunks, windowsNewlinesLines, windowsNewlinesFull, false, true);
+test('Split stdout - line split over multiple chunks', testLines, 1, runOverChunks, simpleLines, simpleFull, false, true);
+test('Split stdout - 0 newlines, big line', testLines, 1, bigChunks, bigChunks, bigFull, false, true);
+test('Split stdout - 0 newlines, many chunks', testLines, 1, manyChunks, manyLines, manyFull, false, true);
+test('Split stdout - n newlines, 1 chunk, objectMode', testLines, 1, simpleChunks, simpleLines, simpleLines, true, true);
+test('Split stderr - n newlines, 1 chunk, objectMode', testLines, 2, simpleChunks, simpleLines, simpleLines, true, true);
+test('Split stdio[*] - n newlines, 1 chunk, objectMode', testLines, 3, simpleChunks, simpleLines, simpleLines, true, true);
+test('Split stdout - preserveNewlines, n chunks, objectMode', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesLines, true, true);
+test('Split stdout - empty, 1 chunk, objectMode', testLines, 1, emptyChunks, noLines, noLines, true, true);
+test('Split stdout - 0 newlines, 1 chunk, objectMode', testLines, 1, singleChunks, singleChunks, singleChunks, true, true);
+test('Split stdout - Windows newlines, objectMode', testLines, 1, windowsChunks, windowsLines, windowsLines, true, true);
+test('Split stdout - chunk ends with newline, objectMode', testLines, 1, simpleFullEndChunks, simpleFullEndLines, simpleFullEndLines, true, true);
+test('Split stdout - single newline, objectMode', testLines, 1, newlineChunks, newlineChunks, newlineChunks, true, true);
+test('Split stdout - only newlines, objectMode', testLines, 1, newlinesChunks, newlinesLines, newlinesLines, true, true);
+test('Split stdout - only Windows newlines, objectMode', testLines, 1, windowsNewlinesChunks, windowsNewlinesLines, windowsNewlinesLines, true, true);
+test('Split stdout - line split over multiple chunks, objectMode', testLines, 1, runOverChunks, simpleLines, simpleLines, true, true);
+test('Split stdout - 0 newlines, big line, objectMode', testLines, 1, bigChunks, bigChunks, bigChunks, true, true);
+test('Split stdout - 0 newlines, many chunks, objectMode', testLines, 1, manyChunks, manyLines, manyLines, true, true);
+test('Split stdout - n newlines, 1 chunk, preserveNewlines', testLines, 1, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false);
+test('Split stderr - n newlines, 1 chunk, preserveNewlines', testLines, 2, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false);
+test('Split stdio[*] - n newlines, 1 chunk, preserveNewlines', testLines, 3, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false);
+test('Split stdout - preserveNewlines, n chunks, preserveNewlines', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesFullEnd, false, false);
+test('Split stdout - empty, 1 chunk, preserveNewlines', testLines, 1, emptyChunks, noLines, emptyFull, false, false);
+test('Split stdout - 0 newlines, 1 chunk, preserveNewlines', testLines, 1, singleChunks, singleChunks, singleFullEnd, false, false);
+test('Split stdout - Windows newlines, preserveNewlines', testLines, 1, windowsChunks, noNewlinesChunks, windowsFullEnd, false, false);
+test('Split stdout - chunk ends with newline, preserveNewlines', testLines, 1, simpleFullEndChunks, noNewlinesChunks, simpleFullEnd, false, false);
+test('Split stdout - single newline, preserveNewlines', testLines, 1, newlineChunks, emptyChunks, newlineFull, false, false);
+test('Split stdout - only newlines, preserveNewlines', testLines, 1, newlinesChunks, manyEmptyChunks, newlinesFull, false, false);
+test('Split stdout - only Windows newlines, preserveNewlines', testLines, 1, windowsNewlinesChunks, manyEmptyChunks, windowsNewlinesFull, false, false);
+test('Split stdout - line split over multiple chunks, preserveNewlines', testLines, 1, runOverChunks, noNewlinesChunks, simpleFullEnd, false, false);
+test('Split stdout - 0 newlines, big line, preserveNewlines', testLines, 1, bigChunks, bigChunks, bigFullEnd, false, false);
+test('Split stdout - 0 newlines, many chunks, preserveNewlines', testLines, 1, manyChunks, manyLines, manyFullEnd, false, false);
+test('Split stdout - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 1, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false);
+test('Split stderr - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 2, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false);
+test('Split stdio[*] - n newlines, 1 chunk, objectMode, preserveNewlines', testLines, 3, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false);
+test('Split stdout - preserveNewlines, n chunks, objectMode, preserveNewlines', testLines, 1, noNewlinesChunks, noNewlinesLines, noNewlinesLines, true, false);
+test('Split stdout - empty, 1 chunk, objectMode, preserveNewlines', testLines, 1, emptyChunks, noLines, noLines, true, false);
+test('Split stdout - 0 newlines, 1 chunk, objectMode, preserveNewlines', testLines, 1, singleChunks, singleChunks, singleChunks, true, false);
+test('Split stdout - Windows newlines, objectMode, preserveNewlines', testLines, 1, windowsChunks, noNewlinesChunks, noNewlinesChunks, true, false);
+test('Split stdout - chunk ends with newline, objectMode, preserveNewlines', testLines, 1, simpleFullEndChunks, noNewlinesChunks, noNewlinesChunks, true, false);
+test('Split stdout - single newline, objectMode, preserveNewlines', testLines, 1, newlineChunks, emptyChunks, emptyChunks, true, false);
+test('Split stdout - only newlines, objectMode, preserveNewlines', testLines, 1, newlinesChunks, manyEmptyChunks, manyEmptyChunks, true, false);
+test('Split stdout - only Windows newlines, objectMode, preserveNewlines', testLines, 1, windowsNewlinesChunks, manyEmptyChunks, manyEmptyChunks, true, false);
+test('Split stdout - line split over multiple chunks, objectMode, preserveNewlines', testLines, 1, runOverChunks, noNewlinesChunks, noNewlinesChunks, true, false);
+test('Split stdout - 0 newlines, big line, objectMode, preserveNewlines', testLines, 1, bigChunks, bigChunks, bigChunks, true, false);
+test('Split stdout - 0 newlines, many chunks, objectMode, preserveNewlines', testLines, 1, manyChunks, manyLines, manyLines, true, false);
 
 // eslint-disable-next-line max-params
-const testBinaryOption = async (t, binary, input, expectedLines, expectedOutput, objectMode, preserveNewlines) => {
+const testBinaryOption = async (t, binary, input, expectedLines, expectedOutput, objectMode, preserveNewlines, encoding) => {
 	const lines = [];
 	const {stdout} = await execa('noop.js', {
 		stdout: [
@@ -200,48 +141,28 @@ const testBinaryOption = async (t, binary, input, expectedLines, expectedOutput,
 			{transform: resultGenerator.bind(undefined, lines), binary, preserveNewlines, objectMode},
 		],
 		stripFinalNewline: false,
+		encoding,
 	});
 	t.deepEqual(lines, expectedLines);
 	t.deepEqual(stdout, expectedOutput);
 };
 
-test('Does not split lines when "binary" is true', testBinaryOption, true, simpleChunks, simpleChunks, simpleFull, false, true);
+test('Does not split lines when "binary" is true', testBinaryOption, true, simpleChunks, simpleChunksUint8Array, simpleFull, false, true);
 test('Splits lines when "binary" is false', testBinaryOption, false, simpleChunks, simpleLines, simpleFull, false, true);
 test('Splits lines when "binary" is undefined', testBinaryOption, undefined, simpleChunks, simpleLines, simpleFull, false, true);
-test('Does not split lines when "binary" is true, objectMode', testBinaryOption, true, simpleChunks, simpleChunks, simpleChunks, true, true);
+test('Does not split lines when "binary" is undefined, encoding "buffer"', testBinaryOption, undefined, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, true, 'buffer');
+test('Does not split lines when "binary" is false, encoding "buffer"', testBinaryOption, false, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, true, 'buffer');
+test('Does not split lines when "binary" is true, objectMode', testBinaryOption, true, simpleChunks, simpleChunksUint8Array, simpleChunksUint8Array, true, true);
 test('Splits lines when "binary" is false, objectMode', testBinaryOption, false, simpleChunks, simpleLines, simpleLines, true, true);
 test('Splits lines when "binary" is undefined, objectMode', testBinaryOption, undefined, simpleChunks, simpleLines, simpleLines, true, true);
-test('Does not split lines when "binary" is true, preserveNewlines', testBinaryOption, true, simpleChunks, simpleChunks, simpleFull, false, false);
+test('Does not split lines when "binary" is true, preserveNewlines', testBinaryOption, true, simpleChunks, simpleChunksUint8Array, simpleFull, false, false);
 test('Splits lines when "binary" is false, preserveNewlines', testBinaryOption, false, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false);
 test('Splits lines when "binary" is undefined, preserveNewlines', testBinaryOption, undefined, simpleChunks, noNewlinesChunks, simpleFullEnd, false, false);
-test('Does not split lines when "binary" is true, objectMode, preserveNewlines', testBinaryOption, true, simpleChunks, simpleChunks, simpleChunks, true, false);
+test('Does not split lines when "binary" is undefined, encoding "buffer", preserveNewlines', testBinaryOption, undefined, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, false, 'buffer');
+test('Does not split lines when "binary" is false, encoding "buffer", preserveNewlines', testBinaryOption, false, simpleChunks, simpleChunksUint8Array, simpleFullUint8Array, false, false, 'buffer');
+test('Does not split lines when "binary" is true, objectMode, preserveNewlines', testBinaryOption, true, simpleChunks, simpleChunksUint8Array, simpleChunksUint8Array, true, false);
 test('Splits lines when "binary" is false, objectMode, preserveNewlines', testBinaryOption, false, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false);
 test('Splits lines when "binary" is undefined, objectMode, preserveNewlines', testBinaryOption, undefined, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false);
-
-const resultStringGenerator = function * (lines, chunk) {
-	lines.push(chunk);
-	yield new TextDecoder().decode(chunk);
-};
-
-const testUint8ArrayToString = async (t, expectedOutput, objectMode, preserveNewlines) => {
-	const lines = [];
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {
-		stdout: {
-			transform: resultStringGenerator.bind(undefined, lines),
-			objectMode,
-			preserveNewlines,
-		},
-		encoding: 'buffer',
-		lines: true,
-	});
-	t.deepEqual(lines, [foobarUint8Array]);
-	t.deepEqual(stdout, expectedOutput);
-};
-
-test('Line splitting when converting from Uint8Array to string', testUint8ArrayToString, [foobarUint8Array], false, true);
-test('Line splitting when converting from Uint8Array to string, objectMode', testUint8ArrayToString, [foobarString], true, true);
-test('Line splitting when converting from Uint8Array to string, preserveNewlines', testUint8ArrayToString, [foobarUint8Array], false, false);
-test('Line splitting when converting from Uint8Array to string, objectMode, preserveNewlines', testUint8ArrayToString, [foobarString], true, false);
 
 const resultUint8ArrayGenerator = function * (lines, chunk) {
 	lines.push(chunk);

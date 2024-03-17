@@ -17,8 +17,11 @@ const textDecoder = new TextDecoder();
 const foobarUppercase = foobarString.toUpperCase();
 const foobarHex = foobarBuffer.toString('hex');
 
-const uppercaseBufferGenerator = function * (line) {
-	yield textDecoder.decode(line).toUpperCase();
+const uppercaseBufferGenerator = {
+	* transform(line) {
+		yield textDecoder.decode(line).toUpperCase();
+	},
+	binary: true,
 };
 
 const getInputObjectMode = (objectMode, addNoopTransform) => objectMode
@@ -40,7 +43,7 @@ const getOutputObjectMode = (objectMode, addNoopTransform) => objectMode
 		getStreamMethod: getStreamAsArray,
 	}
 	: {
-		generators: addNoopGenerator(uppercaseGenerator(false, true), addNoopTransform),
+		generators: addNoopGenerator(uppercaseBufferGenerator, addNoopTransform),
 		output: foobarUppercase,
 		getStreamMethod: getStream,
 	};
@@ -277,7 +280,7 @@ test('Can use generators with inputFile option', testInputFile, filePath => ({in
 
 const testOutputFile = async (t, reversed) => {
 	const filePath = tempfile();
-	const stdoutOption = [uppercaseGenerator(false, true), {file: filePath}];
+	const stdoutOption = [uppercaseBufferGenerator, {file: filePath}];
 	const reversedStdoutOption = reversed ? stdoutOption.reverse() : stdoutOption;
 	const {stdout} = await execa('noop-fd.js', ['1'], {stdout: reversedStdoutOption});
 	t.is(stdout, foobarUppercase);
@@ -291,7 +294,7 @@ test('Can use generators with a file as output, reversed', testOutputFile, true)
 test('Can use generators to a Writable stream', async t => {
 	const passThrough = new PassThrough();
 	const [{stdout}, streamOutput] = await Promise.all([
-		execa('noop-fd.js', ['1', foobarString], {stdout: [uppercaseGenerator(false, true), passThrough]}),
+		execa('noop-fd.js', ['1', foobarString], {stdout: [uppercaseBufferGenerator, passThrough]}),
 		getStream(passThrough),
 	]);
 	t.is(stdout, foobarUppercase);

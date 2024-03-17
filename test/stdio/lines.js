@@ -1,3 +1,4 @@
+import {Buffer} from 'node:buffer';
 import {once} from 'node:events';
 import {Writable} from 'node:stream';
 import {scheduler} from 'node:timers/promises';
@@ -45,9 +46,21 @@ const resultGenerator = function * (lines, chunk) {
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
+const getEncoding = isUint8Array => isUint8Array ? 'buffer' : 'utf8';
+
 const stringsToUint8Arrays = (strings, isUint8Array) => isUint8Array
 	? strings.map(string => textEncoder.encode(string))
 	: strings;
+
+const stringsToBuffers = (strings, isUint8Array) => isUint8Array
+	? strings.map(string => Buffer.from(string))
+	: strings;
+
+const getSimpleChunkSubprocess = (isUint8Array, options) => execa('noop-fd.js', ['1', ...simpleChunk], {
+	lines: true,
+	encoding: getEncoding(isUint8Array),
+	...options,
+});
 
 const serializeResult = (result, isUint8Array, objectMode) => objectMode
 	? result.map(resultItem => serializeResultItem(resultItem, isUint8Array)).join('')
@@ -65,7 +78,7 @@ const testLines = async (t, fdNumber, input, expectedLines, isUint8Array, object
 			{transform: inputGenerator.bind(undefined, stringsToUint8Arrays(input, isUint8Array)), objectMode},
 			{transform: resultGenerator.bind(undefined, lines), objectMode},
 		]),
-		encoding: isUint8Array ? 'buffer' : 'utf8',
+		encoding: getEncoding(isUint8Array),
 		stripFinalNewline: false,
 	});
 	t.is(input.join(''), serializeResult(stdio[fdNumber], isUint8Array, objectMode));
@@ -150,7 +163,7 @@ const testStreamLines = async (t, fdNumber, input, expectedLines, isUint8Array) 
 	const {stdio} = await execa('noop-fd.js', [`${fdNumber}`, input], {
 		...fullStdio,
 		lines: true,
-		encoding: isUint8Array ? 'buffer' : 'utf8',
+		encoding: getEncoding(isUint8Array),
 	});
 	t.deepEqual(stdio[fdNumber], stringsToUint8Arrays(expectedLines, isUint8Array));
 };
@@ -204,26 +217,36 @@ test('"lines: true" works with other encodings', async t => {
 	t.deepEqual(stdout, expectedLines);
 });
 
-test('"lines: true" works with stream async iteration', async t => {
-	const subprocess = execa('noop.js', {lines: true, stdout: getChunksGenerator(simpleChunk), buffer: false});
+const testAsyncIteration = async (t, isUint8Array) => {
+	const subprocess = getSimpleChunkSubprocess(isUint8Array);
 	const [stdout] = await Promise.all([subprocess.stdout.toArray(), subprocess]);
-	t.deepEqual(stdout, simpleLines);
-});
+	t.deepEqual(stdout, stringsToUint8Arrays(simpleLines, isUint8Array));
+};
 
-test('"lines: true" works with stream "data" events', async t => {
-	const subprocess = execa('noop.js', {lines: true, stdout: getChunksGenerator(simpleChunk), buffer: false});
+test('"lines: true" works with stream async iteration, string', testAsyncIteration, false);
+test('"lines: true" works with stream async iteration, Uint8Array', testAsyncIteration, true);
+
+const testDataEvents = async (t, isUint8Array) => {
+	const subprocess = getSimpleChunkSubprocess(isUint8Array);
 	const [[firstLine]] = await Promise.all([once(subprocess.stdout, 'data'), subprocess]);
-	t.is(firstLine, simpleLines[0]);
-});
+	t.deepEqual(firstLine, stringsToUint8Arrays(simpleLines, isUint8Array)[0]);
+};
 
-test('"lines: true" works with writable streams targets', async t => {
+test('"lines: true" works with stream "data" events, string', testDataEvents, false);
+test('"lines: true" works with stream "data" events, Uint8Array', testDataEvents, true);
+
+const testWritableStream = async (t, isUint8Array) => {
 	const lines = [];
 	const writable = new Writable({
 		write(line, encoding, done) {
-			lines.push(line.toString());
+			lines.push(line);
 			done();
 		},
+		decodeStrings: false,
 	});
-	await execa('noop.js', {lines: true, stdout: [getChunksGenerator(simpleChunk), writable]});
-	t.deepEqual(lines, simpleLines);
-});
+	await getSimpleChunkSubprocess(isUint8Array, {stdout: ['pipe', writable]});
+	t.deepEqual(lines, stringsToBuffers(simpleLines, isUint8Array));
+};
+
+test('"lines: true" works with writable streams targets, string', testWritableStream, false);
+test('"lines: true" works with writable streams targets, Uint8Array', testWritableStream, true);

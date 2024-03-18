@@ -517,25 +517,25 @@ const {
   isTerminated,
 	// and other error-related properties: code, etc.
 } = await $({timeout: 1})`sleep 2`;
-// file:///home/me/code/execa/lib/kill.js:60
-// 	reject(Object.assign(new Error('Timed out'), {timedOut: true, signal}));
-// 	                     ^
-// Error: Command timed out after 1 milliseconds: sleep 2
-// Timed out
+// ExecaError: Command timed out after 1 milliseconds: sleep 2
 //     at file:///home/me/Desktop/example.js:2:20
-//   timedOut: true,
-//   signal: 'SIGTERM',
-//   originalMessage: 'Timed out',
+//     at ... {
 //   shortMessage: 'Command timed out after 1 milliseconds: sleep 2\nTimed out',
+//   originalMessage: '',
 //   command: 'sleep 2',
 //   escapedCommand: 'sleep 2',
-//   exitCode: undefined,
+//   cwd: '/path/to/cwd',
+//   durationMs: 19.95693,
+//   failed: true,
+//   timedOut: true,
+//   isCanceled: false,
+//   isTerminated: true,
+//   signal: 'SIGTERM',
 //   signalDescription: 'Termination',
 //   stdout: '',
 //   stderr: '',
-//   failed: true,
-//   isCanceled: false,
-//   isTerminated: false
+//   stdio: [undefined, '', ''],
+//   pipedFrom: []
 // }
 ```
 

@@ -191,10 +191,10 @@ test('Running generators are canceled on subprocess error', testGeneratorCancel,
 
 const testGeneratorDestroy = async (t, transform) => {
 	const subprocess = execa('forever.js', {stdout: transform});
-	const error = new Error('test');
-	subprocess.stdout.destroy(error);
+	const cause = new Error('test');
+	subprocess.stdout.destroy(cause);
 	subprocess.kill();
-	t.is(await t.throwsAsync(subprocess), error);
+	t.like(await t.throwsAsync(subprocess), {cause});
 };
 
 test('Generators are destroyed on subprocess error, sync', testGeneratorDestroy, noopGenerator(false));

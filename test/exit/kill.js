@@ -187,31 +187,34 @@ test('Cannot call .kill(true, error)', testInvalidKillArgument, true, new Error(
 test('.kill(error) propagates error', async t => {
 	const subprocess = execa('forever.js');
 	const originalMessage = 'test';
-	const error = new Error(originalMessage);
-	t.true(subprocess.kill(error));
-	t.is(await t.throwsAsync(subprocess), error);
+	const cause = new Error(originalMessage);
+	t.true(subprocess.kill(cause));
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.true(cause.stack.includes(import.meta.url));
 	t.is(error.exitCode, undefined);
 	t.is(error.signal, 'SIGTERM');
 	t.true(error.isTerminated);
 	t.is(error.originalMessage, originalMessage);
 	t.true(error.message.includes(originalMessage));
 	t.true(error.message.includes('was killed with SIGTERM'));
-	t.true(error.stack.includes(import.meta.url));
 });
 
 test('.kill(error) uses killSignal', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
-	const error = new Error('test');
-	subprocess.kill(error);
-	t.is(await t.throwsAsync(subprocess), error);
+	const cause = new Error('test');
+	subprocess.kill(cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	t.is(error.signal, 'SIGINT');
 });
 
 test('.kill(signal, error) uses signal', async t => {
 	const subprocess = execa('forever.js');
-	const error = new Error('test');
-	subprocess.kill('SIGINT', error);
-	t.is(await t.throwsAsync(subprocess), error);
+	const cause = new Error('test');
+	subprocess.kill('SIGINT', cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	t.is(error.signal, 'SIGINT');
 });
 
@@ -224,12 +227,13 @@ test('.kill(error) is a noop if subprocess already exited', async t => {
 
 test('.kill(error) terminates but does not change the error if the subprocess already errored but did not exit yet', async t => {
 	const subprocess = execa('forever.js');
-	const error = new Error('first');
-	subprocess.stdout.destroy(error);
+	const cause = new Error('first');
+	subprocess.stdout.destroy(cause);
 	await setImmediate();
 	const secondError = new Error('second');
 	t.true(subprocess.kill(secondError));
-	t.is(await t.throwsAsync(subprocess), error);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	t.is(error.exitCode, undefined);
 	t.is(error.signal, 'SIGTERM');
 	t.true(error.isTerminated);
@@ -238,69 +242,71 @@ test('.kill(error) terminates but does not change the error if the subprocess al
 
 test('.kill(error) twice in a row', async t => {
 	const subprocess = execa('forever.js');
-	const error = new Error('first');
-	subprocess.kill(error);
-	const secondError = new Error('second');
-	subprocess.kill(secondError);
-	t.is(await t.throwsAsync(subprocess), error);
-	t.false(error.message.includes(secondError.message));
+	const cause = new Error('first');
+	subprocess.kill(cause);
+	const secondCause = new Error('second');
+	subprocess.kill(secondCause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.false(error.message.includes(secondCause.message));
 });
 
 test('.kill(error) does not emit the "error" event', async t => {
 	const subprocess = execa('forever.js');
-	const error = new Error('test');
-	subprocess.kill(error);
-	t.is(await Promise.race([t.throwsAsync(subprocess), once(subprocess, 'error')]), error);
+	const cause = new Error('test');
+	subprocess.kill(cause);
+	const error = await Promise.race([t.throwsAsync(subprocess), once(subprocess, 'error')]);
+	t.is(error.cause, cause);
 });
 
 test('subprocess errors are handled before spawn', async t => {
 	const subprocess = execa('forever.js');
-	const error = new Error('test');
-	subprocess.emit('error', error);
+	const cause = new Error('test');
+	subprocess.emit('error', cause);
 	subprocess.kill();
-	const thrownError = await t.throwsAsync(subprocess);
-	t.is(thrownError, error);
-	t.is(thrownError.exitCode, undefined);
-	t.is(thrownError.signal, undefined);
-	t.false(thrownError.isTerminated);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.is(error.exitCode, undefined);
+	t.is(error.signal, undefined);
+	t.false(error.isTerminated);
 });
 
 test('subprocess errors are handled after spawn', async t => {
 	const subprocess = execa('forever.js');
 	await once(subprocess, 'spawn');
-	const error = new Error('test');
-	subprocess.emit('error', error);
+	const cause = new Error('test');
+	subprocess.emit('error', cause);
 	subprocess.kill();
-	const thrownError = await t.throwsAsync(subprocess);
-	t.is(thrownError, error);
-	t.is(thrownError.exitCode, undefined);
-	t.is(thrownError.signal, 'SIGTERM');
-	t.true(thrownError.isTerminated);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.is(error.exitCode, undefined);
+	t.is(error.signal, 'SIGTERM');
+	t.true(error.isTerminated);
 });
 
 test('subprocess double errors are handled after spawn', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
 	await once(subprocess, 'spawn');
-	const error = new Error('test');
-	subprocess.emit('error', error);
+	const cause = new Error('test');
+	subprocess.emit('error', cause);
 	await setImmediate();
 	abortController.abort();
-	const thrownError = await t.throwsAsync(subprocess);
-	t.is(thrownError, error);
-	t.is(thrownError.exitCode, undefined);
-	t.is(thrownError.signal, 'SIGTERM');
-	t.true(thrownError.isTerminated);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.is(error.exitCode, undefined);
+	t.is(error.signal, 'SIGTERM');
+	t.true(error.isTerminated);
 });
 
 test('subprocess errors use killSignal', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
 	await once(subprocess, 'spawn');
-	const error = new Error('test');
-	subprocess.emit('error', error);
+	const cause = new Error('test');
+	subprocess.emit('error', cause);
 	subprocess.kill();
-	const thrownError = await t.throwsAsync(subprocess);
-	t.is(thrownError, error);
-	t.true(thrownError.isTerminated);
-	t.is(thrownError.signal, 'SIGINT');
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.true(error.isTerminated);
+	t.is(error.signal, 'SIGINT');
 });

@@ -27,11 +27,11 @@ test('Source stream error -> destination success', async t => {
 	const source = execa('noop-repeat.js');
 	const destination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
-	const error = new Error('test');
-	source.stdout.destroy(error);
+	const cause = new Error('test');
+	source.stdout.destroy(cause);
 
 	t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(source));
-	t.like(await t.throwsAsync(source), {originalMessage: error.originalMessage, exitCode: 1});
+	t.like(await t.throwsAsync(source), {originalMessage: cause.message, exitCode: 1});
 	await destination;
 });
 
@@ -50,11 +50,11 @@ test('Destination stream error -> source failure', async t => {
 	const source = execa('noop-repeat.js');
 	const destination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
-	const error = new Error('test');
-	destination.stdin.destroy(error);
+	const cause = new Error('test');
+	destination.stdin.destroy(cause);
 
 	t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(destination));
-	t.like(await t.throwsAsync(destination), {originalMessage: error.originalMessage, exitCode: 0});
+	t.like(await t.throwsAsync(destination), {originalMessage: cause.message, exitCode: 0});
 	t.like(await t.throwsAsync(source), {exitCode: 1});
 });
 
@@ -191,13 +191,13 @@ test('Source already aborted -> ignore source', async t => {
 
 test('Source already errored -> failure', async t => {
 	const source = execa('noop.js', [foobarString]);
-	const error = new Error('test');
-	source.stdout.destroy(error);
+	const cause = new Error('test');
+	source.stdout.destroy(cause);
 	const destination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
 
 	t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(source));
-	t.is(await t.throwsAsync(source), error);
+	t.like(await t.throwsAsync(source), {cause});
 	t.like(await destination, {stdout: ''});
 });
 
@@ -226,9 +226,9 @@ test('Destination already aborted -> failure', async t => {
 
 test('Destination already errored -> failure', async t => {
 	const destination = execa('stdin.js');
-	const error = new Error('test');
-	destination.stdin.destroy(error);
-	t.is(await t.throwsAsync(destination), error);
+	const cause = new Error('test');
+	destination.stdin.destroy(cause);
+	t.like(await t.throwsAsync(destination), {cause});
 	const source = execa('noop.js', [foobarString]);
 	const pipePromise = source.pipe(destination);
 
@@ -251,14 +251,14 @@ test('Simultaneous error on source and destination', async t => {
 	const destination = execa('stdin.js');
 	const pipePromise = source.pipe(destination);
 
-	const sourceError = new Error(foobarString);
-	source.emit('error', sourceError);
-	const destinationError = new Error('other');
-	destination.emit('error', destinationError);
+	const sourceCause = new Error(foobarString);
+	source.emit('error', sourceCause);
+	const destinationCause = new Error('other');
+	destination.emit('error', destinationCause);
 
 	t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(destination));
-	t.like(await t.throwsAsync(source), {originalMessage: sourceError.originalMessage});
-	t.like(await t.throwsAsync(destination), {originalMessage: destinationError.originalMessage});
+	t.like(await t.throwsAsync(source), {cause: {originalMessage: sourceCause.originalMessage}});
+	t.like(await t.throwsAsync(destination), {cause: {originalMessage: destinationCause.originalMessage}});
 });
 
 test('Does not need to await individual promises', async t => {

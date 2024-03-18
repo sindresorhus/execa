@@ -484,7 +484,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly encoding?: EncodingOption;
 
 	/**
-	If `timeout` is greater than `0`, the subprocess will be [terminated](#killsignal) if it runs for longer than that amount of milliseconds.
+	If `timeout` is greater than `0`, the subprocess will be terminated if it runs for longer than that amount of milliseconds.
 
 	@default 0
 	*/
@@ -611,7 +611,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-	When `AbortController.abort()` is called, [`.isCanceled`](https://github.com/sindresorhus/execa#iscanceled) becomes `true`.
+	When `AbortController.abort()` is called, `.isCanceled` becomes `true`.
 
 	@example
 	```
@@ -638,17 +638,10 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 export type Options = CommonOptions<false>;
 export type SyncOptions = CommonOptions<true>;
 
-/**
-Result of a subprocess execution. On success this is a plain object. On failure this is also an `Error` instance.
-
-The subprocess fails when:
-- its exit code is not `0`
-- it was terminated with a signal
-- timing out
-- being canceled
-- there's not enough memory or there are already too many subprocesses
-*/
-type ExecaCommonResult<IsSync extends boolean = boolean, OptionsType extends CommonOptions = CommonOptions> = {
+declare abstract class CommonResult<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> {
 	/**
 	The file and arguments that were run, for logging purposes.
 
@@ -669,7 +662,7 @@ type ExecaCommonResult<IsSync extends boolean = boolean, OptionsType extends Com
 	/**
 	The numeric exit code of the subprocess that was run.
 
-	This is `undefined` when the subprocess could not be spawned or was terminated by a [signal](#signal).
+	This is `undefined` when the subprocess could not be spawned or was terminated by a signal.
 	*/
 	exitCode?: number;
 
@@ -759,39 +752,118 @@ type ExecaCommonResult<IsSync extends boolean = boolean, OptionsType extends Com
 	This array is initially empty and is populated each time the `.pipe()` method resolves.
 	*/
 	pipedFrom: IfAsync<IsSync, ExecaResult[], []>;
-	// Workaround for a TypeScript bug: https://github.com/microsoft/TypeScript/issues/57062
-} & {};
 
-export type ExecaResult<OptionsType extends Options = Options> = ExecaCommonResult<false, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
-export type ExecaSyncResult<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonResult<true, OptionsType> & ErrorUnlessReject<OptionsType['reject']>;
-
-type ErrorUnlessReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false
-	? Partial<ExecaCommonError>
-	: {};
-
-type ExecaCommonError = {
 	/**
 	Error message when the subprocess failed to run. In addition to the underlying error message, it also contains some information related to why the subprocess errored.
 
 	The subprocess `stderr`, `stdout` and other file descriptors' output are appended to the end, separated with newlines and not interleaved.
 	*/
-	message: string;
+	message?: string;
 
 	/**
 	This is the same as the `message` property except it does not include the subprocess `stdout`/`stderr`/`stdio`.
 	*/
-	shortMessage: string;
+	shortMessage?: string;
 
 	/**
 	Original error message. This is the same as the `message` property excluding the subprocess `stdout`/`stderr`/`stdio` and some additional information added by Execa.
 
-	This is `undefined` unless the subprocess exited due to an `error` event or a timeout.
+	This exists only if the subprocess exited due to an `error` event or a timeout.
 	*/
 	originalMessage?: string;
-} & Error;
 
-export type ExecaError<OptionsType extends Options = Options> = ExecaCommonResult<false, OptionsType> & ExecaCommonError;
-export type ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> = ExecaCommonResult<true, OptionsType> & ExecaCommonError;
+	/**
+	Underlying error, if there is one. For example, this is set by `.kill(error)`.
+
+	This is usually an `Error` instance.
+	*/
+	cause?: unknown;
+
+	/**
+	Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), when available.
+	*/
+	code?: string;
+
+	// We cannot `extend Error` because `message` must be optional. So we copy its types here.
+	readonly name?: Error['name'];
+	stack?: Error['stack'];
+}
+
+type CommonResultInstance<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> = InstanceType<typeof CommonResult<IsSync, OptionsType>>;
+
+type SuccessResult<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> = CommonResultInstance<IsSync, OptionsType> & OmitErrorIfReject<OptionsType['reject']>;
+
+type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false
+	? {}
+	: {[ErrorProperty in ErrorProperties]: never};
+
+type ErrorProperties =
+  | 'name'
+  | 'message'
+  | 'stack'
+  | 'cause'
+  | 'shortMessage'
+  | 'originalMessage'
+  | 'code';
+
+/**
+Result of a subprocess execution.
+
+When the subprocess fails, it is rejected with an `ExecaError` instead.
+*/
+export type ExecaResult<OptionsType extends Options = Options> = SuccessResult<false, OptionsType>;
+
+/**
+Result of a subprocess execution.
+
+When the subprocess fails, it is rejected with an `ExecaError` instead.
+*/
+export type ExecaSyncResult<OptionsType extends SyncOptions = SyncOptions> = SuccessResult<true, OptionsType>;
+
+declare abstract class CommonError<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
+> extends CommonResult<IsSync, OptionsType> {
+	readonly name: NonNullable<CommonResult['name']>;
+	message: NonNullable<CommonResult['message']>;
+	stack: NonNullable<CommonResult['stack']>;
+	shortMessage: NonNullable<CommonResult['shortMessage']>;
+	originalMessage: NonNullable<CommonResult['originalMessage']>;
+}
+
+/**
+Exception thrown when the subprocess fails, either:
+- its exit code is not `0`
+- it was terminated with a signal, including `.kill()`
+- timing out
+- being canceled
+- there's not enough memory or there are already too many subprocesses
+
+This has the same shape as successful results, with a few additional properties.
+*/
+export class ExecaError<OptionsType extends Options = Options> extends CommonError<false, OptionsType> {
+	readonly name: 'ExecaError';
+}
+
+/**
+Exception thrown when the subprocess fails, either:
+- its exit code is not `0`
+- it was terminated with a signal, including `.kill()`
+- timing out
+- being canceled
+- there's not enough memory or there are already too many subprocesses
+
+This has the same shape as successful results, with a few additional properties.
+*/
+export class ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> extends CommonError<true, OptionsType> {
+	readonly name: 'ExecaSyncError';
+}
 
 type StreamUnlessIgnored<
 	FdNumber extends string,
@@ -918,7 +990,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	This returns `false` when the signal could not be sent, for example when the subprocess has already exited.
 
-	When an error is passed as argument, its message and stack trace are kept in the subprocess' error. The subprocess is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
+	When an error is passed as argument, it is set to the subprocess' `error.cause`. The subprocess is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
 
 	[More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 	*/
@@ -1007,13 +1079,10 @@ try {
 } catch (error) {
 	console.log(error);
 	/*
-	{
-		message: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
-		errno: -2,
-		code: 'ENOENT',
-		syscall: 'spawn unknown',
-		path: 'unknown',
-		spawnargs: ['command'],
+	ExecaError: Command failed with ENOENT: unknown command
+	spawn unknown ENOENT
+			at ...
+			at ... {
 		shortMessage: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
 		originalMessage: 'spawn unknown ENOENT',
 		command: 'unknown command',
@@ -1024,10 +1093,20 @@ try {
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
+		code: 'ENOENT',
 		stdout: '',
 		stderr: '',
 		stdio: [undefined, '', ''],
 		pipedFrom: []
+		[cause]: Error: spawn unknown ENOENT
+				at ...
+				at ... {
+			errno: -2,
+			code: 'ENOENT',
+			syscall: 'spawn unknown',
+			path: 'unknown',
+			spawnargs: [ 'command' ]
+		}
 	}
 	\*\/
 }
@@ -1169,8 +1248,8 @@ export function execaCommandSync<OptionsType extends SyncOptions = {}>(
 	options?: OptionsType
 ): ExecaSyncResult<OptionsType>;
 
-type TemplateExpression = string | number | ExecaCommonResult
-| Array<string | number | ExecaCommonResult>;
+type TemplateExpression = string | number | CommonResultInstance
+| Array<string | number | CommonResultInstance>;
 
 type Execa$<OptionsType extends CommonOptions = {}> = {
 	/**

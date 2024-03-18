@@ -26,11 +26,10 @@ test('Does not destroy process.stderr on subprocess early errors', testDestroySt
 
 const testDestroyStandardStream = async (t, fdNumber) => {
 	const subprocess = execa('forever.js', getStdio(fdNumber, [STANDARD_STREAMS[fdNumber], 'pipe']));
-	const error = new Error('test');
-	subprocess.stdio[fdNumber].destroy(error);
+	const cause = new Error('test');
+	subprocess.stdio[fdNumber].destroy(cause);
 	subprocess.kill();
-	const thrownError = await t.throwsAsync(subprocess);
-	t.is(thrownError, error);
+	t.like(await t.throwsAsync(subprocess), {cause});
 	t.false(STANDARD_STREAMS[fdNumber].destroyed);
 };
 

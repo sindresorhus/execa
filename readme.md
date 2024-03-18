@@ -219,13 +219,10 @@ try {
 } catch (error) {
 	console.log(error);
 	/*
-	{
-		message: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
-		errno: -2,
-		code: 'ENOENT',
-		syscall: 'spawn unknown',
-		path: 'unknown',
-		spawnargs: ['command'],
+	ExecaError: Command failed with ENOENT: unknown command
+	spawn unknown ENOENT
+			at ...
+			at ... {
 		shortMessage: 'Command failed with ENOENT: unknown command\nspawn unknown ENOENT',
 		originalMessage: 'spawn unknown ENOENT',
 		command: 'unknown command',
@@ -236,10 +233,20 @@ try {
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
+		code: 'ENOENT',
 		stdout: '',
 		stderr: '',
 		stdio: [undefined, '', ''],
 		pipedFrom: []
+		[cause]: Error: spawn unknown ENOENT
+				at ...
+				at ... {
+			errno: -2,
+			code: 'ENOENT',
+			syscall: 'spawn unknown',
+			path: 'unknown',
+			spawnargs: [ 'command' ]
+		}
 	}
 	*/
 }
@@ -357,7 +364,7 @@ This is `undefined` if either:
 `options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<SubprocessResult>`](#subprocessresult)
 
-[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the subprocess' `stdout` to a second Execa subprocess' `stdin`. This resolves with that second subprocess' [result](#subprocessresult). If either subprocess is rejected, this is rejected with that subprocess' [error](#subprocessresult) instead.
+[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the subprocess' `stdout` to a second Execa subprocess' `stdin`. This resolves with that second subprocess' [result](#subprocessresult). If either subprocess is rejected, this is rejected with that subprocess' [error](#execaerror) instead.
 
 This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile-arguments-options) except both [regular options](#options-1) and [pipe-specific options](#pipeoptions) can be specified.
 
@@ -427,7 +434,7 @@ Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the subproc
 
 This returns `false` when the signal could not be sent, for example when the subprocess has already exited.
 
-When an error is passed as argument, its message and stack trace are kept in the [subprocess' error](#subprocessresult). The subprocess is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
+When an error is passed as argument, it is set to the subprocess' [`error.cause`](#cause). The subprocess is then terminated with the default signal. This does not emit the [`error` event](https://nodejs.org/api/child_process.html#event-error).
 
 [More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 
@@ -435,14 +442,9 @@ When an error is passed as argument, its message and stack trace are kept in the
 
 Type: `object`
 
-Result of a subprocess execution. On success this is a plain object. On failure this is also an `Error` instance.
+Result of a subprocess execution.
 
-The subprocess [fails](#failed) when:
-- its [exit code](#exitcode) is not `0`
-- it was [terminated](#isterminated) with a [signal](#signal)
-- [timing out](#timedout)
-- [being canceled](#iscanceled)
-- there's not enough memory or there are already too many subprocesses
+When the subprocess [fails](#failed), it is rejected with an [`ExecaError`](#execaerror) instead.
 
 #### command
 
@@ -511,28 +513,6 @@ The output of the subprocess on [`stdin`](#stdin), [`stdout`](#stdout-1), [`stde
 
 Items are `undefined` when their corresponding [`stdio`](#stdio-1) option is set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a [transform in object mode](docs/transform.md#object-mode).
 
-#### message
-
-Type: `string`
-
-Error message when the subprocess failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the subprocess errored.
-
-The subprocess [`stderr`](#stderr), [`stdout`](#stdout) and other [file descriptors' output](#stdio) are appended to the end, separated with newlines and not interleaved.
-
-#### shortMessage
-
-Type: `string`
-
-This is the same as the [`message` property](#message) except it does not include the subprocess [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio).
-
-#### originalMessage
-
-Type: `string | undefined`
-
-Original error message. This is the same as the `message` property excluding the subprocess [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio) and some additional information added by Execa.
-
-This is `undefined` unless the subprocess exited due to an `error` event or a timeout.
-
 #### failed
 
 Type: `boolean`
@@ -587,11 +567,61 @@ If a signal terminated the subprocess, this property is defined and included in 
 
 #### pipedFrom
 
-Type: [`SubprocessResult[]`](#subprocessresult)
+Type: [`Array<SubprocessResult | ExecaError>`](#subprocessresult)
 
 Results of the other subprocesses that were [piped](#pipe-multiple-subprocesses) into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
 
 This array is initially empty and is populated each time the [`.pipe()`](#pipefile-arguments-options) method resolves.
+
+### ExecaError
+### ExecaSyncError
+
+Type: `Error`
+
+Exception thrown when the subprocess [fails](#failed), either:
+- its [exit code](#exitcode) is not `0`
+- it was [terminated](#isterminated) with a [signal](#signal), including [`.kill()`](#killerror)
+- [timing out](#timedout)
+- [being canceled](#iscanceled)
+- there's not enough memory or there are already too many subprocesses
+
+This has the same shape as [successful results](#subprocessresult), with the following additional properties.
+
+#### message
+
+Type: `string`
+
+Error message when the subprocess failed to run. In addition to the [underlying error message](#originalMessage), it also contains some information related to why the subprocess errored.
+
+The subprocess [`stderr`](#stderr), [`stdout`](#stdout) and other [file descriptors' output](#stdio) are appended to the end, separated with newlines and not interleaved.
+
+#### shortMessage
+
+Type: `string`
+
+This is the same as the [`message` property](#message) except it does not include the subprocess [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio).
+
+#### originalMessage
+
+Type: `string | undefined`
+
+Original error message. This is the same as the `message` property excluding the subprocess [`stdout`](#stdout)/[`stderr`](#stderr)/[`stdio`](#stdio) and some additional information added by Execa.
+
+This exists only if the subprocess exited due to an `error` event or a timeout.
+
+#### cause
+
+Type: `unknown | undefined`
+
+Underlying error, if there is one. For example, this is set by [`.kill(error)`](#killerror).
+
+This is usually an `Error` instance.
+
+#### code
+
+Type: `string | undefined`
+
+Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), when available.
 
 ### options
 
@@ -604,7 +634,7 @@ This lists all Execa options, including some options which are the same as for [
 Type: `boolean`\
 Default: `true`
 
-Setting this to `false` resolves the promise with the error instead of rejecting it.
+Setting this to `false` resolves the promise with the [error](#execaerror) instead of rejecting it.
 
 #### shell
 

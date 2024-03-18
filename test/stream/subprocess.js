@@ -59,9 +59,10 @@ test('Aborting output stdio[*] should not make the subprocess exit', testStreamO
 
 const testStreamInputDestroy = async (t, fdNumber) => {
 	const subprocess = getStreamInputSubprocess(fdNumber);
-	const error = new Error('test');
-	subprocess.stdio[fdNumber].destroy(error);
-	t.is(await t.throwsAsync(subprocess), error);
+	const cause = new Error('test');
+	subprocess.stdio[fdNumber].destroy(cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	assertStreamInputError(t, error);
 };
 
@@ -70,9 +71,10 @@ test('Destroying input stdio[*] should not make the subprocess exit', testStream
 
 const testStreamOutputDestroy = async (t, fdNumber) => {
 	const subprocess = getStreamOutputSubprocess(fdNumber);
-	const error = new Error('test');
-	subprocess.stdio[fdNumber].destroy(error);
-	t.is(await t.throwsAsync(subprocess), error);
+	const cause = new Error('test');
+	subprocess.stdio[fdNumber].destroy(cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	assertStreamOutputError(t, fdNumber, error);
 };
 
@@ -82,11 +84,12 @@ test('Destroying output stdio[*] should not make the subprocess exit', testStrea
 
 const testStreamInputError = async (t, fdNumber) => {
 	const subprocess = getStreamInputSubprocess(fdNumber);
-	const error = new Error('test');
+	const cause = new Error('test');
 	const stream = subprocess.stdio[fdNumber];
-	stream.emit('error', error);
+	stream.emit('error', cause);
 	stream.end();
-	t.is(await t.throwsAsync(subprocess), error);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	assertStreamInputError(t, error);
 };
 
@@ -95,10 +98,11 @@ test('Errors on input stdio[*] should not make the subprocess exit', testStreamI
 
 const testStreamOutputError = async (t, fdNumber) => {
 	const subprocess = getStreamOutputSubprocess(fdNumber);
-	const error = new Error('test');
+	const cause = new Error('test');
 	const stream = subprocess.stdio[fdNumber];
-	stream.emit('error', error);
-	t.is(await t.throwsAsync(subprocess), error);
+	stream.emit('error', cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
 	assertStreamOutputError(t, fdNumber, error);
 };
 

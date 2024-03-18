@@ -75,9 +75,9 @@ test('Can listen to `data` events on all when `buffer` set to `true`', testItera
 const testNoBufferStreamError = async (t, fdNumber, all) => {
 	const subprocess = execa('noop-fd.js', [`${fdNumber}`], {...fullStdio, buffer: false, all});
 	const stream = all ? subprocess.all : subprocess.stdio[fdNumber];
-	const error = new Error('test');
-	stream.destroy(error);
-	t.is(await t.throwsAsync(subprocess), error);
+	const cause = new Error('test');
+	stream.destroy(cause);
+	t.like(await t.throwsAsync(subprocess), {cause});
 };
 
 test('Listen to stdout errors even when `buffer` is `false`', testNoBufferStreamError, 1, false);

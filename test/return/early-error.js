@@ -78,6 +78,19 @@ test('child_process.spawn() early errors can use .pipe() multiple times', testEa
 test('child_process.spawn() early errors can use .pipe``', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`);
 test('child_process.spawn() early errors can use .pipe`` multiple times', testEarlyErrorPipe, () => $(earlyErrorOptions)`empty.js`.pipe(earlyErrorOptions)`empty.js`.pipe`empty.js`);
 
+const testEarlyErrorConvertor = async (t, streamMethod) => {
+	const subprocess = getEarlyErrorSubprocess();
+	const stream = subprocess[streamMethod]();
+	stream.on('close', () => {});
+	stream.read?.();
+	stream.write?.('.');
+	await t.throwsAsync(subprocess);
+};
+
+test('child_process.spawn() early errors can use .readable()', testEarlyErrorConvertor, 'readable');
+test('child_process.spawn() early errors can use .writable()', testEarlyErrorConvertor, 'writable');
+test('child_process.spawn() early errors can use .duplex()', testEarlyErrorConvertor, 'duplex');
+
 const testEarlyErrorStream = async (t, getStreamProperty, options) => {
 	const subprocess = getEarlyErrorSubprocess(options);
 	const stream = getStreamProperty(subprocess);

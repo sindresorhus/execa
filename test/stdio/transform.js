@@ -13,6 +13,8 @@ import {
 	outputObjectGenerator,
 	convertTransformToFinal,
 	noYieldGenerator,
+	throwingGenerator,
+	GENERATOR_ERROR_REGEXP,
 } from '../helpers/generator.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
@@ -148,13 +150,6 @@ const testAsyncGenerators = async (t, final) => {
 
 test('Generators "transform" is awaited on success', testAsyncGenerators, false);
 test('Generators "final" is awaited on success', testAsyncGenerators, true);
-
-// eslint-disable-next-line require-yield
-const throwingGenerator = function * () {
-	throw new Error('Generator error');
-};
-
-const GENERATOR_ERROR_REGEXP = /Generator error/;
 
 const testThrowingGenerator = async (t, final) => {
 	await t.throwsAsync(

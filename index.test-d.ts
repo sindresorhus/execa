@@ -2,7 +2,7 @@
 // `process.stdin`, `process.stderr`, and `process.stdout`
 // to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
 import * as process from 'node:process';
-import {Readable, Writable} from 'node:stream';
+import {Readable, Writable, type Duplex} from 'node:stream';
 import {createWriteStream} from 'node:fs';
 import {expectType, expectNotType, expectError, expectAssignable, expectNotAssignable} from 'tsd';
 import {
@@ -257,6 +257,36 @@ try {
 	expectType<string>(scriptShortcutPipeResult.stdout);
 	const ignoreShortcutScriptPipeResult = await scriptPromise.pipe('stdin', {stdout: 'ignore'});
 	expectType<undefined>(ignoreShortcutScriptPipeResult.stdout);
+
+	expectType<Readable>(scriptPromise.readable());
+	expectType<Writable>(scriptPromise.writable());
+	expectType<Duplex>(scriptPromise.duplex());
+
+	scriptPromise.readable({});
+	scriptPromise.readable({from: 'stdout'});
+	scriptPromise.readable({from: 'stderr'});
+	scriptPromise.readable({from: 'all'});
+	scriptPromise.readable({from: 3});
+	expectError(scriptPromise.readable('stdout'));
+	expectError(scriptPromise.readable({from: 'stdin'}));
+	expectError(scriptPromise.readable({other: 'stdout'}));
+	scriptPromise.writable({});
+	scriptPromise.writable({to: 'stdin'});
+	scriptPromise.writable({to: 3});
+	expectError(scriptPromise.writable('stdin'));
+	expectError(scriptPromise.writable({to: 'stdout'}));
+	expectError(scriptPromise.writable({other: 'stdin'}));
+	scriptPromise.duplex({});
+	scriptPromise.duplex({from: 'stdout'});
+	scriptPromise.duplex({from: 'stderr'});
+	scriptPromise.duplex({from: 'all'});
+	scriptPromise.duplex({from: 3});
+	scriptPromise.duplex({from: 'stdout', to: 'stdin'});
+	scriptPromise.duplex({from: 'stdout', to: 3});
+	expectError(scriptPromise.duplex('stdout'));
+	expectError(scriptPromise.duplex({from: 'stdin'}));
+	expectError(scriptPromise.duplex({from: 'stderr', to: 'stdout'}));
+	expectError(scriptPromise.duplex({other: 'stdout'}));
 
 	expectType<Readable>(execaPromise.all);
 	const noAllPromise = execa('unicorns');

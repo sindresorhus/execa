@@ -1,6 +1,12 @@
 import {setImmediate, setInterval} from 'node:timers/promises';
 import {foobarObject} from './input.js';
 
+export const noopAsyncGenerator = () => ({
+	async * transform(line) {
+		yield line;
+	},
+});
+
 export const addNoopGenerator = (transform, addNoopTransform) => addNoopTransform
 	? [transform, noopGenerator(undefined, true)]
 	: [transform];
@@ -73,3 +79,10 @@ export const infiniteGenerator = async function * () {
 export const uppercaseGenerator = function * (line) {
 	yield line.toUpperCase();
 };
+
+// eslint-disable-next-line require-yield
+export const throwingGenerator = function * () {
+	throw new Error('Generator error');
+};
+
+export const GENERATOR_ERROR_REGEXP = /Generator error/;

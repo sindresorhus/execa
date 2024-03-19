@@ -33,10 +33,16 @@ export const getOutputsGenerator = (inputs, objectMode) => ({
 	objectMode,
 });
 
+export const identityGenerator = input => function * () {
+	yield input;
+};
+
+export const identityAsyncGenerator = input => async function * () {
+	yield input;
+};
+
 export const getOutputGenerator = (input, objectMode) => ({
-	* transform() {
-		yield input;
-	},
+	transform: identityGenerator(input),
 	objectMode,
 });
 

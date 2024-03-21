@@ -89,7 +89,7 @@ test('Can use generators with subprocess.stdin, objectMode, noop transform', tes
 
 const testGeneratorStdioInputPipe = async (t, objectMode, addNoopTransform) => {
 	const {input, generators, output} = getInputObjectMode(objectMode, addNoopTransform);
-	const subprocess = execa('stdin-fd.js', ['3'], getStdio(3, [new Uint8Array(), ...generators]));
+	const subprocess = execa('stdin-fd.js', ['3'], getStdio(3, [[], ...generators]));
 	subprocess.stdio[3].write(Array.isArray(input) ? input[0] : input);
 	const {stdout} = await subprocess;
 	t.is(stdout, output);
@@ -153,7 +153,7 @@ test('Can use generators with error.stdio[*] as output, objectMode, noop transfo
 // eslint-disable-next-line max-params
 const testGeneratorOutputPipe = async (t, fdNumber, useShortcutProperty, objectMode, addNoopTransform) => {
 	const {generators, output, getStreamMethod} = getOutputObjectMode(objectMode, addNoopTransform);
-	const subprocess = execa('noop-fd.js', [`${fdNumber}`, foobarString], {...getStdio(fdNumber, generators), buffer: false});
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, generators));
 	const stream = useShortcutProperty ? [subprocess.stdout, subprocess.stderr][fdNumber - 1] : subprocess.stdio[fdNumber];
 	const [result] = await Promise.all([getStreamMethod(stream), subprocess]);
 	t.deepEqual(result, output);

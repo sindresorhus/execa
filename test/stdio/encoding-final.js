@@ -137,9 +137,12 @@ test('validate unknown encodings', t => {
 const foobarArray = ['fo', 'ob', 'ar', '..'];
 
 const testMultibyteCharacters = async (t, objectMode, addNoopTransform) => {
-	const {stdout} = await execa('noop.js', {stdout: addNoopGenerator(getChunksGenerator(foobarArray, objectMode), addNoopTransform), encoding: 'base64'});
+	const {stdout} = await execa('noop.js', {
+		stdout: addNoopGenerator(getChunksGenerator(foobarArray, objectMode, true), addNoopTransform),
+		encoding: 'base64',
+	});
 	if (objectMode) {
-		t.deepEqual(stdout, foobarArray.map(chunk => btoa(chunk)));
+		t.deepEqual(stdout, foobarArray);
 	} else {
 		t.is(stdout, btoa(foobarArray.join('')));
 	}

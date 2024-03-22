@@ -918,6 +918,8 @@ Default: `true`
 
 Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
 
+If the [`lines` option](#lines) is true, this applies to each output line instead.
+
 #### maxBuffer
 
 Type: `number`\

@@ -137,6 +137,6 @@ test('stripFinalNewline: true with stdio[*] - sync', testStripFinalNewline, 3, t
 test('stripFinalNewline: false with stdio[*] - sync', testStripFinalNewline, 3, false, execaSync);
 
 test('stripFinalNewline is not used in objectMode', async t => {
-	const {stdout} = await execa('noop-fd.js', ['1', 'foobar\n'], {stripFinalNewline: true, stdout: noopGenerator(true)});
+	const {stdout} = await execa('noop-fd.js', ['1', 'foobar\n'], {stripFinalNewline: true, stdout: noopGenerator(true, true)});
 	t.deepEqual(stdout, ['foobar\n']);
 });

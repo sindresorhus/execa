@@ -24,12 +24,12 @@ const uppercaseBufferGenerator = function * (line) {
 const getInputObjectMode = (objectMode, addNoopTransform) => objectMode
 	? {
 		input: [foobarObject],
-		generators: addNoopGenerator(serializeGenerator, addNoopTransform),
+		generators: addNoopGenerator(serializeGenerator(true), addNoopTransform),
 		output: foobarObjectString,
 	}
 	: {
 		input: foobarUint8Array,
-		generators: addNoopGenerator(uppercaseGenerator, addNoopTransform),
+		generators: addNoopGenerator(uppercaseGenerator(), addNoopTransform),
 		output: foobarUppercase,
 	};
 
@@ -40,7 +40,7 @@ const getOutputObjectMode = (objectMode, addNoopTransform) => objectMode
 		getStreamMethod: getStreamAsArray,
 	}
 	: {
-		generators: addNoopGenerator(uppercaseGenerator, addNoopGenerator),
+		generators: addNoopGenerator(uppercaseGenerator(false, true), addNoopTransform),
 		output: foobarUppercase,
 		getStreamMethod: getStream,
 	};
@@ -189,7 +189,7 @@ const getAllStdioOption = (stdioOption, encoding, objectMode) => {
 		return outputObjectGenerator;
 	}
 
-	return encoding === 'buffer' ? uppercaseBufferGenerator : uppercaseGenerator;
+	return encoding === 'buffer' ? uppercaseBufferGenerator : uppercaseGenerator();
 };
 
 const getStdoutStderrOutput = (output, stdioOption, encoding, objectMode) => {
@@ -257,7 +257,7 @@ test('Can use generators with result.all = pipe + transform, objectMode, encodin
 test('Can use generators with error.all = pipe + transform, objectMode, encoding "buffer"', testGeneratorAll, false, 'buffer', true, true, false);
 
 test('Can use generators with input option', async t => {
-	const {stdout} = await execa('stdin-fd.js', ['0'], {stdin: uppercaseGenerator, input: foobarUint8Array});
+	const {stdout} = await execa('stdin-fd.js', ['0'], {stdin: uppercaseGenerator(), input: foobarUint8Array});
 	t.is(stdout, foobarUppercase);
 });
 
@@ -271,13 +271,13 @@ const testInputFile = async (t, getOptions, reversed) => {
 	await rm(filePath);
 };
 
-test('Can use generators with a file as input', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseGenerator]}), false);
-test('Can use generators with a file as input, reversed', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseGenerator]}), true);
-test('Can use generators with inputFile option', testInputFile, filePath => ({inputFile: filePath, stdin: uppercaseGenerator}), false);
+test('Can use generators with a file as input', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseGenerator()]}), false);
+test('Can use generators with a file as input, reversed', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseGenerator()]}), true);
+test('Can use generators with inputFile option', testInputFile, filePath => ({inputFile: filePath, stdin: uppercaseGenerator()}), false);
 
 const testOutputFile = async (t, reversed) => {
 	const filePath = tempfile();
-	const stdoutOption = [uppercaseGenerator, {file: filePath}];
+	const stdoutOption = [uppercaseGenerator(false, true), {file: filePath}];
 	const reversedStdoutOption = reversed ? stdoutOption.reverse() : stdoutOption;
 	const {stdout} = await execa('noop-fd.js', ['1'], {stdout: reversedStdoutOption});
 	t.is(stdout, foobarUppercase);
@@ -291,7 +291,7 @@ test('Can use generators with a file as output, reversed', testOutputFile, true)
 test('Can use generators to a Writable stream', async t => {
 	const passThrough = new PassThrough();
 	const [{stdout}, streamOutput] = await Promise.all([
-		execa('noop-fd.js', ['1', foobarString], {stdout: [uppercaseGenerator, passThrough]}),
+		execa('noop-fd.js', ['1', foobarString], {stdout: [uppercaseGenerator(false, true), passThrough]}),
 		getStream(passThrough),
 	]);
 	t.is(stdout, foobarUppercase);
@@ -300,7 +300,7 @@ test('Can use generators to a Writable stream', async t => {
 
 test('Can use generators from a Readable stream', async t => {
 	const passThrough = new PassThrough();
-	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [passThrough, uppercaseGenerator]});
+	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [passThrough, uppercaseGenerator()]});
 	passThrough.end(foobarString);
 	const {stdout} = await subprocess;
 	t.is(stdout, foobarUppercase);
@@ -318,7 +318,7 @@ const appendGenerator = function * (line) {
 };
 
 const testAppendInput = async (t, reversed) => {
-	const stdin = [foobarUint8Array, uppercaseGenerator, appendGenerator];
+	const stdin = [foobarUint8Array, uppercaseGenerator(), appendGenerator];
 	const reversedStdin = reversed ? stdin.reverse() : stdin;
 	const {stdout} = await execa('stdin-fd.js', ['0'], {stdin: reversedStdin});
 	const reversedSuffix = reversed ? casedSuffix.toUpperCase() : casedSuffix;
@@ -329,7 +329,7 @@ test('Can use multiple generators as input', testAppendInput, false);
 test('Can use multiple generators as input, reversed', testAppendInput, true);
 
 const testAppendOutput = async (t, reversed) => {
-	const stdoutOption = [uppercaseGenerator, appendGenerator];
+	const stdoutOption = [uppercaseGenerator(), appendGenerator];
 	const reversedStdoutOption = reversed ? stdoutOption.reverse() : stdoutOption;
 	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: reversedStdoutOption});
 	const reversedSuffix = reversed ? casedSuffix.toUpperCase() : casedSuffix;

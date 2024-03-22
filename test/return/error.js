@@ -3,6 +3,8 @@ import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
+import {foobarString} from '../helpers/input.js';
+import {QUOTE} from '../helpers/verbose.js';
 import {noopGenerator, outputObjectGenerator} from '../helpers/generator.js';
 
 const isWindows = process.platform === 'win32';
@@ -74,6 +76,20 @@ test('error.message contains stdout/stderr/stdio if available, objectMode', test
 test('error.message contains stdout/stderr/stdio even with encoding "buffer", objectMode', testStdioMessage, 'buffer', false, true);
 test('error.message contains all if available, objectMode', testStdioMessage, 'utf8', true, true);
 test('error.message contains all even with encoding "buffer", objectMode', testStdioMessage, 'buffer', true, true);
+
+const testLinesMessage = async (t, encoding, stripFinalNewline) => {
+	const {message} = await t.throwsAsync(execa('noop-fail.js', ['1', `${foobarString}\n${foobarString}\n`], {
+		lines: true,
+		encoding,
+		stripFinalNewline,
+	}));
+	t.true(message.endsWith(`noop-fail.js 1 ${QUOTE}${foobarString}\\n${foobarString}\\n${QUOTE}\n\n${foobarString}\n${foobarString}`));
+};
+
+test('error.message handles "lines: true"', testLinesMessage, 'utf8', false);
+test('error.message handles "lines: true", stripFinalNewline', testLinesMessage, 'utf8', true);
+test('error.message handles "lines: true", buffer', testLinesMessage, 'buffer', false);
+test('error.message handles "lines: true", buffer, stripFinalNewline', testLinesMessage, 'buffer', true);
 
 const testPartialIgnoreMessage = async (t, fdNumber, stdioOption, output) => {
 	const {message} = await t.throwsAsync(execa('echo-fail.js', getStdio(fdNumber, stdioOption, 4)));

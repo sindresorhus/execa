@@ -11,16 +11,17 @@ setFixtureDir();
 
 const textEncoder = new TextEncoder();
 
-const getTypeofGenerator = objectMode => ({
+const getTypeofGenerator = (objectMode, binary) => ({
 	* transform(line) {
 		yield Object.prototype.toString.call(line);
 	},
 	objectMode,
+	binary,
 });
 
 // eslint-disable-next-line max-params
 const testGeneratorFirstEncoding = async (t, input, encoding, output, objectMode) => {
-	const subprocess = execa('stdin.js', {stdin: getTypeofGenerator(objectMode), encoding});
+	const subprocess = execa('stdin.js', {stdin: getTypeofGenerator(objectMode, true), encoding});
 	subprocess.stdin.end(input);
 	const {stdout} = await subprocess;
 	const result = Buffer.from(stdout, encoding).toString();
@@ -57,7 +58,7 @@ const testGeneratorNextEncoding = async (t, input, encoding, firstObjectMode, se
 	const {stdout} = await execa('noop.js', ['other'], {
 		stdout: [
 			getOutputGenerator(input, firstObjectMode),
-			getTypeofGenerator(secondObjectMode),
+			getTypeofGenerator(secondObjectMode, true),
 		],
 		encoding,
 	});
@@ -95,8 +96,8 @@ test('The first generator with result.stdio[*] does not receive an object argume
 // eslint-disable-next-line max-params
 const testGeneratorReturnType = async (t, input, encoding, reject, objectMode, final) => {
 	const fixtureName = reject ? 'noop-fd.js' : 'noop-fail.js';
-	const {stdout} = await execa(fixtureName, ['1', 'other'], {
-		stdout: convertTransformToFinal(getOutputGenerator(input, objectMode), final),
+	const {stdout} = await execa(fixtureName, ['1', foobarString], {
+		stdout: convertTransformToFinal(getOutputGenerator(input, objectMode, true), final),
 		encoding,
 		reject,
 	});
@@ -161,7 +162,7 @@ const breakingLength = multibyteUint8Array.length * 0.75;
 const brokenSymbol = '\uFFFD';
 
 const testMultibyte = async (t, objectMode) => {
-	const subprocess = execa('stdin.js', {stdin: noopGenerator(objectMode)});
+	const subprocess = execa('stdin.js', {stdin: noopGenerator(objectMode, true)});
 	subprocess.stdin.write(multibyteUint8Array.slice(0, breakingLength));
 	await scheduler.yield();
 	subprocess.stdin.end(multibyteUint8Array.slice(breakingLength));
@@ -176,7 +177,7 @@ const testMultibytePartial = async (t, objectMode) => {
 	const {stdout} = await execa('stdin.js', {
 		stdin: [
 			[multibyteUint8Array.slice(0, breakingLength)],
-			noopGenerator(objectMode),
+			noopGenerator(objectMode, true),
 		],
 	});
 	t.is(stdout, `${multibyteChar}${brokenSymbol}`);

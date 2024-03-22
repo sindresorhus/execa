@@ -1,10 +1,12 @@
 import {setImmediate, setInterval} from 'node:timers/promises';
 import {foobarObject} from './input.js';
 
-export const noopAsyncGenerator = () => ({
+export const noopAsyncGenerator = (objectMode, binary) => ({
 	async * transform(line) {
 		yield line;
 	},
+	objectMode,
+	binary,
 });
 
 export const addNoopGenerator = (transform, addNoopTransform) => addNoopTransform
@@ -19,12 +21,13 @@ export const noopGenerator = (objectMode, binary) => ({
 	binary,
 });
 
-export const serializeGenerator = {
+export const serializeGenerator = (objectMode, binary) => ({
 	* transform(object) {
 		yield JSON.stringify(object);
 	},
-	objectMode: true,
-};
+	objectMode,
+	binary,
+});
 
 export const getOutputsGenerator = (inputs, objectMode) => ({
 	* transform() {
@@ -41,9 +44,10 @@ export const identityAsyncGenerator = input => async function * () {
 	yield input;
 };
 
-export const getOutputGenerator = (input, objectMode) => ({
+export const getOutputGenerator = (input, objectMode, binary) => ({
 	transform: identityGenerator(input),
 	objectMode,
+	binary,
 });
 
 export const outputObjectGenerator = getOutputGenerator(foobarObject, true);
@@ -82,9 +86,13 @@ export const infiniteGenerator = async function * () {
 	}
 };
 
-export const uppercaseGenerator = function * (line) {
-	yield line.toUpperCase();
-};
+export const uppercaseGenerator = (objectMode, binary) => ({
+	* transform(line) {
+		yield line.toUpperCase();
+	},
+	objectMode,
+	binary,
+});
 
 // eslint-disable-next-line require-yield
 export const throwingGenerator = function * () {

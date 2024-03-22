@@ -54,7 +54,7 @@ const foobarAsyncObjectGenerator = function * () {
 };
 
 const testObjectIterable = async (t, stdioOption, fdNumber) => {
-	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stdioOption, serializeGenerator]));
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stdioOption, serializeGenerator(true)]));
 	t.is(stdout, foobarObjectString);
 };
 

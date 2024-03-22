@@ -1,14 +1,10 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
-import {noopGenerator} from '../helpers/generator.js';
+import {noopGenerator, uppercaseGenerator} from '../helpers/generator.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
-
-const uppercaseGenerator = function * (line) {
-	yield line.toUpperCase();
-};
 
 const testInvalidGenerator = (t, fdNumber, stdioOption) => {
 	t.throws(() => {
@@ -27,7 +23,7 @@ test('Cannot use invalid "final" with stdio[*]', testInvalidGenerator, 3, {final
 
 const testInvalidBinary = (t, fdNumber, optionName) => {
 	t.throws(() => {
-		execa('empty.js', getStdio(fdNumber, {transform: uppercaseGenerator, [optionName]: 'true'}));
+		execa('empty.js', getStdio(fdNumber, {...uppercaseGenerator(), [optionName]: 'true'}));
 	}, {message: /a boolean/});
 };
 
@@ -42,7 +38,7 @@ test('Cannot use invalid "objectMode" with stdio[*]', testInvalidBinary, 3, 'obj
 
 const testSyncMethods = (t, fdNumber) => {
 	t.throws(() => {
-		execaSync('empty.js', getStdio(fdNumber, uppercaseGenerator));
+		execaSync('empty.js', getStdio(fdNumber, uppercaseGenerator()));
 	}, {message: /cannot be a generator/});
 };
 

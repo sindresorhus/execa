@@ -28,6 +28,7 @@ type StdioTransformFull = {
 	transform: StdioTransform;
 	final?: StdioFinal;
 	binary?: boolean;
+	preserveNewlines?: boolean;
 	objectMode?: boolean;
 };
 
@@ -418,6 +419,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
+
+	If the `lines` option is true, this applies to each output line instead.
 
 	@default true
 	*/

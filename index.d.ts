@@ -494,7 +494,13 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly timeout?: number;
 
 	/**
-	Largest amount of data in bytes allowed on `stdout`, `stderr` and `stdio`. Default: 100 MB.
+	Largest amount of data allowed on `stdout`, `stderr` and `stdio`.
+
+	This is measured:
+	- By default: in [characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).
+	- If the `encoding` option is `'buffer'`: in bytes.
+	- If the `lines` option is `true`: in lines.
+	- If a transform in object mode is used: in objects.
 
 	@default 100_000_000
 	*/

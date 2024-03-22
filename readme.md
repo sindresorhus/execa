@@ -923,9 +923,15 @@ If the [`lines` option](#lines) is true, this applies to each output line instea
 #### maxBuffer
 
 Type: `number`\
-Default: `100_000_000` (100 MB)
+Default: `100_000_000`
 
-Largest amount of data in bytes allowed on [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio).
+Largest amount of data allowed on [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio).
+
+This is measured:
+- By default: in [characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).
+- If the [`encoding` option](#encoding) is `'buffer'`: in bytes.
+- If the [`lines` option](#lines) is `true`: in lines.
+- If a [transform in object mode](docs/transform.md#object-mode) is used: in objects.
 
 #### ipc
 

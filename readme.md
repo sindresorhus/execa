@@ -401,19 +401,19 @@ Type: `object`
 
 ##### pipeOptions.from
 
-Type: `"stdout" | "stderr" | "all" | number`\
+Type: `"stdout" | "stderr" | "all" | "fd3" | "fd4" | ...`\
 Default: `"stdout"`
 
-Which stream to pipe from the source subprocess. A file descriptor number can also be passed.
+Which stream to pipe from the source subprocess. A file descriptor like `"fd3"` can also be passed.
 
 `"all"` pipes both `stdout` and `stderr`. This requires the [`all` option](#all-2) to be `true`.
 
 ##### pipeOptions.to
 
-Type: `"stdin" | number`\
+Type: `"stdin" | "fd3" | "fd4" | ...`\
 Default: `"stdin"`
 
-Which stream to pipe to the destination subprocess. A file descriptor number can also be passed.
+Which stream to pipe to the destination subprocess. A file descriptor like `"fd3"` can also be passed.
 
 ##### pipeOptions.unpipeSignal
 
@@ -477,10 +477,10 @@ Type: `object`
 
 ##### streamOptions.from
 
-Type: `"stdout" | "stderr" | "all" | number`\
+Type: `"stdout" | "stderr" | "all" | "fd3" | "fd4" | ...`\
 Default: `"stdout"`
 
-Which stream to read from the subprocess. A file descriptor number can also be passed.
+Which stream to read from the subprocess. A file descriptor like `"fd3"` can also be passed.
 
 `"all"` reads both `stdout` and `stderr`. This requires the [`all` option](#all-2) to be `true`.
 
@@ -488,10 +488,10 @@ Only available with [`.readable()`](#readablestreamoptions) and [`.duplex()`](#d
 
 ##### streamOptions.to
 
-Type: `"stdin" | number`\
+Type: `"stdin" | "fd3" | "fd4" | ...`\
 Default: `"stdin"`
 
-Which stream to write to the subprocess. A file descriptor number can also be passed.
+Which stream to write to the subprocess. A file descriptor like `"fd3"` can also be passed.
 
 Only available with [`.writable()`](#writablestreamoptions) and [`.duplex()`](#duplexstreamoptions), not [`.readable()`](#readablestreamoptions).
 

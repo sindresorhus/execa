@@ -52,13 +52,13 @@ const testReadableTwice = async (t, fdNumber, from) => {
 	await assertSubprocessOutput(t, subprocess, foobarString, fdNumber);
 };
 
-test('Can call .readable() twice on same file descriptor', testReadableTwice, 1, undefined);
+test('Can call .readable() twice on same file descriptor', testReadableTwice, 1);
 test('Can call .readable({from: "stderr"}) twice on same file descriptor', testReadableTwice, 2, 'stderr');
 
-const testWritableTwice = async (t, fdNumber, options) => {
+const testWritableTwice = async (t, fdNumber, to, options) => {
 	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], options);
-	const stream = subprocess.writable({to: fdNumber});
-	const secondStream = subprocess.writable({to: fdNumber});
+	const stream = subprocess.writable({to});
+	const secondStream = subprocess.writable({to});
 
 	await Promise.all([
 		finishedStream(stream),
@@ -68,13 +68,13 @@ const testWritableTwice = async (t, fdNumber, options) => {
 	await assertSubprocessOutput(t, subprocess, `${foobarString}${foobarString}`);
 };
 
-test('Can call .writable() twice on same file descriptor', testWritableTwice, 0, {});
-test('Can call .writable({to: 3}) twice on same file descriptor', testWritableTwice, 3, fullReadableStdio());
+test('Can call .writable() twice on same file descriptor', testWritableTwice, 0, undefined, {});
+test('Can call .writable({to: "fd3"}) twice on same file descriptor', testWritableTwice, 3, 'fd3', fullReadableStdio());
 
-const testDuplexTwice = async (t, fdNumber, options) => {
+const testDuplexTwice = async (t, fdNumber, to, options) => {
 	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], options);
-	const stream = subprocess.duplex({to: fdNumber});
-	const secondStream = subprocess.duplex({to: fdNumber});
+	const stream = subprocess.duplex({to});
+	const secondStream = subprocess.duplex({to});
 
 	const expectedOutput = `${foobarString}${foobarString}`;
 	await Promise.all([
@@ -85,13 +85,13 @@ const testDuplexTwice = async (t, fdNumber, options) => {
 	await assertSubprocessOutput(t, subprocess, expectedOutput);
 };
 
-test('Can call .duplex() twice on same file descriptor', testDuplexTwice, 0, {});
-test('Can call .duplex({to: 3}) twice on same file descriptor', testDuplexTwice, 3, fullReadableStdio());
+test('Can call .duplex() twice on same file descriptor', testDuplexTwice, 0, undefined, {});
+test('Can call .duplex({to: "fd3"}) twice on same file descriptor', testDuplexTwice, 3, 'fd3', fullReadableStdio());
 
 test('Can call .duplex() twice on same readable file descriptor but different writable one', async t => {
 	const subprocess = execa('stdin-fd-both.js', ['3'], fullReadableStdio());
-	const stream = subprocess.duplex({to: 0});
-	const secondStream = subprocess.duplex({to: 3});
+	const stream = subprocess.duplex();
+	const secondStream = subprocess.duplex({to: 'fd3'});
 
 	const expectedOutput = `${foobarString}${foobarString}`;
 	await Promise.all([
@@ -119,7 +119,7 @@ test('Can call .readable() twice on different file descriptors', async t => {
 test('Can call .writable() twice on different file descriptors', async t => {
 	const subprocess = execa('stdin-fd-both.js', ['3'], fullReadableStdio());
 	const stream = subprocess.writable();
-	const secondStream = subprocess.writable({to: 3});
+	const secondStream = subprocess.writable({to: 'fd3'});
 
 	await Promise.all([
 		finishedStream(stream),
@@ -132,7 +132,7 @@ test('Can call .writable() twice on different file descriptors', async t => {
 test('Can call .duplex() twice on different file descriptors', async t => {
 	const subprocess = execa('stdin-twice-both.js', ['3'], fullReadableStdio());
 	const stream = subprocess.duplex();
-	const secondStream = subprocess.duplex({from: 'stderr', to: 3});
+	const secondStream = subprocess.duplex({from: 'stderr', to: 'fd3'});
 
 	await Promise.all([
 		assertStreamOutput(t, stream),
@@ -159,7 +159,7 @@ test('Can call .readable() and .writable()', async t => {
 test('Can call .writable() and .duplex()', async t => {
 	const subprocess = execa('stdin-fd-both.js', ['3'], fullReadableStdio());
 	const stream = subprocess.duplex();
-	const secondStream = subprocess.writable({to: 3});
+	const secondStream = subprocess.writable({to: 'fd3'});
 
 	const expectedOutput = `${foobarString}${foobarString}`;
 	await Promise.all([
@@ -280,7 +280,7 @@ test('Can error both .writable() on same file descriptor', async t => {
 test('Can error one of two .writable() on different file descriptors', async t => {
 	const subprocess = execa('stdin-fd-both.js', ['3'], fullReadableStdio());
 	const stream = subprocess.writable();
-	const secondStream = subprocess.writable({to: 3});
+	const secondStream = subprocess.writable({to: 'fd3'});
 	const cause = new Error(foobarString);
 	stream.destroy(cause);
 	secondStream.end(foobarString);
@@ -297,7 +297,7 @@ test('Can error one of two .writable() on different file descriptors', async t =
 test('Can error both .writable() on different file descriptors', async t => {
 	const subprocess = execa('stdin-fd-both.js', ['3'], fullReadableStdio());
 	const stream = subprocess.writable();
-	const secondStream = subprocess.writable({to: 3});
+	const secondStream = subprocess.writable({to: 'fd3'});
 	const cause = new Error(foobarString);
 	stream.destroy(cause);
 	secondStream.destroy(cause);
@@ -343,7 +343,7 @@ test('Can error both .duplex() on same file descriptor', async t => {
 test('Can error one of two .duplex() on different file descriptors', async t => {
 	const subprocess = execa('stdin-twice-both.js', ['3'], fullReadableStdio());
 	const stream = subprocess.duplex();
-	const secondStream = subprocess.duplex({from: 'stderr', to: 3});
+	const secondStream = subprocess.duplex({from: 'stderr', to: 'fd3'});
 	const cause = new Error(foobarString);
 	stream.destroy(cause);
 	secondStream.end(foobarString);
@@ -359,7 +359,7 @@ test('Can error one of two .duplex() on different file descriptors', async t => 
 test('Can error both .duplex() on different file descriptors', async t => {
 	const subprocess = execa('stdin-twice-both.js', ['3'], fullReadableStdio());
 	const stream = subprocess.duplex();
-	const secondStream = subprocess.duplex({from: 'stderr', to: 3});
+	const secondStream = subprocess.duplex({from: 'stderr', to: 'fd3'});
 	const cause = new Error(foobarString);
 	stream.destroy(cause);
 	secondStream.destroy(cause);

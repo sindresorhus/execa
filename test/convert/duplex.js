@@ -48,14 +48,14 @@ const testReadableDuplexDefault = async (t, fdNumber, from, options, hasResult) 
 	await assertSubprocessOutput(t, subprocess, foobarString, fdNumber);
 };
 
-test('.duplex() can use stdout', testReadableDuplexDefault, 1, 1, {}, true);
-test('.duplex() can use stderr', testReadableDuplexDefault, 2, 2, {}, true);
-test('.duplex() can use output stdio[*]', testReadableDuplexDefault, 3, 3, fullStdio, true);
+test('.duplex() can use stdout', testReadableDuplexDefault, 1, 'stdout', {}, true);
+test('.duplex() can use stderr', testReadableDuplexDefault, 2, 'stderr', {}, true);
+test('.duplex() can use output stdio[*]', testReadableDuplexDefault, 3, 'fd3', fullStdio, true);
 test('.duplex() uses stdout by default', testReadableDuplexDefault, 1, undefined, {}, true);
 test('.duplex() does not use stderr by default', testReadableDuplexDefault, 2, undefined, {}, false);
 test('.duplex() does not use stdio[*] by default', testReadableDuplexDefault, 3, undefined, fullStdio, false);
-test('.duplex() uses stdout even if stderr is "ignore"', testReadableDuplexDefault, 1, 1, {stderr: 'ignore'}, true);
-test('.duplex() uses stderr even if stdout is "ignore"', testReadableDuplexDefault, 2, 2, {stdout: 'ignore'}, true);
+test('.duplex() uses stdout even if stderr is "ignore"', testReadableDuplexDefault, 1, 'stdout', {stderr: 'ignore'}, true);
+test('.duplex() uses stderr even if stdout is "ignore"', testReadableDuplexDefault, 2, 'stderr', {stdout: 'ignore'}, true);
 test('.duplex() uses stdout if "all" is used', testReadableDuplexDefault, 1, 'all', {all: true}, true);
 test('.duplex() uses stderr if "all" is used', testReadableDuplexDefault, 2, 'all', {all: true}, true);
 
@@ -69,8 +69,8 @@ const testWritableDuplexDefault = async (t, fdNumber, to, options) => {
 	await assertSubprocessOutput(t, subprocess);
 };
 
-test('.duplex() can use stdin', testWritableDuplexDefault, 0, 0, {});
-test('.duplex() can use input stdio[*]', testWritableDuplexDefault, 3, 3, fullReadableStdio());
+test('.duplex() can use stdin', testWritableDuplexDefault, 0, 'stdin', {});
+test('.duplex() can use input stdio[*]', testWritableDuplexDefault, 3, 'fd3', fullReadableStdio());
 test('.duplex() uses stdin by default', testWritableDuplexDefault, 0, undefined, {});
 
 test('.duplex() abort -> subprocess fail', async t => {

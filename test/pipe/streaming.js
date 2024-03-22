@@ -92,7 +92,7 @@ test('Can pipe same source to two streams from same subprocess', async t => {
 	const source = execa('noop-fd.js', ['1', foobarString]);
 	const destination = execa('stdin-fd-both.js', ['3'], fullReadableStdio());
 	const pipePromise = source.pipe(destination);
-	const secondPipePromise = source.pipe(destination, {to: 3});
+	const secondPipePromise = source.pipe(destination, {to: 'fd3'});
 
 	t.like(await source, {stdout: foobarString});
 	t.like(await destination, {stdout: `${foobarString}${foobarString}`});

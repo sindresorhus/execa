@@ -905,19 +905,20 @@ type AllIfStderr<StderrResultIgnored extends boolean> = StderrResultIgnored exte
 	? undefined
 	: Readable;
 
-type FromOption = 'stdout' | 'stderr' | 'all' | number;
-type ToOption = 'stdin' | number;
+type FileDescriptorOption = `fd${number}`;
+type FromOption = 'stdout' | 'stderr' | 'all' | FileDescriptorOption;
+type ToOption = 'stdin' | FileDescriptorOption;
 
 type PipeOptions = {
 	/**
-	Which stream to pipe from the source subprocess. A file descriptor number can also be passed.
+	Which stream to pipe from the source subprocess. A file descriptor like `"fd3"` can also be passed.
 
 	`"all"` pipes both `stdout` and `stderr`. This requires the `all` option to be `true`.
 	*/
 	readonly from?: FromOption;
 
 	/**
-	Which stream to pipe to the destination subprocess. A file descriptor number can also be passed.
+	Which stream to pipe to the destination subprocess. A file descriptor like `"fd3"` can also be passed.
 	*/
 	readonly to?: ToOption;
 
@@ -973,7 +974,7 @@ type PipableSubprocess = {
 
 type ReadableStreamOptions = {
 	/**
-	Which stream to read from the subprocess. A file descriptor number can also be passed.
+	Which stream to read from the subprocess. A file descriptor like `"fd3"` can also be passed.
 
 	`"all"` reads both `stdout` and `stderr`. This requires the `all` option to be `true`.
 	*/
@@ -982,7 +983,7 @@ type ReadableStreamOptions = {
 
 type WritableStreamOptions = {
 	/**
-	Which stream to write to the subprocess. A file descriptor number can also be passed.
+	Which stream to write to the subprocess. A file descriptor like `"fd3"` can also be passed.
 	*/
 	readonly to?: ToOption;
 };

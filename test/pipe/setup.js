@@ -15,14 +15,14 @@ const pipeToSubprocess = async (t, readableFdNumber, writableFdNumber, from, to,
 
 test('pipe(...) can pipe', pipeToSubprocess, 1, 0);
 test('pipe(..., {from: "stdout"}) can pipe', pipeToSubprocess, 1, 0, 'stdout');
-test('pipe(..., {from: 1}) can pipe', pipeToSubprocess, 1, 0, 1);
+test('pipe(..., {from: "fd1"}) can pipe', pipeToSubprocess, 1, 0, 'fd1');
 test('pipe(..., {from: "stderr"}) can pipe stderr', pipeToSubprocess, 2, 0, 'stderr');
-test('pipe(..., {from: 2}) can pipe', pipeToSubprocess, 2, 0, 2);
-test('pipe(..., {from: 3}) can pipe', pipeToSubprocess, 3, 0, 3, undefined, fullStdio);
+test('pipe(..., {from: "fd2"}) can pipe', pipeToSubprocess, 2, 0, 'fd2');
+test('pipe(..., {from: "fd3"}) can pipe', pipeToSubprocess, 3, 0, 'fd3', undefined, fullStdio);
 test('pipe(..., {from: "all"}) can pipe stdout', pipeToSubprocess, 1, 0, 'all', undefined, {all: true});
 test('pipe(..., {from: "all"}) can pipe stderr', pipeToSubprocess, 2, 0, 'all', undefined, {all: true});
 test('pipe(..., {from: "all"}) can pipe stdout even with "stderr: ignore"', pipeToSubprocess, 1, 0, 'all', undefined, {all: true, stderr: 'ignore'});
 test('pipe(..., {from: "all"}) can pipe stderr even with "stdout: ignore"', pipeToSubprocess, 2, 0, 'all', undefined, {all: true, stdout: 'ignore'});
 test('pipe(..., {to: "stdin"}) can pipe', pipeToSubprocess, 1, 0, undefined, 'stdin');
-test('pipe(..., {to: 0}) can pipe', pipeToSubprocess, 1, 0, undefined, 0);
-test('pipe(..., {to: 3}) can pipe', pipeToSubprocess, 1, 3, undefined, 3, {}, fullReadableStdio());
+test('pipe(..., {to: "fd0"}) can pipe', pipeToSubprocess, 1, 0, undefined, 'fd0');
+test('pipe(..., {to: "fd3"}) can pipe', pipeToSubprocess, 1, 3, undefined, 'fd3', {}, fullReadableStdio());

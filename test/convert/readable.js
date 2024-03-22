@@ -51,14 +51,14 @@ const testReadableDefault = async (t, fdNumber, from, options, hasResult) => {
 	await assertSubprocessOutput(t, subprocess, foobarString, fdNumber);
 };
 
-test('.readable() can use stdout', testReadableDefault, 1, 1, {}, true);
-test('.readable() can use stderr', testReadableDefault, 2, 2, {}, true);
-test('.readable() can use stdio[*]', testReadableDefault, 3, 3, fullStdio, true);
+test('.readable() can use stdout', testReadableDefault, 1, 'stdout', {}, true);
+test('.readable() can use stderr', testReadableDefault, 2, 'stderr', {}, true);
+test('.readable() can use stdio[*]', testReadableDefault, 3, 'fd3', fullStdio, true);
 test('.readable() uses stdout by default', testReadableDefault, 1, undefined, {}, true);
 test('.readable() does not use stderr by default', testReadableDefault, 2, undefined, {}, false);
 test('.readable() does not use stdio[*] by default', testReadableDefault, 3, undefined, fullStdio, false);
-test('.readable() uses stdout even if stderr is "ignore"', testReadableDefault, 1, 1, {stderr: 'ignore'}, true);
-test('.readable() uses stderr even if stdout is "ignore"', testReadableDefault, 2, 2, {stdout: 'ignore'}, true);
+test('.readable() uses stdout even if stderr is "ignore"', testReadableDefault, 1, 'stdout', {stderr: 'ignore'}, true);
+test('.readable() uses stderr even if stdout is "ignore"', testReadableDefault, 2, 'stderr', {stdout: 'ignore'}, true);
 test('.readable() uses stdout if "all" is used', testReadableDefault, 1, 'all', {all: true}, true);
 test('.readable() uses stderr if "all" is used', testReadableDefault, 2, 'all', {all: true}, true);
 

@@ -2,9 +2,15 @@ import {Buffer} from 'node:buffer';
 
 export const simpleFull = 'aaa\nbbb\nccc';
 export const simpleChunks = [simpleFull];
+export const simpleChunksBuffer = [Buffer.from(simpleFull)];
 export const simpleLines = ['aaa\n', 'bbb\n', 'ccc'];
 export const simpleFullEndLines = ['aaa\n', 'bbb\n', 'ccc\n'];
+export const noNewlinesFull = 'aaabbbccc';
 export const noNewlinesChunks = ['aaa', 'bbb', 'ccc'];
+export const complexFull = '\naaa\r\nbbb\n\nccc';
+export const singleComplexBuffer = [Buffer.from(complexFull)];
+export const complexChunksEnd = ['\n', 'aaa\r\n', 'bbb\n', '\n', 'ccc'];
+export const complexChunks = ['', 'aaa', 'bbb', '', 'ccc'];
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();

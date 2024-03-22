@@ -6,10 +6,9 @@ import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUint8Array, foobarBuffer, foobarObject} from '../helpers/input.js';
 import {noopGenerator, getOutputGenerator, convertTransformToFinal} from '../helpers/generator.js';
+import {multibyteChar, multibyteString, multibyteUint8Array, breakingLength, brokenSymbol} from '../helpers/encoding.js';
 
 setFixtureDir();
-
-const textEncoder = new TextEncoder();
 
 const getTypeofGenerator = (objectMode, binary) => ({
 	* transform(line) {
@@ -154,12 +153,6 @@ test('Generator can return final string with encoding "buffer", objectMode, fail
 test('Generator can return final Uint8Array with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true, true);
 test('Generator can return final string with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarString, 'hex', false, true, true);
 test('Generator can return final Uint8Array with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, true, true);
-
-const multibyteChar = '\u{1F984}';
-const multibyteString = `${multibyteChar}${multibyteChar}`;
-const multibyteUint8Array = textEncoder.encode(multibyteString);
-const breakingLength = multibyteUint8Array.length * 0.75;
-const brokenSymbol = '\uFFFD';
 
 const testMultibyte = async (t, objectMode) => {
 	const subprocess = execa('stdin.js', {stdin: noopGenerator(objectMode, true)});

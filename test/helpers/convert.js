@@ -4,6 +4,14 @@ import isPlainObj from 'is-plain-obj';
 import {execa} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 
+export const arrayFromAsync = async (asyncIterable, lines = []) => {
+	for await (const line of asyncIterable) {
+		lines.push(line);
+	}
+
+	return lines;
+};
+
 export const finishedStream = stream => finished(stream, {cleanup: true});
 
 export const assertWritableAborted = (t, writable) => {
@@ -25,6 +33,10 @@ export const assertProcessNormalExit = (t, error, exitCode = 0) => {
 
 export const assertStreamOutput = async (t, stream, expectedOutput = foobarString) => {
 	t.is(await text(stream), expectedOutput);
+};
+
+export const assertIterableChunks = async (t, asyncIterable, expectedChunks) => {
+	t.deepEqual(await arrayFromAsync(asyncIterable), expectedChunks);
 };
 
 export const assertStreamChunks = async (t, stream, expectedOutput) => {

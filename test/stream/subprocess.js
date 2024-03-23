@@ -1,14 +1,11 @@
-import {platform} from 'node:process';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {fullStdio, getStdio, prematureClose} from '../helpers/stdio.js';
+import {fullStdio, getStdio, prematureClose, assertEpipe} from '../helpers/stdio.js';
 import {infiniteGenerator} from '../helpers/generator.js';
 
 setFixtureDir();
-
-const isWindows = platform === 'win32';
 
 const getStreamInputSubprocess = fdNumber => execa('stdin-fd.js', [`${fdNumber}`], fdNumber === 3
 	? getStdio(3, [new Uint8Array(), infiniteGenerator])
@@ -31,9 +28,7 @@ const assertStreamOutputError = (t, fdNumber, {exitCode, signal, isTerminated, f
 	t.false(isTerminated);
 	t.true(failed);
 
-	if (fdNumber === 1 && !isWindows) {
-		t.true(stderr.includes('EPIPE'));
-	}
+	assertEpipe(t, stderr, fdNumber);
 };
 
 const testStreamInputAbort = async (t, fdNumber) => {

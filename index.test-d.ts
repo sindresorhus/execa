@@ -268,10 +268,77 @@ try {
 	const ignoreShortcutScriptPipeResult = await scriptPromise.pipe('stdin', {stdout: 'ignore'});
 	expectType<undefined>(ignoreShortcutScriptPipeResult.stdout);
 
+	const asyncIteration = async () => {
+		for await (const line of scriptPromise) {
+			expectType<string>(line);
+		}
+
+		for await (const line of scriptPromise.iterable()) {
+			expectType<string>(line);
+		}
+
+		for await (const line of scriptPromise.iterable({binary: false})) {
+			expectType<string>(line);
+		}
+
+		for await (const line of scriptPromise.iterable({binary: true})) {
+			expectType<Uint8Array>(line);
+		}
+
+		for await (const line of scriptPromise.iterable({} as {binary: boolean})) {
+			expectType<string | Uint8Array>(line);
+		}
+
+		for await (const line of execaBufferPromise) {
+			expectType<Uint8Array>(line);
+		}
+
+		for await (const line of execaBufferPromise.iterable()) {
+			expectType<Uint8Array>(line);
+		}
+
+		for await (const line of execaBufferPromise.iterable({binary: false})) {
+			expectType<string>(line);
+		}
+
+		for await (const line of execaBufferPromise.iterable({binary: true})) {
+			expectType<Uint8Array>(line);
+		}
+
+		for await (const line of execaBufferPromise.iterable({} as {binary: boolean})) {
+			expectType<string | Uint8Array>(line);
+		}
+	};
+
+	await asyncIteration();
+	expectAssignable<AsyncIterable<string>>(scriptPromise.iterable());
+	expectAssignable<AsyncIterable<string>>(scriptPromise.iterable({binary: false}));
+	expectAssignable<AsyncIterable<Uint8Array>>(scriptPromise.iterable({binary: true}));
+	expectAssignable<AsyncIterable<string | Uint8Array>>(scriptPromise.iterable({} as {binary: boolean}));
+	expectAssignable<AsyncIterable<Uint8Array>>(execaBufferPromise.iterable());
+	expectAssignable<AsyncIterable<string>>(execaBufferPromise.iterable({binary: false}));
+	expectAssignable<AsyncIterable<Uint8Array>>(execaBufferPromise.iterable({binary: true}));
+	expectAssignable<AsyncIterable<string | Uint8Array>>(execaBufferPromise.iterable({} as {binary: boolean}));
+
 	expectType<Readable>(scriptPromise.readable());
 	expectType<Writable>(scriptPromise.writable());
 	expectType<Duplex>(scriptPromise.duplex());
 
+	scriptPromise.iterable({});
+	scriptPromise.iterable({from: 'stdout'});
+	scriptPromise.iterable({from: 'stderr'});
+	scriptPromise.iterable({from: 'all'});
+	scriptPromise.iterable({from: 'fd3'});
+	scriptPromise.iterable({binary: false});
+	scriptPromise.iterable({preserveNewlines: false});
+	expectError(scriptPromise.iterable('stdout'));
+	expectError(scriptPromise.iterable({from: 'stdin'}));
+	expectError(scriptPromise.iterable({from: 'fd'}));
+	expectError(scriptPromise.iterable({from: 'fdNotANumber'}));
+	expectError(scriptPromise.iterable({binary: 'false'}));
+	expectError(scriptPromise.iterable({preserveNewlines: 'false'}));
+	expectError(scriptPromise.iterable({to: 'stdin'}));
+	expectError(scriptPromise.iterable({other: 'stdout'}));
 	scriptPromise.readable({});
 	scriptPromise.readable({from: 'stdout'});
 	scriptPromise.readable({from: 'stderr'});

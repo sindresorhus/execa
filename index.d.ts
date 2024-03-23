@@ -991,16 +991,16 @@ type ReadableOptions = {
 	/**
 	If `false`, the stream iterates over lines. Each line is a string. Also, the stream is in [object mode](https://nodejs.org/api/stream.html#object-mode).
 
-	If `true`, the stream iterates over arbitrary chunks of data. Each line is a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer).
+	If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with `.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
 
-	@default true
+	@default `false` with `.iterable()` and `encoding: 'buffer'`, `true` otherwise
 	*/
 	readonly binary?: boolean;
 
 	/**
 	If both this option and the `binary` option is `false`, newlines are stripped from each line.
 
-	@default true
+	@default `false` with `.iterable()`, `true` otherwise
 	*/
 	readonly preserveNewlines?: boolean;
 };
@@ -1015,6 +1015,19 @@ type WritableOptions = {
 };
 
 type DuplexOptions = ReadableOptions & WritableOptions;
+
+type SubprocessAsyncIterable<
+	BinaryOption extends boolean | undefined,
+	EncodingOption extends Options['encoding'],
+> = AsyncIterableIterator<
+BinaryOption extends true
+	? Uint8Array
+	: BinaryOption extends false
+		? string
+		: EncodingOption extends 'buffer'
+			? Uint8Array
+			: string
+>;
 
 export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	stdin: StreamUnlessIgnored<'0', OptionsType>;
@@ -1049,11 +1062,23 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	kill(error?: Error): ReturnType<ChildProcess['kill']>;
 
 	/**
+	Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
+
+	The iteration waits for the subprocess to end. It throws if the subprocess fails. This means you do not need to `await` the subprocess' promise.
+	*/
+	[Symbol.asyncIterator](): SubprocessAsyncIterable<undefined, OptionsType['encoding']>;
+
+	/**
+	Same as `subprocess[Symbol.asyncIterator]` except options can be provided.
+	*/
+	iterable<IterableOptions extends ReadableOptions = {}>(readableOptions?: IterableOptions): SubprocessAsyncIterable<IterableOptions['binary'], OptionsType['encoding']>;
+
+	/**
 	Converts the subprocess to a readable stream.
 
 	Unlike [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
 
-	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
+	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options, `subprocess.pipe()` or `subprocess.iterable()`.
 	*/
 	readable(readableOptions?: ReadableOptions): Readable;
 
@@ -1062,7 +1087,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	Unlike [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options) or [`await pipeline(stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) which throw an exception when the stream errors.
 
-	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
+	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or `subprocess.pipe()`.
 	*/
 	writable(writableOptions?: WritableOptions): Writable;
 
@@ -1071,7 +1096,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	The stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
 
-	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or the `subprocess.pipe()` method.
+	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options, `subprocess.pipe()` or `subprocess.iterable()`.
 	*/
 	duplex(duplexOptions?: DuplexOptions): Duplex;
 } & PipableSubprocess;

@@ -69,7 +69,10 @@ type CommonStdioOption<
 	| TransformStream>;
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
-type IterableObject<IsArray extends boolean = boolean> = Iterable<unknown>
+type IterableObject<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> = Iterable<Unless<IsSync, unknown, string | Uint8Array>>
 & object
 & {readonly BYTES_PER_ELEMENT?: never}
 & AndUnless<IsArray, {readonly lastIndexOf?: never}>;
@@ -79,9 +82,9 @@ type InputStdioOption<
 	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
 > =
-	| Unless<And<IsSync, IsExtra>, Uint8Array>
+	| Unless<And<IsSync, IsExtra>, Uint8Array | IterableObject<IsSync, IsArray>>
 	| Unless<And<IsSync, IsArray>, Readable>
-	| Unless<IsSync, IterableObject<IsArray> | AsyncIterable<unknown> | ReadableStream>;
+	| Unless<IsSync, AsyncIterable<unknown> | ReadableStream>;
 
 type OutputStdioOption<
 	IsSync extends boolean = boolean,
@@ -1399,7 +1402,7 @@ Same as `execa()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an iterable of objects, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1513,7 +1516,7 @@ Same as `execaCommand()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an iterable of objects, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

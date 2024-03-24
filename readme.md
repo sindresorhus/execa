@@ -520,7 +520,7 @@ If `false`, the stream iterates over lines. Each line is a string. Also, the str
 
 If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with [`.iterable()`](#iterablereadableoptions)) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
 
-This is always `true` if the [`encoding` option](#encoding) is `'buffer'`.
+This is always `true` when the [`encoding` option](#encoding) is binary.
 
 ##### readableOptions.preserveNewlines
 
@@ -828,7 +828,7 @@ If `verbose` is `'short'` or `'full'`, [prints each command](#verbose-mode) on `
 If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, unless either:
 - the [`stdout`](#stdout-1)/[`stderr`](#stderr-1) option is `ignore` or `inherit`.
 - the `stdout`/`stderr` is redirected to [a stream](https://nodejs.org/api/stream.html#readablepipedestination-options), [a file](#stdout-1), a file descriptor, or [another subprocess](#pipefile-arguments-options).
-- the [`encoding`](#encoding) option is set.
+- the [`encoding` option](#encoding) is binary.
 
 This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
 
@@ -949,14 +949,20 @@ Split `stdout` and `stderr` into lines.
 - [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all), [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio), [`subprocess.readable()`](#readablereadableoptions) and [`subprocess.duplex`](#duplexduplexoptions) iterate over lines instead of arbitrary chunks.
 - Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
 
-This cannot be used if the [`encoding` option](#encoding) is `'buffer'`.
+This cannot be used if the [`encoding` option](#encoding) is binary.
 
 #### encoding
 
 Type: `string`\
-Default: `utf8`
+Default: `'utf8'`
 
-Specify the character encoding used to decode the [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio) output. If set to `'buffer'`, then `stdout`, `stderr` and `stdio` will be `Uint8Array`s instead of strings.
+If the subprocess outputs text, specifies its character encoding, either `'utf8'` or `'utf16le'`.
+
+If it outputs binary data instead, this should be either:
+- `'buffer'`: returns the binary output as an `Uint8Array`.
+- `'hex'`, `'base64'`, `'base64url'`, [`'latin1'`](https://nodejs.org/api/buffer.html#buffers-and-character-encodings) or [`'ascii'`](https://nodejs.org/api/buffer.html#buffers-and-character-encodings): encodes the binary output as a string.
+
+The output is available with [`result.stdout`](#stdout), [`result.stderr`](#stderr) and [`result.stdio`](#stdio).
 
 #### stripFinalNewline
 

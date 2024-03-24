@@ -2,7 +2,7 @@
 // `process.stdin`, `process.stderr`, and `process.stdout`
 // to get treated as `any` by `@typescript-eslint/no-unsafe-assignment`.
 import * as process from 'node:process';
-import {Readable, Writable, type Duplex} from 'node:stream';
+import {Readable, Writable, Duplex, Transform} from 'node:stream';
 import {createWriteStream} from 'node:fs';
 import {expectType, expectNotType, expectError, expectAssignable, expectNotAssignable} from 'tsd';
 import {
@@ -22,6 +22,13 @@ import {
 } from './index.js';
 
 const fileUrl = new URL('file:///test');
+const duplexStream = new Duplex();
+const duplex = {transform: duplexStream};
+const duplexObject = {transform: duplexStream as Duplex & {readableObjectMode: true}};
+const duplexNotObject = {transform: duplexStream as Duplex & {readableObjectMode: false}};
+const duplexObjectProperty = {transform: duplexStream, objectMode: true as const};
+const duplexNotObjectProperty = {transform: duplexStream, objectMode: false as const};
+const duplexTransform = {transform: new Transform()};
 
 type AnySyncChunk = string | Uint8Array | undefined;
 type AnyChunk = AnySyncChunk | string[] | unknown[];
@@ -667,37 +674,105 @@ try {
 	expectType<unknown[]>(objectTransformLinesStdoutResult.stdout);
 	expectType<[undefined, unknown[], string[]]>(objectTransformLinesStdoutResult.stdio);
 
+	const objectDuplexStdoutResult = await execa('unicorns', {stdout: duplexObject});
+	expectType<unknown[]>(objectDuplexStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(objectDuplexStdoutResult.stdio);
+
+	const objectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: duplexObjectProperty});
+	expectType<unknown[]>(objectDuplexPropertyStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(objectDuplexPropertyStdoutResult.stdio);
+
 	const objectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}});
 	expectType<unknown[]>(objectTransformStdoutResult.stdout);
 	expectType<[undefined, unknown[], string]>(objectTransformStdoutResult.stdio);
+
+	const objectDuplexStderrResult = await execa('unicorns', {stderr: duplexObject});
+	expectType<unknown[]>(objectDuplexStderrResult.stderr);
+	expectType<[undefined, string, unknown[]]>(objectDuplexStderrResult.stdio);
+
+	const objectDuplexPropertyStderrResult = await execa('unicorns', {stderr: duplexObjectProperty});
+	expectType<unknown[]>(objectDuplexPropertyStderrResult.stderr);
+	expectType<[undefined, string, unknown[]]>(objectDuplexPropertyStderrResult.stdio);
 
 	const objectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, final: objectFinal, objectMode: true}});
 	expectType<unknown[]>(objectTransformStderrResult.stderr);
 	expectType<[undefined, string, unknown[]]>(objectTransformStderrResult.stdio);
 
+	const objectDuplexStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', duplexObject]});
+	expectType<unknown[]>(objectDuplexStdioResult.stderr);
+	expectType<[undefined, string, unknown[]]>(objectDuplexStdioResult.stdio);
+
+	const objectDuplexPropertyStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', duplexObjectProperty]});
+	expectType<unknown[]>(objectDuplexPropertyStdioResult.stderr);
+	expectType<[undefined, string, unknown[]]>(objectDuplexPropertyStdioResult.stdio);
+
 	const objectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, final: objectFinal, objectMode: true}]});
 	expectType<unknown[]>(objectTransformStdioResult.stderr);
 	expectType<[undefined, string, unknown[]]>(objectTransformStdioResult.stdio);
+
+	const singleObjectDuplexStdoutResult = await execa('unicorns', {stdout: [duplexObject]});
+	expectType<unknown[]>(singleObjectDuplexStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(singleObjectDuplexStdoutResult.stdio);
+
+	const singleObjectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: [duplexObjectProperty]});
+	expectType<unknown[]>(singleObjectDuplexPropertyStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(singleObjectDuplexPropertyStdoutResult.stdio);
 
 	const singleObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, final: objectFinal, objectMode: true}]});
 	expectType<unknown[]>(singleObjectTransformStdoutResult.stdout);
 	expectType<[undefined, unknown[], string]>(singleObjectTransformStdoutResult.stdio);
 
+	const manyObjectDuplexStdoutResult = await execa('unicorns', {stdout: [duplexObject, duplexObject]});
+	expectType<unknown[]>(manyObjectDuplexStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(manyObjectDuplexStdoutResult.stdio);
+
+	const manyObjectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: [duplexObjectProperty, duplexObjectProperty]});
+	expectType<unknown[]>(manyObjectDuplexPropertyStdoutResult.stdout);
+	expectType<[undefined, unknown[], string]>(manyObjectDuplexPropertyStdoutResult.stdio);
+
 	const manyObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, final: objectFinal, objectMode: true}, {transform: objectGenerator, final: objectFinal, objectMode: true}]});
 	expectType<unknown[]>(manyObjectTransformStdoutResult.stdout);
 	expectType<[undefined, unknown[], string]>(manyObjectTransformStdoutResult.stdio);
+
+	const falseObjectDuplexStdoutResult = await execa('unicorns', {stdout: duplexNotObject});
+	expectType<string>(falseObjectDuplexStdoutResult.stdout);
+	expectType<[undefined, string, string]>(falseObjectDuplexStdoutResult.stdio);
+
+	const falseObjectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: duplexNotObjectProperty});
+	expectType<string>(falseObjectDuplexPropertyStdoutResult.stdout);
+	expectType<[undefined, string, string]>(falseObjectDuplexPropertyStdoutResult.stdio);
 
 	const falseObjectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: false}});
 	expectType<string>(falseObjectTransformStdoutResult.stdout);
 	expectType<[undefined, string, string]>(falseObjectTransformStdoutResult.stdio);
 
+	const falseObjectDuplexStderrResult = await execa('unicorns', {stderr: duplexNotObject});
+	expectType<string>(falseObjectDuplexStderrResult.stderr);
+	expectType<[undefined, string, string]>(falseObjectDuplexStderrResult.stdio);
+
+	const falseObjectDuplexPropertyStderrResult = await execa('unicorns', {stderr: duplexNotObjectProperty});
+	expectType<string>(falseObjectDuplexPropertyStderrResult.stderr);
+	expectType<[undefined, string, string]>(falseObjectDuplexPropertyStderrResult.stdio);
+
 	const falseObjectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, final: objectFinal, objectMode: false}});
 	expectType<string>(falseObjectTransformStderrResult.stderr);
 	expectType<[undefined, string, string]>(falseObjectTransformStderrResult.stdio);
 
+	const falseObjectDuplexStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', duplexNotObject]});
+	expectType<string>(falseObjectDuplexStdioResult.stderr);
+	expectType<[undefined, string, string]>(falseObjectDuplexStdioResult.stdio);
+
+	const falseObjectDuplexPropertyStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', duplexNotObjectProperty]});
+	expectType<string>(falseObjectDuplexPropertyStdioResult.stderr);
+	expectType<[undefined, string, string]>(falseObjectDuplexPropertyStdioResult.stdio);
+
 	const falseObjectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, final: objectFinal, objectMode: false}]});
 	expectType<string>(falseObjectTransformStdioResult.stderr);
 	expectType<[undefined, string, string]>(falseObjectTransformStdioResult.stdio);
+
+	const undefinedObjectDuplexStdoutResult = await execa('unicorns', {stdout: duplex});
+	expectType<string | unknown[]>(undefinedObjectDuplexStdoutResult.stdout);
+	expectType<[undefined, string | unknown[], string]>(undefinedObjectDuplexStdoutResult.stdio);
 
 	const undefinedObjectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal}});
 	expectType<string>(undefinedObjectTransformStdoutResult.stdout);
@@ -1186,12 +1261,24 @@ execa('unicorns', {stdin: [fileUrl]});
 execaSync('unicorns', {stdin: [fileUrl]});
 execa('unicorns', {stdin: {file: './test'}});
 execaSync('unicorns', {stdin: {file: './test'}});
+expectError(execa('unicorns', {stdin: {file: fileUrl}}));
+expectError(execaSync('unicorns', {stdin: {file: fileUrl}}));
 execa('unicorns', {stdin: [{file: './test'}]});
 execaSync('unicorns', {stdin: [{file: './test'}]});
 execa('unicorns', {stdin: 1});
 execaSync('unicorns', {stdin: 1});
 execa('unicorns', {stdin: [1]});
 execaSync('unicorns', {stdin: [1]});
+execa('unicorns', {stdin: duplex});
+expectError(execaSync('unicorns', {stdin: duplex}));
+execa('unicorns', {stdin: [duplex]});
+expectError(execaSync('unicorns', {stdin: [duplex]}));
+execa('unicorns', {stdin: duplexTransform});
+expectError(execaSync('unicorns', {stdin: duplexTransform}));
+execa('unicorns', {stdin: [duplexTransform]});
+expectError(execaSync('unicorns', {stdin: [duplexTransform]}));
+expectError(execa('unicorns', {stdin: {...duplex, objectMode: 'true'}}));
+expectError(execaSync('unicorns', {stdin: {...duplex, objectMode: 'true'}}));
 execa('unicorns', {stdin: unknownGenerator});
 expectError(execaSync('unicorns', {stdin: unknownGenerator}));
 execa('unicorns', {stdin: [unknownGenerator]});
@@ -1289,10 +1376,22 @@ execa('unicorns', {stdout: {file: './test'}});
 execaSync('unicorns', {stdout: {file: './test'}});
 execa('unicorns', {stdout: [{file: './test'}]});
 execaSync('unicorns', {stdout: [{file: './test'}]});
+expectError(execa('unicorns', {stdout: {file: fileUrl}}));
+expectError(execaSync('unicorns', {stdout: {file: fileUrl}}));
 execa('unicorns', {stdout: 1});
 execaSync('unicorns', {stdout: 1});
 execa('unicorns', {stdout: [1]});
 execaSync('unicorns', {stdout: [1]});
+execa('unicorns', {stdout: duplex});
+expectError(execaSync('unicorns', {stdout: duplex}));
+execa('unicorns', {stdout: [duplex]});
+expectError(execaSync('unicorns', {stdout: [duplex]}));
+execa('unicorns', {stdout: duplexTransform});
+expectError(execaSync('unicorns', {stdout: duplexTransform}));
+execa('unicorns', {stdout: [duplexTransform]});
+expectError(execaSync('unicorns', {stdout: [duplexTransform]}));
+expectError(execa('unicorns', {stdout: {...duplex, objectMode: 'true'}}));
+expectError(execaSync('unicorns', {stdout: {...duplex, objectMode: 'true'}}));
 execa('unicorns', {stdout: unknownGenerator});
 expectError(execaSync('unicorns', {stdout: unknownGenerator}));
 execa('unicorns', {stdout: [unknownGenerator]});
@@ -1390,10 +1489,22 @@ execa('unicorns', {stderr: {file: './test'}});
 execaSync('unicorns', {stderr: {file: './test'}});
 execa('unicorns', {stderr: [{file: './test'}]});
 execaSync('unicorns', {stderr: [{file: './test'}]});
+expectError(execa('unicorns', {stderr: {file: fileUrl}}));
+expectError(execaSync('unicorns', {stderr: {file: fileUrl}}));
 execa('unicorns', {stderr: 1});
 execaSync('unicorns', {stderr: 1});
 execa('unicorns', {stderr: [1]});
 execaSync('unicorns', {stderr: [1]});
+execa('unicorns', {stderr: duplex});
+expectError(execaSync('unicorns', {stderr: duplex}));
+execa('unicorns', {stderr: [duplex]});
+expectError(execaSync('unicorns', {stderr: [duplex]}));
+execa('unicorns', {stderr: duplexTransform});
+expectError(execaSync('unicorns', {stderr: duplexTransform}));
+execa('unicorns', {stderr: [duplexTransform]});
+expectError(execaSync('unicorns', {stderr: [duplexTransform]}));
+expectError(execa('unicorns', {stderr: {...duplex, objectMode: 'true'}}));
+expectError(execaSync('unicorns', {stderr: {...duplex, objectMode: 'true'}}));
 execa('unicorns', {stderr: unknownGenerator});
 expectError(execaSync('unicorns', {stderr: unknownGenerator}));
 execa('unicorns', {stderr: [unknownGenerator]});
@@ -1481,6 +1592,10 @@ expectError(execa('unicorns', {stdio: fileUrl}));
 expectError(execaSync('unicorns', {stdio: fileUrl}));
 expectError(execa('unicorns', {stdio: {file: './test'}}));
 expectError(execaSync('unicorns', {stdio: {file: './test'}}));
+expectError(execa('unicorns', {stdio: duplex}));
+expectError(execaSync('unicorns', {stdio: duplex}));
+expectError(execa('unicorns', {stdio: duplexTransform}));
+expectError(execaSync('unicorns', {stdio: duplexTransform}));
 expectError(execa('unicorns', {stdio: new Writable()}));
 expectError(execaSync('unicorns', {stdio: new Writable()}));
 expectError(execa('unicorns', {stdio: new Readable()}));
@@ -1536,6 +1651,8 @@ execa('unicorns', {
 		undefined,
 		fileUrl,
 		{file: './test'},
+		duplex,
+		duplexTransform,
 		new Writable(),
 		new Readable(),
 		new WritableStream(),
@@ -1564,6 +1681,8 @@ execaSync('unicorns', {
 });
 expectError(execaSync('unicorns', {stdio: [unknownGenerator]}));
 expectError(execaSync('unicorns', {stdio: [{transform: unknownGenerator}]}));
+expectError(execaSync('unicorns', {stdio: [duplex]}));
+expectError(execaSync('unicorns', {stdio: [duplexTransform]}));
 expectError(execaSync('unicorns', {stdio: [new WritableStream()]}));
 expectError(execaSync('unicorns', {stdio: [new ReadableStream()]}));
 expectError(execaSync('unicorns', {stdio: [emptyStringGenerator()]}));
@@ -1587,6 +1706,8 @@ execa('unicorns', {
 		[undefined],
 		[fileUrl],
 		[{file: './test'}],
+		[duplex],
+		[duplexTransform],
 		[new Writable()],
 		[new Readable()],
 		[new WritableStream()],
@@ -1619,6 +1740,8 @@ execaSync('unicorns', {
 });
 expectError(execaSync('unicorns', {stdio: [[unknownGenerator]]}));
 expectError(execaSync('unicorns', {stdio: [[{transform: unknownGenerator}]]}));
+expectError(execaSync('unicorns', {stdio: [[duplex]]}));
+expectError(execaSync('unicorns', {stdio: [[duplexTransform]]}));
 expectError(execaSync('unicorns', {stdio: [[new WritableStream()]]}));
 expectError(execaSync('unicorns', {stdio: [[new ReadableStream()]]}));
 expectError(execaSync('unicorns', {stdio: [[['foo', 'bar']]]}));

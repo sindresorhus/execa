@@ -173,6 +173,18 @@ const {stdout} = await execa('./command.js', {stdout: {transform, final}});
 console.log(stdout); // Ends with: 'Number of lines: 54'
 ```
 
+## Node.js Duplex/Transform streams
+
+A Node.js [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) or [`Transform`](https://nodejs.org/api/stream.html#class-streamtransform) stream can be used instead of a generator function. A `{transform}` plain object must be passed. The [`objectMode`](#object-mode) transform option can be used, but not the [`binary`](#encoding) nor [`preserveNewlines`](#newlines) options.
+
+```js
+import {createGzip} from 'node:zlib';
+import {execa} from 'execa';
+
+const {stdout} = await execa('./run.js', {stdout: {transform: createGzip()}});
+console.log(stdout); // `stdout` is compressed with gzip
+```
+
 ## Combining
 
 The [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) and [`stdio`](../readme.md#stdio-1) options can accept an array of values. While this is not specific to transforms, this can be useful with them too. For example, the following transform impacts the value printed by `inherit`.

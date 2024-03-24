@@ -53,8 +53,6 @@ This is more efficient and recommended if the data is either:
 - Binary: Which does not have lines.
 - Text: But the transform works even if a line or word is split across multiple chunks.
 
-Please note the [`lines`](../readme.md#lines) option is unrelated: it has no impact on transforms.
-
 ## Newlines
 
 Unless [`{transform, binary: true}`](#binary-data) is used, the transform iterates over lines.

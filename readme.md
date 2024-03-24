@@ -944,10 +944,7 @@ Add an `.all` property on the [promise](#all) and the [resolved value](#all-1). 
 Type: `boolean`\
 Default: `false`
 
-Split `stdout` and `stderr` into lines.
-- [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) are arrays of lines.
-- [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.all`](#all), [`subprocess.stdio`](https://nodejs.org/api/child_process.html#subprocessstdio), [`subprocess.readable()`](#readablereadableoptions) and [`subprocess.duplex`](#duplexduplexoptions) iterate over lines instead of arbitrary chunks.
-- Any stream passed to the [`stdout`](#stdout-1), [`stderr`](#stderr-1) or [`stdio`](#stdio-1) option receives lines instead of arbitrary chunks.
+Set [`result.stdout`](#stdout), [`result.stderr`](#stderr), [`result.all`](#all-1) and [`result.stdio`](#stdio) as arrays of strings, splitting the subprocess' output into lines.
 
 This cannot be used if the [`encoding` option](#encoding) is binary.
 

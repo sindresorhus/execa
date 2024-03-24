@@ -219,7 +219,9 @@ type StreamEncoding<
 	: Encoding extends BufferEncodingOption
 		? Uint8Array
 		: LinesOption extends true
-			? string[]
+			? Encoding extends BinaryEncodingOption
+				? string
+				: string[]
 			: string;
 
 // Type of `result.all`
@@ -401,10 +403,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stdio?: StdioOptions<IsSync>;
 
 	/**
-	Split `stdout` and `stderr` into lines.
-	- `result.stdout`, `result.stderr`, `result.all` and `result.stdio` are arrays of lines.
-	- `subprocess.stdout`, `subprocess.stderr`, `subprocess.all`, `subprocess.stdio`, `subprocess.readable()` and `subprocess.duplex()` iterate over lines instead of arbitrary chunks.
-	- Any stream passed to the `stdout`, `stderr` or `stdio` option receives lines instead of arbitrary chunks.
+	Set `result.stdout`, `result.stderr`, `result.all` and `result.stdio` as arrays of strings, splitting the subprocess' output into lines.
 
 	This cannot be used if the `encoding` option is binary.
 

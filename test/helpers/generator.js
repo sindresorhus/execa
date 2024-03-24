@@ -13,12 +13,13 @@ export const addNoopGenerator = (transform, addNoopTransform) => addNoopTransfor
 	? [transform, noopGenerator(undefined, true)]
 	: [transform];
 
-export const noopGenerator = (objectMode, binary) => ({
+export const noopGenerator = (objectMode, binary, preserveNewlines) => ({
 	* transform(line) {
 		yield line;
 	},
 	objectMode,
 	binary,
+	preserveNewlines,
 });
 
 export const serializeGenerator = (objectMode, binary) => ({

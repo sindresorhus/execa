@@ -18,26 +18,36 @@ const getTypeofGenerator = (objectMode, binary) => ({
 	binary,
 });
 
-// eslint-disable-next-line max-params
-const testGeneratorFirstEncoding = async (t, input, encoding, output, objectMode) => {
-	const subprocess = execa('stdin.js', {stdin: getTypeofGenerator(objectMode, true), encoding});
-	subprocess.stdin.end(input);
-	const {stdout} = await subprocess;
-	const result = Buffer.from(stdout, encoding).toString();
-	t.is(result, output);
+const assertTypeofChunk = (t, output, encoding, expectedType) => {
+	const typeofChunk = Buffer.from(output, encoding === 'buffer' ? undefined : encoding).toString().trim();
+	t.is(typeofChunk, `[object ${expectedType}]`);
 };
 
-test('First generator argument is string with default encoding, with string writes', testGeneratorFirstEncoding, foobarString, 'utf8', '[object String]', false);
-test('First generator argument is string with default encoding, with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'utf8', '[object String]', false);
-test('First generator argument is string with default encoding, with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'utf8', '[object String]', false);
-test('First generator argument is Uint8Array with encoding "buffer", with string writes', testGeneratorFirstEncoding, foobarString, 'buffer', '[object Uint8Array]', false);
-test('First generator argument is Uint8Array with encoding "buffer", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'buffer', '[object Uint8Array]', false);
-test('First generator argument is Uint8Array with encoding "buffer", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'buffer', '[object Uint8Array]', false);
-test('First generator argument is Uint8Array with encoding "hex", with string writes', testGeneratorFirstEncoding, foobarString, 'hex', '[object String]', false);
-test('First generator argument is Uint8Array with encoding "hex", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'hex', '[object String]', false);
-test('First generator argument is Uint8Array with encoding "hex", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'hex', '[object String]', false);
-test('First generator argument can be string with objectMode', testGeneratorFirstEncoding, foobarString, 'utf8', '[object String]', true);
-test('First generator argument can be objects with objectMode', testGeneratorFirstEncoding, foobarObject, 'utf8', '[object Object]', true);
+// eslint-disable-next-line max-params
+const testGeneratorFirstEncoding = async (t, input, encoding, expectedType, objectMode, binary) => {
+	const subprocess = execa('stdin.js', {stdin: getTypeofGenerator(objectMode, binary), encoding});
+	subprocess.stdin.end(input);
+	const {stdout} = await subprocess;
+	assertTypeofChunk(t, stdout, encoding, expectedType);
+};
+
+test('First generator argument is string with default encoding, with string writes', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', false);
+test('First generator argument is string with default encoding, with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'utf8', 'String', false);
+test('First generator argument is string with default encoding, with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'utf8', 'String', false);
+test('First generator argument is Uint8Array with encoding "buffer", with string writes', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false);
+test('First generator argument is Uint8Array with encoding "buffer", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'buffer', 'Uint8Array', false);
+test('First generator argument is Uint8Array with encoding "buffer", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'buffer', 'Uint8Array', false);
+test('First generator argument is string with encoding "hex", with string writes', testGeneratorFirstEncoding, foobarString, 'hex', 'String', false);
+test('First generator argument is string with encoding "hex", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'hex', 'String', false);
+test('First generator argument is string with encoding "hex", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'hex', 'String', false);
+test('First generator argument can be string with objectMode', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', true);
+test('First generator argument can be objects with objectMode', testGeneratorFirstEncoding, foobarObject, 'utf8', 'Object', true);
+test('First generator argument is string with default encoding, with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', false, false);
+test('First generator argument is Uint8Array with default encoding, with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'utf8', 'Uint8Array', false, true);
+test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false, false);
+test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false, true);
+test('First generator argument is string with encoding "hex", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'hex', 'String', false, false);
+test('First generator argument is Uint8Array with encoding "hex", with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false, true);
 
 const testEncodingIgnored = async (t, encoding) => {
 	const input = Buffer.from(foobarString).toString(encoding);
@@ -57,13 +67,12 @@ const testGeneratorNextEncoding = async (t, input, encoding, firstObjectMode, se
 	const {stdout} = await execa('noop.js', ['other'], {
 		stdout: [
 			getOutputGenerator(input, firstObjectMode),
-			getTypeofGenerator(secondObjectMode, true),
+			getTypeofGenerator(secondObjectMode),
 		],
 		encoding,
 	});
-	const typeofChunk = Array.isArray(stdout) ? stdout[0] : stdout;
-	const output = Buffer.from(typeofChunk, encoding === 'buffer' ? undefined : encoding).toString();
-	t.is(output, `[object ${expectedType}]`);
+	const output = Array.isArray(stdout) ? stdout[0] : stdout;
+	assertTypeofChunk(t, output, encoding, expectedType);
 };
 
 test('Next generator argument is string with default encoding, with string writes', testGeneratorNextEncoding, foobarString, 'utf8', false, false, 'String');

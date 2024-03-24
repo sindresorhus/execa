@@ -66,11 +66,11 @@ const testHighWaterMark = async (t, passThrough, binary, objectMode) => {
 			...(objectMode ? [outputObjectGenerator] : []),
 			writerGenerator,
 			...(passThrough ? [noopGenerator(false, binary)] : []),
-			{transform: getLengthGenerator.bind(undefined, t), binary: true, objectMode: true},
+			{transform: getLengthGenerator.bind(undefined, t), preserveNewlines: true, objectMode: true},
 		],
 	});
 	t.is(stdout.length, repeatCount);
-	t.true(stdout.every(chunk => chunk.toString() === '\n'));
+	t.true(stdout.every(chunk => chunk === '\n'));
 };
 
 test('Synchronous yields are not buffered, no passThrough', testHighWaterMark, false, false, false);

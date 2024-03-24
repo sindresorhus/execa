@@ -952,8 +952,6 @@ type PipableSubprocess = {
 	This can be called multiple times to chain a series of subprocesses.
 
 	Multiple subprocesses can be piped to the same subprocess. Conversely, the same subprocess can be piped to multiple other subprocesses.
-
-	This is usually the preferred method to pipe subprocesses.
 	*/
 	pipe<OptionsType extends Options & PipeOptions = {}>(
 		file: string | URL,
@@ -967,8 +965,6 @@ type PipableSubprocess = {
 
 	/**
 	Like `.pipe(file, arguments?, options?)` but using a `command` template string instead. This follows the same syntax as `$`.
-
-	This is the preferred method to pipe subprocesses when using `$`.
 	*/
 	pipe(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
 	Promise<ExecaResult<{}>> & PipableSubprocess;
@@ -1112,12 +1108,43 @@ export type ExecaSubprocess<OptionsType extends Options = Options> = ChildProces
 ExecaResultPromise<OptionsType> &
 Promise<ExecaResult<OptionsType>>;
 
+type TemplateExpression = string | number | CommonResultInstance
+| Array<string | number | CommonResultInstance>;
+
+type TemplateString = [TemplateStringsArray, ...readonly TemplateExpression[]];
+type SimpleTemplateString = [TemplateStringsArray, string?];
+
+type Execa<OptionsType extends Options> = {
+	<NewOptionsType extends Options = {}>(options: NewOptionsType): Execa<OptionsType & NewOptionsType>;
+
+	(...templateString: TemplateString): ExecaSubprocess<OptionsType>;
+
+	<NewOptionsType extends Options = {}>(
+		file: string | URL,
+		arguments?: readonly string[],
+		options?: NewOptionsType,
+	): ExecaSubprocess<OptionsType & NewOptionsType>;
+
+	<NewOptionsType extends Options = {}>(
+		file: string | URL,
+		options?: NewOptionsType,
+	): ExecaSubprocess<OptionsType & NewOptionsType>;
+};
+
 /**
 Executes a command using `file ...arguments`.
 
-Arguments are automatically escaped. They can contain any character, including spaces.
+Arguments are automatically escaped. They can contain any character, including spaces, tabs and newlines.
 
-This is the preferred method when executing single commands.
+When `command` is a template string, it includes both the `file` and its `arguments`.
+
+The `command` template string can inject any `${value}` with the following types: string, number, `subprocess` or an array of those types. For example: `` execa`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${subprocess}`, the subprocess's `stdout` is used.
+
+When `command` is a template string, arguments can contain any character, but spaces, tabs and newlines must use `${}` like `` execa`echo ${'has space'}` ``.
+
+The `command` template string can use multiple lines and indentation.
+
+`execa(options)` can be used to return a new instance of Execa but with different default `options`. Consecutive calls are merged to previous ones. This allows setting global options or sharing options between multiple commands.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1132,6 +1159,47 @@ import {execa} from 'execa';
 
 const {stdout} = await execa('echo', ['unicorns']);
 console.log(stdout);
+//=> 'unicorns'
+```
+
+@example <caption>Global/shared options</caption>
+```
+import {execa as execa_} from 'execa';
+
+const execa = execa_({verbose: 'full'});
+
+await execa('echo', ['unicorns']);
+//=> 'unicorns'
+```
+
+@example <caption>Template string interface</caption>
+
+```
+import {execa} from 'execa';
+
+const arg = 'unicorns'
+const {stdout} = await execa`echo ${arg} & rainbows!`;
+console.log(stdout);
+//=> 'unicorns & rainbows!'
+```
+
+@example <caption>Template string multiple arguments</caption>
+
+```
+import {execa} from 'execa';
+
+const args = ['unicorns', '&', 'rainbows!'];
+const {stdout} = await execa`echo ${args}`;
+console.log(stdout);
+//=> 'unicorns & rainbows!'
+```
+
+@example <caption>Template string with options</caption>
+
+```
+import {execa} from 'execa';
+
+await execa({verbose: 'full'})`echo unicorns`;
 //=> 'unicorns'
 ```
 
@@ -1179,6 +1247,26 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
+@example <caption>Pipe with template strings</caption>
+```
+import {execa} from 'execa';
+
+await execa`npm run build`
+	.pipe`sort`
+	.pipe`head -n2`;
+```
+
+@example <caption>Iterate over output lines</caption>
+```
+import {execa} from 'execa';
+
+for await (const line of execa`npm run build`)) {
+	if (line.includes('ERROR')) {
+		console.log(line);
+	}
+}
+```
+
 @example <caption>Handling errors</caption>
 ```
 import {execa} from 'execa';
@@ -1222,22 +1310,31 @@ try {
 }
 ```
 */
-export function execa<OptionsType extends Options = {}>(
-	file: string | URL,
-	arguments?: readonly string[],
-	options?: OptionsType,
-): ExecaSubprocess<OptionsType>;
-export function execa<OptionsType extends Options = {}>(
-	file: string | URL,
-	options?: OptionsType,
-): ExecaSubprocess<OptionsType>;
+declare const execa: Execa<{}>;
+
+type ExecaSync<OptionsType extends SyncOptions> = {
+	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType): ExecaSync<OptionsType & NewOptionsType>;
+
+	(...templateString: TemplateString): ExecaSyncResult<OptionsType>;
+
+	<NewOptionsType extends SyncOptions = {}>(
+		file: string | URL,
+		arguments?: readonly string[],
+		options?: NewOptionsType,
+	): ExecaSyncResult<OptionsType & NewOptionsType>;
+
+	<NewOptionsType extends SyncOptions = {}>(
+		file: string | URL,
+		options?: NewOptionsType,
+	): ExecaSyncResult<OptionsType & NewOptionsType>;
+};
 
 /**
 Same as `execa()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
-
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1296,22 +1393,27 @@ try {
 }
 ```
 */
-export function execaSync<OptionsType extends SyncOptions = {}>(
-	file: string | URL,
-	arguments?: readonly string[],
-	options?: OptionsType,
-): ExecaSyncResult<OptionsType>;
-export function execaSync<OptionsType extends SyncOptions = {}>(
-	file: string | URL,
-	options?: OptionsType,
-): ExecaSyncResult<OptionsType>;
+declare const execaSync: ExecaSync<{}>;
+
+type ExecaCommand<OptionsType extends Options> = {
+	<NewOptionsType extends Options = {}>(options: NewOptionsType): ExecaCommand<OptionsType & NewOptionsType>;
+
+	(...templateString: SimpleTemplateString): ExecaSubprocess<OptionsType>;
+
+	<NewOptionsType extends Options = {}>(
+		command: string,
+		options?: NewOptionsType,
+	): ExecaSubprocess<OptionsType & NewOptionsType>;
+};
 
 /**
-Executes a command. The `command` string includes both the `file` and its `arguments`.
+`execa` with the template string syntax allows the `file` or the `arguments` to be user-defined (by injecting them with `${}`). However, if _both_ the `file` and the `arguments` are user-defined, _and_ those are supplied as a single string, then `execaCommand(command)` must be used instead.
+
+This is only intended for very specific cases, such as a REPL. This should be avoided otherwise.
+
+Just like `execa()`, this can bind options. It can also be run synchronously using `execaCommandSync()`.
 
 Arguments are automatically escaped. They can contain any character, but spaces must be escaped with a backslash like `execaCommand('echo has\\ space')`.
-
-This is the preferred method when executing a user-supplied `command` string, such as in a REPL.
 
 @param command - The program/script to execute and its arguments.
 @returns An `ExecaSubprocess` that is both:
@@ -1328,17 +1430,25 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommand<OptionsType extends Options = {}>(
-	command: string,
-	options?: OptionsType
-): ExecaSubprocess<OptionsType>;
+declare const execaCommand: ExecaCommand<{}>;
+
+type ExecaCommandSync<OptionsType extends SyncOptions> = {
+	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType): ExecaCommandSync<OptionsType & NewOptionsType>;
+
+	(...templateString: SimpleTemplateString): ExecaSyncResult<OptionsType>;
+
+	<NewOptionsType extends SyncOptions = {}>(
+		command: string,
+		options?: NewOptionsType,
+	): ExecaSyncResult<OptionsType & NewOptionsType>;
+};
 
 /**
 Same as `execaCommand()` but synchronous.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
-
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object
@@ -1353,161 +1463,53 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 */
-export function execaCommandSync<OptionsType extends SyncOptions = {}>(
-	command: string,
-	options?: OptionsType
-): ExecaSyncResult<OptionsType>;
+declare const execaCommandSync: ExecaCommandSync<{}>;
 
-type TemplateExpression = string | number | CommonResultInstance
-| Array<string | number | CommonResultInstance>;
+type ExecaScriptCommon<OptionsType extends CommonOptions> = {
+	<NewOptionsType extends CommonOptions = {}>(options: NewOptionsType): ExecaScript<OptionsType & NewOptionsType>;
 
-type Execa$<OptionsType extends CommonOptions = {}> = {
-	/**
-	Returns a new instance of `$` but with different default `options`. Consecutive calls are merged to previous ones.
+	(...templateString: TemplateString): ExecaSubprocess<StricterOptions<OptionsType, Options>>;
 
-	This can be used to either:
-	- Set options for a specific command: `` $(options)`command` ``
-	- Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand` ``
+	<NewOptionsType extends Options = {}>(
+		file: string | URL,
+		arguments?: readonly string[],
+		options?: NewOptionsType,
+	): ExecaSubprocess<OptionsType & NewOptionsType>;
 
-	@param options - Options to set
-	@returns A new instance of `$` with those `options` set
-
-	@example
-	```
-	import {$} from 'execa';
-
-	const $$ = $({stdio: 'inherit'});
-
-	await $$`echo unicorns`;
-	//=> 'unicorns'
-
-	await $$`echo rainbows`;
-	//=> 'rainbows'
-	```
-	*/
-	<NewOptionsType extends CommonOptions = {}>
-	(options: NewOptionsType): Execa$<OptionsType & NewOptionsType>;
-
-	(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
-	ExecaSubprocess<StricterOptions<OptionsType, Options>> & PipableSubprocess;
-
-	/**
-	Same as $\`command\` but synchronous.
-
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
-
-	Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
-
-	@returns A `subprocessResult` object
-	@throws A `subprocessResult` error
-
-	@example <caption>Basic</caption>
-	```
-	import {$} from 'execa';
-
-	const branch = $.sync`git branch --show-current`;
-	$.sync`dep deploy --branch=${branch}`;
-	```
-
-	@example <caption>Multiple arguments</caption>
-	```
-	import {$} from 'execa';
-
-	const args = ['unicorns', '&', 'rainbows!'];
-	const {stdout} = $.sync`echo ${args}`;
-	console.log(stdout);
-	//=> 'unicorns & rainbows!'
-	```
-
-	@example <caption>With options</caption>
-	```
-	import {$} from 'execa';
-
-	$.sync({stdio: 'inherit'})`echo unicorns`;
-	//=> 'unicorns'
-	```
-
-	@example <caption>Shared options</caption>
-	```
-	import {$} from 'execa';
-
-	const $$ = $({stdio: 'inherit'});
-
-	$$.sync`echo unicorns`;
-	//=> 'unicorns'
-
-	$$.sync`echo rainbows`;
-	//=> 'rainbows'
-	```
-	*/
-	sync(
-		templates: TemplateStringsArray,
-		...expressions: readonly TemplateExpression[]
-	): ExecaSyncResult<StricterOptions<OptionsType, SyncOptions>>;
-
-	/**
-	Same as $\`command\` but synchronous.
-
-	Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
-
-	Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
-
-	@returns A `subprocessResult` object
-	@throws A `subprocessResult` error
-
-	@example <caption>Basic</caption>
-	```
-	import {$} from 'execa';
-
-	const branch = $.s`git branch --show-current`;
-	$.s`dep deploy --branch=${branch}`;
-	```
-
-	@example <caption>Multiple arguments</caption>
-	```
-	import {$} from 'execa';
-
-	const args = ['unicorns', '&', 'rainbows!'];
-	const {stdout} = $.s`echo ${args}`;
-	console.log(stdout);
-	//=> 'unicorns & rainbows!'
-	```
-
-	@example <caption>With options</caption>
-	```
-	import {$} from 'execa';
-
-	$.s({stdio: 'inherit'})`echo unicorns`;
-	//=> 'unicorns'
-	```
-
-	@example <caption>Shared options</caption>
-	```
-	import {$} from 'execa';
-
-	const $$ = $({stdio: 'inherit'});
-
-	$$.s`echo unicorns`;
-	//=> 'unicorns'
-
-	$$.s`echo rainbows`;
-	//=> 'rainbows'
-	```
-	*/
-	s(
-		templates: TemplateStringsArray,
-		...expressions: readonly TemplateExpression[]
-	): ExecaSyncResult<StricterOptions<OptionsType, SyncOptions>>;
+	<NewOptionsType extends Options = {}>(
+		file: string | URL,
+		options?: NewOptionsType,
+	): ExecaSubprocess<OptionsType & NewOptionsType>;
 };
 
-/**
-Executes a command. The `command` string includes both the `file` and its `arguments`.
+type ExecaScriptSync<OptionsType extends CommonOptions> = {
+	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType): ExecaScriptSync<OptionsType & NewOptionsType>;
 
-Arguments are automatically escaped. They can contain any character, but spaces, tabs and newlines must use `${}` like `` $`echo ${'has space'}` ``.
+	(...templateString: TemplateString): ExecaSyncResult<StricterOptions<OptionsType, SyncOptions>>;
+
+	<NewOptionsType extends SyncOptions = {}>(
+		file: string | URL,
+		arguments?: readonly string[],
+		options?: NewOptionsType,
+	): ExecaSyncResult<OptionsType & NewOptionsType>;
+
+	<NewOptionsType extends SyncOptions = {}>(
+		file: string | URL,
+		options?: NewOptionsType,
+	): ExecaSyncResult<OptionsType & NewOptionsType>;
+};
+
+type ExecaScript<OptionsType extends CommonOptions> = {
+	sync: ExecaScriptSync<OptionsType>;
+	s: ExecaScriptSync<OptionsType>;
+} & ExecaScriptCommon<OptionsType>;
+
+/**
+Same as `execa()` but using the `stdin: 'inherit'` and `preferLocal: true` options.
+
+Just like `execa()`, this can use the template string syntax or bind options. It can also be run synchronously using `$.sync()` or `$.s()`.
 
 This is the preferred method when executing multiple commands in a script file.
-
-The `command` string can inject any `${value}` with the following types: string, number, `subprocess` or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${subprocess}`, the subprocess's `stdout` is used.
 
 @returns An `ExecaSubprocess` that is both:
 	- a `Promise` resolving or rejecting with a `subprocessResult`.
@@ -1522,43 +1524,45 @@ const branch = await $`git branch --show-current`;
 await $`dep deploy --branch=${branch}`;
 ```
 
-@example <caption>Multiple arguments</caption>
+@example <caption>Verbose mode</caption>
 ```
-import {$} from 'execa';
+> node file.js
+unicorns
+rainbows
 
-const args = ['unicorns', '&', 'rainbows!'];
-const {stdout} = await $`echo ${args}`;
-console.log(stdout);
-//=> 'unicorns & rainbows!'
-```
-
-@example <caption>With options</caption>
-```
-import {$} from 'execa';
-
-await $({stdio: 'inherit'})`echo unicorns`;
-//=> 'unicorns'
-```
-
-@example <caption>Shared options</caption>
-```
-import {$} from 'execa';
-
-const $$ = $({stdio: 'inherit'});
-
-await $$`echo unicorns`;
-//=> 'unicorns'
-
-await $$`echo rainbows`;
-//=> 'rainbows'
+> NODE_DEBUG=execa node file.js
+[19:49:00.360] [0] $ echo unicorns
+unicorns
+[19:49:00.383] [0] √ (done in 23ms)
+[19:49:00.383] [1] $ echo rainbows
+rainbows
+[19:49:00.404] [1] √ (done in 21ms)
 ```
 */
-export const $: Execa$;
+export const $: ExecaScript<{}>;
+
+type ExecaNode<OptionsType extends Options> = {
+	<NewOptionsType extends Options = {}>(options: NewOptionsType): ExecaNode<OptionsType & NewOptionsType>;
+
+	(...templateString: TemplateString): ExecaSubprocess<OptionsType>;
+
+	<NewOptionsType extends Options = {}>(
+		scriptPath: string | URL,
+		arguments?: readonly string[],
+		options?: NewOptionsType,
+	): ExecaSubprocess<OptionsType & NewOptionsType>;
+
+	<NewOptionsType extends Options = {}>(
+		scriptPath: string | URL,
+		options?: NewOptionsType,
+	): ExecaSubprocess<OptionsType & NewOptionsType>;
+};
 
 /**
-Same as `execa()` but using the `node` option.
-
+Same as `execa()` but using the `node: true` option.
 Executes a Node.js file using `node scriptPath ...arguments`.
+
+Just like `execa()`, this can use the template string syntax or bind options.
 
 This is the preferred method when executing Node.js files.
 
@@ -1571,17 +1575,9 @@ This is the preferred method when executing Node.js files.
 
 @example
 ```
-import {execa} from 'execa';
+import {execaNode} from 'execa';
 
 await execaNode('scriptPath', ['argument']);
 ```
 */
-export function execaNode<OptionsType extends Options = {}>(
-	scriptPath: string | URL,
-	arguments?: readonly string[],
-	options?: OptionsType
-): ExecaSubprocess<OptionsType>;
-export function execaNode<OptionsType extends Options = {}>(
-	scriptPath: string | URL,
-	options?: OptionsType
-): ExecaSubprocess<OptionsType>;
+export const execaNode: ExecaNode<{}>;

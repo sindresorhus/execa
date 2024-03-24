@@ -28,6 +28,21 @@ const dirName = 'foo bar';
 await $`mkdir /tmp/${dirName}`;
 ```
 
+## Template string syntax
+
+The examples below use the [template string syntax](../readme.md#template-string-syntax). However, the other syntax using [an array of arguments](../readme.md#execafile-arguments-options) is also available as `$(file, arguments?, options?)`.
+
+Also, the template string syntax can be used outside of script files: `$` is not required to use that syntax. For example, `execa` can use it too.
+
+The only difference between `$` and `execa` is that the former includes [script-friendly default options](../readme.md#file-arguments-options).
+
+```js
+import {execa, $} from 'execa';
+
+const branch = await execa`git branch --show-current`;
+await $('dep', ['deploy', `--branch=${branch}`]);
+```
+
 ## Examples
 
 ### Main binary
@@ -804,7 +819,7 @@ If you really need a shell though, the [`shell` option](../readme.md#shell) can 
 
 ### Simplicity
 
-Execa's scripting API mostly consists of only two methods: [`` $`command` ``](../readme.md#command) and [`$(options)`](../readme.md#options).
+Execa's scripting API mostly consists of only two methods: [`` $`command` ``](../readme.md#file-arguments-options) and [`$(options)`](../readme.md#execaoptions).
 
 [No special binary](#main-binary) is recommended, no [global variable](#global-variables) is injected: scripts are regular Node.js files.
 

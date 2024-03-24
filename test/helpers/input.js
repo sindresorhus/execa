@@ -5,6 +5,7 @@ const textEncoder = new TextEncoder();
 export const bufferToUint8Array = buffer => new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 
 export const foobarString = 'foobar';
+export const foobarArray = ['foo', 'bar'];
 export const foobarUint8Array = textEncoder.encode('foobar');
 export const foobarArrayBuffer = foobarUint8Array.buffer;
 export const foobarUint16Array = new Uint16Array(foobarArrayBuffer);

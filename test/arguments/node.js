@@ -1,6 +1,6 @@
 import {once} from 'node:events';
 import {dirname, relative} from 'node:path';
-import process from 'node:process';
+import process, {version} from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import getNode from 'get-node';
@@ -29,6 +29,33 @@ const testNodeSuccess = async (t, execaMethod) => {
 test('execaNode() succeeds', testNodeSuccess, execaNode);
 test('The "node" option succeeds', testNodeSuccess, runWithNodeOption);
 test('The "node" option succeeds - sync', testNodeSuccess, runWithNodeOptionSync);
+
+test('execaNode(options) succeeds', async t => {
+	const {stdout} = await execaNode({stripFinalNewline: false})('noop.js', [foobarString]);
+	t.is(stdout, `${foobarString}\n`);
+});
+
+test('execaNode`...` succeeds', async t => {
+	const {stdout} = await execaNode`noop.js ${foobarString}`;
+	t.is(stdout, foobarString);
+});
+
+test('execaNode().pipe(execaNode()) succeeds', async t => {
+	const {stdout} = await execaNode('noop.js').pipe(execaNode('--version'));
+	t.is(stdout, version);
+});
+
+test('execaNode().pipe(execa()) requires using "node"', async t => {
+	await t.throwsAsync(execaNode('noop.js').pipe(execa('--version')));
+});
+
+test('execaNode().pipe(...) requires using "node"', async t => {
+	await t.throwsAsync(execaNode('noop.js').pipe('--version'));
+});
+
+test('execaNode().pipe`...` requires using "node"', async t => {
+	await t.throwsAsync(execaNode('noop.js').pipe`--version`);
+});
 
 test('execaNode() cannot set the "node" option to false', t => {
 	t.throws(() => {

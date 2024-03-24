@@ -34,7 +34,7 @@ test('stdio[*] can be a WritableStream', testWritableStream, 3);
 const testWebStreamSync = (t, StreamClass, fdNumber, optionName) => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(fdNumber, new StreamClass()));
-	}, {message: `The \`${optionName}\` option cannot be a web stream in sync mode.`});
+	}, {message: `The \`${optionName}\` option cannot be a web stream with synchronous methods.`});
 };
 
 test('stdin cannot be a ReadableStream - sync', testWebStreamSync, ReadableStream, 0, 'stdin');

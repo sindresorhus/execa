@@ -68,7 +68,7 @@ test('stdio[*] option can be an async iterable of objects', testObjectIterable, 
 const testIterableSync = (t, stdioOption, fdNumber) => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(fdNumber, stdioOption));
-	}, {message: /an iterable in sync mode/});
+	}, {message: /an iterable with synchronous methods/});
 };
 
 test('stdin option cannot be an array of strings - sync', testIterableSync, [stringArray], 0);

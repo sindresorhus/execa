@@ -8,7 +8,7 @@ import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {identity, getStdio} from '../helpers/stdio.js';
 import {runExeca, runExecaSync, runScript, runScriptSync} from '../helpers/run.js';
-import {foobarUint8Array} from '../helpers/input.js';
+import {foobarString, foobarUint8Array} from '../helpers/input.js';
 
 setFixtureDir();
 
@@ -17,25 +17,25 @@ const nonFileUrl = new URL('https://example.com');
 const getAbsolutePath = file => ({file});
 const getRelativePath = filePath => ({file: relative('.', filePath)});
 
-const getStdioFile = (fdNumber, file) => getStdio(fdNumber, fdNumber === 0 ? {file} : file);
-
 const getStdioInput = (fdNumberOrName, file) => {
 	if (fdNumberOrName === 'string') {
-		return {input: 'foobar'};
+		return {input: foobarString};
 	}
 
 	if (fdNumberOrName === 'binary') {
 		return {input: foobarUint8Array};
 	}
 
-	return getStdioFile(fdNumberOrName, file);
+	return getStdioInputFile(fdNumberOrName, file);
 };
+
+const getStdioInputFile = (fdNumberOrName, file) => getStdio(fdNumberOrName, typeof fdNumberOrName === 'string' ? file : {file});
 
 const testStdinFile = async (t, mapFilePath, fdNumber, execaMethod) => {
 	const filePath = tempfile();
-	await writeFile(filePath, 'foobar');
+	await writeFile(filePath, foobarString);
 	const {stdout} = await execaMethod('stdin.js', getStdio(fdNumber, mapFilePath(filePath)));
-	t.is(stdout, 'foobar');
+	t.is(stdout, foobarString);
 	await rm(filePath);
 };
 
@@ -54,8 +54,8 @@ test('stdin can be a relative file path - sync', testStdinFile, getRelativePath,
 
 const testOutputFile = async (t, mapFile, fdNumber, execaMethod) => {
 	const filePath = tempfile();
-	await execaMethod('noop-fd.js', [`${fdNumber}`, 'foobar'], getStdio(fdNumber, mapFile(filePath)));
-	t.is(await readFile(filePath, 'utf8'), 'foobar');
+	await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, mapFile(filePath)));
+	t.is(await readFile(filePath, 'utf8'), foobarString);
 	await rm(filePath);
 };
 
@@ -106,13 +106,13 @@ test('inputFile must be a file URL or string - sync', testInvalidInputFile, exec
 
 const testInputFileValidUrl = async (t, fdNumber, execaMethod) => {
 	const filePath = tempfile();
-	await writeFile(filePath, 'foobar');
+	await writeFile(filePath, foobarString);
 	const currentCwd = process.cwd();
 	process.chdir(dirname(filePath));
 
 	try {
-		const {stdout} = await execaMethod('stdin.js', getStdioFile(fdNumber, basename(filePath)));
-		t.is(stdout, 'foobar');
+		const {stdout} = await execaMethod('stdin.js', getStdioInputFile(fdNumber, basename(filePath)));
+		t.is(stdout, foobarString);
 	} finally {
 		process.chdir(currentCwd);
 		await rm(filePath);
@@ -126,7 +126,7 @@ test.serial('stdin does not need to start with . when being a relative file path
 
 const testFilePathObject = (t, fdNumber, execaMethod) => {
 	t.throws(() => {
-		execaMethod('empty.js', getStdio(fdNumber, 'foobar'));
+		execaMethod('empty.js', getStdio(fdNumber, foobarString));
 	}, {message: /must be used/});
 };
 
@@ -176,10 +176,10 @@ test('stdio[*] file path errors should be handled - sync', testFileErrorSync, ge
 
 const testMultipleInputs = async (t, indices, execaMethod) => {
 	const filePath = tempfile();
-	await writeFile(filePath, 'foobar');
+	await writeFile(filePath, foobarString);
 	const options = Object.assign({}, ...indices.map(fdNumber => getStdioInput(fdNumber, filePath)));
 	const {stdout} = await execaMethod('stdin.js', options);
-	t.is(stdout, 'foobar'.repeat(indices.length));
+	t.is(stdout, foobarString.repeat(indices.length));
 	await rm(filePath);
 };
 
@@ -202,9 +202,31 @@ test('stdin and inputFile can be both set - sync', testMultipleInputs, [0, 'inpu
 test('input String, stdin and inputFile can be all set - sync', testMultipleInputs, ['inputFile', 0, 'string'], execaSync);
 test('input Uint8Array, stdin and inputFile can be all set - sync', testMultipleInputs, ['inputFile', 0, 'binary'], execaSync);
 
+const testMultipleOutputs = async (t, mapFile, fdNumber, execaMethod) => {
+	const filePath = tempfile();
+	const filePathTwo = tempfile();
+	await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, [mapFile(filePath), mapFile(filePathTwo)]));
+	t.is(await readFile(filePath, 'utf8'), foobarString);
+	t.is(await readFile(filePathTwo, 'utf8'), foobarString);
+	await Promise.all([rm(filePath), rm(filePathTwo)]);
+};
+
+test('stdout can be two file URLs', testMultipleOutputs, pathToFileURL, 1, execa);
+test('stdout can be two file paths', testMultipleOutputs, getAbsolutePath, 1, execa);
+test('stdout can be two file URLs - sync', testMultipleOutputs, pathToFileURL, 1, execaSync);
+test('stdout can be two file paths - sync', testMultipleOutputs, getAbsolutePath, 1, execaSync);
+test('stderr can be two file URLs', testMultipleOutputs, pathToFileURL, 2, execa);
+test('stderr can be two file paths', testMultipleOutputs, getAbsolutePath, 2, execa);
+test('stderr can be two file URLs - sync', testMultipleOutputs, pathToFileURL, 2, execaSync);
+test('stderr can be two file paths - sync', testMultipleOutputs, getAbsolutePath, 2, execaSync);
+test('stdio[*] can be two file URLs', testMultipleOutputs, pathToFileURL, 3, execa);
+test('stdio[*] can be two file paths', testMultipleOutputs, getAbsolutePath, 3, execa);
+test('stdio[*] can be two file URLs - sync', testMultipleOutputs, pathToFileURL, 3, execaSync);
+test('stdio[*] can be two file paths - sync', testMultipleOutputs, getAbsolutePath, 3, execaSync);
+
 const testInputFileHanging = async (t, mapFilePath) => {
 	const filePath = tempfile();
-	await writeFile(filePath, 'foobar');
+	await writeFile(filePath, foobarString);
 	await t.throwsAsync(execa('stdin.js', {stdin: mapFilePath(filePath), timeout: 1}), {message: /timed out/});
 	await rm(filePath);
 };

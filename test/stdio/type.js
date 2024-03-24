@@ -2,6 +2,7 @@ import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
 import {noopGenerator, uppercaseGenerator} from '../helpers/generator.js';
+import {uppercaseBufferDuplex} from '../helpers/duplex.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -36,13 +37,35 @@ test('Cannot use invalid "objectMode" with stdout', testInvalidBinary, 1, 'objec
 test('Cannot use invalid "objectMode" with stderr', testInvalidBinary, 2, 'objectMode');
 test('Cannot use invalid "objectMode" with stdio[*]', testInvalidBinary, 3, 'objectMode');
 
-const testSyncMethods = (t, fdNumber) => {
+const testInvalidDuplex = (t, fdNumber) => {
+	t.throws(() => {
+		execa('empty.js', getStdio(fdNumber, {duplex: true}));
+	}, {message: /must be a Duplex stream/});
+};
+
+test('Cannot use invalid "duplex" with stdin', testInvalidDuplex, 0);
+test('Cannot use invalid "duplex" with stdout', testInvalidDuplex, 1);
+test('Cannot use invalid "duplex" with stderr', testInvalidDuplex, 2);
+test('Cannot use invalid "duplex" with stdio[*]', testInvalidDuplex, 3);
+
+const testSyncMethodsGenerator = (t, fdNumber) => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(fdNumber, uppercaseGenerator()));
 	}, {message: /cannot be a generator/});
 };
 
-test('Cannot use generators with sync methods and stdin', testSyncMethods, 0);
-test('Cannot use generators with sync methods and stdout', testSyncMethods, 1);
-test('Cannot use generators with sync methods and stderr', testSyncMethods, 2);
-test('Cannot use generators with sync methods and stdio[*]', testSyncMethods, 3);
+test('Cannot use generators with sync methods and stdin', testSyncMethodsGenerator, 0);
+test('Cannot use generators with sync methods and stdout', testSyncMethodsGenerator, 1);
+test('Cannot use generators with sync methods and stderr', testSyncMethodsGenerator, 2);
+test('Cannot use generators with sync methods and stdio[*]', testSyncMethodsGenerator, 3);
+
+const testSyncMethodsDuplex = (t, fdNumber) => {
+	t.throws(() => {
+		execaSync('empty.js', getStdio(fdNumber, uppercaseBufferDuplex()));
+	}, {message: /cannot be a Duplex stream/});
+};
+
+test('Cannot use duplexes with sync methods and stdin', testSyncMethodsDuplex, 0);
+test('Cannot use duplexes with sync methods and stdout', testSyncMethodsDuplex, 1);
+test('Cannot use duplexes with sync methods and stderr', testSyncMethodsDuplex, 2);
+test('Cannot use duplexes with sync methods and stdio[*]', testSyncMethodsDuplex, 3);

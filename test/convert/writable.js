@@ -338,7 +338,7 @@ test('.duplex() waits when its buffer is full', async t => {
 });
 
 const testPropagateError = async (t, methodName) => {
-	const subprocess = getReadWriteSubprocess({stdin: throwingGenerator});
+	const subprocess = getReadWriteSubprocess({stdin: throwingGenerator()});
 	const stream = subprocess[methodName]();
 	stream.end('.');
 	await t.throwsAsync(finishedStream(stream), {message: GENERATOR_ERROR_REGEXP});

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import process from 'node:process';
 import {execa} from '../../index.js';
-import {uppercaseGenerator} from '../helpers/generator.js';
+import {generatorsMap} from '../helpers/map.js';
 
-const [options, file, ...args] = process.argv.slice(2);
-await execa(file, args, {stdout: uppercaseGenerator(), ...JSON.parse(options)});
+const [optionsString, file, ...args] = process.argv.slice(2);
+const {type, ...options} = JSON.parse(optionsString);
+await execa(file, args, {stdout: generatorsMap[type].uppercase(), ...options});

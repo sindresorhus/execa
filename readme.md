@@ -99,7 +99,7 @@ await execa('echo', ['unicorns']);
 ```js
 import {execa} from 'execa';
 
-const arg = 'unicorns'
+const arg = 'unicorns';
 const {stdout} = await execa`echo ${arg} & rainbows!`;
 console.log(stdout);
 //=> 'unicorns & rainbows!'

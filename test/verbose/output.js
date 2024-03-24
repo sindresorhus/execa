@@ -121,10 +121,13 @@ const testStdioSame = async (t, fdNumber) => {
 test('Does not change stdout', testStdioSame, 1);
 test('Does not change stderr', testStdioSame, 2);
 
-test('Prints stdout with only transforms', async t => {
-	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', [foobarString], {verbose: 'full'});
+const testOnlyTransforms = async (t, type) => {
+	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', [foobarString], {verbose: 'full', type});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString.toUpperCase()}`);
-});
+};
+
+test('Prints stdout with only transforms', testOnlyTransforms, 'generator');
+test('Prints stdout with only duplexes', testOnlyTransforms, 'duplex');
 
 test('Prints stdout with object transforms', async t => {
 	const {stderr} = await nestedExeca('nested-object.js', 'noop.js', {verbose: 'full'});

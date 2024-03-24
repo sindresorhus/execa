@@ -11,7 +11,7 @@ setFixtureDir();
 // eslint-disable-next-line max-params
 const testGeneratorReturn = async (t, fdNumber, generator, input, objectMode, isInput) => {
 	const fixtureName = isInput ? 'stdin-fd.js' : 'noop-fd.js';
-	const subprocess = execa(fixtureName, [`${fdNumber}`], getStdio(fdNumber, generator(input, objectMode)));
+	const subprocess = execa(fixtureName, [`${fdNumber}`], getStdio(fdNumber, generator(input)(objectMode)));
 	const {message} = await t.throwsAsync(subprocess);
 	t.true(message.includes(getMessage(input)));
 };
@@ -28,8 +28,8 @@ const getMessage = input => {
 	return 'a string or an Uint8Array';
 };
 
-const lastInputGenerator = (input, objectMode) => [foobarUint8Array, getOutputGenerator(input, objectMode)];
-const inputGenerator = (input, objectMode) => [...lastInputGenerator(input, objectMode), serializeGenerator(true)];
+const lastInputGenerator = input => objectMode => [foobarUint8Array, getOutputGenerator(input)(objectMode)];
+const inputGenerator = input => objectMode => [...lastInputGenerator(input)(objectMode), serializeGenerator(true)];
 
 test('Generators with result.stdin cannot return an object if not in objectMode', testGeneratorReturn, 0, inputGenerator, foobarObject, false, true);
 test('Generators with result.stdio[*] as input cannot return an object if not in objectMode', testGeneratorReturn, 3, inputGenerator, foobarObject, false, true);
@@ -55,6 +55,6 @@ test('Generators with result.stdout cannot return undefined if not in objectMode
 test('Generators with result.stdout cannot return undefined if in objectMode', testGeneratorReturn, 1, getOutputGenerator, undefined, true, false);
 
 test('Generators "final" return value is validated', async t => {
-	const subprocess = execa('noop.js', {stdout: convertTransformToFinal(getOutputGenerator(null, true), true)});
+	const subprocess = execa('noop.js', {stdout: convertTransformToFinal(getOutputGenerator(null)(true), true)});
 	await t.throwsAsync(subprocess, {message: /not be called at all/});
 });

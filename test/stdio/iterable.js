@@ -5,7 +5,7 @@ import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarObject, foobarObjectString} from '../helpers/input.js';
-import {serializeGenerator, infiniteGenerator} from '../helpers/generator.js';
+import {serializeGenerator, infiniteGenerator, throwingGenerator} from '../helpers/generator.js';
 
 const stringArray = ['foo', 'bar'];
 
@@ -78,14 +78,9 @@ test('stdio[*] option cannot be a sync iterable - sync', testIterableSync, strin
 test('stdin option cannot be an async iterable - sync', testIterableSync, asyncGenerator(), 0);
 test('stdio[*] option cannot be an async iterable - sync', testIterableSync, asyncGenerator(), 3);
 
-// eslint-disable-next-line require-yield
-const throwingGenerator = function * () {
-	throw new Error('generator error');
-};
-
 const testIterableError = async (t, fdNumber) => {
-	const {originalMessage} = await t.throwsAsync(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator())));
-	t.is(originalMessage, 'generator error');
+	const {originalMessage} = await t.throwsAsync(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator().transform())));
+	t.is(originalMessage, 'Generator error');
 };
 
 test('stdin option handles errors in iterables', testIterableError, 0);
@@ -107,7 +102,7 @@ test('stdout option cannot be an iterable - sync', testNoIterableOutput, stringG
 test('stderr option cannot be an iterable - sync', testNoIterableOutput, stringGenerator(), 2, execaSync);
 
 test('stdin option can be an infinite iterable', async t => {
-	const iterable = infiniteGenerator();
+	const iterable = infiniteGenerator().transform();
 	const subprocess = execa('stdin.js', getStdio(0, iterable));
 	await once(subprocess.stdout, 'data');
 	subprocess.kill();
@@ -125,7 +120,7 @@ test('stdin option can be multiple iterables', testMultipleIterable, 0);
 test('stdio[*] option can be multiple iterables', testMultipleIterable, 3);
 
 test('stdin option iterable is canceled on subprocess error', async t => {
-	const iterable = infiniteGenerator();
+	const iterable = infiniteGenerator().transform();
 	await t.throwsAsync(execa('stdin.js', {stdin: iterable, timeout: 1}), {message: /timed out/});
 	// eslint-disable-next-line no-unused-vars, no-empty
 	for await (const _ of iterable) {}

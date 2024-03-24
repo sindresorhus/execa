@@ -3,10 +3,10 @@ import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {
-	getChunksGenerator,
 	getOutputsGenerator,
 	noopGenerator,
 	noopAsyncGenerator,
+	resultGenerator,
 } from '../helpers/generator.js';
 import {foobarString, foobarUint8Array, foobarObject, foobarObjectString} from '../helpers/input.js';
 import {
@@ -57,18 +57,13 @@ const manyFullEnd = `${manyFull}\n`;
 const manyLines = [manyFull];
 const mixedNewlines = '.\n.\r\n.\n.\r\n.\n';
 
-const resultGenerator = function * (lines, chunk) {
-	lines.push(chunk);
-	yield chunk;
-};
-
 // eslint-disable-next-line max-params
 const testLines = async (t, fdNumber, input, expectedLines, expectedOutput, objectMode, preserveNewlines) => {
 	const lines = [];
 	const {stdio} = await execa('noop-fd.js', [`${fdNumber}`], {
 		...getStdio(fdNumber, [
-			getChunksGenerator(input, false, true),
-			{transform: resultGenerator.bind(undefined, lines), preserveNewlines, objectMode},
+			getOutputsGenerator(input)(false, true),
+			resultGenerator(lines)(objectMode, false, preserveNewlines),
 		]),
 		stripFinalNewline: false,
 	});
@@ -138,8 +133,8 @@ const testBinaryOption = async (t, binary, input, expectedLines, expectedOutput,
 	const lines = [];
 	const {stdout} = await execa('noop.js', {
 		stdout: [
-			getChunksGenerator(input, false, true),
-			{transform: resultGenerator.bind(undefined, lines), binary, preserveNewlines, objectMode},
+			getOutputsGenerator(input)(false, true),
+			resultGenerator(lines)(objectMode, binary, preserveNewlines),
 		],
 		stripFinalNewline: false,
 		encoding,
@@ -195,7 +190,7 @@ test('Line splitting when converting from string to Uint8Array, objectMode, pres
 
 const testStripNewline = async (t, input, expectedOutput) => {
 	const {stdout} = await execa('noop.js', {
-		stdout: getChunksGenerator([input]),
+		stdout: getOutputsGenerator([input])(),
 		stripFinalNewline: false,
 	});
 	t.is(stdout, expectedOutput);
@@ -225,7 +220,7 @@ const testUnsetObjectMode = async (t, expectedOutput, preserveNewlines) => {
 	const lines = [];
 	const {stdout} = await execa('noop.js', {
 		stdout: [
-			getChunksGenerator([foobarObject], true),
+			getOutputsGenerator([foobarObject])(true),
 			{transform: serializeResultGenerator.bind(undefined, lines), preserveNewlines, objectMode: false},
 		],
 		stripFinalNewline: false,
@@ -241,8 +236,8 @@ const testYieldArray = async (t, input, expectedLines, expectedOutput) => {
 	const lines = [];
 	const {stdout} = await execa('noop.js', {
 		stdout: [
-			getOutputsGenerator(input),
-			resultGenerator.bind(undefined, lines),
+			getOutputsGenerator(input)(),
+			resultGenerator(lines)(),
 		],
 		stripFinalNewline: false,
 	});

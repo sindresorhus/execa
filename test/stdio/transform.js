@@ -89,6 +89,8 @@ test('Generator can filter "final" by not calling yield', testNoYield, 'generato
 test('Generator can filter "final" by not calling yield, objectMode', testNoYield, 'generator', true, true, []);
 test('Duplex can filter by not calling push', testNoYield, 'duplex', false, false, '');
 test('Duplex can filter by not calling push, objectMode', testNoYield, 'duplex', true, false, []);
+test('WebTransform can filter by not calling push', testNoYield, 'webTransform', false, false, '');
+test('WebTransform can filter by not calling push, objectMode', testNoYield, 'webTransform', true, false, []);
 
 const testMultipleYields = async (t, type, final, binary) => {
 	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(generatorsMap[type].multipleYield(), final)});
@@ -99,6 +101,7 @@ const testMultipleYields = async (t, type, final, binary) => {
 test('Generator can yield "transform" multiple times at different moments', testMultipleYields, 'generator', false, false);
 test('Generator can yield "final" multiple times at different moments', testMultipleYields, 'generator', true, false);
 test('Duplex can push multiple times at different moments', testMultipleYields, 'duplex', false, true);
+test('WebTransform can push multiple times at different moments', testMultipleYields, 'webTransform', false, true);
 
 const partsPerChunk = 4;
 const chunksPerCall = 10;
@@ -143,6 +146,7 @@ const testMaxBuffer = async (t, type) => {
 
 test('Generators take "maxBuffer" into account', testMaxBuffer, 'generator');
 test('Duplexes take "maxBuffer" into account', testMaxBuffer, 'duplex');
+test('WebTransforms take "maxBuffer" into account', testMaxBuffer, 'webTransform');
 
 const testMaxBufferObject = async (t, type) => {
 	const bigArray = Array.from({length: maxBuffer}).fill('.');
@@ -157,6 +161,7 @@ const testMaxBufferObject = async (t, type) => {
 
 test('Generators take "maxBuffer" into account, objectMode', testMaxBufferObject, 'generator');
 test('Duplexes take "maxBuffer" into account, objectMode', testMaxBufferObject, 'duplex');
+test('WebTransforms take "maxBuffer" into account, objectMode', testMaxBufferObject, 'webTransform');
 
 const testAsyncGenerators = async (t, type, final) => {
 	const {stdout} = await execa('noop.js', {
@@ -168,6 +173,7 @@ const testAsyncGenerators = async (t, type, final) => {
 test('Generators "transform" is awaited on success', testAsyncGenerators, 'generator', false);
 test('Generators "final" is awaited on success', testAsyncGenerators, 'generator', true);
 test('Duplex is awaited on success', testAsyncGenerators, 'duplex', false);
+test('WebTransform is awaited on success', testAsyncGenerators, 'webTransform', false);
 
 const testThrowingGenerator = async (t, type, final) => {
 	await t.throwsAsync(
@@ -179,6 +185,7 @@ const testThrowingGenerator = async (t, type, final) => {
 test('Generators "transform" errors make subprocess fail', testThrowingGenerator, 'generator', false);
 test('Generators "final" errors make subprocess fail', testThrowingGenerator, 'generator', true);
 test('Duplexes "transform" errors make subprocess fail', testThrowingGenerator, 'duplex', false);
+test('WebTransform "transform" errors make subprocess fail', testThrowingGenerator, 'webTransform', false);
 
 const testSingleErrorOutput = async (t, type) => {
 	await t.throwsAsync(
@@ -189,6 +196,7 @@ const testSingleErrorOutput = async (t, type) => {
 
 test('Generators errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'generator');
 test('Duplexes errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'duplex');
+test('WebTransform errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'webTransform');
 
 const testSingleErrorInput = async (t, type) => {
 	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [generatorsMap[type].noop(false), generatorsMap[type].throwing(), generatorsMap[type].noop(false)]});
@@ -198,6 +206,7 @@ const testSingleErrorInput = async (t, type) => {
 
 test('Generators errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'generator');
 test('Duplexes errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'duplex');
+test('WebTransform errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'webTransform');
 
 const testGeneratorCancel = async (t, error) => {
 	const subprocess = execa('noop.js', {stdout: infiniteGenerator()});

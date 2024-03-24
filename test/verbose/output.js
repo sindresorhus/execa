@@ -186,6 +186,11 @@ test('Prints stdout, single newline', async t => {
 	t.deepEqual(getOutputLines(stderr), [`${testTimestamp} [0]   `]);
 });
 
+test('Can use encoding UTF16, verbose "full"', async t => {
+	const {stderr} = await nestedExeca('nested-input.js', 'stdin.js', {verbose: 'full', encoding: 'utf16le'});
+	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
+});
+
 const testNoOutputOptions = async (t, options, fixtureName = 'nested.js') => {
 	const {stderr} = await nestedExeca(fixtureName, 'noop.js', [foobarString], {verbose: 'full', ...options});
 	t.is(getOutputLine(stderr), undefined);

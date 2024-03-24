@@ -151,8 +151,7 @@ test('stdio[*] can be a Node.js Writable with a file descriptor - sync', testFil
 const testFileWritableError = async (t, fdNumber) => {
 	const {stream, filePath} = await createFileWriteStream();
 
-	const subprocess = execa('noop-stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, stream));
-	subprocess.stdin.end(foobarString);
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, stream));
 
 	await assertFileStreamError(t, subprocess, stream, filePath);
 };

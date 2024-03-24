@@ -45,9 +45,8 @@ test('.readable() success', async t => {
 
 // eslint-disable-next-line max-params
 const testReadableDefault = async (t, fdNumber, from, options, hasResult) => {
-	const subprocess = execa('noop-stdin-fd.js', [`${fdNumber}`], options);
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`, foobarString], options);
 	const stream = subprocess.readable({from});
-	subprocess.stdin.end(foobarString);
 
 	await assertStreamOutput(t, stream, hasResult ? foobarString : '');
 	await assertSubprocessOutput(t, subprocess, foobarString, fdNumber);
@@ -444,8 +443,7 @@ if (majorVersion >= 20) {
 
 const testBigOutput = async (t, methodName) => {
 	const bigChunk = '.'.repeat(1e6);
-	const subprocess = execa('stdin.js');
-	subprocess.stdin.end(bigChunk);
+	const subprocess = execa('stdin.js', {input: bigChunk});
 	const stream = subprocess[methodName]();
 
 	await assertStreamOutput(t, stream, bigChunk);

@@ -14,6 +14,7 @@ import {
 	simpleChunks,
 	simpleFullUint8Array,
 	simpleFullHex,
+	simpleFullUtf16Uint8Array,
 	simpleLines,
 	simpleFullEndLines,
 	noNewlinesChunks,
@@ -81,15 +82,28 @@ test('"lines: true" is a noop with objects generators, objectMode', async t => {
 	t.deepEqual(stdout, [foobarObject]);
 });
 
-const testOtherEncoding = async (t, expectedOutput, encoding, stripFinalNewline) => {
+const testBinaryEncoding = async (t, expectedOutput, encoding, stripFinalNewline) => {
 	const {stdout} = await getSimpleChunkSubprocess({encoding, stripFinalNewline});
 	t.deepEqual(stdout, expectedOutput);
 };
 
-test('"lines: true" is a noop with "encoding: buffer"', testOtherEncoding, simpleFullUint8Array, 'buffer', false);
-test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline', testOtherEncoding, simpleFullUint8Array, 'buffer', false);
-test('"lines: true" is a noop with "encoding: hex"', testOtherEncoding, simpleFullHex, 'hex', false);
-test('"lines: true" is a noop with "encoding: hex", stripFinalNewline', testOtherEncoding, simpleFullHex, 'hex', true);
+test('"lines: true" is a noop with "encoding: buffer"', testBinaryEncoding, simpleFullUint8Array, 'buffer', false);
+test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline', testBinaryEncoding, simpleFullUint8Array, 'buffer', false);
+test('"lines: true" is a noop with "encoding: hex"', testBinaryEncoding, simpleFullHex, 'hex', false);
+test('"lines: true" is a noop with "encoding: hex", stripFinalNewline', testBinaryEncoding, simpleFullHex, 'hex', true);
+
+const testTextEncoding = async (t, expectedLines, stripFinalNewline) => {
+	const {stdout} = await execa('stdin.js', {
+		lines: true,
+		stripFinalNewline,
+		encoding: 'utf16le',
+		input: simpleFullUtf16Uint8Array,
+	});
+	t.deepEqual(stdout, expectedLines);
+};
+
+test('"lines: true" is a noop with "encoding: utf16"', testTextEncoding, simpleLines, false);
+test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline', testTextEncoding, noNewlinesChunks, true);
 
 test('"lines: true" is a noop with "buffer: false"', async t => {
 	const {stdout} = await getSimpleChunkSubprocess({buffer: false});

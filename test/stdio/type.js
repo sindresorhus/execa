@@ -36,13 +36,13 @@ test('Cannot use invalid "objectMode" with stdout', testInvalidBinary, 1, 'objec
 test('Cannot use invalid "objectMode" with stderr', testInvalidBinary, 2, 'objectMode');
 test('Cannot use invalid "objectMode" with stdio[*]', testInvalidBinary, 3, 'objectMode');
 
-const testSyncMethods = (t, fdNumber) => {
+const testSyncMethodsGenerator = (t, fdNumber) => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(fdNumber, uppercaseGenerator()));
 	}, {message: /cannot be a generator/});
 };
 
-test('Cannot use generators with sync methods and stdin', testSyncMethods, 0);
-test('Cannot use generators with sync methods and stdout', testSyncMethods, 1);
-test('Cannot use generators with sync methods and stderr', testSyncMethods, 2);
-test('Cannot use generators with sync methods and stdio[*]', testSyncMethods, 3);
+test('Cannot use generators with sync methods and stdin', testSyncMethodsGenerator, 0);
+test('Cannot use generators with sync methods and stdout', testSyncMethodsGenerator, 1);
+test('Cannot use generators with sync methods and stderr', testSyncMethodsGenerator, 2);
+test('Cannot use generators with sync methods and stdio[*]', testSyncMethodsGenerator, 3);

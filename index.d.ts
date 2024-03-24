@@ -21,12 +21,12 @@ type BaseStdioOption =
 
 // @todo Use `string`, `Uint8Array` or `unknown` for both the argument and the return type, based on whether `encoding: 'buffer'` and `objectMode: true` are used.
 // See https://github.com/sindresorhus/execa/issues/694
-type StdioTransform = (chunk: unknown) => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
-type StdioFinal = () => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
+type GeneratorTransform = (chunk: unknown) => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
+type GeneratorFinal = () => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
 
-type StdioTransformFull = {
-	transform: StdioTransform;
-	final?: StdioFinal;
+type GeneratorTransformFull = {
+	transform: GeneratorTransform;
+	final?: GeneratorFinal;
 	binary?: boolean;
 	preserveNewlines?: boolean;
 	objectMode?: boolean;
@@ -40,8 +40,8 @@ type CommonStdioOption<IsSync extends boolean = boolean> =
 	| URL
 	| {file: string}
 	| IfAsync<IsSync,
-	| StdioTransform
-	| StdioTransformFull>;
+	| GeneratorTransform
+	| GeneratorTransformFull>;
 
 type InputStdioOption<IsSync extends boolean = boolean> =
 	| Uint8Array
@@ -120,11 +120,11 @@ type IsObjectOutputOptions<OutputOptions extends StdioOption> = IsObjectOutputOp
 	: OutputOptions
 >;
 
-type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends StdioTransformFull
+type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends GeneratorTransformFull
 	? BooleanObjectMode<OutputOption['objectMode']>
 	: false;
 
-type BooleanObjectMode<ObjectModeOption extends StdioTransformFull['objectMode']> = ObjectModeOption extends true ? true : false;
+type BooleanObjectMode<ObjectModeOption extends GeneratorTransformFull['objectMode']> = ObjectModeOption extends true ? true : false;
 
 // Whether `result.stdout|stderr|all` is `undefined`, excluding the `buffer` option
 type IgnoresStreamResult<
@@ -1177,7 +1177,7 @@ await execa('echo', ['unicorns']);
 ```
 import {execa} from 'execa';
 
-const arg = 'unicorns'
+const arg = 'unicorns';
 const {stdout} = await execa`echo ${arg} & rainbows!`;
 console.log(stdout);
 //=> 'unicorns & rainbows!'

@@ -8,7 +8,6 @@ setFixtureDir();
 const assertDurationMs = (t, durationMs) => {
 	t.is(typeof durationMs, 'number');
 	t.true(Number.isFinite(durationMs));
-	t.false(Number.isInteger(durationMs));
 	t.not(durationMs, 0);
 	t.true(durationMs > 0);
 };

@@ -135,30 +135,30 @@ const testObjectMode = async (t, expectedChunks, methodName, encoding, initialOb
 test('.iterable() uses Uint8Arrays with "binary: true"', testObjectMode, simpleChunksUint8Array, 'iterable', null, false, false, true);
 test('.iterable() uses strings with "binary: true" and .setEncoding("utf8")', testObjectMode, simpleChunks, 'iterable', 'utf8', false, false, true);
 test('.iterable() uses strings with "binary: true" and "encoding: buffer"', testObjectMode, simpleChunks, 'iterable', 'utf8', false, false, true, {encoding: 'buffer'});
-test('.iterable() uses strings in objectMode with "binary: true" and object transforms', testObjectMode, foobarObjectChunks, 'iterable', null, true, true, true, {stdout: outputObjectGenerator});
+test('.iterable() uses strings in objectMode with "binary: true" and object transforms', testObjectMode, foobarObjectChunks, 'iterable', null, true, true, true, {stdout: outputObjectGenerator()});
 test('.iterable() uses strings in objectMode with "binary: false"', testObjectMode, simpleLines, 'iterable', null, false, true, false);
 test('.iterable() uses strings in objectMode with "binary: false" and .setEncoding("utf8")', testObjectMode, simpleLines, 'iterable', 'utf8', false, true, false);
 test('.iterable() uses strings in objectMode with "binary: false" and "encoding: buffer"', testObjectMode, simpleChunks, 'iterable', 'utf8', false, true, false, {encoding: 'buffer'});
-test('.iterable() uses strings in objectMode with "binary: false" and object transforms', testObjectMode, foobarObjectChunks, 'iterable', null, true, true, false, {stdout: outputObjectGenerator});
+test('.iterable() uses strings in objectMode with "binary: false" and object transforms', testObjectMode, foobarObjectChunks, 'iterable', null, true, true, false, {stdout: outputObjectGenerator()});
 test('.readable() uses Buffers with "binary: true"', testObjectMode, simpleChunksBuffer, 'readable', null, false, false, true);
 test('.readable() uses strings with "binary: true" and .setEncoding("utf8")', testObjectMode, simpleChunks, 'readable', 'utf8', false, false, true);
 test('.readable() uses strings with "binary: true" and "encoding: buffer"', testObjectMode, simpleChunks, 'readable', 'utf8', false, false, true, {encoding: 'buffer'});
-test('.readable() uses strings in objectMode with "binary: true" and object transforms', testObjectMode, foobarObjectChunks, 'readable', null, true, true, true, {stdout: outputObjectGenerator});
+test('.readable() uses strings in objectMode with "binary: true" and object transforms', testObjectMode, foobarObjectChunks, 'readable', null, true, true, true, {stdout: outputObjectGenerator()});
 test('.readable() uses strings in objectMode with "binary: false"', testObjectMode, simpleLines, 'readable', null, false, true, false);
 test('.readable() uses strings in objectMode with "binary: false" and .setEncoding("utf8")', testObjectMode, simpleLines, 'readable', 'utf8', false, true, false);
 test('.readable() uses strings in objectMode with "binary: false" and "encoding: buffer"', testObjectMode, simpleChunks, 'readable', 'utf8', false, false, false, {encoding: 'buffer'});
-test('.readable() uses strings in objectMode with "binary: false" and object transforms', testObjectMode, foobarObjectChunks, 'readable', null, true, true, false, {stdout: outputObjectGenerator});
+test('.readable() uses strings in objectMode with "binary: false" and object transforms', testObjectMode, foobarObjectChunks, 'readable', null, true, true, false, {stdout: outputObjectGenerator()});
 test('.duplex() uses Buffers with "binary: true"', testObjectMode, simpleChunksBuffer, 'duplex', null, false, false, true);
 test('.duplex() uses strings with "binary: true" and .setEncoding("utf8")', testObjectMode, simpleChunks, 'duplex', 'utf8', false, false, true);
 test('.duplex() uses strings with "binary: true" and "encoding: buffer"', testObjectMode, simpleChunks, 'duplex', 'utf8', false, false, true, {encoding: 'buffer'});
-test('.duplex() uses strings in objectMode with "binary: true" and object transforms', testObjectMode, foobarObjectChunks, 'duplex', null, true, true, true, {stdout: outputObjectGenerator});
+test('.duplex() uses strings in objectMode with "binary: true" and object transforms', testObjectMode, foobarObjectChunks, 'duplex', null, true, true, true, {stdout: outputObjectGenerator()});
 test('.duplex() uses strings in objectMode with "binary: false"', testObjectMode, simpleLines, 'duplex', null, false, true, false);
 test('.duplex() uses strings in objectMode with "binary: false" and .setEncoding("utf8")', testObjectMode, simpleLines, 'duplex', 'utf8', false, true, false);
 test('.duplex() uses strings in objectMode with "binary: false" and "encoding: buffer"', testObjectMode, simpleChunks, 'duplex', 'utf8', false, false, false, {encoding: 'buffer'});
-test('.duplex() uses strings in objectMode with "binary: false" and object transforms', testObjectMode, foobarObjectChunks, 'duplex', null, true, true, false, {stdout: outputObjectGenerator});
+test('.duplex() uses strings in objectMode with "binary: false" and object transforms', testObjectMode, foobarObjectChunks, 'duplex', null, true, true, false, {stdout: outputObjectGenerator()});
 
 const testObjectSplit = async (t, methodName) => {
-	const subprocess = getSubprocess(methodName, foobarString, {stdout: getOutputGenerator(simpleFull, true)});
+	const subprocess = getSubprocess(methodName, foobarString, {stdout: getOutputGenerator(simpleFull)(true)});
 	const stream = subprocess[methodName]({binary: false});
 	await assertChunks(t, stream, [simpleFull], methodName);
 	await subprocess;

@@ -87,12 +87,7 @@ type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption | StdioOpt
 type DefaultEncodingOption = 'utf8';
 type TextEncodingOption =
   | DefaultEncodingOption
-  // eslint-disable-next-line unicorn/text-encoding-identifier-case
-  | 'utf-8'
-  | 'utf16le'
-  | 'utf-16le'
-  | 'ucs2'
-  | 'ucs-2';
+  | 'utf16le';
 type BufferEncodingOption = 'buffer';
 type BinaryEncodingOption =
   | BufferEncodingOption
@@ -100,7 +95,6 @@ type BinaryEncodingOption =
   | 'base64'
   | 'base64url'
   | 'latin1'
-  | 'binary'
   | 'ascii';
 type EncodingOption =
 	| TextEncodingOption

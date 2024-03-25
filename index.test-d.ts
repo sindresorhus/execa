@@ -1063,18 +1063,26 @@ execa('unicorns', {localDir: '.'});
 execaSync('unicorns', {localDir: '.'});
 execa('unicorns', {localDir: fileUrl});
 execaSync('unicorns', {localDir: fileUrl});
-// eslint-disable-next-line unicorn/text-encoding-identifier-case
-execa('unicorns', {encoding: 'utf-8'});
-// eslint-disable-next-line unicorn/text-encoding-identifier-case
-execaSync('unicorns', {encoding: 'utf-8'});
+execa('unicorns', {encoding: 'utf8'});
+execaSync('unicorns', {encoding: 'utf8'});
+/* eslint-disable unicorn/text-encoding-identifier-case */
+expectError(execa('unicorns', {encoding: 'utf-8'}));
+expectError(execaSync('unicorns', {encoding: 'utf-8'}));
+expectError(execa('unicorns', {encoding: 'UTF8'}));
+expectError(execaSync('unicorns', {encoding: 'UTF8'}));
+/* eslint-enable unicorn/text-encoding-identifier-case */
 execa('unicorns', {encoding: 'utf16le'});
 execaSync('unicorns', {encoding: 'utf16le'});
-execa('unicorns', {encoding: 'utf-16le'});
-execaSync('unicorns', {encoding: 'utf-16le'});
-execa('unicorns', {encoding: 'ucs2'});
-execaSync('unicorns', {encoding: 'ucs2'});
-execa('unicorns', {encoding: 'ucs-2'});
-execaSync('unicorns', {encoding: 'ucs-2'});
+expectError(execa('unicorns', {encoding: 'utf-16le'}));
+expectError(execaSync('unicorns', {encoding: 'utf-16le'}));
+expectError(execa('unicorns', {encoding: 'ucs2'}));
+expectError(execaSync('unicorns', {encoding: 'ucs2'}));
+expectError(execa('unicorns', {encoding: 'ucs-2'}));
+expectError(execaSync('unicorns', {encoding: 'ucs-2'}));
+execa('unicorns', {encoding: 'buffer'});
+execaSync('unicorns', {encoding: 'buffer'});
+expectError(execa('unicorns', {encoding: null}));
+expectError(execaSync('unicorns', {encoding: null}));
 execa('unicorns', {encoding: 'hex'});
 execaSync('unicorns', {encoding: 'hex'});
 execa('unicorns', {encoding: 'base64'});
@@ -1083,8 +1091,8 @@ execa('unicorns', {encoding: 'base64url'});
 execaSync('unicorns', {encoding: 'base64url'});
 execa('unicorns', {encoding: 'latin1'});
 execaSync('unicorns', {encoding: 'latin1'});
-execa('unicorns', {encoding: 'binary'});
-execaSync('unicorns', {encoding: 'binary'});
+expectError(execa('unicorns', {encoding: 'binary'}));
+expectError(execaSync('unicorns', {encoding: 'binary'}));
 execa('unicorns', {encoding: 'ascii'});
 execaSync('unicorns', {encoding: 'ascii'});
 expectError(execa('unicorns', {encoding: 'unknownEncoding'}));

@@ -1,4 +1,5 @@
 import {Buffer} from 'node:buffer';
+import {bufferToUint8Array} from './input.js';
 
 const textEncoder = new TextEncoder();
 
@@ -14,6 +15,8 @@ export const simpleFullUint8Array = textEncoder.encode(simpleFull);
 export const simpleChunksUint8Array = [simpleFullUint8Array];
 export const simpleFullHex = Buffer.from(simpleFull).toString('hex');
 export const simpleChunksBuffer = [Buffer.from(simpleFull)];
+const simpleFullUtf16Buffer = Buffer.from(simpleFull, 'utf16le');
+export const simpleFullUtf16Uint8Array = bufferToUint8Array(simpleFullUtf16Buffer);
 export const simpleLines = ['aaa\n', 'bbb\n', 'ccc'];
 export const simpleFullEndLines = ['aaa\n', 'bbb\n', 'ccc\n'];
 export const noNewlinesFull = 'aaabbbccc';

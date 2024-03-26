@@ -453,6 +453,13 @@ try {
 	expectType<Uint8Array>(linesBufferResult.stdio[2]);
 	expectType<Uint8Array>(linesBufferResult.all);
 
+	const linesHexResult = await execa('unicorns', {lines: true, encoding: 'hex', all: true});
+	expectType<string>(linesHexResult.stdout);
+	expectType<string>(linesHexResult.stdio[1]);
+	expectType<string>(linesHexResult.stderr);
+	expectType<string>(linesHexResult.stdio[2]);
+	expectType<string>(linesHexResult.all);
+
 	const noBufferPromise = execa('unicorns', {buffer: false, all: true});
 	expectType<Writable>(noBufferPromise.stdin);
 	expectType<Readable>(noBufferPromise.stdout);
@@ -655,6 +662,10 @@ try {
 
 	const ignoreFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
 	expectType<undefined>(ignoreFd3Result.stdio[3]);
+
+	const objectTransformLinesStdoutResult = await execa('unicorns', {lines: true, stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}});
+	expectType<unknown[]>(objectTransformLinesStdoutResult.stdout);
+	expectType<[undefined, unknown[], string[]]>(objectTransformLinesStdoutResult.stdio);
 
 	const objectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}});
 	expectType<unknown[]>(objectTransformStdoutResult.stdout);

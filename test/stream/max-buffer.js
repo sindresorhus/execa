@@ -8,6 +8,7 @@ import {fullStdio} from '../helpers/stdio.js';
 setFixtureDir();
 
 const maxBuffer = 10;
+const maxBufferMessage = /maxBuffer exceeded/;
 
 const testMaxBufferSuccess = async (t, fdNumber, all) => {
 	await t.notThrowsAsync(execa('max-buffer.js', [`${fdNumber}`, `${maxBuffer}`], {...fullStdio, maxBuffer, all}));
@@ -21,7 +22,7 @@ test('maxBuffer does not affect all if too high', testMaxBufferSuccess, 1, true)
 test('maxBuffer uses killSignal', async t => {
 	const {isTerminated, signal} = await t.throwsAsync(
 		execa('noop-forever.js', ['.'.repeat(maxBuffer + 1)], {maxBuffer, killSignal: 'SIGINT'}),
-		{message: /maxBuffer exceeded/},
+		{message: maxBufferMessage},
 	);
 	t.true(isTerminated);
 	t.is(signal, 'SIGINT');
@@ -31,7 +32,7 @@ const testMaxBufferLimit = async (t, fdNumber, all) => {
 	const length = all ? maxBuffer * 2 : maxBuffer;
 	const result = await t.throwsAsync(
 		execa('max-buffer.js', [`${fdNumber}`, `${length + 1}`], {...fullStdio, maxBuffer, all}),
-		{message: /maxBuffer exceeded/},
+		{message: maxBufferMessage},
 	);
 	t.is(all ? result.all : result.stdio[fdNumber], '.'.repeat(length));
 };
@@ -98,7 +99,7 @@ test('do not hit maxBuffer when `buffer` is `false` with stdio[*]', testNoMaxBuf
 const testMaxBufferAbort = async (t, fdNumber) => {
 	const subprocess = execa('max-buffer.js', [`${fdNumber}`, `${maxBuffer + 1}`], {...fullStdio, maxBuffer});
 	await Promise.all([
-		t.throwsAsync(subprocess, {message: /maxBuffer exceeded/}),
+		t.throwsAsync(subprocess, {message: maxBufferMessage}),
 		t.throwsAsync(getStream(subprocess.stdio[fdNumber]), {code: 'ERR_STREAM_PREMATURE_CLOSE'}),
 	]);
 };

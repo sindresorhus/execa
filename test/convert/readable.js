@@ -23,6 +23,7 @@ import {
 	getReadWriteSubprocess,
 } from '../helpers/convert.js';
 import {foobarString, foobarBuffer, foobarObject} from '../helpers/input.js';
+import {simpleFull} from '../helpers/lines.js';
 import {prematureClose, fullStdio} from '../helpers/stdio.js';
 import {outputObjectGenerator, getChunksGenerator} from '../helpers/generator.js';
 import {defaultHighWaterMark, defaultObjectHighWaterMark} from '../helpers/stream.js';
@@ -313,15 +314,15 @@ test('.readable() has the right highWaterMark', async t => {
 });
 
 test('.readable() can iterate over lines', async t => {
-	const subprocess = execa('noop-fd.js', ['1', 'aaa\nbbb\nccc'], {lines: true});
+	const subprocess = execa('noop-fd.js', ['1', simpleFull]);
 	const lines = [];
-	for await (const line of subprocess.readable()) {
+	for await (const line of subprocess.readable({binary: false, preserveNewlines: false})) {
 		lines.push(line);
 	}
 
 	const expectedLines = ['aaa', 'bbb', 'ccc'];
 	t.deepEqual(lines, expectedLines);
-	await assertSubprocessOutput(t, subprocess, expectedLines);
+	await assertSubprocessOutput(t, subprocess, simpleFull);
 });
 
 test('.readable() can wait for data', async t => {

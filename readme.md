@@ -47,8 +47,8 @@
 
 This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
 
-- [Promise interface](#execacommandcommand-options).
-- [Scripts interface](#scripts-interface), like `zx`.
+- [Promise interface](#execafile-arguments-options).
+- [Script interface](docs/scripts.md) and [template strings](#template-string-syntax), like `zx`.
 - Improved [Windows support](https://github.com/IndigoUnited/node-cross-spawn#why), including [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) binaries.
 - Executes [locally installed binaries](#preferlocal) without `npx`.
 - [Cleans up](#cleanup) subprocesses when the current process ends.
@@ -59,7 +59,6 @@ This package improves [`child_process`](https://nodejs.org/api/child_process.htm
 - Get [interleaved output](#all) from `stdout` and `stderr` similar to what is printed on the terminal.
 - [Strips the final newline](#stripfinalnewline) from the output so you don't have to do `stdout.trim()`.
 - Convenience methods to pipe subprocesses' [input](#input) and [output](#redirect-output-to-a-file).
-- Can specify file and arguments [as a single string](#execacommandcommand-options) without a shell.
 - [Verbose mode](#verbose-mode) for debugging.
 - More descriptive errors.
 - Higher max buffer: 100 MB instead of 1 MB.
@@ -82,7 +81,51 @@ console.log(stdout);
 //=> 'unicorns'
 ```
 
-### Scripts interface
+#### Global/shared options
+
+```js
+import {execa as execa_} from 'execa';
+
+const execa = execa_({verbose: 'full'});
+
+await execa('echo', ['unicorns']);
+//=> 'unicorns'
+```
+
+### Template string syntax
+
+#### Basic
+
+```js
+import {execa} from 'execa';
+
+const arg = 'unicorns'
+const {stdout} = await execa`echo ${arg} & rainbows!`;
+console.log(stdout);
+//=> 'unicorns & rainbows!'
+```
+
+#### Multiple arguments
+
+```js
+import {execa} from 'execa';
+
+const args = ['unicorns', '&', 'rainbows!'];
+const {stdout} = await execa`echo ${args}`;
+console.log(stdout);
+//=> 'unicorns & rainbows!'
+```
+
+#### With options
+
+```js
+import {execa} from 'execa';
+
+await execa({verbose: 'full'})`echo unicorns`;
+//=> 'unicorns'
+```
+
+### Scripts
 
 For more information about Execa scripts, please see [this page](docs/scripts.md).
 
@@ -93,50 +136,6 @@ import {$} from 'execa';
 
 const branch = await $`git branch --show-current`;
 await $`dep deploy --branch=${branch}`;
-```
-
-#### Multiple arguments
-
-```js
-import {$} from 'execa';
-
-const args = ['unicorns', '&', 'rainbows!'];
-const {stdout} = await $`echo ${args}`;
-console.log(stdout);
-//=> 'unicorns & rainbows!'
-```
-
-#### With options
-
-```js
-import {$} from 'execa';
-
-await $({stdio: 'inherit'})`echo unicorns`;
-//=> 'unicorns'
-```
-
-#### Global/shared options
-
-```js
-import {$ as $_} from 'execa';
-
-const $ = $_({stdio: 'inherit'});
-
-await $`echo unicorns`;
-//=> 'unicorns'
-
-await $`echo rainbows`;
-//=> 'rainbows'
-```
-
-#### Piping
-
-```js
-import {$} from 'execa';
-
-await $`npm run build`
-	.pipe`sort`
-	.pipe`head -n2`;
 ```
 
 #### Verbose mode
@@ -208,12 +207,22 @@ console.log(pipedFrom[0]); // Result of `sort`
 console.log(pipedFrom[0].pipedFrom[0]); // Result of `npm run build`
 ```
 
+#### Pipe with template strings
+
+```js
+import {execa} from 'execa';
+
+await execa`npm run build`
+	.pipe`sort`
+	.pipe`head -n2`;
+```
+
 #### Iterate over output lines
 
 ```js
 import {execa} from 'execa';
 
-for await (const line of execa('npm', ['run', 'build'])) {
+for await (const line of execa`npm run build`)) {
 	if (line.includes('ERROR')) {
 		console.log(line);
 	}
@@ -272,82 +281,86 @@ try {
 
 `file`: `string | URL`\
 `arguments`: `string[]`\
-`options`: [`Options`](#options-1)\
+`options`: [`Options`](#options)\
 _Returns_: [`Subprocess`](#subprocess)
 
 Executes a command using `file ...arguments`.
 
-Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces.
+Arguments are [automatically escaped](#shell-syntax). They can contain any character, including spaces, tabs and newlines.
 
-This is the preferred method when executing single commands.
-
-#### $\`command\`
-#### $(options)\`command\`
+#### execa\`command\`
+#### execa(options)\`command\`
 
 `command`: `string`\
-`options`: [`Options`](#options-1)\
+`options`: [`Options`](#options)\
 _Returns_: [`Subprocess`](#subprocess)
 
-Executes a command. The `command` string includes both the `file` and its `arguments`.
+Executes a command. `command` is a [template string](#template-string-syntax) and includes both the `file` and its `arguments`.
 
-Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces, tabs and newlines must use `${}` like `` $`echo ${'has space'}` ``.
+The `command` template string can inject any `${value}` with the following types: string, number, [`subprocess`](#subprocess) or an array of those types. For example: `` execa`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${subprocess}`, the subprocess's [`stdout`](#stdout) is used.
 
-This is the preferred method when executing multiple commands in a script file.
+Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces, tabs and newlines must use `${}` like `` execa`echo ${'has space'}` ``.
 
-The `command` string can inject any `${value}` with the following types: string, number, [`subprocess`](#subprocess) or an array of those types. For example: `` $`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${subprocess}`, the subprocess's `stdout` is used.
+The `command` template string can use [multiple lines and indentation](docs/scripts.md#multiline-commands).
 
-The `command` string can use [multiple lines and indentation](docs/scripts.md#multiline-commands).
+#### execa(options)
 
-For more information, please see [this section](#scripts-interface) and [this page](docs/scripts.md).
+`options`: [`Options`](#options)\
+_Returns_: [`execa`](#execafile-arguments-options)
 
-#### $(options)
+Returns a new instance of Execa but with different default [`options`](#options). Consecutive calls are merged to previous ones.
 
-`options`: [`Options`](#options-1)\
-_Returns_: [`$`](#command)
+This allows setting global options or [sharing options](#globalshared-options) between multiple commands.
 
-Returns a new instance of [`$`](#command) but with different default [`options`](#options-1). Consecutive calls are merged to previous ones.
+#### execaSync(file, arguments?, options?)
+#### execaSync\`command\`
 
-This can be used to either:
-- Set options for a specific command: `` $(options)`command` ``
-- Share options for multiple commands: `` const $$ = $(options); $$`command`; $$`otherCommand`; ``
+Same as [`execa()`](#execafile-arguments-options) but synchronous.
+
+Returns or throws a [`subprocessResult`](#subprocessResult). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal), [`lines`](#lines) and [`verbose: 'full'`](#verbose). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable, a [transform](docs/transform.md) or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+
+#### $(file, arguments?, options?)
+
+`file`: `string | URL`\
+`arguments`: `string[]`\
+`options`: [`Options`](#options)\
+_Returns_: [`Subprocess`](#subprocess)
+
+Same as [`execa()`](#execafile-arguments-options) but using the [`stdin: 'inherit'`](#stdin) and [`preferLocal: true`](#preferlocal) options.
+
+Just like `execa()`, this can use the [template string syntax](#execacommand) or [bind options](#execaoptions). It can also be [run synchronously](#execasyncfile-arguments-options) using `$.sync()` or `$.s()`.
+
+This is the preferred method when executing multiple commands in a script file. For more information, please see [this page](docs/scripts.md).
+
+#### execaNode(scriptPath, arguments?, options?)
+
+`scriptPath`: `string | URL`\
+`arguments`: `string[]`\
+`options`: [`Options`](#options)\
+_Returns_: [`Subprocess`](#subprocess)
+
+Same as [`execa()`](#execafile-arguments-options) but using the [`node: true`](#node) option.
+Executes a Node.js file using `node scriptPath ...arguments`.
+
+Just like `execa()`, this can use the [template string syntax](#execacommand) or [bind options](#execaoptions).
+
+This is the preferred method when executing Node.js files.
 
 #### execaCommand(command, options?)
 
 `command`: `string`\
-`options`: [`Options`](#options-1)\
+`options`: [`Options`](#options)\
 _Returns_: [`Subprocess`](#subprocess)
 
-Executes a command. The `command` string includes both the `file` and its `arguments`.
+[`execa`](#execafile-arguments-options) with the [template string syntax](#execacommand) allows the `file` or the `arguments` to be user-defined (by injecting them with `${}`). However, if _both_ the `file` and the `arguments` are user-defined, _and_ those are supplied as a single string, then `execaCommand(command)` must be used instead.
+
+This is only intended for very specific cases, such as a REPL. This should be avoided otherwise.
+
+Just like `execa()`, this can [bind options](#execaoptions). It can also be [run synchronously](#execasyncfile-arguments-options) using `execaCommandSync()`.
 
 Arguments are [automatically escaped](#shell-syntax). They can contain any character, but spaces must be escaped with a backslash like `execaCommand('echo has\\ space')`.
-
-This is the preferred method when executing a user-supplied `command` string, such as in a REPL.
-
-#### execaNode(scriptPath, arguments?, options?)
-
-`file`: `string | URL`\
-`arguments`: `string[]`\
-`options`: [`Options`](#options-1)\
-_Returns_: [`Subprocess`](#subprocess)
-
-Same as [`execa()`](#execacommandcommand-options) but using the [`node`](#node) option.
-
-Executes a Node.js file using `node scriptPath ...arguments`.
-
-This is the preferred method when executing Node.js files.
-
-#### execaSync(file, arguments?, options?)
-#### execaCommandSync(command, options?)
-#### $.sync\`command\`
-#### $.s\`command\`
-#### $.sync(options)\`command\`
-#### $.s(options)\`command\`
-
-Same as [`execa()`](#execacommandcommand-options), [`execaCommand()`](#execacommand-command-options), [$\`command\`](#command) but synchronous.
-
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal), [`lines`](#lines) and [`verbose: 'full'`](#verbose). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, an iterable, a [transform](docs/transform.md) or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
-
-Returns or throws a [`subprocessResult`](#subprocessResult). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
 ### Shell syntax
 
@@ -373,29 +386,25 @@ This is `undefined` if either:
 
 `file`: `string | URL`\
 `arguments`: `string[]`\
-`options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
+`options`: [`Options`](#options) and [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<SubprocessResult>`](#subprocessresult)
 
 [Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the subprocess' `stdout` to a second Execa subprocess' `stdin`. This resolves with that second subprocess' [result](#subprocessresult). If either subprocess is rejected, this is rejected with that subprocess' [error](#execaerror) instead.
 
-This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile-arguments-options) except both [regular options](#options-1) and [pipe-specific options](#pipeoptions) can be specified.
+This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile-arguments-options) except both [regular options](#options) and [pipe-specific options](#pipeoptions) can be specified.
 
 This can be called multiple times to chain a series of subprocesses.
 
 Multiple subprocesses can be piped to the same subprocess. Conversely, the same subprocess can be piped to multiple other subprocesses.
 
-This is usually the preferred method to pipe subprocesses.
-
 #### pipe\`command\`
 #### pipe(options)\`command\`
 
 `command`: `string`\
-`options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
+`options`: [`Options`](#options) and [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<SubprocessResult>`](#subprocessresult)
 
-Like [`.pipe(file, arguments?, options?)`](#pipefile-arguments-options) but using a [`command` template string](docs/scripts.md#piping-stdout-to-another-command) instead. This follows the same syntax as [`$`](#command).
-
-This is the preferred method to pipe subprocesses when using [`$`](#command).
+Like [`.pipe(file, arguments?, options?)`](#pipefile-arguments-options) but using a [`command` template string](docs/scripts.md#piping-stdout-to-another-command) instead. This follows the same syntax as `execa` [template strings](#execacommand).
 
 #### pipe(secondSubprocess, pipeOptions?)
 
@@ -560,7 +569,7 @@ This is not escaped and should not be executed directly as a subprocess, includi
 
 Type: `string`
 
-Same as [`command`](#command-1) but escaped.
+Same as [`command`](#command) but escaped.
 
 Unlike `command`, control characters are escaped, which makes it safe to print in a terminal.
 
@@ -779,7 +788,7 @@ If `false`, only the `env` option is used, not `process.env`.
 #### preferLocal
 
 Type: `boolean`\
-Default: `true` with [`$`](#command), `false` otherwise
+Default: `true` with [`$`](#file-arguments-options), `false` otherwise
 
 Prefer locally installed binaries when looking for a binary to execute.\
 If you `$ npm install foo`, you can then `execa('foo')`.
@@ -862,7 +871,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 #### stdin
 
 Type: `string | number | stream.Readable | ReadableStream | URL | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string> | AsyncIterable<Uint8Array> | AsyncIterable<unknown> | GeneratorFunction<string> | GeneratorFunction<Uint8Array> | GeneratorFunction<unknown>| AsyncGeneratorFunction<string> | AsyncGeneratorFunction<Uint8Array> | AsyncGeneratorFunction<unknown>` (or a tuple of those types)\
-Default: `inherit` with [`$`](#command), `pipe` otherwise
+Default: `inherit` with [`$`](#file-arguments-options), `pipe` otherwise
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard input. This can be:
 - `'pipe'`: Sets [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.

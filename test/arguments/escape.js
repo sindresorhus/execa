@@ -98,13 +98,3 @@ test('result.escapedCommand - \\uE000', testEscapedCommand, ['\uE000'], '\'\\ue0
 test('result.escapedCommand - \\U1D172', testEscapedCommand, ['\u{1D172}'], '\'\u{1D172}\'', '"\u{1D172}"');
 test('result.escapedCommand - \\U1D173', testEscapedCommand, ['\u{1D173}'], '\'\\U1d173\'', '"\\U1d173"');
 test('result.escapedCommand - \\U10FFFD', testEscapedCommand, ['\u{10FFFD}'], '\'\\U10fffd\'', '"\\U10fffd"');
-
-test('allow commands with spaces and no array arguments', async t => {
-	const {stdout} = await execa('command with space.js');
-	t.is(stdout, '');
-});
-
-test('allow commands with spaces and array arguments', async t => {
-	const {stdout} = await execa('command with space.js', ['foo', 'bar']);
-	t.is(stdout, 'foo\nbar');
-});

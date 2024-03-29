@@ -7,7 +7,7 @@ import getStream, {getStreamAsBuffer} from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {outputObjectGenerator, getChunksGenerator, addNoopGenerator} from '../helpers/generator.js';
+import {outputObjectGenerator, getOutputsGenerator, addNoopGenerator} from '../helpers/generator.js';
 import {foobarObject} from '../helpers/input.js';
 
 const pExec = promisify(exec);
@@ -100,7 +100,7 @@ const foobarArray = ['fo', 'ob', 'ar', '..'];
 
 const testMultibyteCharacters = async (t, objectMode, addNoopTransform) => {
 	const {stdout} = await execa('noop.js', {
-		stdout: addNoopGenerator(getChunksGenerator(foobarArray, objectMode, true), addNoopTransform),
+		stdout: addNoopGenerator(getOutputsGenerator(foobarArray)(objectMode, true), addNoopTransform, objectMode),
 		encoding: 'base64',
 	});
 	if (objectMode) {
@@ -116,7 +116,7 @@ test('Handle multibyte characters, with objectMode', testMultibyteCharacters, tr
 test('Handle multibyte characters, with objectMode, noop transform', testMultibyteCharacters, true, true);
 
 const testObjectMode = async (t, addNoopTransform) => {
-	const {stdout} = await execa('noop.js', {stdout: addNoopGenerator(outputObjectGenerator, addNoopTransform), encoding: 'base64'});
+	const {stdout} = await execa('noop.js', {stdout: addNoopGenerator(outputObjectGenerator(), addNoopTransform, true), encoding: 'base64'});
 	t.deepEqual(stdout, [foobarObject]);
 };
 

@@ -1,75 +1,64 @@
-import {setImmediate, setInterval} from 'node:timers/promises';
-import {foobarObject} from './input.js';
+import {setImmediate, setInterval, setTimeout, scheduler} from 'node:timers/promises';
+import {foobarObject, foobarString} from './input.js';
 
-export const noopAsyncGenerator = (objectMode, binary) => ({
-	async * transform(line) {
-		yield line;
-	},
-	objectMode,
-	binary,
-});
-
-export const addNoopGenerator = (transform, addNoopTransform) => addNoopTransform
-	? [transform, noopGenerator(undefined, true)]
-	: [transform];
-
-export const noopGenerator = (objectMode, binary, preserveNewlines) => ({
-	* transform(line) {
-		yield line;
-	},
+const getGenerator = transform => (objectMode, binary, preserveNewlines) => ({
+	transform,
 	objectMode,
 	binary,
 	preserveNewlines,
 });
 
-export const serializeGenerator = (objectMode, binary) => ({
-	* transform(object) {
-		yield JSON.stringify(object);
-	},
-	objectMode,
-	binary,
+export const addNoopGenerator = (transform, addNoopTransform, objectMode, binary) => addNoopTransform
+	? [transform, noopGenerator(objectMode, binary)]
+	: [transform];
+
+export const noopGenerator = getGenerator(function * (value) {
+	yield value;
 });
 
-export const getOutputsGenerator = (inputs, objectMode) => ({
-	* transform() {
-		yield * inputs;
-	},
-	objectMode,
+export const noopAsyncGenerator = getGenerator(async function * (value) {
+	yield value;
 });
 
-export const identityGenerator = input => function * () {
+export const serializeGenerator = getGenerator(function * (object) {
+	yield JSON.stringify(object);
+});
+
+export const getOutputGenerator = input => getGenerator(function * () {
 	yield input;
-};
-
-export const identityAsyncGenerator = input => async function * () {
-	yield input;
-};
-
-export const getOutputGenerator = (input, objectMode, binary) => ({
-	transform: identityGenerator(input),
-	objectMode,
-	binary,
 });
 
-export const outputObjectGenerator = getOutputGenerator(foobarObject, true);
+export const outputObjectGenerator = () => getOutputGenerator(foobarObject)(true);
 
-export const getChunksGenerator = (chunks, objectMode, binary) => ({
-	async * transform() {
-		for (const chunk of chunks) {
-			yield chunk;
-			// eslint-disable-next-line no-await-in-loop
-			await setImmediate();
-		}
-	},
-	objectMode,
-	binary,
+export const getOutputAsyncGenerator = input => getGenerator(async function * () {
+	yield input;
+});
+
+export const getOutputsGenerator = inputs => getGenerator(function * () {
+	yield * inputs;
+});
+
+export const getOutputsAsyncGenerator = inputs => getGenerator(async function * () {
+	for (const input of inputs) {
+		yield input;
+		// eslint-disable-next-line no-await-in-loop
+		await setImmediate();
+	}
 });
 
 const noYieldTransform = function * () {};
 
-export const noYieldGenerator = objectMode => ({
-	transform: noYieldTransform,
-	objectMode,
+export const noYieldGenerator = getGenerator(noYieldTransform);
+
+export const prefix = '> ';
+export const suffix = ' <';
+
+export const multipleYieldGenerator = getGenerator(async function * (line = foobarString) {
+	yield prefix;
+	await scheduler.yield();
+	yield line;
+	await scheduler.yield();
+	yield suffix;
 });
 
 export const convertTransformToFinal = (transform, final) => {
@@ -81,23 +70,41 @@ export const convertTransformToFinal = (transform, final) => {
 	return ({...generatorOptions, transform: noYieldTransform, final: generatorOptions.transform});
 };
 
-export const infiniteGenerator = async function * () {
-	for await (const value of setInterval(100, 'foo')) {
+export const infiniteGenerator = getGenerator(async function * () {
+	for await (const value of setInterval(100, foobarString)) {
 		yield value;
 	}
-};
+});
 
-export const uppercaseGenerator = (objectMode, binary) => ({
-	* transform(line) {
-		yield line.toUpperCase();
-	},
-	objectMode,
-	binary,
+const textDecoder = new TextDecoder();
+
+export const uppercaseBufferGenerator = getGenerator(function * (buffer) {
+	yield textDecoder.decode(buffer).toUpperCase();
+});
+
+export const uppercaseGenerator = getGenerator(function * (string) {
+	yield string.toUpperCase();
 });
 
 // eslint-disable-next-line require-yield
-export const throwingGenerator = function * () {
+export const throwingGenerator = getGenerator(function * () {
 	throw new Error('Generator error');
-};
+});
 
 export const GENERATOR_ERROR_REGEXP = /Generator error/;
+
+export const appendGenerator = getGenerator(function * (string) {
+	yield `${string}${casedSuffix}`;
+});
+
+export const casedSuffix = 'k';
+
+export const resultGenerator = inputs => getGenerator(function * (input) {
+	inputs.push(input);
+	yield input;
+});
+
+export const timeoutGenerator = timeout => getGenerator(async function * () {
+	await setTimeout(timeout);
+	yield foobarString;
+});

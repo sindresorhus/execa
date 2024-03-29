@@ -66,7 +66,7 @@ test('Write call encoding "base64" is ignored with objectMode', testEncodingIgno
 const testGeneratorNextEncoding = async (t, input, encoding, firstObjectMode, secondObjectMode, expectedType) => {
 	const {stdout} = await execa('noop.js', ['other'], {
 		stdout: [
-			getOutputGenerator(input, firstObjectMode),
+			getOutputGenerator(input)(firstObjectMode),
 			getTypeofGenerator(secondObjectMode),
 		],
 		encoding,
@@ -105,7 +105,7 @@ test('The first generator with result.stdio[*] does not receive an object argume
 const testGeneratorReturnType = async (t, input, encoding, reject, objectMode, final) => {
 	const fixtureName = reject ? 'noop-fd.js' : 'noop-fail.js';
 	const {stdout} = await execa(fixtureName, ['1', foobarString], {
-		stdout: convertTransformToFinal(getOutputGenerator(input, objectMode, true), final),
+		stdout: convertTransformToFinal(getOutputGenerator(input)(objectMode, true), final),
 		encoding,
 		reject,
 	});

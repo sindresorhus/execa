@@ -6,7 +6,7 @@ import {MaxBufferError} from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {getChunksGenerator} from '../helpers/generator.js';
+import {getOutputsGenerator} from '../helpers/generator.js';
 import {foobarString, foobarObject} from '../helpers/input.js';
 import {assertStreamOutput, assertIterableChunks} from '../helpers/convert.js';
 import {
@@ -58,7 +58,7 @@ const bigStringNoNewlinesEnd = `${bigStringNoNewlines}\n`;
 // eslint-disable-next-line max-params
 const testStreamLinesGenerator = async (t, input, expectedLines, objectMode, binary) => {
 	const {stdout} = await execa('noop.js', {
-		stdout: getChunksGenerator(input, objectMode, binary),
+		stdout: getOutputsGenerator(input)(objectMode, binary),
 		lines: true,
 		stripFinalNewline: false,
 	});
@@ -76,7 +76,7 @@ test('"lines: true" is a noop big strings generators without newlines, objectMod
 
 test('"lines: true" is a noop with objects generators, objectMode', async t => {
 	const {stdout} = await execa('noop.js', {
-		stdout: getChunksGenerator([foobarObject], true),
+		stdout: getOutputsGenerator([foobarObject])(true),
 		lines: true,
 	});
 	t.deepEqual(stdout, [foobarObject]);

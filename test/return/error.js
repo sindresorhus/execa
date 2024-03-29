@@ -98,8 +98,8 @@ const testPartialIgnoreMessage = async (t, fdNumber, stdioOption, output) => {
 
 test('error.message does not contain stdout if not available', testPartialIgnoreMessage, 1, 'ignore', 'stderr');
 test('error.message does not contain stderr if not available', testPartialIgnoreMessage, 2, 'ignore', 'stdout');
-test('error.message does not contain stdout if it is an object', testPartialIgnoreMessage, 1, outputObjectGenerator, 'stderr');
-test('error.message does not contain stderr if it is an object', testPartialIgnoreMessage, 2, outputObjectGenerator, 'stdout');
+test('error.message does not contain stdout if it is an object', testPartialIgnoreMessage, 1, outputObjectGenerator(), 'stderr');
+test('error.message does not contain stderr if it is an object', testPartialIgnoreMessage, 2, outputObjectGenerator(), 'stdout');
 
 const testFullIgnoreMessage = async (t, options, resultProperty) => {
 	const {[resultProperty]: message} = await t.throwsAsync(execa('echo-fail.js', options));

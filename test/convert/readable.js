@@ -25,7 +25,7 @@ import {
 import {foobarString, foobarBuffer, foobarObject} from '../helpers/input.js';
 import {simpleFull} from '../helpers/lines.js';
 import {prematureClose, fullStdio} from '../helpers/stdio.js';
-import {outputObjectGenerator, getChunksGenerator} from '../helpers/generator.js';
+import {outputObjectGenerator, getOutputsAsyncGenerator} from '../helpers/generator.js';
 import {defaultHighWaterMark, defaultObjectHighWaterMark} from '../helpers/stream.js';
 
 setFixtureDir();
@@ -243,7 +243,7 @@ test('.readable() can be used with Stream.compose()', async t => {
 });
 
 test('.readable() works with objectMode', async t => {
-	const subprocess = execa('noop.js', {stdout: outputObjectGenerator});
+	const subprocess = execa('noop.js', {stdout: outputObjectGenerator()});
 	const stream = subprocess.readable();
 	t.true(stream.readableObjectMode);
 	t.is(stream.readableHighWaterMark, defaultObjectHighWaterMark);
@@ -253,7 +253,7 @@ test('.readable() works with objectMode', async t => {
 });
 
 test('.duplex() works with objectMode and reads', async t => {
-	const subprocess = getReadWriteSubprocess({stdout: outputObjectGenerator});
+	const subprocess = getReadWriteSubprocess({stdout: outputObjectGenerator()});
 	const stream = subprocess.duplex();
 	t.true(stream.readableObjectMode);
 	t.is(stream.readableHighWaterMark, defaultObjectHighWaterMark);
@@ -325,7 +325,7 @@ test('.readable() can iterate over lines', async t => {
 });
 
 test('.readable() can wait for data', async t => {
-	const subprocess = execa('noop.js', {stdout: getChunksGenerator([foobarString, foobarString], false, true)});
+	const subprocess = execa('noop.js', {stdout: getOutputsAsyncGenerator([foobarString, foobarString])(false, true)});
 	const stream = subprocess.readable();
 
 	t.is(stream.read(), null);

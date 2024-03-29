@@ -8,7 +8,7 @@ import {infiniteGenerator} from '../helpers/generator.js';
 setFixtureDir();
 
 const getStreamInputSubprocess = fdNumber => execa('stdin-fd.js', [`${fdNumber}`], fdNumber === 3
-	? getStdio(3, [new Uint8Array(), infiniteGenerator])
+	? getStdio(3, [new Uint8Array(), infiniteGenerator()])
 	: {});
 const getStreamOutputSubprocess = fdNumber => execa('noop-repeat.js', [`${fdNumber}`], fdNumber === 3 ? fullStdio : {});
 

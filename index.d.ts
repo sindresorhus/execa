@@ -1332,9 +1332,9 @@ type ExecaSync<OptionsType extends SyncOptions> = {
 /**
 Same as `execa()` but synchronous.
 
-Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1446,9 +1446,9 @@ type ExecaCommandSync<OptionsType extends SyncOptions> = {
 /**
 Same as `execaCommand()` but synchronous.
 
-Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

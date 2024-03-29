@@ -15,5 +15,6 @@ export const foobarUtf16Uint8Array = bufferToUint8Array(foobarUtf16Buffer);
 export const foobarDataView = new DataView(foobarArrayBuffer);
 export const foobarHex = foobarBuffer.toString('hex');
 export const foobarUppercase = foobarString.toUpperCase();
+export const foobarUppercaseHex = Buffer.from(foobarUppercase).toString('hex');
 export const foobarObject = {foo: 'bar'};
 export const foobarObjectString = JSON.stringify(foobarObject);

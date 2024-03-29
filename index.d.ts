@@ -32,6 +32,11 @@ type GeneratorTransformFull = {
 	objectMode?: boolean;
 };
 
+type DuplexTransform = {
+	transform: Duplex;
+	objectMode?: boolean;
+};
+
 type CommonStdioOption<IsSync extends boolean = boolean> =
 	| BaseStdioOption
 	| 'ipc'
@@ -41,7 +46,8 @@ type CommonStdioOption<IsSync extends boolean = boolean> =
 	| {file: string}
 	| IfAsync<IsSync,
 	| GeneratorTransform
-	| GeneratorTransformFull>;
+	| GeneratorTransformFull
+	| DuplexTransform>;
 
 type InputStdioOption<IsSync extends boolean = boolean> =
 	| Uint8Array
@@ -122,9 +128,15 @@ type IsObjectOutputOptions<OutputOptions extends StdioOption> = IsObjectOutputOp
 
 type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends GeneratorTransformFull
 	? BooleanObjectMode<OutputOption['objectMode']>
-	: false;
+	: OutputOption extends DuplexTransform
+		? DuplexObjectMode<OutputOption>
+		: false;
 
 type BooleanObjectMode<ObjectModeOption extends GeneratorTransformFull['objectMode']> = ObjectModeOption extends true ? true : false;
+
+type DuplexObjectMode<OutputOption extends DuplexTransform> = OutputOption['objectMode'] extends boolean
+	? OutputOption['objectMode']
+	: OutputOption['transform']['readableObjectMode'];
 
 // Whether `result.stdout|stderr|all` is `undefined`, excluding the `buffer` option
 type IgnoresStreamResult<
@@ -345,7 +357,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be a generator function to transform the input. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) to transform the input. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
@@ -365,7 +377,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be a generator function to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default 'pipe'
 	*/
@@ -385,7 +397,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be a generator function to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default 'pipe'
 	*/
@@ -1334,7 +1346,7 @@ Same as `execa()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1448,7 +1460,7 @@ Same as `execaCommand()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr`, `stdio` and `input` options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

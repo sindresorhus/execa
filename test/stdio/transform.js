@@ -9,18 +9,14 @@ import {
 	noopGenerator,
 	getOutputAsyncGenerator,
 	getOutputGenerator,
-	getOutputsGenerator,
 	infiniteGenerator,
 	outputObjectGenerator,
-	noYieldGenerator,
-	multipleYieldGenerator,
 	convertTransformToFinal,
 	prefix,
 	suffix,
-	throwingGenerator,
 	GENERATOR_ERROR_REGEXP,
-	timeoutGenerator,
 } from '../helpers/generator.js';
+import {generatorsMap} from '../helpers/map.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
@@ -81,23 +77,28 @@ test('Synchronous yields are not buffered, line-wise passThrough', testHighWater
 test('Synchronous yields are not buffered, binary passThrough', testHighWaterMark, true, true, false);
 test('Synchronous yields are not buffered, objectMode as input but not output', testHighWaterMark, false, false, true);
 
-const testNoYield = async (t, objectMode, final, output) => {
-	const {stdout} = await execa('noop.js', {stdout: convertTransformToFinal(noYieldGenerator(objectMode), final)});
+// eslint-disable-next-line max-params
+const testNoYield = async (t, type, objectMode, final, output) => {
+	const {stdout} = await execa('noop.js', {stdout: convertTransformToFinal(generatorsMap[type].noYield(objectMode), final)});
 	t.deepEqual(stdout, output);
 };
 
-test('Generator can filter "transform" by not calling yield', testNoYield, false, false, '');
-test('Generator can filter "transform" by not calling yield, objectMode', testNoYield, true, false, []);
-test('Generator can filter "final" by not calling yield', testNoYield, false, true, '');
-test('Generator can filter "final" by not calling yield, objectMode', testNoYield, true, true, []);
+test('Generator can filter "transform" by not calling yield', testNoYield, 'generator', false, false, '');
+test('Generator can filter "transform" by not calling yield, objectMode', testNoYield, 'generator', true, false, []);
+test('Generator can filter "final" by not calling yield', testNoYield, 'generator', false, true, '');
+test('Generator can filter "final" by not calling yield, objectMode', testNoYield, 'generator', true, true, []);
+test('Duplex can filter by not calling push', testNoYield, 'duplex', false, false, '');
+test('Duplex can filter by not calling push, objectMode', testNoYield, 'duplex', true, false, []);
 
-const testMultipleYields = async (t, final) => {
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(multipleYieldGenerator(), final)});
-	t.is(stdout, `${prefix}\n${foobarString}\n${suffix}`);
+const testMultipleYields = async (t, type, final, binary) => {
+	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(generatorsMap[type].multipleYield(), final)});
+	const newline = binary ? '' : '\n';
+	t.is(stdout, `${prefix}${newline}${foobarString}${newline}${suffix}`);
 };
 
-test('Generator can yield "transform" multiple times at different moments', testMultipleYields, false);
-test('Generator can yield "final" multiple times at different moments', testMultipleYields, true);
+test('Generator can yield "transform" multiple times at different moments', testMultipleYields, 'generator', false, false);
+test('Generator can yield "final" multiple times at different moments', testMultipleYields, 'generator', true, false);
+test('Duplex can push multiple times at different moments', testMultipleYields, 'duplex', false, true);
 
 const partsPerChunk = 4;
 const chunksPerCall = 10;
@@ -129,60 +130,74 @@ test('Generator "final" yields are sent right away', testManyYields, true);
 
 const maxBuffer = 10;
 
-test('Generators take "maxBuffer" into account', async t => {
+const testMaxBuffer = async (t, type) => {
 	const bigString = '.'.repeat(maxBuffer);
 	const {stdout} = await execa('noop.js', {
 		maxBuffer,
-		stdout: getOutputGenerator(bigString)(false, true),
+		stdout: generatorsMap[type].getOutput(bigString)(false, true),
 	});
 	t.is(stdout, bigString);
 
-	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: getOutputGenerator(`${bigString}.`)(false)}));
-});
+	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: generatorsMap[type].getOutput(`${bigString}.`)(false)}));
+};
 
-test('Generators take "maxBuffer" into account, objectMode', async t => {
+test('Generators take "maxBuffer" into account', testMaxBuffer, 'generator');
+test('Duplexes take "maxBuffer" into account', testMaxBuffer, 'duplex');
+
+const testMaxBufferObject = async (t, type) => {
 	const bigArray = Array.from({length: maxBuffer}).fill('.');
 	const {stdout} = await execa('noop.js', {
 		maxBuffer,
-		stdout: getOutputsGenerator(bigArray)(true, true),
+		stdout: generatorsMap[type].getOutputs(bigArray)(true, true),
 	});
 	t.is(stdout.length, maxBuffer);
 
-	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: getOutputsGenerator([...bigArray, ''])(true)}));
-});
+	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: generatorsMap[type].getOutputs([...bigArray, ''])(true)}));
+};
 
-const testAsyncGenerators = async (t, final) => {
+test('Generators take "maxBuffer" into account, objectMode', testMaxBufferObject, 'generator');
+test('Duplexes take "maxBuffer" into account, objectMode', testMaxBufferObject, 'duplex');
+
+const testAsyncGenerators = async (t, type, final) => {
 	const {stdout} = await execa('noop.js', {
-		stdout: convertTransformToFinal(timeoutGenerator(1e2)(), final),
+		stdout: convertTransformToFinal(generatorsMap[type].timeout(1e2)(), final),
 	});
 	t.is(stdout, foobarString);
 };
 
-test('Generators "transform" is awaited on success', testAsyncGenerators, false);
-test('Generators "final" is awaited on success', testAsyncGenerators, true);
+test('Generators "transform" is awaited on success', testAsyncGenerators, 'generator', false);
+test('Generators "final" is awaited on success', testAsyncGenerators, 'generator', true);
+test('Duplex is awaited on success', testAsyncGenerators, 'duplex', false);
 
-const testThrowingGenerator = async (t, final) => {
+const testThrowingGenerator = async (t, type, final) => {
 	await t.throwsAsync(
-		execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(throwingGenerator(), final)}),
+		execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(generatorsMap[type].throwing(), final)}),
 		{message: GENERATOR_ERROR_REGEXP},
 	);
 };
 
-test('Generators "transform" errors make subprocess fail', testThrowingGenerator, false);
-test('Generators "final" errors make subprocess fail', testThrowingGenerator, true);
+test('Generators "transform" errors make subprocess fail', testThrowingGenerator, 'generator', false);
+test('Generators "final" errors make subprocess fail', testThrowingGenerator, 'generator', true);
+test('Duplexes "transform" errors make subprocess fail', testThrowingGenerator, 'duplex', false);
 
-test('Generators errors make subprocess fail even when other output generators do not throw', async t => {
+const testSingleErrorOutput = async (t, type) => {
 	await t.throwsAsync(
-		execa('noop-fd.js', ['1', foobarString], {stdout: [noopGenerator(false), throwingGenerator(), noopGenerator(false)]}),
+		execa('noop-fd.js', ['1', foobarString], {stdout: [generatorsMap[type].noop(false), generatorsMap[type].throwing(), generatorsMap[type].noop(false)]}),
 		{message: GENERATOR_ERROR_REGEXP},
 	);
-});
+};
 
-test('Generators errors make subprocess fail even when other input generators do not throw', async t => {
-	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [noopGenerator(false), throwingGenerator(), noopGenerator(false)]});
+test('Generators errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'generator');
+test('Duplexes errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'duplex');
+
+const testSingleErrorInput = async (t, type) => {
+	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [generatorsMap[type].noop(false), generatorsMap[type].throwing(), generatorsMap[type].noop(false)]});
 	subprocess.stdin.write('foobar\n');
 	await t.throwsAsync(subprocess, {message: GENERATOR_ERROR_REGEXP});
-});
+};
+
+test('Generators errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'generator');
+test('Duplexes errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'duplex');
 
 const testGeneratorCancel = async (t, error) => {
 	const subprocess = execa('noop.js', {stdout: infiniteGenerator()});

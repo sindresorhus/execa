@@ -39,7 +39,7 @@ test('input can be a Node.js Readable without a file descriptor', async t => {
 test('input cannot be a Node.js Readable without a file descriptor - sync', t => {
 	t.throws(() => {
 		execaSync('empty.js', {input: simpleReadable()});
-	}, {message: 'The `input` option cannot be a Node.js stream in sync mode.'});
+	}, {message: 'The `input` option cannot be a Node.js stream with synchronous methods.'});
 });
 
 const testNoFileStream = async (t, fdNumber, stream) => {

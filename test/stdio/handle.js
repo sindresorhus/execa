@@ -66,7 +66,7 @@ test('stdio[*] can be [3]', testNoPipeOption, [3], 3);
 const testNoIpcSync = (t, fdNumber) => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(fdNumber, 'ipc'));
-	}, {message: /cannot be "ipc" in sync mode/});
+	}, {message: /cannot be "ipc" with synchronous methods/});
 };
 
 test('stdin cannot be "ipc", sync', testNoIpcSync, 0);

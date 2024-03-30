@@ -550,11 +550,6 @@ try {
 	expectType<string>(ignoreStdoutResult.stderr);
 	expectType<string>(ignoreStdoutResult.all);
 
-	const ignoreArrayStdoutResult = await execa('unicorns', {stdout: ['ignore'] as ['ignore'], all: true});
-	expectType<undefined>(ignoreArrayStdoutResult.stdout);
-	expectType<string>(ignoreArrayStdoutResult.stderr);
-	expectType<string>(ignoreArrayStdoutResult.all);
-
 	const ignoreStderrPromise = execa('unicorns', {stderr: 'ignore', all: true});
 	expectType<Writable>(ignoreStderrPromise.stdin);
 	expectType<Readable>(ignoreStderrPromise.stdout);
@@ -564,11 +559,6 @@ try {
 	expectType<string>(ignoreStderrResult.stdout);
 	expectType<undefined>(ignoreStderrResult.stderr);
 	expectType<string>(ignoreStderrResult.all);
-
-	const ignoreArrayStderrResult = await execa('unicorns', {stderr: ['ignore'] as ['ignore'], all: true});
-	expectType<string>(ignoreArrayStderrResult.stdout);
-	expectType<undefined>(ignoreArrayStderrResult.stderr);
-	expectType<string>(ignoreArrayStderrResult.all);
 
 	const inheritStdoutResult = await execa('unicorns', {stdout: 'inherit', all: true});
 	expectType<undefined>(inheritStdoutResult.stdout);
@@ -595,20 +585,10 @@ try {
 	expectType<string>(ipcStdoutResult.stderr);
 	expectType<string>(ipcStdoutResult.all);
 
-	const ipcArrayStdoutResult = await execa('unicorns', {stdout: ['ipc'] as ['ipc'], all: true});
-	expectType<undefined>(ipcArrayStdoutResult.stdout);
-	expectType<string>(ipcArrayStdoutResult.stderr);
-	expectType<string>(ipcArrayStdoutResult.all);
-
 	const ipcStderrResult = await execa('unicorns', {stderr: 'ipc', all: true});
 	expectType<string>(ipcStderrResult.stdout);
 	expectType<undefined>(ipcStderrResult.stderr);
 	expectType<string>(ipcStderrResult.all);
-
-	const ipcArrayStderrResult = await execa('unicorns', {stderr: ['ipc'] as ['ipc'], all: true});
-	expectType<string>(ipcArrayStderrResult.stdout);
-	expectType<undefined>(ipcArrayStderrResult.stderr);
-	expectType<string>(ipcArrayStderrResult.all);
 
 	const numberStdoutResult = await execa('unicorns', {stdout: 1, all: true});
 	expectType<undefined>(numberStdoutResult.stdout);
@@ -1056,16 +1036,6 @@ try {
 	expectType<undefined>(inheritStderrResult.stderr);
 	expectError(inheritStderrResult.all.toString());
 
-	const ipcStdoutResult = execaSync('unicorns', {stdout: 'ipc'});
-	expectType<undefined>(ipcStdoutResult.stdout);
-	expectType<string>(ipcStdoutResult.stderr);
-	expectError(ipcStdoutResult.all.toString());
-
-	const ipcStderrResult = execaSync('unicorns', {stderr: 'ipc'});
-	expectType<string>(ipcStderrResult.stdout);
-	expectType<undefined>(ipcStderrResult.stderr);
-	expectError(ipcStderrResult.all.toString());
-
 	const numberStdoutResult = execaSync('unicorns', {stdout: 1});
 	expectType<undefined>(numberStdoutResult.stdout);
 	expectType<string>(numberStdoutResult.stderr);
@@ -1132,16 +1102,6 @@ try {
 	expectType<string>(inheritStderrError.stdout);
 	expectType<undefined>(inheritStderrError.stderr);
 	expectError(inheritStderrError.all.toString());
-
-	const ipcStdoutError = error as ExecaSyncError<{stdout: 'ipc'}>;
-	expectType<undefined>(ipcStdoutError.stdout);
-	expectType<string>(ipcStdoutError.stderr);
-	expectError(ipcStdoutError.all.toString());
-
-	const ipcStderrError = error as ExecaSyncError<{stderr: 'ipc'}>;
-	expectType<string>(ipcStderrError.stdout);
-	expectType<undefined>(ipcStderrError.stderr);
-	expectError(ipcStderrError.all.toString());
 
 	const numberStdoutError = error as ExecaSyncError<{stdout: 1}>;
 	expectType<undefined>(numberStdoutError.stdout);
@@ -1245,30 +1205,34 @@ execa('unicorns', {stdin: 'pipe'});
 execaSync('unicorns', {stdin: 'pipe'});
 execa('unicorns', {stdin: ['pipe']});
 execaSync('unicorns', {stdin: ['pipe']});
+execa('unicorns', {stdin: undefined});
+execaSync('unicorns', {stdin: undefined});
+execa('unicorns', {stdin: [undefined]});
+execaSync('unicorns', {stdin: [undefined]});
 execa('unicorns', {stdin: 'overlapped'});
-execaSync('unicorns', {stdin: 'overlapped'});
+expectError(execaSync('unicorns', {stdin: 'overlapped'}));
 execa('unicorns', {stdin: ['overlapped']});
-execaSync('unicorns', {stdin: ['overlapped']});
+expectError(execaSync('unicorns', {stdin: ['overlapped']}));
 execa('unicorns', {stdin: 'ipc'});
-execaSync('unicorns', {stdin: 'ipc'});
+expectError(execaSync('unicorns', {stdin: 'ipc'}));
 execa('unicorns', {stdin: ['ipc']});
-execaSync('unicorns', {stdin: ['ipc']});
+expectError(execaSync('unicorns', {stdin: ['ipc']}));
 execa('unicorns', {stdin: 'ignore'});
 execaSync('unicorns', {stdin: 'ignore'});
 execa('unicorns', {stdin: ['ignore']});
-execaSync('unicorns', {stdin: ['ignore']});
+expectError(execaSync('unicorns', {stdin: ['ignore']}));
 execa('unicorns', {stdin: 'inherit'});
 execaSync('unicorns', {stdin: 'inherit'});
 execa('unicorns', {stdin: ['inherit']});
-execaSync('unicorns', {stdin: ['inherit']});
+expectError(execaSync('unicorns', {stdin: ['inherit']}));
 execa('unicorns', {stdin: process.stdin});
 execaSync('unicorns', {stdin: process.stdin});
 execa('unicorns', {stdin: [process.stdin]});
-execaSync('unicorns', {stdin: [process.stdin]});
+expectError(execaSync('unicorns', {stdin: [process.stdin]}));
 execa('unicorns', {stdin: new Readable()});
 execaSync('unicorns', {stdin: new Readable()});
 execa('unicorns', {stdin: [new Readable()]});
-execaSync('unicorns', {stdin: [new Readable()]});
+expectError(execaSync('unicorns', {stdin: [new Readable()]}));
 expectError(execa('unicorns', {stdin: new Writable()}));
 expectError(execaSync('unicorns', {stdin: new Writable()}));
 expectError(execaSync('unicorns', {stdin: [new Writable()]}));
@@ -1281,6 +1245,8 @@ expectError(execaSync('unicorns', {stdin: new WritableStream()}));
 expectError(execaSync('unicorns', {stdin: [new WritableStream()]}));
 execa('unicorns', {stdin: new Uint8Array()});
 execaSync('unicorns', {stdin: new Uint8Array()});
+execa('unicorns', {stdin: [new Uint8Array()]});
+execaSync('unicorns', {stdin: [new Uint8Array()]});
 execa('unicorns', {stdin: [['foo', 'bar']]});
 expectError(execaSync('unicorns', {stdin: [['foo', 'bar']]}));
 execa('unicorns', {stdin: [[new Uint8Array(), new Uint8Array()]]});
@@ -1312,7 +1278,7 @@ execaSync('unicorns', {stdin: [{file: './test'}]});
 execa('unicorns', {stdin: 1});
 execaSync('unicorns', {stdin: 1});
 execa('unicorns', {stdin: [1]});
-execaSync('unicorns', {stdin: [1]});
+expectError(execaSync('unicorns', {stdin: [1]}));
 execa('unicorns', {stdin: duplex});
 expectError(execaSync('unicorns', {stdin: duplex}));
 execa('unicorns', {stdin: [duplex]});
@@ -1381,35 +1347,41 @@ execaSync('unicorns', {stdin: undefined});
 execa('unicorns', {stdin: [undefined]});
 execaSync('unicorns', {stdin: [undefined]});
 execa('unicorns', {stdin: ['pipe', 'inherit']});
-execaSync('unicorns', {stdin: ['pipe', 'inherit']});
+expectError(execaSync('unicorns', {stdin: ['pipe', 'inherit']}));
+execa('unicorns', {stdin: ['pipe', undefined]});
+execaSync('unicorns', {stdin: ['pipe', undefined]});
 execa('unicorns', {stdout: 'pipe'});
 execaSync('unicorns', {stdout: 'pipe'});
 execa('unicorns', {stdout: ['pipe']});
 execaSync('unicorns', {stdout: ['pipe']});
+execa('unicorns', {stdout: undefined});
+execaSync('unicorns', {stdout: undefined});
+execa('unicorns', {stdout: [undefined]});
+execaSync('unicorns', {stdout: [undefined]});
 execa('unicorns', {stdout: 'overlapped'});
-execaSync('unicorns', {stdout: 'overlapped'});
+expectError(execaSync('unicorns', {stdout: 'overlapped'}));
 execa('unicorns', {stdout: ['overlapped']});
-execaSync('unicorns', {stdout: ['overlapped']});
+expectError(execaSync('unicorns', {stdout: ['overlapped']}));
 execa('unicorns', {stdout: 'ipc'});
-execaSync('unicorns', {stdout: 'ipc'});
-execa('unicorns', {stdout: ['ipc']});
-execaSync('unicorns', {stdout: ['ipc']});
+expectError(execaSync('unicorns', {stdout: 'ipc'}));
+expectError(execa('unicorns', {stdout: ['ipc']}));
+expectError(execaSync('unicorns', {stdout: ['ipc']}));
 execa('unicorns', {stdout: 'ignore'});
 execaSync('unicorns', {stdout: 'ignore'});
-execa('unicorns', {stdout: ['ignore']});
-execaSync('unicorns', {stdout: ['ignore']});
+expectError(execa('unicorns', {stdout: ['ignore']}));
+expectError(execaSync('unicorns', {stdout: ['ignore']}));
 execa('unicorns', {stdout: 'inherit'});
 execaSync('unicorns', {stdout: 'inherit'});
 execa('unicorns', {stdout: ['inherit']});
-execaSync('unicorns', {stdout: ['inherit']});
+expectError(execaSync('unicorns', {stdout: ['inherit']}));
 execa('unicorns', {stdout: process.stdout});
 execaSync('unicorns', {stdout: process.stdout});
 execa('unicorns', {stdout: [process.stdout]});
-execaSync('unicorns', {stdout: [process.stdout]});
+expectError(execaSync('unicorns', {stdout: [process.stdout]}));
 execa('unicorns', {stdout: new Writable()});
 execaSync('unicorns', {stdout: new Writable()});
 execa('unicorns', {stdout: [new Writable()]});
-execaSync('unicorns', {stdout: [new Writable()]});
+expectError(execaSync('unicorns', {stdout: [new Writable()]}));
 expectError(execa('unicorns', {stdout: new Readable()}));
 expectError(execaSync('unicorns', {stdout: new Readable()}));
 expectError(execa('unicorn', {stdout: [new Readable()]}));
@@ -1435,7 +1407,7 @@ expectError(execaSync('unicorns', {stdout: {file: fileUrl}}));
 execa('unicorns', {stdout: 1});
 execaSync('unicorns', {stdout: 1});
 execa('unicorns', {stdout: [1]});
-execaSync('unicorns', {stdout: [1]});
+expectError(execaSync('unicorns', {stdout: [1]}));
 execa('unicorns', {stdout: duplex});
 expectError(execaSync('unicorns', {stdout: duplex}));
 execa('unicorns', {stdout: [duplex]});
@@ -1504,35 +1476,41 @@ execaSync('unicorns', {stdout: undefined});
 execa('unicorns', {stdout: [undefined]});
 execaSync('unicorns', {stdout: [undefined]});
 execa('unicorns', {stdout: ['pipe', 'inherit']});
-execaSync('unicorns', {stdout: ['pipe', 'inherit']});
+expectError(execaSync('unicorns', {stdout: ['pipe', 'inherit']}));
+execa('unicorns', {stdout: ['pipe', undefined]});
+execaSync('unicorns', {stdout: ['pipe', undefined]});
 execa('unicorns', {stderr: 'pipe'});
 execaSync('unicorns', {stderr: 'pipe'});
 execa('unicorns', {stderr: ['pipe']});
 execaSync('unicorns', {stderr: ['pipe']});
+execa('unicorns', {stderr: undefined});
+execaSync('unicorns', {stderr: undefined});
+execa('unicorns', {stderr: [undefined]});
+execaSync('unicorns', {stderr: [undefined]});
 execa('unicorns', {stderr: 'overlapped'});
-execaSync('unicorns', {stderr: 'overlapped'});
+expectError(execaSync('unicorns', {stderr: 'overlapped'}));
 execa('unicorns', {stderr: ['overlapped']});
-execaSync('unicorns', {stderr: ['overlapped']});
+expectError(execaSync('unicorns', {stderr: ['overlapped']}));
 execa('unicorns', {stderr: 'ipc'});
-execaSync('unicorns', {stderr: 'ipc'});
-execa('unicorns', {stderr: ['ipc']});
-execaSync('unicorns', {stderr: ['ipc']});
+expectError(execaSync('unicorns', {stderr: 'ipc'}));
+expectError(execa('unicorns', {stderr: ['ipc']}));
+expectError(execaSync('unicorns', {stderr: ['ipc']}));
 execa('unicorns', {stderr: 'ignore'});
 execaSync('unicorns', {stderr: 'ignore'});
-execa('unicorns', {stderr: ['ignore']});
-execaSync('unicorns', {stderr: ['ignore']});
+expectError(execa('unicorns', {stderr: ['ignore']}));
+expectError(execaSync('unicorns', {stderr: ['ignore']}));
 execa('unicorns', {stderr: 'inherit'});
 execaSync('unicorns', {stderr: 'inherit'});
 execa('unicorns', {stderr: ['inherit']});
-execaSync('unicorns', {stderr: ['inherit']});
+expectError(execaSync('unicorns', {stderr: ['inherit']}));
 execa('unicorns', {stderr: process.stderr});
 execaSync('unicorns', {stderr: process.stderr});
 execa('unicorns', {stderr: [process.stderr]});
-execaSync('unicorns', {stderr: [process.stderr]});
+expectError(execaSync('unicorns', {stderr: [process.stderr]}));
 execa('unicorns', {stderr: new Writable()});
 execaSync('unicorns', {stderr: new Writable()});
 execa('unicorns', {stderr: [new Writable()]});
-execaSync('unicorns', {stderr: [new Writable()]});
+expectError(execaSync('unicorns', {stderr: [new Writable()]}));
 expectError(execa('unicorns', {stderr: new Readable()}));
 expectError(execaSync('unicorns', {stderr: new Readable()}));
 expectError(execa('unicorns', {stderr: [new Readable()]}));
@@ -1558,7 +1536,7 @@ expectError(execaSync('unicorns', {stderr: {file: fileUrl}}));
 execa('unicorns', {stderr: 1});
 execaSync('unicorns', {stderr: 1});
 execa('unicorns', {stderr: [1]});
-execaSync('unicorns', {stderr: [1]});
+expectError(execaSync('unicorns', {stderr: [1]}));
 execa('unicorns', {stderr: duplex});
 expectError(execaSync('unicorns', {stderr: duplex}));
 execa('unicorns', {stderr: [duplex]});
@@ -1627,7 +1605,9 @@ execaSync('unicorns', {stderr: undefined});
 execa('unicorns', {stderr: [undefined]});
 execaSync('unicorns', {stderr: [undefined]});
 execa('unicorns', {stderr: ['pipe', 'inherit']});
-execaSync('unicorns', {stderr: ['pipe', 'inherit']});
+expectError(execaSync('unicorns', {stderr: ['pipe', 'inherit']}));
+execa('unicorns', {stderr: ['pipe', undefined]});
+execaSync('unicorns', {stderr: ['pipe', undefined]});
 execa('unicorns', {all: true});
 expectError(execaSync('unicorns', {all: true}));
 execa('unicorns', {reject: false});
@@ -1648,8 +1628,10 @@ execa('unicorns', {argv0: ''});
 execaSync('unicorns', {argv0: ''});
 execa('unicorns', {stdio: 'pipe'});
 execaSync('unicorns', {stdio: 'pipe'});
+execa('unicorns', {stdio: undefined});
+execaSync('unicorns', {stdio: undefined});
 execa('unicorns', {stdio: 'overlapped'});
-execaSync('unicorns', {stdio: 'overlapped'});
+expectError(execaSync('unicorns', {stdio: 'overlapped'}));
 execa('unicorns', {stdio: 'ignore'});
 execaSync('unicorns', {stdio: 'ignore'});
 execa('unicorns', {stdio: 'inherit'});
@@ -1691,15 +1673,15 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe']}));
 execa('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});
 execaSync('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});
 execa('unicorns', {stdio: [[new Readable()], ['pipe'], ['pipe']]});
-execaSync('unicorns', {stdio: [[new Readable()], ['pipe'], ['pipe']]});
+expectError(execaSync('unicorns', {stdio: [[new Readable()], ['pipe'], ['pipe']]}));
 execa('unicorns', {stdio: ['pipe', new Writable(), 'pipe']});
 execaSync('unicorns', {stdio: ['pipe', new Writable(), 'pipe']});
 execa('unicorns', {stdio: [['pipe'], [new Writable()], ['pipe']]});
-execaSync('unicorns', {stdio: [['pipe'], [new Writable()], ['pipe']]});
+expectError(execaSync('unicorns', {stdio: [['pipe'], [new Writable()], ['pipe']]}));
 execa('unicorns', {stdio: ['pipe', 'pipe', new Writable()]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', new Writable()]});
 execa('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]});
-execaSync('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]});
+expectError(execaSync('unicorns', {stdio: [['pipe'], ['pipe'], [new Writable()]]}));
 expectError(execa('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
 expectError(execaSync('unicorns', {stdio: [new Writable(), 'pipe', 'pipe']}));
 expectError(execaSync('unicorns', {stdio: [[new Writable()], ['pipe'], ['pipe']]}));
@@ -1714,6 +1696,7 @@ expectError(execaSync('unicorns', {stdio: [['pipe'], ['pipe'], [new Readable()]]
 execa('unicorns', {
 	stdio: [
 		'pipe',
+		undefined,
 		'overlapped',
 		'ipc',
 		'ignore',
@@ -1726,7 +1709,6 @@ execa('unicorns', {
 		{transform: unknownGenerator, preserveNewlines: true},
 		{transform: unknownGenerator, objectMode: true},
 		{transform: unknownGenerator, final: unknownFinal},
-		undefined,
 		fileUrl,
 		{file: './test'},
 		duplex,
@@ -1745,13 +1727,11 @@ execa('unicorns', {
 execaSync('unicorns', {
 	stdio: [
 		'pipe',
-		'overlapped',
-		'ipc',
+		undefined,
 		'ignore',
 		'inherit',
 		process.stdin,
 		1,
-		undefined,
 		fileUrl,
 		{file: './test'},
 		new Writable(),
@@ -1759,6 +1739,8 @@ execaSync('unicorns', {
 		new Uint8Array(),
 	],
 });
+expectError(execaSync('unicorns', {stdio: ['overlapped']}));
+expectError(execaSync('unicorns', {stdio: ['ipc']}));
 expectError(execaSync('unicorns', {stdio: [unknownGenerator]}));
 expectError(execaSync('unicorns', {stdio: [{transform: unknownGenerator}]}));
 expectError(execaSync('unicorns', {stdio: [duplex]}));
@@ -1773,6 +1755,8 @@ execa('unicorns', {
 	stdio: [
 		['pipe'],
 		['pipe', 'inherit'],
+		['pipe', undefined],
+		[undefined],
 		['overlapped'],
 		['ipc'],
 		['ignore'],
@@ -1785,7 +1769,6 @@ execa('unicorns', {
 		[{transform: unknownGenerator, preserveNewlines: true}],
 		[{transform: unknownGenerator, objectMode: true}],
 		[{transform: unknownGenerator, final: unknownFinal}],
-		[undefined],
 		[fileUrl],
 		[{file: './test'}],
 		[duplex],
@@ -1807,21 +1790,22 @@ execa('unicorns', {
 execaSync('unicorns', {
 	stdio: [
 		['pipe'],
-		['pipe', 'inherit'],
-		['overlapped'],
-		['ipc'],
-		['ignore'],
-		['inherit'],
-		[process.stdin],
-		[1],
+		['pipe', undefined],
 		[undefined],
-		[fileUrl],
-		[{file: './test'}],
-		[new Writable()],
-		[new Readable()],
-		[new Uint8Array()],
 	],
 });
+expectError(execaSync('unicorns', {stdio: [['pipe', 'inherit']]}));
+expectError(execaSync('unicorns', {stdio: [['overlapped']]}));
+expectError(execaSync('unicorns', {stdio: [['ipc']]}));
+expectError(execaSync('unicorns', {stdio: [['ignore']]}));
+expectError(execaSync('unicorns', {stdio: [['inherit']]}));
+expectError(execaSync('unicorns', {stdio: [[process.stdin]]}));
+expectError(execaSync('unicorns', {stdio: [[1]]}));
+expectError(execaSync('unicorns', {stdio: [[fileUrl]]}));
+expectError(execaSync('unicorns', {stdio: [[{file: './test'}]]}));
+expectError(execaSync('unicorns', {stdio: [[new Writable()]]}));
+expectError(execaSync('unicorns', {stdio: [[new Readable()]]}));
+expectError(execaSync('unicorns', {stdio: [[new Uint8Array()]]}));
 expectError(execaSync('unicorns', {stdio: [[unknownGenerator]]}));
 expectError(execaSync('unicorns', {stdio: [[{transform: unknownGenerator}]]}));
 expectError(execaSync('unicorns', {stdio: [[duplex]]}));
@@ -1868,11 +1852,10 @@ execaSync('unicorns', {killSignal: 'SIGTERM'});
 execa('unicorns', {killSignal: 9});
 execaSync('unicorns', {killSignal: 9});
 execa('unicorns', {forceKillAfterDelay: false});
-execaSync('unicorns', {forceKillAfterDelay: false});
+expectError(execaSync('unicorns', {forceKillAfterDelay: false}));
 execa('unicorns', {forceKillAfterDelay: 42});
-execaSync('unicorns', {forceKillAfterDelay: 42});
+expectError(execaSync('unicorns', {forceKillAfterDelay: 42}));
 execa('unicorns', {forceKillAfterDelay: undefined});
-execaSync('unicorns', {forceKillAfterDelay: undefined});
 expectError(execa('unicorns', {forceKillAfterDelay: 'true'}));
 expectError(execaSync('unicorns', {forceKillAfterDelay: 'true'}));
 execa('unicorns', {cancelSignal: new AbortController().signal});

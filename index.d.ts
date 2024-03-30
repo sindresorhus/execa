@@ -1,7 +1,11 @@
 import {type ChildProcess} from 'node:child_process';
 import {type Readable, type Writable, type Duplex} from 'node:stream';
 
-type IfAsync<IsSync extends boolean, AsyncValue, SyncValue = never> = IsSync extends true ? SyncValue : AsyncValue;
+type And<First extends boolean, Second extends boolean> = First extends true ? Second : false;
+
+type Or<First extends boolean, Second extends boolean> = First extends true ? true : Second;
+
+type Unless<Condition extends boolean, ThenValue, ElseValue = never> = Condition extends true ? ElseValue : ThenValue;
 
 // When the `stdin`/`stdout`/`stderr`/`stdio` option is set to one of those values, no stream is created
 type NoStreamStdioOption =
@@ -13,11 +17,15 @@ type NoStreamStdioOption =
 	| Writable
 	| [NoStreamStdioOption];
 
-type BaseStdioOption =
+type BaseStdioOption<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> =
 	| 'pipe'
-	| 'overlapped'
-	| 'ignore'
-	| 'inherit';
+	| undefined
+	| Unless<And<IsSync, IsArray>, 'inherit'>
+	| Unless<IsArray, 'ignore'>
+	| Unless<IsSync, 'overlapped'>;
 
 // @todo Use `string`, `Uint8Array` or `unknown` for both the argument and the return type, based on whether `encoding: 'buffer'` and `objectMode: true` are used.
 // See https://github.com/sindresorhus/execa/issues/694
@@ -42,51 +50,73 @@ type WebTransform = {
 	objectMode?: boolean;
 };
 
-type CommonStdioOption<IsSync extends boolean = boolean> =
-	| BaseStdioOption
-	| 'ipc'
-	| number
-	| undefined
+type CommonStdioOption<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> =
+	| BaseStdioOption<IsSync, IsArray>
 	| URL
 	| {file: string}
-	| IfAsync<IsSync,
+	| Unless<And<IsSync, IsArray>, number>
+	| Unless<Or<IsSync, IsArray>, 'ipc'>
+	| Unless<IsSync,
 	| GeneratorTransform
 	| GeneratorTransformFull
 	| DuplexTransform
 	| WebTransform
 	| TransformStream>;
 
-type InputStdioOption<IsSync extends boolean = boolean> =
+type InputStdioOption<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> =
 	| Uint8Array
-	| Readable
-	| IfAsync<IsSync,
+	| Unless<And<IsSync, IsArray>, Readable>
+	| Unless<IsSync,
 	| Iterable<unknown>
 	| AsyncIterable<unknown>
 	| ReadableStream>;
 
-type OutputStdioOption<IsSync extends boolean = boolean> =
-	| Writable
-	| IfAsync<IsSync, WritableStream>;
+type OutputStdioOption<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> =
+	| Unless<And<IsSync, IsArray>, Writable>
+	| Unless<IsSync, WritableStream>;
 
-type StdinSingleOption<IsSync extends boolean = boolean> =
-	| CommonStdioOption<IsSync>
-	| InputStdioOption<IsSync>;
+type StdinSingleOption<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> =
+	| CommonStdioOption<IsSync, IsArray>
+	| InputStdioOption<IsSync, IsArray>;
+
 export type StdinOption<IsSync extends boolean = boolean> =
-	| StdinSingleOption<IsSync>
-	| Array<StdinSingleOption<IsSync>>;
-type StdoutStderrSingleOption<IsSync extends boolean = boolean> =
-  | CommonStdioOption<IsSync>
-  | OutputStdioOption<IsSync>;
+	| StdinSingleOption<IsSync, false>
+	| Array<StdinSingleOption<IsSync, true>>;
+
+type StdoutStderrSingleOption<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> =
+  | CommonStdioOption<IsSync, IsArray>
+  | OutputStdioOption<IsSync, IsArray>;
+
 export type StdoutStderrOption<IsSync extends boolean = boolean> =
-	| StdoutStderrSingleOption<IsSync>
-	| Array<StdoutStderrSingleOption<IsSync>>;
-type StdioSingleOption<IsSync extends boolean = boolean> =
-	| CommonStdioOption<IsSync>
-	| InputStdioOption<IsSync>
-	| OutputStdioOption<IsSync>;
+	| StdoutStderrSingleOption<IsSync, false>
+	| Array<StdoutStderrSingleOption<IsSync, true>>;
+
+type StdioSingleOption<
+	IsSync extends boolean = boolean,
+	IsArray extends boolean = boolean,
+> =
+	| CommonStdioOption<IsSync, IsArray>
+	| InputStdioOption<IsSync, IsArray>
+	| OutputStdioOption<IsSync, IsArray>;
+
 export type StdioOption<IsSync extends boolean = boolean> =
-	| StdioSingleOption<IsSync>
-	| Array<StdioSingleOption<IsSync>>;
+	| StdioSingleOption<IsSync, false>
+	| Array<StdioSingleOption<IsSync, true>>;
 
 type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 	StdinOption<IsSync>,
@@ -95,7 +125,7 @@ type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 	...Array<StdioOption<IsSync>>,
 ];
 
-type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption | StdioOptionsArray<IsSync>;
+type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption<IsSync> | StdioOptionsArray<IsSync>;
 
 type DefaultEncodingOption = 'utf8';
 type TextEncodingOption =
@@ -428,7 +458,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default false
 	*/
-	readonly lines?: IfAsync<IsSync, boolean>;
+	readonly lines?: Unless<IsSync, boolean>;
 
 	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.
@@ -561,7 +591,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 5000
 	*/
-	forceKillAfterDelay?: number | false;
+	forceKillAfterDelay?: Unless<IsSync, number | false>;
 
 	/**
 	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.
@@ -598,7 +628,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default true
 	*/
-	readonly cleanup?: IfAsync<IsSync, boolean>;
+	readonly cleanup?: Unless<IsSync, boolean>;
 
 	/**
 	Whether to return the subprocess' output using the `result.stdout`, `result.stderr`, `result.all` and `result.stdio` properties.
@@ -609,21 +639,21 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default true
 	*/
-	readonly buffer?: IfAsync<IsSync, boolean>;
+	readonly buffer?: Unless<IsSync, boolean>;
 
 	/**
 	Add an `.all` property on the promise and the resolved value. The property contains the output of the subprocess with `stdout` and `stderr` interleaved.
 
 	@default false
 	*/
-	readonly all?: IfAsync<IsSync, boolean>;
+	readonly all?: Unless<IsSync, boolean>;
 
 	/**
 	Enables exchanging messages with the subprocess using [`subprocess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`subprocess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
 
 	@default `true` if the `node` option is enabled, `false` otherwise
 	*/
-	readonly ipc?: IfAsync<IsSync, boolean>;
+	readonly ipc?: Unless<IsSync, boolean>;
 
 	/**
 	Specify the kind of serialization used for sending messages between subprocesses when using the `ipc` option:
@@ -634,14 +664,14 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'advanced'
 	*/
-	readonly serialization?: IfAsync<IsSync, 'json' | 'advanced'>;
+	readonly serialization?: Unless<IsSync, 'json' | 'advanced'>;
 
 	/**
 	Prepare subprocess to run independently of the current process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
 
 	@default false
 	*/
-	readonly detached?: IfAsync<IsSync, boolean>;
+	readonly detached?: Unless<IsSync, boolean>;
 
 	/**
 	You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
@@ -667,7 +697,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	}
 	```
 	*/
-	readonly cancelSignal?: IfAsync<IsSync, AbortSignal>;
+	readonly cancelSignal?: Unless<IsSync, AbortSignal>;
 };
 
 export type Options = CommonOptions<false>;
@@ -779,14 +809,14 @@ declare abstract class CommonResult<
 
 	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
-	all: IfAsync<IsSync, AllOutput<OptionsType>>;
+	all: Unless<IsSync, AllOutput<OptionsType>>;
 
 	/**
 	Results of the other subprocesses that were piped into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
 
 	This array is initially empty and is populated each time the `.pipe()` method resolves.
 	*/
-	pipedFrom: IfAsync<IsSync, ExecaResult[], []>;
+	pipedFrom: Unless<IsSync, ExecaResult[], []>;
 
 	/**
 	Error message when the subprocess failed to run. In addition to the underlying error message, it also contains some information related to why the subprocess errored.

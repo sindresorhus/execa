@@ -63,6 +63,17 @@ test('stdio[*] can be ["inherit"]', testNoPipeOption, ['inherit'], 3);
 test('stdio[*] can be 3', testNoPipeOption, 3, 3);
 test('stdio[*] can be [3]', testNoPipeOption, [3], 3);
 
+const testNoIpcSync = (t, fdNumber) => {
+	t.throws(() => {
+		execaSync('empty.js', getStdio(fdNumber, 'ipc'));
+	}, {message: /cannot be "ipc" in sync mode/});
+};
+
+test('stdin cannot be "ipc", sync', testNoIpcSync, 0);
+test('stdout cannot be "ipc", sync', testNoIpcSync, 1);
+test('stderr cannot be "ipc", sync', testNoIpcSync, 2);
+test('stdio[*] cannot be "ipc", sync', testNoIpcSync, 3);
+
 const testInvalidArrayValue = (t, invalidStdio, fdNumber, execaMethod) => {
 	t.throws(() => {
 		execaMethod('empty.js', getStdio(fdNumber, ['pipe', invalidStdio]));

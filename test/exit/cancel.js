@@ -80,6 +80,13 @@ test('calling abort on a successfully completed subprocess does not make result.
 test('Throws when using the former "signal" option name', t => {
 	const abortController = new AbortController();
 	t.throws(() => {
-		execa('noop.js', {signal: abortController.signal});
+		execa('empty.js', {signal: abortController.signal});
 	}, {message: /renamed to "cancelSignal"/});
+});
+
+test('Cannot use cancelSignal, sync', t => {
+	const abortController = new AbortController();
+	t.throws(() => {
+		execaSync('empty.js', {cancelSignal: abortController.signal});
+	}, {message: /The "cancelSignal" option cannot be used/});
 });

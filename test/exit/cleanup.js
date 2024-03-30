@@ -3,7 +3,7 @@ import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {pEvent} from 'p-event';
 import isRunning from 'is-running';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -86,4 +86,10 @@ test('detach subprocess', async t => {
 	t.true(isRunning(pid));
 
 	process.kill(pid, 'SIGKILL');
+});
+
+test('Cannot use "detached" option, sync', t => {
+	t.throws(() => {
+		execaSync('empty.js', {detached: true});
+	}, {message: /The "detached: true" option cannot be used/});
 });

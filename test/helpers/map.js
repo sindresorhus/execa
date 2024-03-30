@@ -27,6 +27,20 @@ import {
 	appendDuplex,
 	timeoutDuplex,
 } from './duplex.js';
+import {
+	addNoopWebTransform,
+	noopWebTransform,
+	serializeWebTransform,
+	uppercaseBufferWebTransform,
+	getOutputWebTransform,
+	outputObjectWebTransform,
+	getOutputsWebTransform,
+	noYieldWebTransform,
+	multipleYieldWebTransform,
+	throwingWebTransform,
+	appendWebTransform,
+	timeoutWebTransform,
+} from './web-transform.js';
 
 export const generatorsMap = {
 	generator: {
@@ -58,5 +72,20 @@ export const generatorsMap = {
 		throwing: throwingDuplex,
 		append: appendDuplex,
 		timeout: timeoutDuplex,
+	},
+	webTransform: {
+		addNoop: addNoopWebTransform,
+		noop: noopWebTransform,
+		serialize: serializeWebTransform,
+		uppercaseBuffer: uppercaseBufferWebTransform,
+		uppercase: uppercaseBufferWebTransform,
+		getOutput: getOutputWebTransform,
+		outputObject: outputObjectWebTransform,
+		getOutputs: getOutputsWebTransform,
+		noYield: noYieldWebTransform,
+		multipleYield: multipleYieldWebTransform,
+		throwing: throwingWebTransform,
+		append: appendWebTransform,
+		timeout: timeoutWebTransform,
 	},
 };

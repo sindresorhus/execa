@@ -319,7 +319,7 @@ Same as [`execa()`](#execafile-arguments-options) but synchronous.
 
 Returns or throws a [`subprocessResult`](#subprocessResult). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options), [`.iterable()`](#iterablereadableoptions), [`.readable()`](#readablereadableoptions), [`.writable()`](#writablewritableoptions), [`.duplex()`](#duplexduplexoptions) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal), [`forceKillAfterDelay`](#forcekillafterdelay), [`lines`](#lines) and [`verbose: 'full'`](#verbose). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a [transform](docs/transform.md), a [`Duplex`](docs/transform.md#nodejs-duplextransform-streams), or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+Cannot use the following options: [`all`](#all-2), [`cleanup`](#cleanup), [`buffer`](#buffer), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal), [`forceKillAfterDelay`](#forcekillafterdelay), [`lines`](#lines) and [`verbose: 'full'`](#verbose). Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1), [`stdio`](#stdio-1) and [`input`](#input) options cannot be an array, [`overlapped`](https://nodejs.org/api/child_process.html#optionsstdio), an iterable, a [transform](docs/transform.md), a [`Duplex`](docs/transform.md#duplextransform-streams), or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
 
 #### $(file, arguments?, options?)
 
@@ -870,7 +870,7 @@ See also the [`input`](#input) and [`stdin`](#stdin) options.
 
 #### stdin
 
-Type: `string | number | stream.Readable | ReadableStream | URL | {file: string} | Uint8Array | Iterable<string | Uint8Array | unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex}` (or a tuple of those types)\
+Type: `string | number | stream.Readable | ReadableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string | Uint8Array | unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
 Default: `inherit` with [`$`](#file-arguments-options), `pipe` otherwise
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard input. This can be:
@@ -888,11 +888,11 @@ Default: `inherit` with [`$`](#file-arguments-options), `pipe` otherwise
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-This can also be a generator function or a [`Duplex`](docs/transform.md#nodejs-duplextransform-streams) to transform the input. [Learn more.](docs/transform.md)
+This can also be a generator function, a [`Duplex`](docs/transform.md#duplextransform-streams) or a web [`TransformStream`](docs/transform.md#duplextransform-streams) to transform the input. [Learn more.](docs/transform.md)
 
 #### stdout
 
-Type: `string | number | stream.Writable | WritableStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown>  | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex}` (or a tuple of those types)\
+Type: `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown>  | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard output. This can be:
@@ -908,11 +908,11 @@ Default: `pipe`
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-This can also be a generator function or a [`Duplex`](docs/transform.md#nodejs-duplextransform-streams) to transform the output. [Learn more.](docs/transform.md)
+This can also be a generator function, a [`Duplex`](docs/transform.md#duplextransform-streams) or a web [`TransformStream`](docs/transform.md#duplextransform-streams) to transform the output. [Learn more.](docs/transform.md)
 
 #### stderr
 
-Type: `string | number | stream.Writable | WritableStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex}` (or a tuple of those types)\
+Type: `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
 Default: `pipe`
 
 [How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard error. This can be:
@@ -928,11 +928,11 @@ Default: `pipe`
 
 This can be an [array of values](#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-This can also be a generator function or a [`Duplex`](docs/transform.md#nodejs-duplextransform-streams) to transform the output. [Learn more.](docs/transform.md)
+This can also be a generator function, a [`Duplex`](docs/transform.md#duplextransform-streams) or a web [`TransformStream`](docs/transform.md#duplextransform-streams) to transform the output. [Learn more.](docs/transform.md)
 
 #### stdio
 
-Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | URL | {file: string} | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex}>` (or a tuple of those types)\
+Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}>` (or a tuple of those types)\
 Default: `pipe`
 
 Like the [`stdin`](#stdin), [`stdout`](#stdout-1) and [`stderr`](#stderr-1) options but for all file descriptors at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.

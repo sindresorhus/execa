@@ -24,6 +24,7 @@ import {
 	casedSuffix,
 } from '../helpers/generator.js';
 import {appendDuplex, uppercaseBufferDuplex} from '../helpers/duplex.js';
+import {appendWebTransform, uppercaseBufferWebTransform} from '../helpers/web-transform.js';
 import {generatorsMap} from '../helpers/map.js';
 
 setFixtureDir();
@@ -77,6 +78,14 @@ test('Can use duplexes with result.stdin, noop transform', testGeneratorInput, 0
 test('Can use duplexes with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'duplex');
 test('Can use duplexes with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'duplex');
 test('Can use duplexes with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'duplex');
+test('Can use webTransforms with result.stdin', testGeneratorInput, 0, false, false, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as input', testGeneratorInput, 3, false, false, 'webTransform');
+test('Can use webTransforms with result.stdin, objectMode', testGeneratorInput, 0, true, false, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as input, objectMode', testGeneratorInput, 3, true, false, 'webTransform');
+test('Can use webTransforms with result.stdin, noop transform', testGeneratorInput, 0, false, true, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'webTransform');
+test('Can use webTransforms with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'webTransform');
 
 // eslint-disable-next-line max-params
 const testGeneratorInputPipe = async (t, useShortcutProperty, objectMode, addNoopTransform, type, input) => {
@@ -120,6 +129,22 @@ test('Can use duplexes with subprocess.stdio[0] and encoding "hex", noop transfo
 test('Can use duplexes with subprocess.stdin and encoding "hex", noop transform', testGeneratorInputPipe, true, false, true, 'duplex', [foobarHex, 'hex']);
 test('Can use duplexes with subprocess.stdio[0], objectMode, noop transform', testGeneratorInputPipe, false, true, true, 'duplex', [foobarObject]);
 test('Can use duplexes with subprocess.stdin, objectMode, noop transform', testGeneratorInputPipe, true, true, true, 'duplex', [foobarObject]);
+test('Can use webTransforms with subprocess.stdio[0] and default encoding', testGeneratorInputPipe, false, false, false, 'webTransform', [foobarString, 'utf8']);
+test('Can use webTransforms with subprocess.stdin and default encoding', testGeneratorInputPipe, true, false, false, 'webTransform', [foobarString, 'utf8']);
+test('Can use webTransforms with subprocess.stdio[0] and encoding "buffer"', testGeneratorInputPipe, false, false, false, 'webTransform', [foobarBuffer, 'buffer']);
+test('Can use webTransforms with subprocess.stdin and encoding "buffer"', testGeneratorInputPipe, true, false, false, 'webTransform', [foobarBuffer, 'buffer']);
+test('Can use webTransforms with subprocess.stdio[0] and encoding "hex"', testGeneratorInputPipe, false, false, false, 'webTransform', [foobarHex, 'hex']);
+test('Can use webTransforms with subprocess.stdin and encoding "hex"', testGeneratorInputPipe, true, false, false, 'webTransform', [foobarHex, 'hex']);
+test('Can use webTransforms with subprocess.stdio[0], objectMode', testGeneratorInputPipe, false, true, false, 'webTransform', [foobarObject]);
+test('Can use webTransforms with subprocess.stdin, objectMode', testGeneratorInputPipe, true, true, false, 'webTransform', [foobarObject]);
+test('Can use webTransforms with subprocess.stdio[0] and default encoding, noop transform', testGeneratorInputPipe, false, false, true, 'webTransform', [foobarString, 'utf8']);
+test('Can use webTransforms with subprocess.stdin and default encoding, noop transform', testGeneratorInputPipe, true, false, true, 'webTransform', [foobarString, 'utf8']);
+test('Can use webTransforms with subprocess.stdio[0] and encoding "buffer", noop transform', testGeneratorInputPipe, false, false, true, 'webTransform', [foobarBuffer, 'buffer']);
+test('Can use webTransforms with subprocess.stdin and encoding "buffer", noop transform', testGeneratorInputPipe, true, false, true, 'webTransform', [foobarBuffer, 'buffer']);
+test('Can use webTransforms with subprocess.stdio[0] and encoding "hex", noop transform', testGeneratorInputPipe, false, false, true, 'webTransform', [foobarHex, 'hex']);
+test('Can use webTransforms with subprocess.stdin and encoding "hex", noop transform', testGeneratorInputPipe, true, false, true, 'webTransform', [foobarHex, 'hex']);
+test('Can use webTransforms with subprocess.stdio[0], objectMode, noop transform', testGeneratorInputPipe, false, true, true, 'webTransform', [foobarObject]);
+test('Can use webTransforms with subprocess.stdin, objectMode, noop transform', testGeneratorInputPipe, true, true, true, 'webTransform', [foobarObject]);
 
 const testGeneratorStdioInputPipe = async (t, objectMode, addNoopTransform, type) => {
 	const {input, generators, output} = getInputObjectMode(objectMode, addNoopTransform, type);
@@ -137,6 +162,10 @@ test('Can use duplexes with subprocess.stdio[*] as input', testGeneratorStdioInp
 test('Can use duplexes with subprocess.stdio[*] as input, objectMode', testGeneratorStdioInputPipe, true, false, 'duplex');
 test('Can use duplexes with subprocess.stdio[*] as input, noop transform', testGeneratorStdioInputPipe, false, true, 'duplex');
 test('Can use duplexes with subprocess.stdio[*] as input, objectMode, noop transform', testGeneratorStdioInputPipe, true, true, 'duplex');
+test('Can use webTransforms with subprocess.stdio[*] as input', testGeneratorStdioInputPipe, false, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[*] as input, objectMode', testGeneratorStdioInputPipe, true, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[*] as input, noop transform', testGeneratorStdioInputPipe, false, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[*] as input, objectMode, noop transform', testGeneratorStdioInputPipe, true, true, 'webTransform');
 
 // eslint-disable-next-line max-params
 const testGeneratorOutput = async (t, fdNumber, reject, useShortcutProperty, objectMode, addNoopTransform, type) => {
@@ -227,6 +256,46 @@ test('Can use duplexes with error.stdout, objectMode, noop transform', testGener
 test('Can use duplexes with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'duplex');
 test('Can use duplexes with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'duplex');
 test('Can use duplexes with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'duplex');
+test('Can use webTransforms with result.stdio[1]', testGeneratorOutput, 1, true, false, false, false, 'webTransform');
+test('Can use webTransforms with result.stdout', testGeneratorOutput, 1, true, true, false, false, 'webTransform');
+test('Can use webTransforms with result.stdio[2]', testGeneratorOutput, 2, true, false, false, false, 'webTransform');
+test('Can use webTransforms with result.stderr', testGeneratorOutput, 2, true, true, false, false, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as output', testGeneratorOutput, 3, true, false, false, false, 'webTransform');
+test('Can use webTransforms with error.stdio[1]', testGeneratorOutput, 1, false, false, false, false, 'webTransform');
+test('Can use webTransforms with error.stdout', testGeneratorOutput, 1, false, true, false, false, 'webTransform');
+test('Can use webTransforms with error.stdio[2]', testGeneratorOutput, 2, false, false, false, false, 'webTransform');
+test('Can use webTransforms with error.stderr', testGeneratorOutput, 2, false, true, false, false, 'webTransform');
+test('Can use webTransforms with error.stdio[*] as output', testGeneratorOutput, 3, false, false, false, false, 'webTransform');
+test('Can use webTransforms with result.stdio[1], objectMode', testGeneratorOutput, 1, true, false, true, false, 'webTransform');
+test('Can use webTransforms with result.stdout, objectMode', testGeneratorOutput, 1, true, true, true, false, 'webTransform');
+test('Can use webTransforms with result.stdio[2], objectMode', testGeneratorOutput, 2, true, false, true, false, 'webTransform');
+test('Can use webTransforms with result.stderr, objectMode', testGeneratorOutput, 2, true, true, true, false, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as output, objectMode', testGeneratorOutput, 3, true, false, true, false, 'webTransform');
+test('Can use webTransforms with error.stdio[1], objectMode', testGeneratorOutput, 1, false, false, true, false, 'webTransform');
+test('Can use webTransforms with error.stdout, objectMode', testGeneratorOutput, 1, false, true, true, false, 'webTransform');
+test('Can use webTransforms with error.stdio[2], objectMode', testGeneratorOutput, 2, false, false, true, false, 'webTransform');
+test('Can use webTransforms with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true, false, 'webTransform');
+test('Can use webTransforms with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true, false, 'webTransform');
+test('Can use webTransforms with result.stdio[1], noop transform', testGeneratorOutput, 1, true, false, false, true, 'webTransform');
+test('Can use webTransforms with result.stdout, noop transform', testGeneratorOutput, 1, true, true, false, true, 'webTransform');
+test('Can use webTransforms with result.stdio[2], noop transform', testGeneratorOutput, 2, true, false, false, true, 'webTransform');
+test('Can use webTransforms with result.stderr, noop transform', testGeneratorOutput, 2, true, true, false, true, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as output, noop transform', testGeneratorOutput, 3, true, false, false, true, 'webTransform');
+test('Can use webTransforms with error.stdio[1], noop transform', testGeneratorOutput, 1, false, false, false, true, 'webTransform');
+test('Can use webTransforms with error.stdout, noop transform', testGeneratorOutput, 1, false, true, false, true, 'webTransform');
+test('Can use webTransforms with error.stdio[2], noop transform', testGeneratorOutput, 2, false, false, false, true, 'webTransform');
+test('Can use webTransforms with error.stderr, noop transform', testGeneratorOutput, 2, false, true, false, true, 'webTransform');
+test('Can use webTransforms with error.stdio[*] as output, noop transform', testGeneratorOutput, 3, false, false, false, true, 'webTransform');
+test('Can use webTransforms with result.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, true, false, true, true, 'webTransform');
+test('Can use webTransforms with result.stdout, objectMode, noop transform', testGeneratorOutput, 1, true, true, true, true, 'webTransform');
+test('Can use webTransforms with result.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, true, false, true, true, 'webTransform');
+test('Can use webTransforms with result.stderr, objectMode, noop transform', testGeneratorOutput, 2, true, true, true, true, 'webTransform');
+test('Can use webTransforms with result.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, true, false, true, true, 'webTransform');
+test('Can use webTransforms with error.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, false, false, true, true, 'webTransform');
+test('Can use webTransforms with error.stdout, objectMode, noop transform', testGeneratorOutput, 1, false, true, true, true, 'webTransform');
+test('Can use webTransforms with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'webTransform');
+test('Can use webTransforms with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'webTransform');
+test('Can use webTransforms with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'webTransform');
 
 // eslint-disable-next-line max-params
 const testGeneratorOutputPipe = async (t, fdNumber, useShortcutProperty, objectMode, addNoopTransform, type) => {
@@ -277,6 +346,26 @@ test('Can use duplexes with subprocess.stdout, objectMode, noop transform', test
 test('Can use duplexes with subprocess.stdio[2], objectMode, noop transform', testGeneratorOutputPipe, 2, false, true, true, 'duplex');
 test('Can use duplexes with subprocess.stderr, objectMode, noop transform', testGeneratorOutputPipe, 2, true, true, true, 'duplex');
 test('Can use duplexes with subprocess.stdio[*] as output, objectMode, noop transform', testGeneratorOutputPipe, 3, false, true, true, 'duplex');
+test('Can use webTransforms with subprocess.stdio[1]', testGeneratorOutputPipe, 1, false, false, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdout', testGeneratorOutputPipe, 1, true, false, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[2]', testGeneratorOutputPipe, 2, false, false, false, 'webTransform');
+test('Can use webTransforms with subprocess.stderr', testGeneratorOutputPipe, 2, true, false, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[*] as output', testGeneratorOutputPipe, 3, false, false, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[1], objectMode', testGeneratorOutputPipe, 1, false, true, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdout, objectMode', testGeneratorOutputPipe, 1, true, true, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[2], objectMode', testGeneratorOutputPipe, 2, false, true, false, 'webTransform');
+test('Can use webTransforms with subprocess.stderr, objectMode', testGeneratorOutputPipe, 2, true, true, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[*] as output, objectMode', testGeneratorOutputPipe, 3, false, true, false, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[1], noop transform', testGeneratorOutputPipe, 1, false, false, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdout, noop transform', testGeneratorOutputPipe, 1, true, false, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[2], noop transform', testGeneratorOutputPipe, 2, false, false, true, 'webTransform');
+test('Can use webTransforms with subprocess.stderr, noop transform', testGeneratorOutputPipe, 2, true, false, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[*] as output, noop transform', testGeneratorOutputPipe, 3, false, false, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[1], objectMode, noop transform', testGeneratorOutputPipe, 1, false, true, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdout, objectMode, noop transform', testGeneratorOutputPipe, 1, true, true, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[2], objectMode, noop transform', testGeneratorOutputPipe, 2, false, true, true, 'webTransform');
+test('Can use webTransforms with subprocess.stderr, objectMode, noop transform', testGeneratorOutputPipe, 2, true, true, true, 'webTransform');
+test('Can use webTransforms with subprocess.stdio[*] as output, objectMode, noop transform', testGeneratorOutputPipe, 3, false, true, true, 'webTransform');
 
 const getAllStdioOption = (stdioOption, encoding, objectMode) => {
 	if (stdioOption) {
@@ -378,6 +467,7 @@ const testInputOption = async (t, type) => {
 
 test('Can use generators with input option', testInputOption, 'generator');
 test('Can use duplexes with input option', testInputOption, 'duplex');
+test('Can use webTransforms with input option', testInputOption, 'webTransform');
 
 const testInputFile = async (t, getOptions, reversed) => {
 	const filePath = tempfile();
@@ -395,6 +485,9 @@ test('Can use generators with inputFile option', testInputFile, filePath => ({in
 test('Can use duplexes with a file as input', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferDuplex()]}), false);
 test('Can use duplexes with a file as input, reversed', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferDuplex()]}), true);
 test('Can use duplexes with inputFile option', testInputFile, filePath => ({inputFile: filePath, stdin: uppercaseBufferDuplex()}), false);
+test('Can use webTransforms with a file as input', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferWebTransform()]}), false);
+test('Can use webTransforms with a file as input, reversed', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferWebTransform()]}), true);
+test('Can use webTransforms with inputFile option', testInputFile, filePath => ({inputFile: filePath, stdin: uppercaseBufferWebTransform()}), false);
 
 const testOutputFile = async (t, reversed, type) => {
 	const filePath = tempfile();
@@ -410,6 +503,8 @@ test('Can use generators with a file as output', testOutputFile, false, 'generat
 test('Can use generators with a file as output, reversed', testOutputFile, true, 'generator');
 test('Can use duplexes with a file as output', testOutputFile, false, 'duplex');
 test('Can use duplexes with a file as output, reversed', testOutputFile, true, 'duplex');
+test('Can use webTransforms with a file as output', testOutputFile, false, 'webTransform');
+test('Can use webTransforms with a file as output, reversed', testOutputFile, true, 'webTransform');
 
 const testWritableDestination = async (t, type) => {
 	const passThrough = new PassThrough();
@@ -423,6 +518,7 @@ const testWritableDestination = async (t, type) => {
 
 test('Can use generators to a Writable stream', testWritableDestination, 'generator');
 test('Can use duplexes to a Writable stream', testWritableDestination, 'duplex');
+test('Can use webTransforms to a Writable stream', testWritableDestination, 'webTransform');
 
 const testReadableSource = async (t, type) => {
 	const passThrough = new PassThrough();
@@ -434,6 +530,7 @@ const testReadableSource = async (t, type) => {
 
 test('Can use generators from a Readable stream', testReadableSource, 'generator');
 test('Can use duplexes from a Readable stream', testReadableSource, 'duplex');
+test('Can use webTransforms from a Readable stream', testReadableSource, 'webTransform');
 
 const testInherit = async (t, type) => {
 	const {stdout} = await execa('nested-inherit.js', [type]);
@@ -442,6 +539,7 @@ const testInherit = async (t, type) => {
 
 test('Can use generators with "inherit"', testInherit, 'generator');
 test('Can use duplexes with "inherit"', testInherit, 'duplex');
+test('Can use webTransforms with "inherit"', testInherit, 'webTransform');
 
 const testAppendInput = async (t, reversed, type) => {
 	const stdin = [foobarUint8Array, generatorsMap[type].uppercase(), generatorsMap[type].append()];
@@ -455,6 +553,8 @@ test('Can use multiple generators as input', testAppendInput, false, 'generator'
 test('Can use multiple generators as input, reversed', testAppendInput, true, 'generator');
 test('Can use multiple duplexes as input', testAppendInput, false, 'duplex');
 test('Can use multiple duplexes as input, reversed', testAppendInput, true, 'duplex');
+test('Can use multiple webTransforms as input', testAppendInput, false, 'webTransform');
+test('Can use multiple webTransforms as input, reversed', testAppendInput, true, 'webTransform');
 
 const testAppendOutput = async (t, reversed, type) => {
 	const stdoutOption = [generatorsMap[type].uppercase(), generatorsMap[type].append()];
@@ -468,6 +568,8 @@ test('Can use multiple generators as output', testAppendOutput, false, 'generato
 test('Can use multiple generators as output, reversed', testAppendOutput, true, 'generator');
 test('Can use multiple duplexes as output', testAppendOutput, false, 'duplex');
 test('Can use multiple duplexes as output, reversed', testAppendOutput, true, 'duplex');
+test('Can use multiple webTransforms as output', testAppendOutput, false, 'webTransform');
+test('Can use multiple webTransforms as output, reversed', testAppendOutput, true, 'webTransform');
 
 const testTwoGenerators = async (t, producesTwo, firstGenerator, secondGenerator = firstGenerator) => {
 	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: [firstGenerator, secondGenerator]});
@@ -478,12 +580,18 @@ const testTwoGenerators = async (t, producesTwo, firstGenerator, secondGenerator
 test('Can use multiple identical generators', testTwoGenerators, true, appendGenerator().transform);
 test('Can use multiple identical generators, options object', testTwoGenerators, true, appendGenerator());
 test('Ignore duplicate identical duplexes', testTwoGenerators, false, appendDuplex());
+test('Ignore duplicate identical webTransforms', testTwoGenerators, false, appendWebTransform());
 test('Can use multiple generators with duplexes', testTwoGenerators, true, appendGenerator(false, false, true), appendDuplex());
+test('Can use multiple generators with webTransforms', testTwoGenerators, true, appendGenerator(false, false, true), appendWebTransform());
+test('Can use multiple duplexes with webTransforms', testTwoGenerators, true, appendDuplex(), appendWebTransform());
 
-const testGeneratorSyntax = async (t, generator) => {
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: generator});
+const testGeneratorSyntax = async (t, type, usePlainObject) => {
+	const transform = generatorsMap[type].uppercase();
+	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: usePlainObject ? transform : transform.transform});
 	t.is(stdout, foobarUppercase);
 };
 
-test('Can pass generators with an options plain object', testGeneratorSyntax, uppercaseGenerator());
-test('Can pass generators without an options plain object', testGeneratorSyntax, uppercaseGenerator().transform);
+test('Can pass generators with an options plain object', testGeneratorSyntax, 'generator', false);
+test('Can pass generators without an options plain object', testGeneratorSyntax, 'generator', true);
+test('Can pass webTransforms with an options plain object', testGeneratorSyntax, 'webTransform', true);
+test('Can pass webTransforms without an options plain object', testGeneratorSyntax, 'webTransform', false);

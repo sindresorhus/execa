@@ -173,15 +173,26 @@ const {stdout} = await execa('./command.js', {stdout: {transform, final}});
 console.log(stdout); // Ends with: 'Number of lines: 54'
 ```
 
-## Node.js Duplex/Transform streams
+## Duplex/Transform streams
 
-A Node.js [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) or [`Transform`](https://nodejs.org/api/stream.html#class-streamtransform) stream can be used instead of a generator function. A `{transform}` plain object must be passed. The [`objectMode`](#object-mode) transform option can be used, but not the [`binary`](#encoding) nor [`preserveNewlines`](#newlines) options.
+A [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) stream, Node.js [`Transform`](https://nodejs.org/api/stream.html#class-streamtransform) stream or web [`TransformStream`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) can be used instead of a generator function.
+
+Like generator functions, web `TransformStream` can be passed either directly or as a `{transform}` plain object. But `Duplex` and `Transform` must always be passed as a `{transform}` plain object.
+
+The [`objectMode`](#object-mode) transform option can be used, but not the [`binary`](#encoding) nor [`preserveNewlines`](#newlines) options.
 
 ```js
 import {createGzip} from 'node:zlib';
 import {execa} from 'execa';
 
 const {stdout} = await execa('./run.js', {stdout: {transform: createGzip()}});
+console.log(stdout); // `stdout` is compressed with gzip
+```
+
+```js
+import {execa} from 'execa';
+
+const {stdout} = await execa('./run.js', {stdout: new CompressionStream('gzip')});
 console.log(stdout); // `stdout` is compressed with gzip
 ```
 
@@ -197,6 +208,12 @@ This also allows using multiple transforms.
 
 ```js
 await execa('echo', ['hello'], {stdout: [transform, otherTransform]});
+```
+
+Or saving to files.
+
+```js
+await execa('./run.js', {stdout: [new CompressionStream('gzip'), {file: './output.gz'}]});
 ```
 
 ## Async iteration

@@ -37,6 +37,11 @@ type DuplexTransform = {
 	objectMode?: boolean;
 };
 
+type WebTransform = {
+	transform: TransformStream;
+	objectMode?: boolean;
+};
+
 type CommonStdioOption<IsSync extends boolean = boolean> =
 	| BaseStdioOption
 	| 'ipc'
@@ -47,7 +52,9 @@ type CommonStdioOption<IsSync extends boolean = boolean> =
 	| IfAsync<IsSync,
 	| GeneratorTransform
 	| GeneratorTransformFull
-	| DuplexTransform>;
+	| DuplexTransform
+	| WebTransform
+	| TransformStream>;
 
 type InputStdioOption<IsSync extends boolean = boolean> =
 	| Uint8Array
@@ -126,13 +133,13 @@ type IsObjectOutputOptions<OutputOptions extends StdioOption> = IsObjectOutputOp
 	: OutputOptions
 >;
 
-type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends GeneratorTransformFull
+type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends GeneratorTransformFull | WebTransform
 	? BooleanObjectMode<OutputOption['objectMode']>
 	: OutputOption extends DuplexTransform
 		? DuplexObjectMode<OutputOption>
 		: false;
 
-type BooleanObjectMode<ObjectModeOption extends GeneratorTransformFull['objectMode']> = ObjectModeOption extends true ? true : false;
+type BooleanObjectMode<ObjectModeOption extends boolean | undefined> = ObjectModeOption extends true ? true : false;
 
 type DuplexObjectMode<OutputOption extends DuplexTransform> = OutputOption['objectMode'] extends boolean
 	? OutputOption['objectMode']
@@ -357,7 +364,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) to transform the input. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) or a [web `TransformStream`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) to transform the input. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default `inherit` with `$`, `pipe` otherwise
 	*/
@@ -377,7 +384,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) or a [web `TransformStream`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default 'pipe'
 	*/
@@ -397,7 +404,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can be an [array of values](https://github.com/sindresorhus/execa#redirect-stdinstdoutstderr-to-multiple-destinations) such as `['inherit', 'pipe']` or `[filePath, 'pipe']`.
 
-	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
+	This can also be a generator function or a [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) or a [web `TransformStream`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) to transform the output. [Learn more.](https://github.com/sindresorhus/execa/tree/main/docs/transform.md)
 
 	@default 'pipe'
 	*/

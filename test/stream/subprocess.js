@@ -101,9 +101,9 @@ const testStreamOutputError = async (t, fdNumber) => {
 	assertStreamOutputError(t, fdNumber, error);
 };
 
-test('Errors on stdout should not make the subprocess exit', testStreamOutputError, 1);
-test('Errors on stderr should not make the subprocess exit', testStreamOutputError, 2);
-test('Errors on output stdio[*] should not make the subprocess exit', testStreamOutputError, 3);
+test('Errors on stdout should make the subprocess exit', testStreamOutputError, 1);
+test('Errors on stderr should make the subprocess exit', testStreamOutputError, 2);
+test('Errors on output stdio[*] should make the subprocess exit', testStreamOutputError, 3);
 
 const testWaitOnStreamEnd = async (t, fdNumber) => {
 	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], fullStdio);

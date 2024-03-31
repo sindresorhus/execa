@@ -19,14 +19,18 @@ test('maxBuffer does not affect stderr if too high', testMaxBufferSuccess, 2, fa
 test('maxBuffer does not affect stdio[*] if too high', testMaxBufferSuccess, 3, false);
 test('maxBuffer does not affect all if too high', testMaxBufferSuccess, 1, true);
 
-test('maxBuffer uses killSignal', async t => {
-	const {isTerminated, signal} = await t.throwsAsync(
-		execa('noop-forever.js', ['.'.repeat(maxBuffer + 1)], {maxBuffer, killSignal: 'SIGINT'}),
+const testGracefulExit = async (t, fixtureName, expectedExitCode) => {
+	const {exitCode, signal, stdout} = await t.throwsAsync(
+		execa(fixtureName, ['1', '.'.repeat(maxBuffer + 1)], {maxBuffer}),
 		{message: maxBufferMessage},
 	);
-	t.true(isTerminated);
-	t.is(signal, 'SIGINT');
-});
+	t.is(exitCode, expectedExitCode);
+	t.is(signal, undefined);
+	t.is(stdout, '.'.repeat(maxBuffer));
+};
+
+test('maxBuffer terminates stream gracefully, more writes', testGracefulExit, 'noop-repeat.js', 1);
+test('maxBuffer terminates stream gracefully, no more writes', testGracefulExit, 'noop-fd.js', 0);
 
 const testMaxBufferLimit = async (t, fdNumber, all) => {
 	const length = all ? maxBuffer * 2 : maxBuffer;

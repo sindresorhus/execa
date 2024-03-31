@@ -197,6 +197,15 @@ const testLazyFileReadable = async (t, fdNumber) => {
 test('stdin can be [Readable, "pipe"] without a file descriptor', testLazyFileReadable, 0);
 test('stdio[*] can be [Readable, "pipe"] without a file descriptor', testLazyFileReadable, 3);
 
+const testLazyFileReadableSync = (t, fdNumber) => {
+	t.throws(() => {
+		execaSync('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [noopReadable(), 'pipe']));
+	}, {message: /cannot both be an array and include a stream/});
+};
+
+test('stdin cannot be [Readable, "pipe"] without a file descriptor, sync', testLazyFileReadableSync, 0);
+test('stdio[*] cannot be [Readable, "pipe"] without a file descriptor, sync', testLazyFileReadableSync, 3);
+
 const testLazyFileWritable = async (t, fdNumber) => {
 	const filePath = tempfile();
 	const stream = createWriteStream(filePath);
@@ -210,6 +219,16 @@ const testLazyFileWritable = async (t, fdNumber) => {
 test('stdout can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 1);
 test('stderr can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 2);
 test('stdio[*] can be [Writable, "pipe"] without a file descriptor', testLazyFileWritable, 3);
+
+const testLazyFileWritableSync = (t, fdNumber) => {
+	t.throws(() => {
+		execaSync('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, [noopWritable(), 'pipe']));
+	}, {message: /cannot both be an array and include a stream/});
+};
+
+test('stdout cannot be [Writable, "pipe"] without a file descriptor, sync', testLazyFileWritableSync, 1);
+test('stderr cannot be [Writable, "pipe"] without a file descriptor, sync', testLazyFileWritableSync, 2);
+test('stdio[*] cannot be [Writable, "pipe"] without a file descriptor, sync', testLazyFileWritableSync, 3);
 
 test('Waits for custom streams destroy on subprocess errors', async t => {
 	let waitedForDestroy = false;

@@ -77,19 +77,25 @@ test('error.message contains stdout/stderr/stdio even with encoding "buffer", ob
 test('error.message contains all if available, objectMode', testStdioMessage, 'utf8', true, true);
 test('error.message contains all even with encoding "buffer", objectMode', testStdioMessage, 'buffer', true, true);
 
-const testLinesMessage = async (t, encoding, stripFinalNewline) => {
-	const {message} = await t.throwsAsync(execa('noop-fail.js', ['1', `${foobarString}\n${foobarString}\n`], {
+const testLinesMessage = async (t, encoding, stripFinalNewline, execaMethod) => {
+	const {failed, message} = await execaMethod('noop-fail.js', ['1', `${foobarString}\n${foobarString}\n`], {
 		lines: true,
 		encoding,
 		stripFinalNewline,
-	}));
+		reject: false,
+	});
+	t.true(failed);
 	t.true(message.endsWith(`noop-fail.js 1 ${QUOTE}${foobarString}\\n${foobarString}\\n${QUOTE}\n\n${foobarString}\n${foobarString}`));
 };
 
-test('error.message handles "lines: true"', testLinesMessage, 'utf8', false);
-test('error.message handles "lines: true", stripFinalNewline', testLinesMessage, 'utf8', true);
-test('error.message handles "lines: true", buffer', testLinesMessage, 'buffer', false);
-test('error.message handles "lines: true", buffer, stripFinalNewline', testLinesMessage, 'buffer', true);
+test('error.message handles "lines: true"', testLinesMessage, 'utf8', false, execa);
+test('error.message handles "lines: true", stripFinalNewline', testLinesMessage, 'utf8', true, execa);
+test('error.message handles "lines: true", buffer', testLinesMessage, 'buffer', false, execa);
+test('error.message handles "lines: true", buffer, stripFinalNewline', testLinesMessage, 'buffer', true, execa);
+test('error.message handles "lines: true", sync', testLinesMessage, 'utf8', false, execaSync);
+test('error.message handles "lines: true", stripFinalNewline, sync', testLinesMessage, 'utf8', true, execaSync);
+test('error.message handles "lines: true", buffer, sync', testLinesMessage, 'buffer', false, execaSync);
+test('error.message handles "lines: true", buffer, stripFinalNewline, sync', testLinesMessage, 'buffer', true, execaSync);
 
 const testPartialIgnoreMessage = async (t, fdNumber, stdioOption, output) => {
 	const {message} = await t.throwsAsync(execa('echo-fail.js', getStdio(fdNumber, stdioOption, 4)));

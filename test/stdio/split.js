@@ -245,9 +245,10 @@ const resultUint8ArrayGenerator = function * (lines, chunk) {
 	yield new TextEncoder().encode(chunk);
 };
 
-const testStringToUint8Array = async (t, expectedOutput, objectMode, preserveNewlines) => {
+// eslint-disable-next-line max-params
+const testStringToUint8Array = async (t, expectedOutput, objectMode, preserveNewlines, execaMethod) => {
 	const lines = [];
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {
+	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {
 		stdout: {
 			transform: resultUint8ArrayGenerator.bind(undefined, lines),
 			objectMode,
@@ -259,10 +260,14 @@ const testStringToUint8Array = async (t, expectedOutput, objectMode, preserveNew
 	t.deepEqual(stdout, expectedOutput);
 };
 
-test('Line splitting when converting from string to Uint8Array', testStringToUint8Array, [foobarString], false, true);
-test('Line splitting when converting from string to Uint8Array, objectMode', testStringToUint8Array, [foobarUint8Array], true, true);
-test('Line splitting when converting from string to Uint8Array, preserveNewlines', testStringToUint8Array, [foobarString], false, false);
-test('Line splitting when converting from string to Uint8Array, objectMode, preserveNewlines', testStringToUint8Array, [foobarUint8Array], true, false);
+test('Line splitting when converting from string to Uint8Array', testStringToUint8Array, [foobarString], false, true, execa);
+test('Line splitting when converting from string to Uint8Array, objectMode', testStringToUint8Array, [foobarUint8Array], true, true, execa);
+test('Line splitting when converting from string to Uint8Array, preserveNewlines', testStringToUint8Array, [foobarString], false, false, execa);
+test('Line splitting when converting from string to Uint8Array, objectMode, preserveNewlines', testStringToUint8Array, [foobarUint8Array], true, false, execa);
+test('Line splitting when converting from string to Uint8Array, sync', testStringToUint8Array, [foobarString], false, true, execaSync);
+test('Line splitting when converting from string to Uint8Array, objectMode, sync', testStringToUint8Array, [foobarUint8Array], true, true, execaSync);
+test('Line splitting when converting from string to Uint8Array, preserveNewlines, sync', testStringToUint8Array, [foobarString], false, false, execaSync);
+test('Line splitting when converting from string to Uint8Array, objectMode, preserveNewlines, sync', testStringToUint8Array, [foobarUint8Array], true, false, execaSync);
 
 const testStripNewline = async (t, input, expectedOutput, execaMethod) => {
 	const {stdout} = await execaMethod('noop.js', {

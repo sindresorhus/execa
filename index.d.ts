@@ -484,7 +484,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default false
 	*/
-	readonly lines?: Unless<IsSync, boolean>;
+	readonly lines?: boolean;
 
 	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.
@@ -1409,7 +1409,7 @@ Same as `execa()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay` and `lines`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1523,7 +1523,7 @@ Same as `execaCommand()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay` and `lines`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

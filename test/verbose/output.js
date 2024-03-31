@@ -29,7 +29,9 @@ const testPrintOutput = async (t, fdNumber, execaMethod) => {
 };
 
 test('Prints stdout, verbose "full"', testPrintOutput, 1, nestedExecaAsync);
+test('Prints stdout, verbose "full", sync', testPrintOutput, 1, nestedExecaSync);
 test('Prints stderr, verbose "full"', testPrintOutput, 2, nestedExecaAsync);
+test('Prints stderr, verbose "full", sync', testPrintOutput, 2, nestedExecaSync);
 
 const testNoPrintOutput = async (t, verbose, fdNumber, execaMethod) => {
 	const {stderr} = await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], {verbose, ...fullStdio});
@@ -38,12 +40,10 @@ const testNoPrintOutput = async (t, verbose, fdNumber, execaMethod) => {
 
 test('Does not print stdout, verbose "none"', testNoPrintOutput, 'none', 1, nestedExecaAsync);
 test('Does not print stdout, verbose "short"', testNoPrintOutput, 'short', 1, nestedExecaAsync);
-test('Does not print stdout, verbose "full", sync', testNoPrintOutput, 'full', 1, nestedExecaSync);
 test('Does not print stdout, verbose "none", sync', testNoPrintOutput, 'none', 1, nestedExecaSync);
 test('Does not print stdout, verbose "short", sync', testNoPrintOutput, 'short', 1, nestedExecaSync);
 test('Does not print stderr, verbose "none"', testNoPrintOutput, 'none', 2, nestedExecaAsync);
 test('Does not print stderr, verbose "short"', testNoPrintOutput, 'short', 2, nestedExecaAsync);
-test('Does not print stderr, verbose "full", sync', testNoPrintOutput, 'full', 2, nestedExecaSync);
 test('Does not print stderr, verbose "none", sync', testNoPrintOutput, 'none', 2, nestedExecaSync);
 test('Does not print stderr, verbose "short", sync', testNoPrintOutput, 'short', 2, nestedExecaSync);
 test('Does not print stdio[*], verbose "none"', testNoPrintOutput, 'none', 3, nestedExecaAsync);
@@ -53,10 +53,13 @@ test('Does not print stdio[*], verbose "none", sync', testNoPrintOutput, 'none',
 test('Does not print stdio[*], verbose "short", sync', testNoPrintOutput, 'short', 3, nestedExecaSync);
 test('Does not print stdio[*], verbose "full", sync', testNoPrintOutput, 'full', 3, nestedExecaSync);
 
-test('Prints stdout after errors', async t => {
-	const stderr = await runErrorSubprocess(t, 'full', nestedExecaAsync);
+const testPrintError = async (t, execaMethod) => {
+	const stderr = await runErrorSubprocess(t, 'full', execaMethod);
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
-});
+};
+
+test('Prints stdout after errors', testPrintError, nestedExecaAsync);
+test('Prints stdout after errors, sync', testPrintError, nestedExecaSync);
 
 const testPipeOutput = async (t, fixtureName, sourceVerbose, destinationVerbose) => {
 	const {stderr} = await execa(`nested-pipe-${fixtureName}.js`, [
@@ -184,10 +187,13 @@ test('Prints stdout progressively, interleaved', async t => {
 	await t.throwsAsync(subprocess);
 });
 
-test('Prints stdout, single newline', async t => {
-	const {stderr} = await nestedExecaAsync('noop-fd.js', ['1', '\n'], {verbose: 'full'});
+const testSingleNewline = async (t, execaMethod) => {
+	const {stderr} = await execaMethod('noop-fd.js', ['1', '\n'], {verbose: 'full'});
 	t.deepEqual(getOutputLines(stderr), [`${testTimestamp} [0]   `]);
-});
+};
+
+test('Prints stdout, single newline', testSingleNewline, nestedExecaAsync);
+test('Prints stdout, single newline, sync', testSingleNewline, nestedExecaSync);
 
 test('Can use encoding UTF16, verbose "full"', async t => {
 	const {stderr} = await nestedExeca('nested-input.js', 'stdin.js', {verbose: 'full', encoding: 'utf16le'});
@@ -222,16 +228,20 @@ const testStdoutFile = async (t, fixtureName, getStdout) => {
 test('Does not print stdout, stdout { file }', testStdoutFile, 'nested.js', file => ({file}));
 test('Does not print stdout, stdout fileUrl', testStdoutFile, 'nested-file-url.js', file => file);
 
-const testPrintOutputOptions = async (t, options) => {
-	const {stderr} = await nestedExecaAsync('noop.js', [foobarString], {verbose: 'full', ...options});
+const testPrintOutputOptions = async (t, options, execaMethod) => {
+	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'full', ...options});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 };
 
-test('Prints stdout, stdout "pipe"', testPrintOutputOptions, {stdout: 'pipe'});
-test('Prints stdout, stdout "overlapped"', testPrintOutputOptions, {stdout: 'overlapped'});
-test('Prints stdout, stdout null', testPrintOutputOptions, {stdout: null});
-test('Prints stdout, stdout ["pipe"]', testPrintOutputOptions, {stdout: ['pipe']});
-test('Prints stdout, buffer false', testPrintOutputOptions, {buffer: false});
+test('Prints stdout, stdout "pipe"', testPrintOutputOptions, {stdout: 'pipe'}, nestedExecaAsync);
+test('Prints stdout, stdout "overlapped"', testPrintOutputOptions, {stdout: 'overlapped'}, nestedExecaAsync);
+test('Prints stdout, stdout null', testPrintOutputOptions, {stdout: null}, nestedExecaAsync);
+test('Prints stdout, stdout ["pipe"]', testPrintOutputOptions, {stdout: ['pipe']}, nestedExecaAsync);
+test('Prints stdout, buffer false', testPrintOutputOptions, {buffer: false}, nestedExecaAsync);
+test('Prints stdout, stdout "pipe", sync', testPrintOutputOptions, {stdout: 'pipe'}, nestedExecaSync);
+test('Prints stdout, stdout null, sync', testPrintOutputOptions, {stdout: null}, nestedExecaSync);
+test('Prints stdout, stdout ["pipe"], sync', testPrintOutputOptions, {stdout: ['pipe']}, nestedExecaSync);
+test('Prints stdout, buffer false, sync', testPrintOutputOptions, {buffer: false}, nestedExecaSync);
 
 const testPrintOutputFixture = async (t, fixtureName, ...args) => {
 	const {stderr} = await nestedExeca(fixtureName, 'noop.js', [foobarString, ...args], {verbose: 'full'});

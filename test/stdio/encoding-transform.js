@@ -9,65 +9,84 @@ import {multibyteChar, multibyteString, multibyteUint8Array, breakingLength, bro
 
 setFixtureDir();
 
-const getTypeofGenerator = (objectMode, binary) => ({
+const getTypeofGenerator = lines => (objectMode, binary) => ({
 	* transform(line) {
-		yield Object.prototype.toString.call(line);
+		lines.push(Object.prototype.toString.call(line));
+		yield '';
 	},
 	objectMode,
 	binary,
 });
 
-const assertTypeofChunk = (t, output, encoding, expectedType) => {
-	const typeofChunk = Buffer.from(output, encoding === 'buffer' ? undefined : encoding).toString().trim();
-	t.is(typeofChunk, `[object ${expectedType}]`);
+const assertTypeofChunk = (t, lines, expectedType) => {
+	t.deepEqual(lines, [`[object ${expectedType}]`]);
 };
 
 // eslint-disable-next-line max-params
 const testGeneratorFirstEncoding = async (t, input, encoding, expectedType, objectMode, binary) => {
-	const subprocess = execa('stdin.js', {stdin: getTypeofGenerator(objectMode, binary), encoding});
+	const lines = [];
+	const subprocess = execa('stdin.js', {stdin: getTypeofGenerator(lines)(objectMode, binary), encoding});
 	subprocess.stdin.end(input);
-	const {stdout} = await subprocess;
-	assertTypeofChunk(t, stdout, encoding, expectedType);
+	await subprocess;
+	assertTypeofChunk(t, lines, expectedType);
 };
 
-test('First generator argument is string with default encoding, with string writes', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', false);
-test('First generator argument is string with default encoding, with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'utf8', 'String', false);
-test('First generator argument is string with default encoding, with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'utf8', 'String', false);
-test('First generator argument is Uint8Array with encoding "buffer", with string writes', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "buffer", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'buffer', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "buffer", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'buffer', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "hex", with string writes', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "hex", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'hex', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "hex", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'hex', 'Uint8Array', false);
-test('First generator argument can be string with objectMode', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', true);
-test('First generator argument can be objects with objectMode', testGeneratorFirstEncoding, foobarObject, 'utf8', 'Object', true);
+test('First generator argument is string with default encoding, with string writes', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', false, undefined);
+test('First generator argument is string with default encoding, with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'utf8', 'String', false, undefined);
+test('First generator argument is string with default encoding, with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'utf8', 'String', false, undefined);
 test('First generator argument is string with default encoding, with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', false, false);
 test('First generator argument is Uint8Array with default encoding, with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'utf8', 'Uint8Array', false, true);
+test('First generator argument is string with encoding "utf16le", with string writes', testGeneratorFirstEncoding, foobarString, 'utf16le', 'String', false, undefined);
+test('First generator argument is string with encoding "utf16le", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'utf16le', 'String', false, undefined);
+test('First generator argument is string with encoding "utf16le", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'utf16le', 'String', false, undefined);
+test('First generator argument is string with encoding "utf16le", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'utf16le', 'String', false, false);
+test('First generator argument is Uint8Array with encoding "utf16le", with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'utf16le', 'Uint8Array', false, true);
+test('First generator argument is Uint8Array with encoding "buffer", with string writes', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false, undefined);
+test('First generator argument is Uint8Array with encoding "buffer", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'buffer', 'Uint8Array', false, undefined);
+test('First generator argument is Uint8Array with encoding "buffer", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'buffer', 'Uint8Array', false, undefined);
 test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false, false);
 test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'buffer', 'Uint8Array', false, true);
+test('First generator argument is Uint8Array with encoding "hex", with string writes', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false, undefined);
+test('First generator argument is Uint8Array with encoding "hex", with Buffer writes', testGeneratorFirstEncoding, foobarBuffer, 'hex', 'Uint8Array', false, undefined);
+test('First generator argument is Uint8Array with encoding "hex", with Uint8Array writes', testGeneratorFirstEncoding, foobarUint8Array, 'hex', 'Uint8Array', false, undefined);
 test('First generator argument is Uint8Array with encoding "hex", with string writes, "binary: false"', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false, false);
 test('First generator argument is Uint8Array with encoding "hex", with string writes, "binary: true"', testGeneratorFirstEncoding, foobarString, 'hex', 'Uint8Array', false, true);
+test('First generator argument can be string with objectMode', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', true, undefined);
+test('First generator argument can be string with objectMode, "binary: false"', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', true, false);
+test('First generator argument can be string with objectMode, "binary: true"', testGeneratorFirstEncoding, foobarString, 'utf8', 'String', true, true);
+test('First generator argument can be objects with objectMode', testGeneratorFirstEncoding, foobarObject, 'utf8', 'Object', true, undefined);
+test('First generator argument can be objects with objectMode, "binary: false"', testGeneratorFirstEncoding, foobarObject, 'utf8', 'Object', true, false);
+test('First generator argument can be objects with objectMode, "binary: true"', testGeneratorFirstEncoding, foobarObject, 'utf8', 'Object', true, true);
 
 // eslint-disable-next-line max-params
 const testGeneratorFirstEncodingSync = (t, input, encoding, expectedType, objectMode, binary) => {
-	const {stdout} = execaSync('stdin.js', {stdin: [[input], getTypeofGenerator(objectMode, binary)], encoding});
-	assertTypeofChunk(t, stdout, encoding, expectedType);
+	const lines = [];
+	execaSync('stdin.js', {stdin: [[input], getTypeofGenerator(lines)(objectMode, binary)], encoding});
+	assertTypeofChunk(t, lines, expectedType);
 };
 
-test('First generator argument is string with default encoding, with string writes, sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'String', false);
-test('First generator argument is string with default encoding, with Uint8Array writes, sync', testGeneratorFirstEncodingSync, foobarUint8Array, 'utf8', 'String', false);
-test('First generator argument is Uint8Array with encoding "buffer", with string writes, sync', testGeneratorFirstEncodingSync, foobarString, 'buffer', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "buffer", with Uint8Array writes, sync', testGeneratorFirstEncodingSync, foobarUint8Array, 'buffer', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "hex", with string writes, sync', testGeneratorFirstEncodingSync, foobarString, 'hex', 'Uint8Array', false);
-test('First generator argument is Uint8Array with encoding "hex", with Uint8Array writes, sync', testGeneratorFirstEncodingSync, foobarUint8Array, 'hex', 'Uint8Array', false);
-test('First generator argument can be string with objectMode, sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'String', true);
-test('First generator argument can be objects with objectMode, sync', testGeneratorFirstEncodingSync, foobarObject, 'utf8', 'Object', true);
+test('First generator argument is string with default encoding, with string writes, sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'String', false, undefined);
+test('First generator argument is string with default encoding, with Uint8Array writes, sync', testGeneratorFirstEncodingSync, foobarUint8Array, 'utf8', 'String', false, undefined);
 test('First generator argument is string with default encoding, with string writes, "binary: false", sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'String', false, false);
 test('First generator argument is Uint8Array with default encoding, with string writes, "binary: true", sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'Uint8Array', false, true);
+test('First generator argument is string with encoding "utf16le", with string writes, sync', testGeneratorFirstEncodingSync, foobarString, 'utf16le', 'String', false, undefined);
+test('First generator argument is string with encoding "utf16le", with Uint8Array writes, sync', testGeneratorFirstEncodingSync, foobarUint8Array, 'utf16le', 'String', false, undefined);
+test('First generator argument is string with encoding "utf16le", with string writes, "binary: false", sync', testGeneratorFirstEncodingSync, foobarString, 'utf16le', 'String', false, false);
+test('First generator argument is Uint8Array with encoding "utf16le", with string writes, "binary: true", sync', testGeneratorFirstEncodingSync, foobarString, 'utf16le', 'Uint8Array', false, true);
+test('First generator argument is Uint8Array with encoding "buffer", with string writes, sync', testGeneratorFirstEncodingSync, foobarString, 'buffer', 'Uint8Array', false, undefined);
+test('First generator argument is Uint8Array with encoding "buffer", with Uint8Array writes, sync', testGeneratorFirstEncodingSync, foobarUint8Array, 'buffer', 'Uint8Array', false, undefined);
 test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: false", sync', testGeneratorFirstEncodingSync, foobarString, 'buffer', 'Uint8Array', false, false);
 test('First generator argument is Uint8Array with encoding "buffer", with string writes, "binary: true", sync', testGeneratorFirstEncodingSync, foobarString, 'buffer', 'Uint8Array', false, true);
+test('First generator argument is Uint8Array with encoding "hex", with string writes, sync', testGeneratorFirstEncodingSync, foobarString, 'hex', 'Uint8Array', false, undefined);
+test('First generator argument is Uint8Array with encoding "hex", with Uint8Array writes, sync', testGeneratorFirstEncodingSync, foobarUint8Array, 'hex', 'Uint8Array', false, undefined);
 test('First generator argument is Uint8Array with encoding "hex", with string writes, "binary: false", sync', testGeneratorFirstEncodingSync, foobarString, 'hex', 'Uint8Array', false, false);
 test('First generator argument is Uint8Array with encoding "hex", with string writes, "binary: true", sync', testGeneratorFirstEncodingSync, foobarString, 'hex', 'Uint8Array', false, true);
+test('First generator argument can be string with objectMode, sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'String', true, undefined);
+test('First generator argument can be string with objectMode, "binary: false", sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'String', true, false);
+test('First generator argument can be string with objectMode, "binary: true", sync', testGeneratorFirstEncodingSync, foobarString, 'utf8', 'String', true, true);
+test('First generator argument can be objects with objectMode, sync', testGeneratorFirstEncodingSync, foobarObject, 'utf8', 'Object', true, undefined);
+test('First generator argument can be objects with objectMode, "binary: false", sync', testGeneratorFirstEncodingSync, foobarObject, 'utf8', 'Object', true, false);
+test('First generator argument can be objects with objectMode, "binary: true", sync', testGeneratorFirstEncodingSync, foobarObject, 'utf8', 'Object', true, true);
 
 const testEncodingIgnored = async (t, encoding) => {
 	const input = Buffer.from(foobarString).toString(encoding);
@@ -84,15 +103,15 @@ test('Write call encoding "base64" is ignored with objectMode', testEncodingIgno
 
 // eslint-disable-next-line max-params
 const testGeneratorNextEncoding = async (t, input, encoding, firstObjectMode, secondObjectMode, expectedType, execaMethod) => {
-	const {stdout} = await execaMethod('noop.js', ['other'], {
+	const lines = [];
+	await execaMethod('noop.js', ['other'], {
 		stdout: [
 			getOutputGenerator(input)(firstObjectMode),
-			getTypeofGenerator(secondObjectMode),
+			getTypeofGenerator(lines)(secondObjectMode),
 		],
 		encoding,
 	});
-	const output = Array.isArray(stdout) ? stdout[0] : stdout;
-	assertTypeofChunk(t, output, encoding, expectedType);
+	assertTypeofChunk(t, lines, expectedType);
 };
 
 test('Next generator argument is string with default encoding, with string writes', testGeneratorNextEncoding, foobarString, 'utf8', false, false, 'String', execa);
@@ -101,6 +120,12 @@ test('Next generator argument is string with default encoding, with string write
 test('Next generator argument is string with default encoding, with Uint8Array writes', testGeneratorNextEncoding, foobarUint8Array, 'utf8', false, false, 'String', execa);
 test('Next generator argument is Uint8Array with default encoding, with Uint8Array writes, objectMode first', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, false, 'Uint8Array', execa);
 test('Next generator argument is string with default encoding, with Uint8Array writes, objectMode both', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, true, 'Uint8Array', execa);
+test('Next generator argument is string with encoding "utf16le", with string writes', testGeneratorNextEncoding, foobarString, 'utf16le', false, false, 'String', execa);
+test('Next generator argument is string with encoding "utf16le",, with string writes, objectMode first', testGeneratorNextEncoding, foobarString, 'utf16le', true, false, 'String', execa);
+test('Next generator argument is string with encoding "utf16le",, with string writes, objectMode both', testGeneratorNextEncoding, foobarString, 'utf16le', true, true, 'String', execa);
+test('Next generator argument is string with encoding "utf16le",, with Uint8Array writes', testGeneratorNextEncoding, foobarUint8Array, 'utf16le', false, false, 'String', execa);
+test('Next generator argument is Uint8Array with encoding "utf16le",, with Uint8Array writes, objectMode first', testGeneratorNextEncoding, foobarUint8Array, 'utf16le', true, false, 'Uint8Array', execa);
+test('Next generator argument is string with encoding "utf16le",, with Uint8Array writes, objectMode both', testGeneratorNextEncoding, foobarUint8Array, 'utf16le', true, true, 'Uint8Array', execa);
 test('Next generator argument is Uint8Array with encoding "buffer", with string writes', testGeneratorNextEncoding, foobarString, 'buffer', false, false, 'Uint8Array', execa);
 test('Next generator argument is string with encoding "buffer", with string writes, objectMode first', testGeneratorNextEncoding, foobarString, 'buffer', true, false, 'String', execa);
 test('Next generator argument is string with encoding "buffer", with string writes, objectMode both', testGeneratorNextEncoding, foobarString, 'buffer', true, true, 'String', execa);
@@ -117,6 +142,12 @@ test('Next generator argument is string with default encoding, with string write
 test('Next generator argument is string with default encoding, with Uint8Array writes, sync', testGeneratorNextEncoding, foobarUint8Array, 'utf8', false, false, 'String', execaSync);
 test('Next generator argument is Uint8Array with default encoding, with Uint8Array writes, objectMode first, sync', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, false, 'Uint8Array', execaSync);
 test('Next generator argument is string with default encoding, with Uint8Array writes, objectMode both, sync', testGeneratorNextEncoding, foobarUint8Array, 'utf8', true, true, 'Uint8Array', execaSync);
+test('Next generator argument is string with encoding "utf16le", with string writes, sync', testGeneratorNextEncoding, foobarString, 'utf16le', false, false, 'String', execaSync);
+test('Next generator argument is string with encoding "utf16le",, with string writes, objectMode first, sync', testGeneratorNextEncoding, foobarString, 'utf16le', true, false, 'String', execaSync);
+test('Next generator argument is string with encoding "utf16le",, with string writes, objectMode both, sync', testGeneratorNextEncoding, foobarString, 'utf16le', true, true, 'String', execaSync);
+test('Next generator argument is string with encoding "utf16le",, with Uint8Array writes, sync', testGeneratorNextEncoding, foobarUint8Array, 'utf16le', false, false, 'String', execaSync);
+test('Next generator argument is Uint8Array with encoding "utf16le",, with Uint8Array writes, objectMode first, sync', testGeneratorNextEncoding, foobarUint8Array, 'utf16le', true, false, 'Uint8Array', execaSync);
+test('Next generator argument is string with encoding "utf16le",, with Uint8Array writes, objectMode both, sync', testGeneratorNextEncoding, foobarUint8Array, 'utf16le', true, true, 'Uint8Array', execaSync);
 test('Next generator argument is Uint8Array with encoding "buffer", with string writes, sync', testGeneratorNextEncoding, foobarString, 'buffer', false, false, 'Uint8Array', execaSync);
 test('Next generator argument is string with encoding "buffer", with string writes, objectMode first, sync', testGeneratorNextEncoding, foobarString, 'buffer', true, false, 'String', execaSync);
 test('Next generator argument is string with encoding "buffer", with string writes, objectMode both, sync', testGeneratorNextEncoding, foobarString, 'buffer', true, true, 'String', execaSync);
@@ -129,8 +160,9 @@ test('Next generator argument is object with default encoding, with object write
 test('Next generator argument is object with default encoding, with object writes, objectMode both, sync', testGeneratorNextEncoding, foobarObject, 'utf8', true, true, 'Object', execaSync);
 
 const testFirstOutputGeneratorArgument = async (t, fdNumber, execaMethod) => {
-	const {stdio} = await execaMethod('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, getTypeofGenerator(true)));
-	t.deepEqual(stdio[fdNumber], ['[object String]']);
+	const lines = [];
+	await execaMethod('noop-fd.js', [`${fdNumber}`], getStdio(fdNumber, getTypeofGenerator(lines)(true)));
+	assertTypeofChunk(t, lines, 'String');
 };
 
 test('The first generator with result.stdout does not receive an object argument even in objectMode', testFirstOutputGeneratorArgument, 1, execa);
@@ -155,96 +187,128 @@ const testGeneratorReturnType = async (t, input, encoding, reject, objectMode, f
 
 test('Generator can return string with default encoding', testGeneratorReturnType, foobarString, 'utf8', true, false, false, execa);
 test('Generator can return Uint8Array with default encoding', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, false, execa);
+test('Generator can return string with encoding "utf16le"', testGeneratorReturnType, foobarString, 'utf16le', true, false, false, execa);
+test('Generator can return Uint8Array with encoding "utf16le"', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, false, false, execa);
 test('Generator can return string with encoding "buffer"', testGeneratorReturnType, foobarString, 'buffer', true, false, false, execa);
 test('Generator can return Uint8Array with encoding "buffer"', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, false, execa);
 test('Generator can return string with encoding "hex"', testGeneratorReturnType, foobarString, 'hex', true, false, false, execa);
 test('Generator can return Uint8Array with encoding "hex"', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, false, execa);
 test('Generator can return string with default encoding, failure', testGeneratorReturnType, foobarString, 'utf8', false, false, false, execa);
 test('Generator can return Uint8Array with default encoding, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, false, execa);
+test('Generator can return string with encoding "utf16le", failure', testGeneratorReturnType, foobarString, 'utf16le', false, false, false, execa);
+test('Generator can return Uint8Array with encoding "utf16le", failure', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, false, false, execa);
 test('Generator can return string with encoding "buffer", failure', testGeneratorReturnType, foobarString, 'buffer', false, false, false, execa);
 test('Generator can return Uint8Array with encoding "buffer", failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, false, false, execa);
 test('Generator can return string with encoding "hex", failure', testGeneratorReturnType, foobarString, 'hex', false, false, false, execa);
 test('Generator can return Uint8Array with encoding "hex", failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, false, false, execa);
 test('Generator can return string with default encoding, objectMode', testGeneratorReturnType, foobarString, 'utf8', true, true, false, execa);
 test('Generator can return Uint8Array with default encoding, objectMode', testGeneratorReturnType, foobarUint8Array, 'utf8', true, true, false, execa);
+test('Generator can return string with encoding "utf16le", objectMode', testGeneratorReturnType, foobarString, 'utf16le', true, true, false, execa);
+test('Generator can return Uint8Array with encoding "utf16le", objectMode', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, true, false, execa);
 test('Generator can return string with encoding "buffer", objectMode', testGeneratorReturnType, foobarString, 'buffer', true, true, false, execa);
 test('Generator can return Uint8Array with encoding "buffer", objectMode', testGeneratorReturnType, foobarUint8Array, 'buffer', true, true, false, execa);
 test('Generator can return string with encoding "hex", objectMode', testGeneratorReturnType, foobarString, 'hex', true, true, false, execa);
 test('Generator can return Uint8Array with encoding "hex", objectMode', testGeneratorReturnType, foobarUint8Array, 'hex', true, true, false, execa);
 test('Generator can return string with default encoding, objectMode, failure', testGeneratorReturnType, foobarString, 'utf8', false, true, false, execa);
 test('Generator can return Uint8Array with default encoding, objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, true, false, execa);
+test('Generator can return string with encoding "utf16le", objectMode, failure', testGeneratorReturnType, foobarString, 'utf16le', false, true, false, execa);
+test('Generator can return Uint8Array with encoding "utf16le", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, true, false, execa);
 test('Generator can return string with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarString, 'buffer', false, true, false, execa);
 test('Generator can return Uint8Array with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true, false, execa);
 test('Generator can return string with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarString, 'hex', false, true, false, execa);
 test('Generator can return Uint8Array with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, true, false, execa);
 test('Generator can return final string with default encoding', testGeneratorReturnType, foobarString, 'utf8', true, false, true, execa);
 test('Generator can return final Uint8Array with default encoding', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, true, execa);
+test('Generator can return final string with encoding "utf16le"', testGeneratorReturnType, foobarString, 'utf16le', true, false, true, execa);
+test('Generator can return final Uint8Array with encoding "utf16le"', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, false, true, execa);
 test('Generator can return final string with encoding "buffer"', testGeneratorReturnType, foobarString, 'buffer', true, false, true, execa);
 test('Generator can return final Uint8Array with encoding "buffer"', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, true, execa);
 test('Generator can return final string with encoding "hex"', testGeneratorReturnType, foobarString, 'hex', true, false, true, execa);
 test('Generator can return final Uint8Array with encoding "hex"', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, true, execa);
 test('Generator can return final string with default encoding, failure', testGeneratorReturnType, foobarString, 'utf8', false, false, true, execa);
 test('Generator can return final Uint8Array with default encoding, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, true, execa);
+test('Generator can return final string with encoding "utf16le", failure', testGeneratorReturnType, foobarString, 'utf16le', false, false, true, execa);
+test('Generator can return final Uint8Array with encoding "utf16le", failure', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, false, true, execa);
 test('Generator can return final string with encoding "buffer", failure', testGeneratorReturnType, foobarString, 'buffer', false, false, true, execa);
 test('Generator can return final Uint8Array with encoding "buffer", failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, false, true, execa);
 test('Generator can return final string with encoding "hex", failure', testGeneratorReturnType, foobarString, 'hex', false, false, true, execa);
 test('Generator can return final Uint8Array with encoding "hex", failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, false, true, execa);
 test('Generator can return final string with default encoding, objectMode', testGeneratorReturnType, foobarString, 'utf8', true, true, true, execa);
 test('Generator can return final Uint8Array with default encoding, objectMode', testGeneratorReturnType, foobarUint8Array, 'utf8', true, true, true, execa);
+test('Generator can return final string with encoding "utf16le", objectMode', testGeneratorReturnType, foobarString, 'utf16le', true, true, true, execa);
+test('Generator can return final Uint8Array with encoding "utf16le", objectMode', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, true, true, execa);
 test('Generator can return final string with encoding "buffer", objectMode', testGeneratorReturnType, foobarString, 'buffer', true, true, true, execa);
 test('Generator can return final Uint8Array with encoding "buffer", objectMode', testGeneratorReturnType, foobarUint8Array, 'buffer', true, true, true, execa);
 test('Generator can return final string with encoding "hex", objectMode', testGeneratorReturnType, foobarString, 'hex', true, true, true, execa);
 test('Generator can return final Uint8Array with encoding "hex", objectMode', testGeneratorReturnType, foobarUint8Array, 'hex', true, true, true, execa);
 test('Generator can return final string with default encoding, objectMode, failure', testGeneratorReturnType, foobarString, 'utf8', false, true, true, execa);
 test('Generator can return final Uint8Array with default encoding, objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, true, true, execa);
+test('Generator can return final string with encoding "utf16le", objectMode, failure', testGeneratorReturnType, foobarString, 'utf16le', false, true, true, execa);
+test('Generator can return final Uint8Array with encoding "utf16le", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, true, true, execa);
 test('Generator can return final string with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarString, 'buffer', false, true, true, execa);
 test('Generator can return final Uint8Array with encoding "buffer", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true, true, execa);
 test('Generator can return final string with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarString, 'hex', false, true, true, execa);
 test('Generator can return final Uint8Array with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, true, true, execa);
 test('Generator can return string with default encoding, sync', testGeneratorReturnType, foobarString, 'utf8', true, false, false, execaSync);
 test('Generator can return Uint8Array with default encoding, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, false, execaSync);
+test('Generator can return string with encoding "utf16le", sync', testGeneratorReturnType, foobarString, 'utf16le', true, false, false, execaSync);
+test('Generator can return Uint8Array with encoding "utf16le", sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, false, false, execaSync);
 test('Generator can return string with encoding "buffer", sync', testGeneratorReturnType, foobarString, 'buffer', true, false, false, execaSync);
 test('Generator can return Uint8Array with encoding "buffer", sync', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, false, execaSync);
 test('Generator can return string with encoding "hex", sync', testGeneratorReturnType, foobarString, 'hex', true, false, false, execaSync);
 test('Generator can return Uint8Array with encoding "hex", sync', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, false, execaSync);
 test('Generator can return string with default encoding, failure, sync', testGeneratorReturnType, foobarString, 'utf8', false, false, false, execaSync);
 test('Generator can return Uint8Array with default encoding, failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, false, execaSync);
+test('Generator can return string with encoding "utf16le", failure, sync', testGeneratorReturnType, foobarString, 'utf16le', false, false, false, execaSync);
+test('Generator can return Uint8Array with encoding "utf16le", failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, false, false, execaSync);
 test('Generator can return string with encoding "buffer", failure, sync', testGeneratorReturnType, foobarString, 'buffer', false, false, false, execaSync);
 test('Generator can return Uint8Array with encoding "buffer", failure, sync', testGeneratorReturnType, foobarUint8Array, 'buffer', false, false, false, execaSync);
 test('Generator can return string with encoding "hex", failure, sync', testGeneratorReturnType, foobarString, 'hex', false, false, false, execaSync);
 test('Generator can return Uint8Array with encoding "hex", failure, sync', testGeneratorReturnType, foobarUint8Array, 'hex', false, false, false, execaSync);
 test('Generator can return string with default encoding, objectMode, sync', testGeneratorReturnType, foobarString, 'utf8', true, true, false, execaSync);
 test('Generator can return Uint8Array with default encoding, objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', true, true, false, execaSync);
+test('Generator can return string with encoding "utf16le", objectMode, sync', testGeneratorReturnType, foobarString, 'utf16le', true, true, false, execaSync);
+test('Generator can return Uint8Array with encoding "utf16le", objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, true, false, execaSync);
 test('Generator can return string with encoding "buffer", objectMode, sync', testGeneratorReturnType, foobarString, 'buffer', true, true, false, execaSync);
 test('Generator can return Uint8Array with encoding "buffer", objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'buffer', true, true, false, execaSync);
 test('Generator can return string with encoding "hex", objectMode, sync', testGeneratorReturnType, foobarString, 'hex', true, true, false, execaSync);
 test('Generator can return Uint8Array with encoding "hex", objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'hex', true, true, false, execaSync);
 test('Generator can return string with default encoding, objectMode, failure, sync', testGeneratorReturnType, foobarString, 'utf8', false, true, false, execaSync);
 test('Generator can return Uint8Array with default encoding, objectMode, failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', false, true, false, execaSync);
+test('Generator can return string with encoding "utf16le", objectMode, failure, sync', testGeneratorReturnType, foobarString, 'utf16le', false, true, false, execaSync);
+test('Generator can return Uint8Array with encoding "utf16le", objectMode, failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, true, false, execaSync);
 test('Generator can return string with encoding "buffer", objectMode, failure, sync', testGeneratorReturnType, foobarString, 'buffer', false, true, false, execaSync);
 test('Generator can return Uint8Array with encoding "buffer", objectMode, failure, sync', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true, false, execaSync);
 test('Generator can return string with encoding "hex", objectMode, failure, sync', testGeneratorReturnType, foobarString, 'hex', false, true, false, execaSync);
 test('Generator can return Uint8Array with encoding "hex", objectMode, failure, sync', testGeneratorReturnType, foobarUint8Array, 'hex', false, true, false, execaSync);
 test('Generator can return final string with default encoding, sync', testGeneratorReturnType, foobarString, 'utf8', true, false, true, execaSync);
 test('Generator can return final Uint8Array with default encoding, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, true, execaSync);
+test('Generator can return final string with encoding "utf16le", sync', testGeneratorReturnType, foobarString, 'utf16le', true, false, true, execaSync);
+test('Generator can return final Uint8Array with encoding "utf16le", sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, false, true, execaSync);
 test('Generator can return final string with encoding "buffer", sync', testGeneratorReturnType, foobarString, 'buffer', true, false, true, execaSync);
 test('Generator can return final Uint8Array with encoding "buffer", sync', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, true, execaSync);
 test('Generator can return final string with encoding "hex", sync', testGeneratorReturnType, foobarString, 'hex', true, false, true, execaSync);
 test('Generator can return final Uint8Array with encoding "hex", sync', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, true, execaSync);
 test('Generator can return final string with default encoding, failure, sync', testGeneratorReturnType, foobarString, 'utf8', false, false, true, execaSync);
 test('Generator can return final Uint8Array with default encoding, failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, true, execaSync);
+test('Generator can return final string with encoding "utf16le", failure, sync', testGeneratorReturnType, foobarString, 'utf16le', false, false, true, execaSync);
+test('Generator can return final Uint8Array with encoding "utf16le", failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, false, true, execaSync);
 test('Generator can return final string with encoding "buffer", failure, sync', testGeneratorReturnType, foobarString, 'buffer', false, false, true, execaSync);
 test('Generator can return final Uint8Array with encoding "buffer", failure, sync', testGeneratorReturnType, foobarUint8Array, 'buffer', false, false, true, execaSync);
 test('Generator can return final string with encoding "hex", failure, sync', testGeneratorReturnType, foobarString, 'hex', false, false, true, execaSync);
 test('Generator can return final Uint8Array with encoding "hex", failure, sync', testGeneratorReturnType, foobarUint8Array, 'hex', false, false, true, execaSync);
 test('Generator can return final string with default encoding, objectMode, sync', testGeneratorReturnType, foobarString, 'utf8', true, true, true, execaSync);
 test('Generator can return final Uint8Array with default encoding, objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', true, true, true, execaSync);
+test('Generator can return final string with encoding "utf16le", objectMode, sync', testGeneratorReturnType, foobarString, 'utf16le', true, true, true, execaSync);
+test('Generator can return final Uint8Array with encoding "utf16le", objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, true, true, execaSync);
 test('Generator can return final string with encoding "buffer", objectMode, sync', testGeneratorReturnType, foobarString, 'buffer', true, true, true, execaSync);
 test('Generator can return final Uint8Array with encoding "buffer", objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'buffer', true, true, true, execaSync);
 test('Generator can return final string with encoding "hex", objectMode, sync', testGeneratorReturnType, foobarString, 'hex', true, true, true, execaSync);
 test('Generator can return final Uint8Array with encoding "hex", objectMode, sync', testGeneratorReturnType, foobarUint8Array, 'hex', true, true, true, execaSync);
 test('Generator can return final string with default encoding, objectMode, failure, sync', testGeneratorReturnType, foobarString, 'utf8', false, true, true, execaSync);
 test('Generator can return final Uint8Array with default encoding, objectMode, failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', false, true, true, execaSync);
+test('Generator can return final string with encoding "utf16le", objectMode, failure, sync', testGeneratorReturnType, foobarString, 'utf16le', false, true, true, execaSync);
+test('Generator can return final Uint8Array with encoding "utf16le", objectMode, failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', false, true, true, execaSync);
 test('Generator can return final string with encoding "buffer", objectMode, failure, sync', testGeneratorReturnType, foobarString, 'buffer', false, true, true, execaSync);
 test('Generator can return final Uint8Array with encoding "buffer", objectMode, failure, sync', testGeneratorReturnType, foobarUint8Array, 'buffer', false, true, true, execaSync);
 test('Generator can return final string with encoding "hex", objectMode, failure, sync', testGeneratorReturnType, foobarString, 'hex', false, true, true, execaSync);

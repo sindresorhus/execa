@@ -98,34 +98,23 @@ test('"lines: true" is a noop with objects generators, objectMode', testLinesObj
 test('"lines: true" is a noop with objects generators, objectMode, sync', testLinesObjectMode, execaSync);
 
 // eslint-disable-next-line max-params
-const testBinaryEncoding = async (t, expectedOutput, encoding, stripFinalNewline, execaMethod) => {
-	const {stdout} = await getSimpleChunkSubprocess(execaMethod, {encoding, stripFinalNewline});
+const testEncoding = async (t, input, expectedOutput, encoding, stripFinalNewline, execaMethod) => {
+	const {stdout} = await execaMethod('stdin.js', {lines: true, stripFinalNewline, encoding, input});
 	t.deepEqual(stdout, expectedOutput);
 };
 
-test('"lines: true" is a noop with "encoding: buffer"', testBinaryEncoding, simpleFullUint8Array, 'buffer', false, execa);
-test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline', testBinaryEncoding, simpleFullUint8Array, 'buffer', false, execa);
-test('"lines: true" is a noop with "encoding: hex"', testBinaryEncoding, simpleFullHex, 'hex', false, execa);
-test('"lines: true" is a noop with "encoding: hex", stripFinalNewline', testBinaryEncoding, simpleFullHex, 'hex', true, execa);
-test('"lines: true" is a noop with "encoding: buffer", sync', testBinaryEncoding, simpleFullUint8Array, 'buffer', false, execaSync);
-test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline, sync', testBinaryEncoding, simpleFullUint8Array, 'buffer', false, execaSync);
-test('"lines: true" is a noop with "encoding: hex", sync', testBinaryEncoding, simpleFullHex, 'hex', false, execaSync);
-test('"lines: true" is a noop with "encoding: hex", stripFinalNewline, sync', testBinaryEncoding, simpleFullHex, 'hex', true, execaSync);
-
-const testTextEncoding = async (t, expectedLines, stripFinalNewline, execaMethod) => {
-	const {stdout} = await execaMethod('stdin.js', {
-		lines: true,
-		stripFinalNewline,
-		encoding: 'utf16le',
-		input: simpleFullUtf16Uint8Array,
-	});
-	t.deepEqual(stdout, expectedLines);
-};
-
-test('"lines: true" is a noop with "encoding: utf16"', testTextEncoding, simpleLines, false, execa);
-test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline', testTextEncoding, noNewlinesChunks, true, execa);
-test('"lines: true" is a noop with "encoding: utf16", sync', testTextEncoding, simpleLines, false, execaSync);
-test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline, sync', testTextEncoding, noNewlinesChunks, true, execaSync);
+test('"lines: true" is a noop with "encoding: utf16"', testEncoding, simpleFullUtf16Uint8Array, simpleLines, 'utf16le', false, execa);
+test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline', testEncoding, simpleFullUtf16Uint8Array, noNewlinesChunks, 'utf16le', true, execa);
+test('"lines: true" is a noop with "encoding: buffer"', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execa);
+test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execa);
+test('"lines: true" is a noop with "encoding: hex"', testEncoding, simpleFull, simpleFullHex, 'hex', false, execa);
+test('"lines: true" is a noop with "encoding: hex", stripFinalNewline', testEncoding, simpleFull, simpleFullHex, 'hex', true, execa);
+test('"lines: true" is a noop with "encoding: utf16", sync', testEncoding, simpleFullUtf16Uint8Array, simpleLines, 'utf16le', false, execaSync);
+test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline, sync', testEncoding, simpleFullUtf16Uint8Array, noNewlinesChunks, 'utf16le', true, execaSync);
+test('"lines: true" is a noop with "encoding: buffer", sync', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execaSync);
+test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline, sync', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execaSync);
+test('"lines: true" is a noop with "encoding: hex", sync', testEncoding, simpleFull, simpleFullHex, 'hex', false, execaSync);
+test('"lines: true" is a noop with "encoding: hex", stripFinalNewline, sync', testEncoding, simpleFull, simpleFullHex, 'hex', true, execaSync);
 
 const testLinesNoBuffer = async (t, execaMethod) => {
 	const {stdout} = await getSimpleChunkSubprocess(execaMethod, {buffer: false});

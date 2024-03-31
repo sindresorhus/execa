@@ -3,7 +3,7 @@ import {exec} from 'node:child_process';
 import process from 'node:process';
 import {promisify} from 'node:util';
 import test from 'ava';
-import getStream, {getStreamAsBuffer} from 'get-stream';
+import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
@@ -20,9 +20,8 @@ const checkEncoding = async (t, encoding, fdNumber, execaMethod) => {
 
 	if (execaMethod !== execaSync) {
 		const subprocess = execaMethod('noop-fd.js', [`${fdNumber}`, STRING_TO_ENCODE], {...fullStdio, encoding});
-		const getStreamMethod = encoding === 'buffer' ? getStreamAsBuffer : getStream;
-		const result = await getStreamMethod(subprocess.stdio[fdNumber]);
-		compareValues(t, result, encoding);
+		const result = await getStream(subprocess.stdio[fdNumber]);
+		compareValues(t, result, 'utf8');
 		await subprocess;
 	}
 
@@ -221,3 +220,19 @@ test('Can use string input, encoding "buffer", sync', testEncodingInput, foobarS
 test('Can use Uint8Array input, encoding "buffer", sync', testEncodingInput, foobarUint8Array, foobarUint8Array, 'buffer', execaSync);
 test('Can use string input, encoding "hex", sync', testEncodingInput, foobarString, foobarHex, 'hex', execaSync);
 test('Can use Uint8Array input, encoding "hex", sync', testEncodingInput, foobarUint8Array, foobarHex, 'hex', execaSync);
+
+const testSubprocessEncoding = (t, encoding) => {
+	const subprocess = execa('empty.js', {...fullStdio, encoding});
+	t.is(subprocess.stdout.readableEncoding, null);
+	t.is(subprocess.stderr.readableEncoding, null);
+	t.is(subprocess.stdio[3].readableEncoding, null);
+};
+
+test('Does not modify subprocess.std* encoding, "utf8"', testSubprocessEncoding, 'utf8');
+test('Does not modify subprocess.std* encoding, "utf16le"', testSubprocessEncoding, 'utf16le');
+test('Does not modify subprocess.std* encoding, "buffer"', testSubprocessEncoding, 'buffer');
+test('Does not modify subprocess.std* encoding, "hex"', testSubprocessEncoding, 'hex');
+test('Does not modify subprocess.std* encoding, "base64"', testSubprocessEncoding, 'base64');
+test('Does not modify subprocess.std* encoding, "base64url"', testSubprocessEncoding, 'base64url');
+test('Does not modify subprocess.std* encoding, "latin1"', testSubprocessEncoding, 'latin1');
+test('Does not modify subprocess.std* encoding, "ascii"', testSubprocessEncoding, 'ascii');

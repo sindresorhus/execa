@@ -1,6 +1,5 @@
 import {Writable} from 'node:stream';
 import test from 'ava';
-import {MaxBufferError} from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
@@ -17,6 +16,7 @@ import {
 	simpleFullEndLines,
 	noNewlinesChunks,
 } from '../helpers/lines.js';
+import {assertErrorMessage} from '../helpers/max-buffer.js';
 
 setFixtureDir();
 
@@ -124,28 +124,34 @@ const testLinesNoBuffer = async (t, execaMethod) => {
 test('"lines: true" is a noop with "buffer: false"', testLinesNoBuffer, execa);
 test('"lines: true" is a noop with "buffer: false", sync', testLinesNoBuffer, execaSync);
 
+const maxBuffer = simpleLines.length - 1;
+
 test('"lines: true" can be below "maxBuffer"', async t => {
-	const maxBuffer = simpleLines.length;
-	const {stdout} = await getSimpleChunkSubprocessAsync({maxBuffer});
+	const {isMaxBuffer, stdout} = await getSimpleChunkSubprocessAsync({maxBuffer: maxBuffer + 1});
+	t.false(isMaxBuffer);
 	t.deepEqual(stdout, noNewlinesChunks);
 });
 
 test('"lines: true" can be above "maxBuffer"', async t => {
-	const maxBuffer = simpleLines.length - 1;
-	const {cause, stdout} = await t.throwsAsync(getSimpleChunkSubprocessAsync({maxBuffer}));
-	t.true(cause instanceof MaxBufferError);
+	const {isMaxBuffer, shortMessage, stdout} = await t.throwsAsync(getSimpleChunkSubprocessAsync({maxBuffer}));
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage, {length: maxBuffer, unit: 'lines'});
 	t.deepEqual(stdout, noNewlinesChunks.slice(0, maxBuffer));
 });
 
 test('"maxBuffer" is measured in lines with "lines: true"', async t => {
-	const {stdout} = await t.throwsAsync(execa('noop-repeat.js', ['1', '...\n'], {lines: true, maxBuffer: 2}));
+	const {isMaxBuffer, shortMessage, stdout} = await t.throwsAsync(execa('noop-repeat.js', ['1', '...\n'], {lines: true, maxBuffer}));
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage, {length: maxBuffer, unit: 'lines'});
 	t.deepEqual(stdout, ['...', '...']);
 });
 
 test('"maxBuffer" is measured in bytes with "lines: true", sync', t => {
-	const {stdout} = t.throws(() => {
-		execaSync('noop-repeat.js', ['1', '...\n'], {lines: true, maxBuffer: 2});
+	const {isMaxBuffer, shortMessage, stdout} = t.throws(() => {
+		execaSync('noop-repeat.js', ['1', '...\n'], {lines: true, maxBuffer});
 	}, {code: 'ENOBUFS'});
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage, {execaMethod: execaSync, length: maxBuffer});
 	t.deepEqual(stdout, ['..']);
 });
 

@@ -588,6 +588,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Largest amount of data allowed on `stdout`, `stderr` and `stdio`.
 
+	When this threshold is hit, the subprocess fails and `error.isMaxBuffer` becomes `true`.
+
 	This is measured:
 	- By default: in [characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).
 	- If the `encoding` option is `'buffer'`: in bytes.
@@ -835,6 +837,11 @@ declare abstract class CommonResult<
 	Whether the subprocess was canceled using the `cancelSignal` option.
 	*/
 	isCanceled: boolean;
+
+	/**
+	Whether the subprocess failed because its output was larger than the `maxBuffer` option.
+	*/
+	isMaxBuffer: boolean;
 
 	/**
 	The output of the subprocess with `stdout` and `stderr` interleaved.
@@ -1376,6 +1383,7 @@ try {
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
+		isMaxBuffer: false,
 		code: 'ENOENT',
 		stdout: '',
 		stderr: '',
@@ -1480,6 +1488,7 @@ try {
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
+		isMaxBuffer: false,
 		stdio: [],
 		pipedFrom: []
 	}

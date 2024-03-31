@@ -557,6 +557,7 @@ const {
   timedOut,
   isCanceled,
   isTerminated,
+	isMaxBuffer,
 	// and other error-related properties: code, etc.
 } = await $({timeout: 1})`sleep 2`;
 // ExecaError: Command timed out after 1 milliseconds: sleep 2
@@ -572,6 +573,7 @@ const {
 //   timedOut: true,
 //   isCanceled: false,
 //   isTerminated: true,
+//   isMaxBuffer: false,
 //   signal: 'SIGTERM',
 //   signalDescription: 'Termination',
 //   stdout: '',

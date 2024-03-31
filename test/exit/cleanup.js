@@ -5,20 +5,27 @@ import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {nestedExecaAsync, nestedWorker} from '../helpers/nested.js';
+import {foobarString} from '../helpers/input.js';
 
 setFixtureDir();
 
 const isWindows = process.platform === 'win32';
 
 // When subprocess exits before current process
-const spawnAndExit = async (t, cleanup, detached) => {
-	await t.notThrowsAsync(execa('nested.js', [JSON.stringify({cleanup, detached}), 'noop.js']));
+const spawnAndExit = async (t, execaMethod, cleanup, detached) => {
+	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {cleanup, detached});
+	t.is(stdout, foobarString);
 };
 
-test('spawnAndExit', spawnAndExit, false, false);
-test('spawnAndExit cleanup', spawnAndExit, true, false);
-test('spawnAndExit detached', spawnAndExit, false, true);
-test('spawnAndExit cleanup detached', spawnAndExit, true, true);
+test('spawnAndExit', spawnAndExit, nestedExecaAsync, false, false);
+test('spawnAndExit cleanup', spawnAndExit, nestedExecaAsync, true, false);
+test('spawnAndExit detached', spawnAndExit, nestedExecaAsync, false, true);
+test('spawnAndExit cleanup detached', spawnAndExit, nestedExecaAsync, true, true);
+test('spawnAndExit, worker', spawnAndExit, nestedWorker, false, false);
+test('spawnAndExit cleanup, worker', spawnAndExit, nestedWorker, true, false);
+test('spawnAndExit detached, worker', spawnAndExit, nestedWorker, false, true);
+test('spawnAndExit cleanup detached, worker', spawnAndExit, nestedWorker, true, true);
 
 // When current process exits before subprocess
 const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {

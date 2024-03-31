@@ -3,12 +3,13 @@ import {red} from 'yoctocolors';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {foobarString} from '../helpers/input.js';
+import {parentExecaAsync, parentExecaSync, parentWorker} from '../helpers/nested.js';
 import {
 	QUOTE,
-	nestedExecaAsync,
-	nestedExecaSync,
-	runErrorSubprocess,
-	runEarlyErrorSubprocess,
+	runErrorSubprocessAsync,
+	runErrorSubprocessSync,
+	runEarlyErrorSubprocessAsync,
+	runEarlyErrorSubprocessSync,
 	getCommandLine,
 	getCommandLines,
 	testTimestamp,
@@ -22,34 +23,36 @@ const testPrintCommand = async (t, verbose, execaMethod) => {
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${foobarString}`);
 };
 
-test('Prints command, verbose "short"', testPrintCommand, 'short', nestedExecaAsync);
-test('Prints command, verbose "full"', testPrintCommand, 'full', nestedExecaAsync);
-test('Prints command, verbose "short", sync', testPrintCommand, 'short', nestedExecaSync);
-test('Prints command, verbose "full", sync', testPrintCommand, 'full', nestedExecaSync);
+test('Prints command, verbose "short"', testPrintCommand, 'short', parentExecaAsync);
+test('Prints command, verbose "full"', testPrintCommand, 'full', parentExecaAsync);
+test('Prints command, verbose "short", sync', testPrintCommand, 'short', parentExecaSync);
+test('Prints command, verbose "full", sync', testPrintCommand, 'full', parentExecaSync);
+test('Prints command, verbose "short", worker', testPrintCommand, 'short', parentWorker);
+test('Prints command, verbose "full", work', testPrintCommand, 'full', parentWorker);
 
 const testNoPrintCommand = async (t, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'none'});
 	t.is(stderr, '');
 };
 
-test('Does not print command, verbose "none"', testNoPrintCommand, nestedExecaAsync);
-test('Does not print command, verbose "none", sync', testNoPrintCommand, nestedExecaSync);
+test('Does not print command, verbose "none"', testNoPrintCommand, parentExecaAsync);
+test('Does not print command, verbose "none", sync', testNoPrintCommand, parentExecaSync);
 
 const testPrintCommandError = async (t, execaMethod) => {
-	const stderr = await runErrorSubprocess(t, 'short', execaMethod);
+	const stderr = await execaMethod(t, 'short');
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop-fail.js 1 ${foobarString}`);
 };
 
-test('Prints command after errors', testPrintCommandError, nestedExecaAsync);
-test('Prints command after errors, sync', testPrintCommandError, nestedExecaSync);
+test('Prints command after errors', testPrintCommandError, runErrorSubprocessAsync);
+test('Prints command after errors, sync', testPrintCommandError, runErrorSubprocessSync);
 
 const testPrintCommandEarly = async (t, execaMethod) => {
-	const stderr = await runEarlyErrorSubprocess(t, execaMethod);
+	const stderr = await execaMethod(t);
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${foobarString}`);
 };
 
-test('Prints command before early validation errors', testPrintCommandEarly, nestedExecaAsync);
-test('Prints command before early validation errors, sync', testPrintCommandEarly, nestedExecaSync);
+test('Prints command before early validation errors', testPrintCommandEarly, runEarlyErrorSubprocessAsync);
+test('Prints command before early validation errors, sync', testPrintCommandEarly, runEarlyErrorSubprocessSync);
 
 const testPipeCommand = async (t, fixtureName, sourceVerbose, destinationVerbose) => {
 	const {stderr} = await execa(`nested-pipe-${fixtureName}.js`, [
@@ -79,26 +82,26 @@ test('Prints neither commands piped with .pipe`command`', testPipeCommand, 'scri
 test('Prints neither commands piped with .pipe(subprocess)', testPipeCommand, 'subprocesses', false, false);
 
 test('Quotes spaces from command', async t => {
-	const {stderr} = await nestedExecaAsync('noop.js', ['foo bar'], {verbose: 'short'});
+	const {stderr} = await parentExecaAsync('noop.js', ['foo bar'], {verbose: 'short'});
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${QUOTE}foo bar${QUOTE}`);
 });
 
 test('Quotes special punctuation from command', async t => {
-	const {stderr} = await nestedExecaAsync('noop.js', ['%'], {verbose: 'short'});
+	const {stderr} = await parentExecaAsync('noop.js', ['%'], {verbose: 'short'});
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${QUOTE}%${QUOTE}`);
 });
 
 test('Does not escape internal characters from command', async t => {
-	const {stderr} = await nestedExecaAsync('noop.js', ['ã'], {verbose: 'short'});
+	const {stderr} = await parentExecaAsync('noop.js', ['ã'], {verbose: 'short'});
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${QUOTE}ã${QUOTE}`);
 });
 
 test('Escapes color sequences from command', async t => {
-	const {stderr} = await nestedExecaAsync('noop.js', [red(foobarString)], {verbose: 'short'}, {env: {FORCE_COLOR: '1'}});
+	const {stderr} = await parentExecaAsync('noop.js', [red(foobarString)], {verbose: 'short'}, {env: {FORCE_COLOR: '1'}});
 	t.true(getCommandLine(stderr).includes(`${QUOTE}\\u001b[31m${foobarString}\\u001b[39m${QUOTE}`));
 });
 
 test('Escapes control characters from command', async t => {
-	const {stderr} = await nestedExecaAsync('noop.js', ['\u0001'], {verbose: 'short'});
+	const {stderr} = await parentExecaAsync('noop.js', ['\u0001'], {verbose: 'short'});
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${QUOTE}\\u0001${QUOTE}`);
 });

@@ -3,12 +3,14 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {foobarString} from '../helpers/input.js';
+import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 import {
-	nestedExecaAsync,
-	nestedExecaSync,
-	runErrorSubprocess,
-	runWarningSubprocess,
-	runEarlyErrorSubprocess,
+	runErrorSubprocessAsync,
+	runErrorSubprocessSync,
+	runWarningSubprocessAsync,
+	runWarningSubprocessSync,
+	runEarlyErrorSubprocessAsync,
+	runEarlyErrorSubprocessSync,
 	getCompletionLine,
 	getCompletionLines,
 	testTimestamp,
@@ -22,45 +24,45 @@ const testPrintCompletion = async (t, verbose, execaMethod) => {
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] √ (done in 0ms)`);
 };
 
-test('Prints completion, verbose "short"', testPrintCompletion, 'short', nestedExecaAsync);
-test('Prints completion, verbose "full"', testPrintCompletion, 'full', nestedExecaAsync);
-test('Prints completion, verbose "short", sync', testPrintCompletion, 'short', nestedExecaSync);
-test('Prints completion, verbose "full", sync', testPrintCompletion, 'full', nestedExecaSync);
+test('Prints completion, verbose "short"', testPrintCompletion, 'short', parentExecaAsync);
+test('Prints completion, verbose "full"', testPrintCompletion, 'full', parentExecaAsync);
+test('Prints completion, verbose "short", sync', testPrintCompletion, 'short', parentExecaSync);
+test('Prints completion, verbose "full", sync', testPrintCompletion, 'full', parentExecaSync);
 
 const testNoPrintCompletion = async (t, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'none'});
 	t.is(stderr, '');
 };
 
-test('Does not print completion, verbose "none"', testNoPrintCompletion, nestedExecaAsync);
-test('Does not print completion, verbose "none", sync', testNoPrintCompletion, nestedExecaSync);
+test('Does not print completion, verbose "none"', testNoPrintCompletion, parentExecaAsync);
+test('Does not print completion, verbose "none", sync', testNoPrintCompletion, parentExecaSync);
 
 const testPrintCompletionError = async (t, execaMethod) => {
-	const stderr = await runErrorSubprocess(t, 'short', execaMethod);
+	const stderr = await execaMethod(t, 'short');
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] × (done in 0ms)`);
 };
 
-test('Prints completion after errors', testPrintCompletionError, nestedExecaAsync);
-test('Prints completion after errors, sync', testPrintCompletionError, nestedExecaSync);
+test('Prints completion after errors', testPrintCompletionError, runErrorSubprocessAsync);
+test('Prints completion after errors, sync', testPrintCompletionError, runErrorSubprocessSync);
 
 const testPrintCompletionWarning = async (t, execaMethod) => {
-	const stderr = await runWarningSubprocess(t, execaMethod);
+	const stderr = await execaMethod(t);
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] ‼ (done in 0ms)`);
 };
 
-test('Prints completion after errors, "reject" false', testPrintCompletionWarning, nestedExecaAsync);
-test('Prints completion after errors, "reject" false, sync', testPrintCompletionWarning, nestedExecaSync);
+test('Prints completion after errors, "reject" false', testPrintCompletionWarning, runWarningSubprocessAsync);
+test('Prints completion after errors, "reject" false, sync', testPrintCompletionWarning, runWarningSubprocessSync);
 
 const testPrintCompletionEarly = async (t, execaMethod) => {
-	const stderr = await runEarlyErrorSubprocess(t, execaMethod);
+	const stderr = await execaMethod(t);
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] × (done in 0ms)`);
 };
 
-test('Prints completion after early validation errors', testPrintCompletionEarly, nestedExecaAsync);
-test('Prints completion after early validation errors, sync', testPrintCompletionEarly, nestedExecaSync);
+test('Prints completion after early validation errors', testPrintCompletionEarly, runEarlyErrorSubprocessAsync);
+test('Prints completion after early validation errors, sync', testPrintCompletionEarly, runEarlyErrorSubprocessSync);
 
 test.serial('Prints duration', async t => {
-	const {stderr} = await nestedExecaAsync('delay.js', ['1000'], {verbose: 'short'});
+	const {stderr} = await parentExecaAsync('delay.js', ['1000'], {verbose: 'short'});
 	t.regex(stripVTControlCharacters(stderr).split('\n').at(-1), /\(done in [\d.]+s\)/);
 });
 

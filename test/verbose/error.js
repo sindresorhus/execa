@@ -3,12 +3,13 @@ import {red} from 'yoctocolors';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {foobarString} from '../helpers/input.js';
+import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 import {
 	QUOTE,
-	nestedExeca,
-	nestedExecaAsync,
-	nestedExecaSync,
-	runEarlyErrorSubprocess,
+	runErrorSubprocessAsync,
+	runErrorSubprocessSync,
+	runEarlyErrorSubprocessAsync,
+	runEarlyErrorSubprocessSync,
 	getErrorLine,
 	getErrorLines,
 	testTimestamp,
@@ -17,50 +18,49 @@ import {
 
 setFixtureDir();
 
-const nestedExecaFail = nestedExeca.bind(undefined, 'nested-fail.js');
+const parentExecaFail = parentExeca.bind(undefined, 'nested-fail.js');
 
 const testPrintError = async (t, verbose, execaMethod) => {
-	const {stderr} = await t.throwsAsync(execaMethod('noop-fail.js', ['1', foobarString], {verbose}));
+	const stderr = await execaMethod(t, verbose);
 	t.is(getErrorLine(stderr), `${testTimestamp} [0] × Command failed with exit code 2: noop-fail.js 1 ${foobarString}`);
 };
 
-test('Prints error, verbose "short"', testPrintError, 'short', nestedExecaAsync);
-test('Prints error, verbose "full"', testPrintError, 'full', nestedExecaAsync);
-test('Prints error, verbose "short", sync', testPrintError, 'short', nestedExecaSync);
-test('Prints error, verbose "full", sync', testPrintError, 'full', nestedExecaSync);
+test('Prints error, verbose "short"', testPrintError, 'short', runErrorSubprocessAsync);
+test('Prints error, verbose "full"', testPrintError, 'full', runErrorSubprocessAsync);
+test('Prints error, verbose "short", sync', testPrintError, 'short', runErrorSubprocessSync);
+test('Prints error, verbose "full", sync', testPrintError, 'full', runErrorSubprocessSync);
 
 const testNoPrintError = async (t, execaMethod) => {
-	const {stderr} = await t.throwsAsync(execaMethod('noop-fail.js', ['1', foobarString], {verbose: 'none'}));
-	t.not(stderr, '');
+	const stderr = await execaMethod(t, 'none');
 	t.is(getErrorLine(stderr), undefined);
 };
 
-test('Does not print error, verbose "none"', testNoPrintError, nestedExecaAsync);
-test('Does not print error, verbose "none", sync', testNoPrintError, nestedExecaSync);
+test('Does not print error, verbose "none"', testNoPrintError, runErrorSubprocessAsync);
+test('Does not print error, verbose "none", sync', testNoPrintError, runErrorSubprocessSync);
 
 const testPrintNoError = async (t, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'short'});
 	t.is(getErrorLine(stderr), undefined);
 };
 
-test('Does not print error if none', testPrintNoError, nestedExecaAsync);
-test('Does not print error if none, sync', testPrintNoError, nestedExecaSync);
+test('Does not print error if none', testPrintNoError, parentExecaAsync);
+test('Does not print error if none, sync', testPrintNoError, parentExecaSync);
 
 const testPrintErrorEarly = async (t, execaMethod) => {
-	const stderr = await runEarlyErrorSubprocess(t, execaMethod);
+	const stderr = await execaMethod(t);
 	t.is(getErrorLine(stderr), `${testTimestamp} [0] × TypeError: The "cwd" option must be a string or a file URL: true.`);
 };
 
-test('Prints early validation error', testPrintErrorEarly, nestedExecaAsync);
-test('Prints early validation error, sync', testPrintErrorEarly, nestedExecaSync);
+test('Prints early validation error', testPrintErrorEarly, runEarlyErrorSubprocessAsync);
+test('Prints early validation error, sync', testPrintErrorEarly, runEarlyErrorSubprocessSync);
 
 test('Does not repeat stdout|stderr with error', async t => {
-	const {stderr} = await t.throwsAsync(nestedExecaAsync('noop-fail.js', ['1', foobarString], {verbose: 'short'}));
+	const stderr = await runErrorSubprocessAsync(t, 'short');
 	t.deepEqual(getErrorLines(stderr), [`${testTimestamp} [0] × Command failed with exit code 2: noop-fail.js 1 ${foobarString}`]);
 });
 
 test('Prints error differently if "reject" is false', async t => {
-	const {stderr} = await nestedExecaAsync('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false});
+	const {stderr} = await parentExecaAsync('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false});
 	t.deepEqual(getErrorLines(stderr), [`${testTimestamp} [0] ‼ Command failed with exit code 2: noop-fail.js 1 ${foobarString}`]);
 });
 
@@ -92,7 +92,7 @@ test('Prints neither errors piped with .pipe`command`', testPipeError, 'script',
 test('Prints neither errors piped with .pipe(subprocess)', testPipeError, 'subprocesses', false, false);
 
 test('Quotes spaces from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedExecaFail('noop-forever.js', ['foo bar'], {verbose: 'short'}));
+	const {stderr} = await t.throwsAsync(parentExecaFail('noop-forever.js', ['foo bar'], {verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}foo bar${QUOTE}`,
 		`${testTimestamp} [0] × foo bar`,
@@ -100,7 +100,7 @@ test('Quotes spaces from error', async t => {
 });
 
 test('Quotes special punctuation from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedExecaFail('noop-forever.js', ['%'], {verbose: 'short'}));
+	const {stderr} = await t.throwsAsync(parentExecaFail('noop-forever.js', ['%'], {verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}%${QUOTE}`,
 		`${testTimestamp} [0] × %`,
@@ -108,7 +108,7 @@ test('Quotes special punctuation from error', async t => {
 });
 
 test('Does not escape internal characters from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedExecaFail('noop-forever.js', ['ã'], {verbose: 'short'}));
+	const {stderr} = await t.throwsAsync(parentExecaFail('noop-forever.js', ['ã'], {verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}ã${QUOTE}`,
 		`${testTimestamp} [0] × ã`,
@@ -116,7 +116,7 @@ test('Does not escape internal characters from error', async t => {
 });
 
 test('Escapes and strips color sequences from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedExecaFail('noop-forever.js', [red(foobarString)], {verbose: 'short'}, {env: {FORCE_COLOR: '1'}}));
+	const {stderr} = await t.throwsAsync(parentExecaFail('noop-forever.js', [red(foobarString)], {verbose: 'short'}, {env: {FORCE_COLOR: '1'}}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}\\u001b[31m${foobarString}\\u001b[39m${QUOTE}`,
 		`${testTimestamp} [0] × ${foobarString}`,
@@ -124,7 +124,7 @@ test('Escapes and strips color sequences from error', async t => {
 });
 
 test('Escapes control characters from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedExecaFail('noop-forever.js', ['\u0001'], {verbose: 'short'}));
+	const {stderr} = await t.throwsAsync(parentExecaFail('noop-forever.js', ['\u0001'], {verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}\\u0001${QUOTE}`,
 		`${testTimestamp} [0] × \\u0001`,

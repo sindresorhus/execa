@@ -1,7 +1,7 @@
 import {Buffer} from 'node:buffer';
 import test from 'ava';
 import getStream from 'get-stream';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
 
@@ -80,6 +80,16 @@ const testNoMaxBuffer = async (t, fdNumber) => {
 test('do not buffer stdout when `buffer` set to `false`', testNoMaxBuffer, 1);
 test('do not buffer stderr when `buffer` set to `false`', testNoMaxBuffer, 2);
 test('do not buffer stdio[*] when `buffer` set to `false`', testNoMaxBuffer, 3);
+
+const testNoMaxBufferSync = (t, fdNumber) => {
+	const {stdio} = execaSync('max-buffer.js', [`${fdNumber}`, `${maxBuffer}`], {...fullStdio, buffer: false});
+	t.is(stdio[fdNumber], undefined);
+};
+
+// @todo: add a test for fd3 once the following Node.js bug is fixed.
+// https://github.com/nodejs/node/issues/52338
+test('do not buffer stdout when `buffer` set to `false`, sync', testNoMaxBufferSync, 1);
+test('do not buffer stderr when `buffer` set to `false`, sync', testNoMaxBufferSync, 2);
 
 const testNoMaxBufferOption = async (t, fdNumber) => {
 	const length = maxBuffer + 1;

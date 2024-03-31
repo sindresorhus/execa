@@ -77,9 +77,10 @@ export const infiniteGenerator = getGenerator(async function * () {
 });
 
 const textDecoder = new TextDecoder();
+const textEncoder = new TextEncoder();
 
 export const uppercaseBufferGenerator = getGenerator(function * (buffer) {
-	yield textDecoder.decode(buffer).toUpperCase();
+	yield textEncoder.encode(textDecoder.decode(buffer).toUpperCase());
 });
 
 export const uppercaseGenerator = getGenerator(function * (string) {

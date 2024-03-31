@@ -129,10 +129,13 @@ test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline', testTe
 test('"lines: true" is a noop with "encoding: utf16", sync', testTextEncoding, simpleLines, false, execaSync);
 test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline, sync', testTextEncoding, noNewlinesChunks, true, execaSync);
 
-test('"lines: true" is a noop with "buffer: false"', async t => {
-	const {stdout} = await getSimpleChunkSubprocessAsync({buffer: false});
+const testLinesNoBuffer = async (t, execaMethod) => {
+	const {stdout} = await getSimpleChunkSubprocess(execaMethod, {buffer: false});
 	t.is(stdout, undefined);
-});
+};
+
+test('"lines: true" is a noop with "buffer: false"', testLinesNoBuffer, execa);
+test('"lines: true" is a noop with "buffer: false", sync', testLinesNoBuffer, execaSync);
 
 test('"lines: true" can be below "maxBuffer"', async t => {
 	const maxBuffer = simpleLines.length;

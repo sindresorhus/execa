@@ -1,18 +1,21 @@
+import {readFile, rm} from 'node:fs/promises';
 import {platform} from 'node:process';
 import test from 'ava';
+import tempfile from 'tempfile';
 import {execa} from '../../index.js';
 import {getStdio, fullStdio} from '../helpers/stdio.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {foobarString} from '../helpers/input.js';
 
 setFixtureDir();
 
 const testRedirect = async (t, stdioOption, fdNumber, isInput) => {
 	const {fixtureName, ...options} = isInput
-		? {fixtureName: 'stdin-fd.js', input: 'foobar'}
+		? {fixtureName: 'stdin-fd.js', input: foobarString}
 		: {fixtureName: 'noop-fd.js'};
-	const {stdio} = await execa('nested-stdio.js', [JSON.stringify(stdioOption), `${fdNumber}`, fixtureName, 'foobar'], options);
+	const {stdio} = await execa('nested-stdio.js', [JSON.stringify(stdioOption), `${fdNumber}`, fixtureName, foobarString], options);
 	const resultFdNumber = isStderrDescriptor(stdioOption) ? 2 : 1;
-	t.is(stdio[resultFdNumber], 'foobar');
+	t.is(stdio[resultFdNumber], foobarString);
 };
 
 const isStderrDescriptor = stdioOption => stdioOption === 2
@@ -51,8 +54,8 @@ test('stdio[*] can be [process.stderr]', testRedirect, ['stderr'], 3, false);
 test('stdio[*] can be [process.stderr, "pipe"]', testRedirect, ['stderr', 'pipe'], 3, false);
 
 const testInheritStdin = async (t, stdin) => {
-	const {stdout} = await execa('nested-multiple-stdin.js', [JSON.stringify(stdin)], {input: 'foobar'});
-	t.is(stdout, 'foobarfoobar');
+	const {stdout} = await execa('nested-multiple-stdin.js', [JSON.stringify(stdin)], {input: foobarString});
+	t.is(stdout, `${foobarString}${foobarString}`);
 };
 
 test('stdin can be ["inherit", "pipe"]', testInheritStdin, ['inherit', 'pipe']);
@@ -60,8 +63,8 @@ test('stdin can be [0, "pipe"]', testInheritStdin, [0, 'pipe']);
 
 const testInheritStdout = async (t, stdout) => {
 	const result = await execa('nested-multiple-stdout.js', [JSON.stringify(stdout)]);
-	t.is(result.stdout, 'foobar');
-	t.is(result.stderr, 'nested foobar');
+	t.is(result.stdout, foobarString);
+	t.is(result.stderr, `nested ${foobarString}`);
 };
 
 test('stdout can be ["inherit", "pipe"]', testInheritStdout, ['inherit', 'pipe']);
@@ -69,12 +72,22 @@ test('stdout can be [1, "pipe"]', testInheritStdout, [1, 'pipe']);
 
 const testInheritStderr = async (t, stderr) => {
 	const result = await execa('nested-multiple-stderr.js', [JSON.stringify(stderr)]);
-	t.is(result.stdout, 'nested foobar');
-	t.is(result.stderr, 'foobar');
+	t.is(result.stdout, `nested ${foobarString}`);
+	t.is(result.stderr, foobarString);
 };
 
 test('stderr can be ["inherit", "pipe"]', testInheritStderr, ['inherit', 'pipe']);
 test('stderr can be [2, "pipe"]', testInheritStderr, [2, 'pipe']);
+
+const testInheritNoBuffer = async (t, stdioOption) => {
+	const filePath = tempfile();
+	await execa('nested.js', [JSON.stringify({stdin: stdioOption, buffer: false}), 'nested-write.js', filePath, foobarString], {input: foobarString});
+	t.is(await readFile(filePath, 'utf8'), `${foobarString} ${foobarString}`);
+	await rm(filePath);
+};
+
+test('stdin can be ["inherit", "pipe"], buffer: false', testInheritNoBuffer, ['inherit', 'pipe']);
+test('stdin can be [0, "pipe"], buffer: false', testInheritNoBuffer, [0, 'pipe']);
 
 const testOverflowStream = async (t, fdNumber, stdioOption) => {
 	const {stdout} = await execa('nested.js', [JSON.stringify(getStdio(fdNumber, stdioOption)), 'empty.js'], fullStdio);

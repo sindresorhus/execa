@@ -1134,6 +1134,10 @@ try {
 	expectType<string>(linesHexResult.stdout);
 	expectType<string>(linesHexResult.stderr);
 
+	const noBufferResult = execaSync('unicorns', {buffer: false});
+	expectType<undefined>(noBufferResult.stdout);
+	expectType<undefined>(noBufferResult.stderr);
+
 	const ignoreStdoutResult = execaSync('unicorns', {stdout: 'ignore'});
 	expectType<undefined>(ignoreStdoutResult.stdout);
 	expectType<undefined>(ignoreStdoutResult.stdio[1]);
@@ -1208,6 +1212,10 @@ try {
 	const execaLinesBufferError = error as ExecaSyncError<{lines: true; encoding: 'buffer'}>;
 	expectType<Uint8Array>(execaLinesBufferError.stdout);
 	expectType<Uint8Array>(execaLinesBufferError.stderr);
+
+	const noBufferError = error as ExecaSyncError<{buffer: false}>;
+	expectType<undefined>(noBufferError.stdout);
+	expectType<undefined>(noBufferError.stderr);
 
 	const ignoreStdoutError = error as ExecaSyncError<{stdout: 'ignore'}>;
 	expectType<undefined>(ignoreStdoutError.stdout);
@@ -1388,7 +1396,7 @@ expectError(execaSync('unicorns', {cleanup: false}));
 expectError(execa('unicorns', {cleanup: 'false'}));
 expectError(execaSync('unicorns', {cleanup: 'false'}));
 execa('unicorns', {buffer: false});
-expectError(execaSync('unicorns', {buffer: false}));
+execaSync('unicorns', {buffer: false});
 expectError(execa('unicorns', {buffer: 'false'}));
 expectError(execaSync('unicorns', {buffer: 'false'}));
 execa('unicorns', {all: true});

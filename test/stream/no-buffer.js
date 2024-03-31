@@ -1,10 +1,11 @@
 import {once} from 'node:events';
 import test from 'ava';
 import getStream from 'get-stream';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString, foobarUppercase, foobarUppercaseUint8Array} from '../helpers/input.js';
+import {resultGenerator, uppercaseGenerator, uppercaseBufferGenerator} from '../helpers/generator.js';
 
 setFixtureDir();
 
@@ -85,14 +86,65 @@ test('Listen to stderr errors even when `buffer` is `false`', testNoBufferStream
 test('Listen to stdio[*] errors even when `buffer` is `false`', testNoBufferStreamError, 3, false);
 test('Listen to all errors even when `buffer` is `false`', testNoBufferStreamError, 1, true);
 
-test('buffer: false > promise resolves', async t => {
-	await t.notThrowsAsync(execa('noop.js', {buffer: false}));
-});
+const testNoOutput = async (t, stdioOption, execaMethod) => {
+	const {stdout} = await execaMethod('noop.js', {stdout: stdioOption, buffer: false});
+	t.is(stdout, undefined);
+};
 
-test('buffer: false > promise rejects when subprocess returns non-zero', async t => {
-	const {exitCode} = await t.throwsAsync(execa('fail.js', {buffer: false}));
+test('buffer: false does not return output', testNoOutput, 'pipe', execa);
+test('buffer: false does not return output, stdout undefined', testNoOutput, undefined, execa);
+test('buffer: false does not return output, stdout null', testNoOutput, null, execa);
+test('buffer: false does not return output, stdout ["pipe"]', testNoOutput, ['pipe'], execa);
+test('buffer: false does not return output, stdout [undefined]', testNoOutput, [undefined], execa);
+test('buffer: false does not return output, stdout [null]', testNoOutput, [null], execa);
+test('buffer: false does not return output, stdout ["pipe", undefined]', testNoOutput, ['pipe', undefined], execa);
+test('buffer: false does not return output, sync', testNoOutput, 'pipe', execaSync);
+test('buffer: false does not return output, stdout undefined, sync', testNoOutput, undefined, execaSync);
+test('buffer: false does not return output, stdout null, sync', testNoOutput, null, execaSync);
+test('buffer: false does not return output, stdout ["pipe"], sync', testNoOutput, ['pipe'], execaSync);
+test('buffer: false does not return output, stdout [undefined], sync', testNoOutput, [undefined], execaSync);
+test('buffer: false does not return output, stdout [null], sync', testNoOutput, [null], execaSync);
+test('buffer: false does not return output, stdout ["pipe", undefined], sync', testNoOutput, ['pipe', undefined], execaSync);
+
+const testNoOutputFail = async (t, execaMethod) => {
+	const {exitCode, stdout} = await execaMethod('fail.js', {buffer: false, reject: false});
 	t.is(exitCode, 2);
-});
+	t.is(stdout, undefined);
+};
+
+test('buffer: false does not return output, failure', testNoOutputFail, execa);
+test('buffer: false does not return output, failure, sync', testNoOutputFail, execaSync);
+
+const testTransform = async (t, objectMode, execaMethod) => {
+	const lines = [];
+	const {stdout} = await execaMethod('noop.js', {
+		buffer: false,
+		stdout: [uppercaseGenerator(objectMode), resultGenerator(lines)(objectMode)],
+	});
+	t.is(stdout, undefined);
+	t.deepEqual(lines, [foobarUppercase]);
+};
+
+test('buffer: false still runs transforms', testTransform, false, execa);
+test('buffer: false still runs transforms, objectMode', testTransform, true, execa);
+test('buffer: false still runs transforms, sync', testTransform, false, execaSync);
+test('buffer: false still runs transforms, objectMode, sync', testTransform, true, execaSync);
+
+const testTransformBinary = async (t, objectMode, execaMethod) => {
+	const lines = [];
+	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {
+		buffer: false,
+		stdout: [uppercaseBufferGenerator(objectMode, true), resultGenerator(lines)(objectMode)],
+		encoding: 'buffer',
+	});
+	t.is(stdout, undefined);
+	t.deepEqual(lines, [foobarUppercaseUint8Array]);
+};
+
+test('buffer: false still runs transforms, encoding "buffer"', testTransformBinary, false, execa);
+test('buffer: false still runs transforms, encoding "buffer", objectMode', testTransformBinary, true, execa);
+test('buffer: false still runs transforms, encoding "buffer", sync', testTransformBinary, false, execaSync);
+test('buffer: false still runs transforms, encoding "buffer", objectMode, sync', testTransformBinary, true, execaSync);
 
 const testStreamEnd = async (t, fdNumber, buffer) => {
 	const subprocess = execa('wrong command', {...fullStdio, buffer});

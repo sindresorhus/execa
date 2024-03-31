@@ -19,7 +19,7 @@ const checkEncoding = async (t, encoding, fdNumber, execaMethod) => {
 	compareValues(t, stdio[fdNumber], encoding);
 
 	if (execaMethod !== execaSync) {
-		const subprocess = execaMethod('noop-fd.js', [`${fdNumber}`, STRING_TO_ENCODE], {...fullStdio, encoding, buffer: false});
+		const subprocess = execaMethod('noop-fd.js', [`${fdNumber}`, STRING_TO_ENCODE], {...fullStdio, encoding});
 		const getStreamMethod = encoding === 'buffer' ? getStreamAsBuffer : getStream;
 		const result = await getStreamMethod(subprocess.stdio[fdNumber]);
 		compareValues(t, result, encoding);

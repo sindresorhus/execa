@@ -50,12 +50,12 @@ test('result.all is defined, lines, stripFinalNewline, failure, sync', testAllBo
 
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const {all} = await execa('noop-132.js', {all: true});
-	t.is(all, '132');
+	t.is(all, '1\n2\n3');
 });
 
-test('result.all shows both `stdout` and `stderr` not intermixed, sync', t => {
+test.serial('result.all shows both `stdout` and `stderr` not intermixed, sync', t => {
 	const {all} = execaSync('noop-132.js', {all: true});
-	t.is(all, '123');
+	t.is(all, '1\n3\n2');
 });
 
 const testAllIgnored = async (t, options, execaMethod) => {

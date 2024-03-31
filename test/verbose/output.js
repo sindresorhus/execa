@@ -7,6 +7,7 @@ import {red} from 'yoctocolors';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {foobarString, foobarObject, foobarUppercase} from '../helpers/input.js';
+import {simpleFull, noNewlinesChunks} from '../helpers/lines.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {
 	nestedExeca,
@@ -121,29 +122,54 @@ const testStdioSame = async (t, fdNumber) => {
 	t.is(stdio[fdNumber], foobarString);
 };
 
-test('Does not change stdout', testStdioSame, 1);
-test('Does not change stderr', testStdioSame, 2);
+test('Does not change subprocess.stdout', testStdioSame, 1);
+test('Does not change subprocess.stderr', testStdioSame, 2);
 
-const testOnlyTransforms = async (t, type) => {
-	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', [foobarString], {verbose: 'full', type});
+const testLines = async (t, stripFinalNewline, execaMethod) => {
+	const {stderr} = await execaMethod('noop-fd.js', ['1', simpleFull], {verbose: 'full', lines: true});
+	t.deepEqual(getOutputLines(stderr), noNewlinesChunks.map(line => `${testTimestamp} [0]   ${line}`));
+};
+
+test('Prints stdout, "lines: true"', testLines, false, nestedExecaAsync);
+test('Prints stdout, "lines: true", stripFinalNewline', testLines, true, nestedExecaAsync);
+test('Prints stdout, "lines: true", sync', testLines, false, nestedExecaSync);
+test('Prints stdout, "lines: true", stripFinalNewline, sync', testLines, true, nestedExecaSync);
+
+const testOnlyTransforms = async (t, type, isSync) => {
+	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', [foobarString], {verbose: 'full', type, isSync});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString.toUpperCase()}`);
 };
 
-test('Prints stdout with only transforms', testOnlyTransforms, 'generator');
-test('Prints stdout with only duplexes', testOnlyTransforms, 'duplex');
+test('Prints stdout with only transforms', testOnlyTransforms, 'generator', false);
+test('Prints stdout with only transforms, sync', testOnlyTransforms, 'generator', true);
+test('Prints stdout with only duplexes', testOnlyTransforms, 'duplex', false);
 
-test('Prints stdout with object transforms', async t => {
-	const {stderr} = await nestedExeca('nested-object.js', 'noop.js', {verbose: 'full'});
+const testObjectMode = async (t, isSync) => {
+	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', {verbose: 'full', transformName: 'object', isSync});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${inspect(foobarObject)}`);
-});
+};
 
-test('Prints stdout with big object transforms', async t => {
-	const {stderr} = await nestedExeca('nested-big-array.js', 'noop.js', {verbose: 'full'});
+test('Prints stdout with object transforms', testObjectMode, false);
+test('Prints stdout with object transforms, sync', testObjectMode, true);
+
+const testBigArray = async (t, isSync) => {
+	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', {verbose: 'full', transformName: 'bigArray', isSync});
 	const lines = getOutputLines(stderr);
 	t.is(lines[0], `${testTimestamp} [0]   [`);
 	t.true(lines[1].startsWith(`${testTimestamp} [0]      0,  1,`));
 	t.is(lines.at(-1), `${testTimestamp} [0]   ]`);
-});
+};
+
+test('Prints stdout with big object transforms', testBigArray, false);
+test('Prints stdout with big object transforms, sync', testBigArray, true);
+
+const testObjectModeString = async (t, isSync) => {
+	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', {verbose: 'full', transformName: 'stringObject', isSync});
+	t.deepEqual(getOutputLines(stderr), noNewlinesChunks.map(line => `${testTimestamp} [0]   ${line}`));
+};
+
+test('Prints stdout with string transforms in objectMode', testObjectModeString, false);
+test('Prints stdout with string transforms in objectMode, sync', testObjectModeString, true);
 
 test('Prints stdout one line at a time', async t => {
 	const subprocess = nestedExecaAsync('noop-progressive.js', [foobarString], {verbose: 'full'});
@@ -195,26 +221,35 @@ const testSingleNewline = async (t, execaMethod) => {
 test('Prints stdout, single newline', testSingleNewline, nestedExecaAsync);
 test('Prints stdout, single newline, sync', testSingleNewline, nestedExecaSync);
 
-test('Can use encoding UTF16, verbose "full"', async t => {
-	const {stderr} = await nestedExeca('nested-input.js', 'stdin.js', {verbose: 'full', encoding: 'utf16le'});
+const testUtf16 = async (t, isSync) => {
+	const {stderr} = await nestedExeca('nested-input.js', 'stdin.js', [`${isSync}`], {verbose: 'full', encoding: 'utf16le'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
-});
+};
 
-const testNoOutputOptions = async (t, options, fixtureName = 'nested.js') => {
+test('Can use encoding UTF16, verbose "full"', testUtf16, false);
+test('Can use encoding UTF16, verbose "full", sync', testUtf16, true);
+
+const testNoOutputOptions = async (t, fixtureName, options = {}) => {
 	const {stderr} = await nestedExeca(fixtureName, 'noop.js', [foobarString], {verbose: 'full', ...options});
 	t.is(getOutputLine(stderr), undefined);
 };
 
-test('Does not print stdout, encoding "buffer"', testNoOutputOptions, {encoding: 'buffer'});
-test('Does not print stdout, encoding "hex"', testNoOutputOptions, {encoding: 'hex'});
-test('Does not print stdout, encoding "base64"', testNoOutputOptions, {encoding: 'base64'});
-test('Does not print stdout, stdout "ignore"', testNoOutputOptions, {stdout: 'ignore'});
-test('Does not print stdout, stdout "inherit"', testNoOutputOptions, {stdout: 'inherit'});
-test('Does not print stdout, stdout 1', testNoOutputOptions, {stdout: 1});
-test('Does not print stdout, stdout Writable', testNoOutputOptions, {}, 'nested-writable.js');
-test('Does not print stdout, stdout WritableStream', testNoOutputOptions, {}, 'nested-writable-web.js');
-test('Does not print stdout, .pipe(stream)', testNoOutputOptions, {}, 'nested-pipe-stream.js');
-test('Does not print stdout, .pipe(subprocess)', testNoOutputOptions, {}, 'nested-pipe-subprocess.js');
+test('Does not print stdout, encoding "buffer"', testNoOutputOptions, 'nested.js', {encoding: 'buffer'});
+test('Does not print stdout, encoding "hex"', testNoOutputOptions, 'nested.js', {encoding: 'hex'});
+test('Does not print stdout, encoding "base64"', testNoOutputOptions, 'nested.js', {encoding: 'base64'});
+test('Does not print stdout, stdout "ignore"', testNoOutputOptions, 'nested.js', {stdout: 'ignore'});
+test('Does not print stdout, stdout "inherit"', testNoOutputOptions, 'nested.js', {stdout: 'inherit'});
+test('Does not print stdout, stdout 1', testNoOutputOptions, 'nested.js', {stdout: 1});
+test('Does not print stdout, stdout Writable', testNoOutputOptions, 'nested-writable.js');
+test('Does not print stdout, stdout WritableStream', testNoOutputOptions, 'nested-writable-web.js');
+test('Does not print stdout, .pipe(stream)', testNoOutputOptions, 'nested-pipe-stream.js');
+test('Does not print stdout, .pipe(subprocess)', testNoOutputOptions, 'nested-pipe-subprocess.js');
+test('Does not print stdout, encoding "buffer", sync', testNoOutputOptions, 'nested-sync.js', {encoding: 'buffer'});
+test('Does not print stdout, encoding "hex", sync', testNoOutputOptions, 'nested-sync.js', {encoding: 'hex'});
+test('Does not print stdout, encoding "base64", sync', testNoOutputOptions, 'nested-sync.js', {encoding: 'base64'});
+test('Does not print stdout, stdout "ignore", sync', testNoOutputOptions, 'nested-sync.js', {stdout: 'ignore'});
+test('Does not print stdout, stdout "inherit", sync', testNoOutputOptions, 'nested-sync.js', {stdout: 'inherit'});
+test('Does not print stdout, stdout 1, sync', testNoOutputOptions, 'nested-sync.js', {stdout: 1});
 
 const testStdoutFile = async (t, fixtureName, getStdout) => {
 	const file = tempfile();
@@ -227,6 +262,7 @@ const testStdoutFile = async (t, fixtureName, getStdout) => {
 
 test('Does not print stdout, stdout { file }', testStdoutFile, 'nested.js', file => ({file}));
 test('Does not print stdout, stdout fileUrl', testStdoutFile, 'nested-file-url.js', file => file);
+test('Does not print stdout, stdout { file }, sync', testStdoutFile, 'nested-sync.js', file => ({file}));
 
 const testPrintOutputOptions = async (t, options, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'full', ...options});
@@ -264,3 +300,11 @@ const testPrintOutputFixture = async (t, fixtureName, ...args) => {
 
 test('Prints stdout, .pipe(stream) + .unpipe()', testPrintOutputFixture, 'nested-pipe-stream.js', 'true');
 test('Prints stdout, .pipe(subprocess) + .unpipe()', testPrintOutputFixture, 'nested-pipe-subprocess.js', 'true');
+
+const testInterleaved = async (t, expectedLines, execaMethod) => {
+	const {stderr} = await execaMethod('noop-132.js', {verbose: 'full'});
+	t.deepEqual(getOutputLines(stderr), expectedLines.map(line => `${testTimestamp} [0]   ${line}`));
+};
+
+test('Prints stdout + stderr interleaved', testInterleaved, [1, 2, 3], nestedExecaAsync);
+test('Prints stdout + stderr not interleaved, sync', testInterleaved, [1, 3, 2], nestedExecaSync);

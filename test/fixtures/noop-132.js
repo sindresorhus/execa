@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-import process from 'node:process';
-
-process.stdout.write('1');
-process.stderr.write('3');
+console.log(1);
+console.warn(2);
 
 setTimeout(() => {
-	process.stdout.write('2');
+	console.log(3);
 }, 1000);

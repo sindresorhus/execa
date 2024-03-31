@@ -137,6 +137,18 @@ test('"lines: true" can be above "maxBuffer"', async t => {
 	t.deepEqual(stdout, noNewlinesChunks.slice(0, maxBuffer));
 });
 
+test('"maxBuffer" is measured in lines with "lines: true"', async t => {
+	const {stdout} = await t.throwsAsync(execa('noop-repeat.js', ['1', '...\n'], {lines: true, maxBuffer: 2}));
+	t.deepEqual(stdout, ['...', '...']);
+});
+
+test('"maxBuffer" is measured in bytes with "lines: true", sync', t => {
+	const {stdout} = t.throws(() => {
+		execaSync('noop-repeat.js', ['1', '...\n'], {lines: true, maxBuffer: 2});
+	}, {code: 'ENOBUFS'});
+	t.deepEqual(stdout, ['..']);
+});
+
 test('"lines: true" stops on stream error', async t => {
 	const cause = new Error(foobarString);
 	const error = await t.throwsAsync(getSimpleChunkSubprocessAsync({

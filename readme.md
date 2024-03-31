@@ -317,9 +317,18 @@ This allows setting global options or [sharing options](#globalshared-options) b
 
 Same as [`execa()`](#execafile-arguments-options) but synchronous.
 
-Returns or throws a [`subprocessResult`](#subprocessResult). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`.pipe()`](#pipefile-arguments-options), [`.iterable()`](#iterablereadableoptions), [`.readable()`](#readablereadableoptions), [`.writable()`](#writablewritableoptions), [`.duplex()`](#duplexduplexoptions) and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a [`subprocessResult`](#subprocessResult). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available.
 
-Cannot use the following options: [`cleanup`](#cleanup), [`detached`](#detached), [`ipc`](#ipc), [`serialization`](#serialization), [`cancelSignal`](#cancelsignal) and [`forceKillAfterDelay`](#forcekillafterdelay). [`result.all`](#all-1) is not interleaved. Also, the [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [`stdio`](#stdio-1) options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async [transform](docs/transform.md), a [`Duplex`](docs/transform.md#duplextransform-streams), or a web stream. Node.js streams [must have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr) unless the `input` option is used.
+The following features cannot be used:
+- Streams: [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), [`subprocess.readable()`](#readablereadableoptions), [`subprocess.writable()`](#writablewritableoptions), [`subprocess.duplex()`](#duplexduplexoptions).
+- The [`stdin`](#stdin), [`stdout`](#stdout-1), [`stderr`](#stderr-1) and [`stdio`](#stdio-1) options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async [transform](docs/transform.md), a [`Duplex`](docs/transform.md#duplextransform-streams), nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
+- Signal termination: [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`subprocess.pid`](https://nodejs.org/api/child_process.html#subprocesspid), [`cleanup`](#cleanup) option, [`cancelSignal`](#cancelsignal) option, [`forceKillAfterDelay`](#forcekillafterdelay) option.
+- Piping multiple processes: [`subprocess.pipe()`](#pipefile-arguments-options).
+- [`subprocess.iterable()`](#iterablereadableoptions).
+- [`ipc`](#ipc) and [`serialization`](#serialization) options.
+- [`result.all`](#all-1) is not interleaved.
+- [`detached`](#detached) option.
+- The [`maxBuffer`](#maxbuffer) option is always measured in bytes, not in characters, [lines](#lines) nor [objects](docs/transform.md#object-mode). Also, it ignores transforms and the [`encoding`](#encoding) option.
 
 #### $(file, arguments?, options?)
 

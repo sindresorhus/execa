@@ -713,6 +713,26 @@ try {
 	expectType<undefined>(streamArrayStderrResult.stderr);
 	expectType<string>(streamArrayStderrResult.all);
 
+	const undefinedStdoutResult = await execa('unicorns', {stdout: undefined, all: true});
+	expectType<string>(undefinedStdoutResult.stdout);
+	expectType<string>(undefinedStdoutResult.stderr);
+	expectType<string>(undefinedStdoutResult.all);
+
+	const undefinedArrayStdoutResult = await execa('unicorns', {stdout: [undefined] as const, all: true});
+	expectType<string>(undefinedArrayStdoutResult.stdout);
+	expectType<string>(undefinedArrayStdoutResult.stderr);
+	expectType<string>(undefinedArrayStdoutResult.all);
+
+	const undefinedStderrResult = await execa('unicorns', {stderr: undefined, all: true});
+	expectType<string>(undefinedStderrResult.stdout);
+	expectType<string>(undefinedStderrResult.stderr);
+	expectType<string>(undefinedStderrResult.all);
+
+	const undefinedArrayStderrResult = await execa('unicorns', {stderr: [undefined] as const, all: true});
+	expectType<string>(undefinedArrayStderrResult.stdout);
+	expectType<string>(undefinedArrayStderrResult.stderr);
+	expectType<string>(undefinedArrayStderrResult.all);
+
 	const fd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
 	expectType<string>(fd3Result.stdio[3]);
 
@@ -736,6 +756,12 @@ try {
 
 	const ignoreFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
 	expectType<undefined>(ignoreFd3Result.stdio[3]);
+
+	const undefinedFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', undefined]});
+	expectType<undefined>(undefinedFd3Result.stdio[3]);
+
+	const undefinedArrayFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [undefined] as const]});
+	expectType<undefined>(undefinedArrayFd3Result.stdio[3]);
 
 	const objectTransformLinesStdoutResult = await execa('unicorns', {lines: true, stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}});
 	expectType<unknown[]>(objectTransformLinesStdoutResult.stdout);

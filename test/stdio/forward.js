@@ -35,7 +35,13 @@ const testFd3Undefined = async (t, stdioOption, options) => {
 
 test('stdio[*] undefined means "ignore"', testFd3Undefined, undefined, {});
 test('stdio[*] null means "ignore"', testFd3Undefined, null, {});
+test('stdio[*] [undefined] means "ignore"', testFd3Undefined, [undefined], {});
+test('stdio[*] [null] means "ignore"', testFd3Undefined, [null], {});
 test('stdio[*] undefined means "ignore", "lines: true"', testFd3Undefined, undefined, {lines: true});
 test('stdio[*] null means "ignore", "lines: true"', testFd3Undefined, null, {lines: true});
+test('stdio[*] [undefined] means "ignore", "lines: true"', testFd3Undefined, [undefined], {lines: true});
+test('stdio[*] [null] means "ignore", "lines: true"', testFd3Undefined, [null], {lines: true});
 test('stdio[*] undefined means "ignore", "encoding: hex"', testFd3Undefined, undefined, {encoding: 'hex'});
 test('stdio[*] null means "ignore", "encoding: hex"', testFd3Undefined, null, {encoding: 'hex'});
+test('stdio[*] [undefined] means "ignore", "encoding: hex"', testFd3Undefined, [undefined], {encoding: 'hex'});
+test('stdio[*] [null] means "ignore", "encoding: hex"', testFd3Undefined, [null], {encoding: 'hex'});

@@ -173,6 +173,7 @@ expectType<AnyChunk>({} as ExecaResult['all']);
 expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaResult['stdio']);
 expectType<AnyChunk>({} as ExecaSyncResult['stdout']);
 expectType<AnyChunk>({} as ExecaSyncResult['stderr']);
+expectType<AnyChunk>({} as ExecaSyncResult['all']);
 expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaSyncResult['stdio']);
 
 try {
@@ -1091,7 +1092,7 @@ expectType<string | undefined>(noRejectsResult.code);
 expectType<unknown>(noRejectsResult.cause);
 
 try {
-	const unicornsResult = execaSync('unicorns');
+	const unicornsResult = execaSync('unicorns', {all: true});
 
 	expectAssignable<ExecaSyncResult>(unicornsResult);
 	expectType<string>(unicornsResult.command);
@@ -1113,62 +1114,66 @@ try {
 	expectType<string>(unicornsResult.stdio[1]);
 	expectType<string>(unicornsResult.stderr);
 	expectType<string>(unicornsResult.stdio[2]);
-	expectError(unicornsResult.all.toString());
+	expectType<string>(unicornsResult.all);
 
-	const bufferResult = execaSync('unicorns', {encoding: 'buffer'});
+	const bufferResult = execaSync('unicorns', {encoding: 'buffer', all: true});
 	expectType<Uint8Array>(bufferResult.stdout);
 	expectType<Uint8Array>(bufferResult.stdio[1]);
 	expectType<Uint8Array>(bufferResult.stderr);
 	expectType<Uint8Array>(bufferResult.stdio[2]);
-	expectError(bufferResult.all.toString());
+	expectType<Uint8Array>(bufferResult.all);
 
-	const linesResult = execaSync('unicorns', {lines: true});
+	const linesResult = execaSync('unicorns', {lines: true, all: true});
 	expectType<string[]>(linesResult.stdout);
 	expectType<string[]>(linesResult.stderr);
+	expectType<string[]>(linesResult.all);
 
-	const linesBufferResult = execaSync('unicorns', {lines: true, encoding: 'buffer'});
+	const linesBufferResult = execaSync('unicorns', {lines: true, encoding: 'buffer', all: true});
 	expectType<Uint8Array>(linesBufferResult.stdout);
 	expectType<Uint8Array>(linesBufferResult.stderr);
+	expectType<Uint8Array>(linesBufferResult.all);
 
-	const linesHexResult = execaSync('unicorns', {lines: true, encoding: 'hex'});
+	const linesHexResult = execaSync('unicorns', {lines: true, encoding: 'hex', all: true});
 	expectType<string>(linesHexResult.stdout);
 	expectType<string>(linesHexResult.stderr);
+	expectType<string>(linesHexResult.all);
 
-	const noBufferResult = execaSync('unicorns', {buffer: false});
+	const noBufferResult = execaSync('unicorns', {buffer: false, all: true});
 	expectType<undefined>(noBufferResult.stdout);
 	expectType<undefined>(noBufferResult.stderr);
+	expectType<undefined>(noBufferResult.all);
 
-	const ignoreStdoutResult = execaSync('unicorns', {stdout: 'ignore'});
+	const ignoreStdoutResult = execaSync('unicorns', {stdout: 'ignore', all: true});
 	expectType<undefined>(ignoreStdoutResult.stdout);
 	expectType<undefined>(ignoreStdoutResult.stdio[1]);
 	expectType<string>(ignoreStdoutResult.stderr);
 	expectType<string>(ignoreStdoutResult.stdio[2]);
-	expectError(ignoreStdoutResult.all.toString());
+	expectType<string>(ignoreStdoutResult.all);
 
-	const ignoreStderrResult = execaSync('unicorns', {stderr: 'ignore'});
+	const ignoreStderrResult = execaSync('unicorns', {stderr: 'ignore', all: true});
 	expectType<string>(ignoreStderrResult.stdout);
 	expectType<undefined>(ignoreStderrResult.stderr);
-	expectError(ignoreStderrResult.all.toString());
+	expectType<string>(ignoreStderrResult.all);
 
-	const inheritStdoutResult = execaSync('unicorns', {stdout: 'inherit'});
+	const inheritStdoutResult = execaSync('unicorns', {stdout: 'inherit', all: true});
 	expectType<undefined>(inheritStdoutResult.stdout);
 	expectType<string>(inheritStdoutResult.stderr);
-	expectError(inheritStdoutResult.all.toString());
+	expectType<string>(inheritStdoutResult.all);
 
-	const inheritStderrResult = execaSync('unicorns', {stderr: 'inherit'});
+	const inheritStderrResult = execaSync('unicorns', {stderr: 'inherit', all: true});
 	expectType<string>(inheritStderrResult.stdout);
 	expectType<undefined>(inheritStderrResult.stderr);
-	expectError(inheritStderrResult.all.toString());
+	expectType<string>(inheritStderrResult.all);
 
-	const numberStdoutResult = execaSync('unicorns', {stdout: 1});
+	const numberStdoutResult = execaSync('unicorns', {stdout: 1, all: true});
 	expectType<undefined>(numberStdoutResult.stdout);
 	expectType<string>(numberStdoutResult.stderr);
-	expectError(numberStdoutResult.all.toString());
+	expectType<string>(numberStdoutResult.all);
 
-	const numberStderrResult = execaSync('unicorns', {stderr: 1});
+	const numberStderrResult = execaSync('unicorns', {stderr: 1, all: true});
 	expectType<string>(numberStderrResult.stdout);
 	expectType<undefined>(numberStderrResult.stderr);
-	expectError(numberStderrResult.all.toString());
+	expectType<string>(numberStderrResult.all);
 } catch (error: unknown) {
 	if (error instanceof ExecaSyncError) {
 		expectAssignable<ExecaSyncError>(error);
@@ -1190,64 +1195,67 @@ try {
 		expectType<[]>(error.pipedFrom);
 	}
 
-	const execaStringError = error as ExecaSyncError<{}>;
+	const execaStringError = error as ExecaSyncError<{all: true}>;
 	expectType<undefined>(execaStringError.stdio[0]);
 	expectType<string>(execaStringError.stdout);
 	expectType<string>(execaStringError.stdio[1]);
 	expectType<string>(execaStringError.stderr);
 	expectType<string>(execaStringError.stdio[2]);
-	expectError(execaStringError.all.toString());
+	expectType<string>(execaStringError.all);
 
-	const execaBufferError = error as ExecaSyncError<{encoding: 'buffer'}>;
+	const execaBufferError = error as ExecaSyncError<{encoding: 'buffer'; all: true}>;
 	expectType<Uint8Array>(execaBufferError.stdout);
 	expectType<Uint8Array>(execaBufferError.stdio[1]);
 	expectType<Uint8Array>(execaBufferError.stderr);
 	expectType<Uint8Array>(execaBufferError.stdio[2]);
-	expectError(execaBufferError.all.toString());
+	expectType<Uint8Array>(execaBufferError.all);
 
-	const execaLinesError = error as ExecaSyncError<{lines: true}>;
+	const execaLinesError = error as ExecaSyncError<{lines: true; all: true}>;
 	expectType<string[]>(execaLinesError.stdout);
 	expectType<string[]>(execaLinesError.stderr);
+	expectType<string[]>(execaLinesError.all);
 
-	const execaLinesBufferError = error as ExecaSyncError<{lines: true; encoding: 'buffer'}>;
+	const execaLinesBufferError = error as ExecaSyncError<{lines: true; encoding: 'buffer'; all: true}>;
 	expectType<Uint8Array>(execaLinesBufferError.stdout);
 	expectType<Uint8Array>(execaLinesBufferError.stderr);
+	expectType<Uint8Array>(execaLinesBufferError.all);
 
-	const noBufferError = error as ExecaSyncError<{buffer: false}>;
+	const noBufferError = error as ExecaSyncError<{buffer: false; all: true}>;
 	expectType<undefined>(noBufferError.stdout);
 	expectType<undefined>(noBufferError.stderr);
+	expectType<undefined>(noBufferError.all);
 
-	const ignoreStdoutError = error as ExecaSyncError<{stdout: 'ignore'}>;
+	const ignoreStdoutError = error as ExecaSyncError<{stdout: 'ignore'; all: true}>;
 	expectType<undefined>(ignoreStdoutError.stdout);
 	expectType<undefined>(ignoreStdoutError.stdio[1]);
 	expectType<string>(ignoreStdoutError.stderr);
 	expectType<string>(ignoreStdoutError.stdio[2]);
-	expectError(ignoreStdoutError.all.toString());
+	expectType<string>(ignoreStdoutError.all);
 
-	const ignoreStderrError = error as ExecaSyncError<{stderr: 'ignore'}>;
+	const ignoreStderrError = error as ExecaSyncError<{stderr: 'ignore'; all: true}>;
 	expectType<string>(ignoreStderrError.stdout);
 	expectType<undefined>(ignoreStderrError.stderr);
-	expectError(ignoreStderrError.all.toString());
+	expectType<string>(ignoreStderrError.all);
 
-	const inheritStdoutError = error as ExecaSyncError<{stdout: 'inherit'}>;
+	const inheritStdoutError = error as ExecaSyncError<{stdout: 'inherit'; all: true}>;
 	expectType<undefined>(inheritStdoutError.stdout);
 	expectType<string>(inheritStdoutError.stderr);
-	expectError(inheritStdoutError.all.toString());
+	expectType<string>(inheritStdoutError.all);
 
-	const inheritStderrError = error as ExecaSyncError<{stderr: 'inherit'}>;
+	const inheritStderrError = error as ExecaSyncError<{stderr: 'inherit'; all: true}>;
 	expectType<string>(inheritStderrError.stdout);
 	expectType<undefined>(inheritStderrError.stderr);
-	expectError(inheritStderrError.all.toString());
+	expectType<string>(inheritStderrError.all);
 
-	const numberStdoutError = error as ExecaSyncError<{stdout: 1}>;
+	const numberStdoutError = error as ExecaSyncError<{stdout: 1; all: true}>;
 	expectType<undefined>(numberStdoutError.stdout);
 	expectType<string>(numberStdoutError.stderr);
-	expectError(numberStdoutError.all.toString());
+	expectType<string>(numberStdoutError.all);
 
-	const numberStderrError = error as ExecaSyncError<{stderr: 1}>;
+	const numberStderrError = error as ExecaSyncError<{stderr: 1; all: true}>;
 	expectType<string>(numberStderrError.stdout);
 	expectType<undefined>(numberStderrError.stderr);
-	expectError(numberStderrError.all.toString());
+	expectType<string>(numberStderrError.all);
 }
 
 const rejectsSyncResult = execaSync('unicorns');
@@ -1400,7 +1408,7 @@ execaSync('unicorns', {buffer: false});
 expectError(execa('unicorns', {buffer: 'false'}));
 expectError(execaSync('unicorns', {buffer: 'false'}));
 execa('unicorns', {all: true});
-expectError(execaSync('unicorns', {all: true}));
+execaSync('unicorns', {all: true});
 expectError(execa('unicorns', {all: 'true'}));
 expectError(execaSync('unicorns', {all: 'true'}));
 execa('unicorns', {ipc: true});

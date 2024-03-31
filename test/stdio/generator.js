@@ -449,9 +449,9 @@ const getAllOutput = (stdoutOutput, stderrOutput, encoding, objectMode) => {
 };
 
 // eslint-disable-next-line max-params
-const testGeneratorAll = async (t, reject, encoding, objectMode, stdoutOption, stderrOption) => {
+const testGeneratorAll = async (t, reject, encoding, objectMode, stdoutOption, stderrOption, execaMethod) => {
 	const fixtureName = reject ? 'all.js' : 'all-fail.js';
-	const {stdout, stderr, all} = await execa(fixtureName, {
+	const {stdout, stderr, all} = await execaMethod(fixtureName, {
 		all: true,
 		reject,
 		stdout: getAllStdioOption(stdoutOption, encoding, objectMode),
@@ -468,42 +468,78 @@ const testGeneratorAll = async (t, reject, encoding, objectMode, stdoutOption, s
 	t.deepEqual(all, allOutput);
 };
 
-test('Can use generators with result.all = transform + transform', testGeneratorAll, true, 'utf8', false, false, false);
-test('Can use generators with error.all = transform + transform', testGeneratorAll, false, 'utf8', false, false, false);
-test('Can use generators with result.all = transform + transform, encoding "buffer"', testGeneratorAll, true, 'buffer', false, false, false);
-test('Can use generators with error.all = transform + transform, encoding "buffer"', testGeneratorAll, false, 'buffer', false, false, false);
-test('Can use generators with result.all = transform + transform, encoding "hex"', testGeneratorAll, true, 'hex', false, false, false);
-test('Can use generators with error.all = transform + transform, encoding "hex"', testGeneratorAll, false, 'hex', false, false, false);
-test('Can use generators with result.all = transform + pipe', testGeneratorAll, true, 'utf8', false, false, true);
-test('Can use generators with error.all = transform + pipe', testGeneratorAll, false, 'utf8', false, false, true);
-test('Can use generators with result.all = transform + pipe, encoding "buffer"', testGeneratorAll, true, 'buffer', false, false, true);
-test('Can use generators with error.all = transform + pipe, encoding "buffer"', testGeneratorAll, false, 'buffer', false, false, true);
-test('Can use generators with result.all = transform + pipe, encoding "hex"', testGeneratorAll, true, 'hex', false, false, true);
-test('Can use generators with error.all = transform + pipe, encoding "hex"', testGeneratorAll, false, 'hex', false, false, true);
-test('Can use generators with result.all = pipe + transform', testGeneratorAll, true, 'utf8', false, true, false);
-test('Can use generators with error.all = pipe + transform', testGeneratorAll, false, 'utf8', false, true, false);
-test('Can use generators with result.all = pipe + transform, encoding "buffer"', testGeneratorAll, true, 'buffer', false, true, false);
-test('Can use generators with error.all = pipe + transform, encoding "buffer"', testGeneratorAll, false, 'buffer', false, true, false);
-test('Can use generators with result.all = pipe + transform, encoding "hex"', testGeneratorAll, true, 'hex', false, true, false);
-test('Can use generators with error.all = pipe + transform, encoding "hex"', testGeneratorAll, false, 'hex', false, true, false);
-test('Can use generators with result.all = transform + transform, objectMode', testGeneratorAll, true, 'utf8', true, false, false);
-test('Can use generators with error.all = transform + transform, objectMode', testGeneratorAll, false, 'utf8', true, false, false);
-test('Can use generators with result.all = transform + transform, objectMode, encoding "buffer"', testGeneratorAll, true, 'buffer', true, false, false);
-test('Can use generators with error.all = transform + transform, objectMode, encoding "buffer"', testGeneratorAll, false, 'buffer', true, false, false);
-test('Can use generators with result.all = transform + transform, objectMode, encoding "hex"', testGeneratorAll, true, 'hex', true, false, false);
-test('Can use generators with error.all = transform + transform, objectMode, encoding "hex"', testGeneratorAll, false, 'hex', true, false, false);
-test('Can use generators with result.all = transform + pipe, objectMode', testGeneratorAll, true, 'utf8', true, false, true);
-test('Can use generators with error.all = transform + pipe, objectMode', testGeneratorAll, false, 'utf8', true, false, true);
-test('Can use generators with result.all = transform + pipe, objectMode, encoding "buffer"', testGeneratorAll, true, 'buffer', true, false, true);
-test('Can use generators with error.all = transform + pipe, objectMode, encoding "buffer"', testGeneratorAll, false, 'buffer', true, false, true);
-test('Can use generators with result.all = transform + pipe, objectMode, encoding "hex"', testGeneratorAll, true, 'hex', true, false, true);
-test('Can use generators with error.all = transform + pipe, objectMode, encoding "hex"', testGeneratorAll, false, 'hex', true, false, true);
-test('Can use generators with result.all = pipe + transform, objectMode', testGeneratorAll, true, 'utf8', true, true, false);
-test('Can use generators with error.all = pipe + transform, objectMode', testGeneratorAll, false, 'utf8', true, true, false);
-test('Can use generators with result.all = pipe + transform, objectMode, encoding "buffer"', testGeneratorAll, true, 'buffer', true, true, false);
-test('Can use generators with error.all = pipe + transform, objectMode, encoding "buffer"', testGeneratorAll, false, 'buffer', true, true, false);
-test('Can use generators with result.all = pipe + transform, objectMode, encoding "hex"', testGeneratorAll, true, 'hex', true, true, false);
-test('Can use generators with error.all = pipe + transform, objectMode, encoding "hex"', testGeneratorAll, false, 'hex', true, true, false);
+test('Can use generators with result.all = transform + transform', testGeneratorAll, true, 'utf8', false, false, false, execa);
+test('Can use generators with error.all = transform + transform', testGeneratorAll, false, 'utf8', false, false, false, execa);
+test('Can use generators with result.all = transform + transform, encoding "buffer"', testGeneratorAll, true, 'buffer', false, false, false, execa);
+test('Can use generators with error.all = transform + transform, encoding "buffer"', testGeneratorAll, false, 'buffer', false, false, false, execa);
+test('Can use generators with result.all = transform + transform, encoding "hex"', testGeneratorAll, true, 'hex', false, false, false, execa);
+test('Can use generators with error.all = transform + transform, encoding "hex"', testGeneratorAll, false, 'hex', false, false, false, execa);
+test('Can use generators with result.all = transform + pipe', testGeneratorAll, true, 'utf8', false, false, true, execa);
+test('Can use generators with error.all = transform + pipe', testGeneratorAll, false, 'utf8', false, false, true, execa);
+test('Can use generators with result.all = transform + pipe, encoding "buffer"', testGeneratorAll, true, 'buffer', false, false, true, execa);
+test('Can use generators with error.all = transform + pipe, encoding "buffer"', testGeneratorAll, false, 'buffer', false, false, true, execa);
+test('Can use generators with result.all = transform + pipe, encoding "hex"', testGeneratorAll, true, 'hex', false, false, true, execa);
+test('Can use generators with error.all = transform + pipe, encoding "hex"', testGeneratorAll, false, 'hex', false, false, true, execa);
+test('Can use generators with result.all = pipe + transform', testGeneratorAll, true, 'utf8', false, true, false, execa);
+test('Can use generators with error.all = pipe + transform', testGeneratorAll, false, 'utf8', false, true, false, execa);
+test('Can use generators with result.all = pipe + transform, encoding "buffer"', testGeneratorAll, true, 'buffer', false, true, false, execa);
+test('Can use generators with error.all = pipe + transform, encoding "buffer"', testGeneratorAll, false, 'buffer', false, true, false, execa);
+test('Can use generators with result.all = pipe + transform, encoding "hex"', testGeneratorAll, true, 'hex', false, true, false, execa);
+test('Can use generators with error.all = pipe + transform, encoding "hex"', testGeneratorAll, false, 'hex', false, true, false, execa);
+test('Can use generators with result.all = transform + transform, objectMode', testGeneratorAll, true, 'utf8', true, false, false, execa);
+test('Can use generators with error.all = transform + transform, objectMode', testGeneratorAll, false, 'utf8', true, false, false, execa);
+test('Can use generators with result.all = transform + transform, objectMode, encoding "buffer"', testGeneratorAll, true, 'buffer', true, false, false, execa);
+test('Can use generators with error.all = transform + transform, objectMode, encoding "buffer"', testGeneratorAll, false, 'buffer', true, false, false, execa);
+test('Can use generators with result.all = transform + transform, objectMode, encoding "hex"', testGeneratorAll, true, 'hex', true, false, false, execa);
+test('Can use generators with error.all = transform + transform, objectMode, encoding "hex"', testGeneratorAll, false, 'hex', true, false, false, execa);
+test('Can use generators with result.all = transform + pipe, objectMode', testGeneratorAll, true, 'utf8', true, false, true, execa);
+test('Can use generators with error.all = transform + pipe, objectMode', testGeneratorAll, false, 'utf8', true, false, true, execa);
+test('Can use generators with result.all = transform + pipe, objectMode, encoding "buffer"', testGeneratorAll, true, 'buffer', true, false, true, execa);
+test('Can use generators with error.all = transform + pipe, objectMode, encoding "buffer"', testGeneratorAll, false, 'buffer', true, false, true, execa);
+test('Can use generators with result.all = transform + pipe, objectMode, encoding "hex"', testGeneratorAll, true, 'hex', true, false, true, execa);
+test('Can use generators with error.all = transform + pipe, objectMode, encoding "hex"', testGeneratorAll, false, 'hex', true, false, true, execa);
+test('Can use generators with result.all = pipe + transform, objectMode', testGeneratorAll, true, 'utf8', true, true, false, execa);
+test('Can use generators with error.all = pipe + transform, objectMode', testGeneratorAll, false, 'utf8', true, true, false, execa);
+test('Can use generators with result.all = pipe + transform, objectMode, encoding "buffer"', testGeneratorAll, true, 'buffer', true, true, false, execa);
+test('Can use generators with error.all = pipe + transform, objectMode, encoding "buffer"', testGeneratorAll, false, 'buffer', true, true, false, execa);
+test('Can use generators with result.all = pipe + transform, objectMode, encoding "hex"', testGeneratorAll, true, 'hex', true, true, false, execa);
+test('Can use generators with error.all = pipe + transform, objectMode, encoding "hex"', testGeneratorAll, false, 'hex', true, true, false, execa);
+test('Can use generators with result.all = transform + transform, sync', testGeneratorAll, true, 'utf8', false, false, false, execaSync);
+test('Can use generators with error.all = transform + transform, sync', testGeneratorAll, false, 'utf8', false, false, false, execaSync);
+test('Can use generators with result.all = transform + transform, encoding "buffer", sync', testGeneratorAll, true, 'buffer', false, false, false, execaSync);
+test('Can use generators with error.all = transform + transform, encoding "buffer", sync', testGeneratorAll, false, 'buffer', false, false, false, execaSync);
+test('Can use generators with result.all = transform + transform, encoding "hex", sync', testGeneratorAll, true, 'hex', false, false, false, execaSync);
+test('Can use generators with error.all = transform + transform, encoding "hex", sync', testGeneratorAll, false, 'hex', false, false, false, execaSync);
+test('Can use generators with result.all = transform + pipe, sync', testGeneratorAll, true, 'utf8', false, false, true, execaSync);
+test('Can use generators with error.all = transform + pipe, sync', testGeneratorAll, false, 'utf8', false, false, true, execaSync);
+test('Can use generators with result.all = transform + pipe, encoding "buffer", sync', testGeneratorAll, true, 'buffer', false, false, true, execaSync);
+test('Can use generators with error.all = transform + pipe, encoding "buffer", sync', testGeneratorAll, false, 'buffer', false, false, true, execaSync);
+test('Can use generators with result.all = transform + pipe, encoding "hex", sync', testGeneratorAll, true, 'hex', false, false, true, execaSync);
+test('Can use generators with error.all = transform + pipe, encoding "hex", sync', testGeneratorAll, false, 'hex', false, false, true, execaSync);
+test('Can use generators with result.all = pipe + transform, sync', testGeneratorAll, true, 'utf8', false, true, false, execaSync);
+test('Can use generators with error.all = pipe + transform, sync', testGeneratorAll, false, 'utf8', false, true, false, execaSync);
+test('Can use generators with result.all = pipe + transform, encoding "buffer", sync', testGeneratorAll, true, 'buffer', false, true, false, execaSync);
+test('Can use generators with error.all = pipe + transform, encoding "buffer", sync', testGeneratorAll, false, 'buffer', false, true, false, execaSync);
+test('Can use generators with result.all = pipe + transform, encoding "hex", sync', testGeneratorAll, true, 'hex', false, true, false, execaSync);
+test('Can use generators with error.all = pipe + transform, encoding "hex", sync', testGeneratorAll, false, 'hex', false, true, false, execaSync);
+test('Can use generators with result.all = transform + transform, objectMode, sync', testGeneratorAll, true, 'utf8', true, false, false, execaSync);
+test('Can use generators with error.all = transform + transform, objectMode, sync', testGeneratorAll, false, 'utf8', true, false, false, execaSync);
+test('Can use generators with result.all = transform + transform, objectMode, encoding "buffer", sync', testGeneratorAll, true, 'buffer', true, false, false, execaSync);
+test('Can use generators with error.all = transform + transform, objectMode, encoding "buffer", sync', testGeneratorAll, false, 'buffer', true, false, false, execaSync);
+test('Can use generators with result.all = transform + transform, objectMode, encoding "hex", sync', testGeneratorAll, true, 'hex', true, false, false, execaSync);
+test('Can use generators with error.all = transform + transform, objectMode, encoding "hex", sync', testGeneratorAll, false, 'hex', true, false, false, execaSync);
+test('Can use generators with result.all = transform + pipe, objectMode, sync', testGeneratorAll, true, 'utf8', true, false, true, execaSync);
+test('Can use generators with error.all = transform + pipe, objectMode, sync', testGeneratorAll, false, 'utf8', true, false, true, execaSync);
+test('Can use generators with result.all = transform + pipe, objectMode, encoding "buffer", sync', testGeneratorAll, true, 'buffer', true, false, true, execaSync);
+test('Can use generators with error.all = transform + pipe, objectMode, encoding "buffer", sync', testGeneratorAll, false, 'buffer', true, false, true, execaSync);
+test('Can use generators with result.all = transform + pipe, objectMode, encoding "hex", sync', testGeneratorAll, true, 'hex', true, false, true, execaSync);
+test('Can use generators with error.all = transform + pipe, objectMode, encoding "hex", sync', testGeneratorAll, false, 'hex', true, false, true, execaSync);
+test('Can use generators with result.all = pipe + transform, objectMode, sync', testGeneratorAll, true, 'utf8', true, true, false, execaSync);
+test('Can use generators with error.all = pipe + transform, objectMode, sync', testGeneratorAll, false, 'utf8', true, true, false, execaSync);
+test('Can use generators with result.all = pipe + transform, objectMode, encoding "buffer", sync', testGeneratorAll, true, 'buffer', true, true, false, execaSync);
+test('Can use generators with error.all = pipe + transform, objectMode, encoding "buffer", sync', testGeneratorAll, false, 'buffer', true, true, false, execaSync);
+test('Can use generators with result.all = pipe + transform, objectMode, encoding "hex", sync', testGeneratorAll, true, 'hex', true, true, false, execaSync);
+test('Can use generators with error.all = pipe + transform, objectMode, encoding "hex", sync', testGeneratorAll, false, 'hex', true, true, false, execaSync);
 
 const testInputOption = async (t, type, execaMethod) => {
 	const {stdout} = await execaMethod('stdin-fd.js', ['0'], {stdin: generatorsMap[type].uppercase(), input: foobarUint8Array});

@@ -229,7 +229,7 @@ type IgnoresStreamOutput<
 		? true
 		: IgnoresStreamResult<FdNumber, OptionsType>;
 
-type LacksBuffer<BufferOption extends Options['buffer']> = BufferOption extends false ? true : false;
+type LacksBuffer<BufferOption extends CommonOptions['buffer']> = BufferOption extends false ? true : false;
 
 // Whether `result.stdio[FdNumber]` is an input stream
 type IsInputStdioDescriptor<
@@ -308,16 +308,16 @@ type StreamEncoding<
 			: string;
 
 // Type of `result.all`
-type AllOutput<OptionsType extends Options = Options> = AllOutputProperty<OptionsType['all'], OptionsType>;
+type AllOutput<OptionsType extends CommonOptions = CommonOptions> = AllOutputProperty<OptionsType['all'], OptionsType>;
 
 type AllOutputProperty<
-	AllOption extends Options['all'] = Options['all'],
-	OptionsType extends Options = Options,
+	AllOption extends CommonOptions['all'] = CommonOptions['all'],
+	OptionsType extends CommonOptions = CommonOptions,
 > = AllOption extends true
 	? StdioOutput<AllUsesStdout<OptionsType> extends true ? '1' : '2', OptionsType>
 	: undefined;
 
-type AllUsesStdout<OptionsType extends Options = Options> = IgnoresStreamOutput<'1', OptionsType> extends true
+type AllUsesStdout<OptionsType extends CommonOptions = CommonOptions> = IgnoresStreamOutput<'1', OptionsType> extends true
 	? false
 	: IgnoresStreamOutput<'2', OptionsType> extends true
 		? true
@@ -682,7 +682,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default false
 	*/
-	readonly all?: Unless<IsSync, boolean>;
+	readonly all?: boolean;
 
 	/**
 	Enables exchanging messages with the subprocess using [`subprocess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`subprocess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
@@ -845,7 +845,7 @@ declare abstract class CommonResult<
 
 	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
-	all: Unless<IsSync, AllOutput<StricterOptions<OptionsType, Options>>>;
+	all: AllOutput<OptionsType>;
 
 	/**
 	Results of the other subprocesses that were piped into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
@@ -1419,7 +1419,7 @@ Same as `execa()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. `result.all` is not interleaved. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1533,7 +1533,7 @@ Same as `execaCommand()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. `result.all` is not interleaved. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

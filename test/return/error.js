@@ -11,8 +11,8 @@ const isWindows = process.platform === 'win32';
 
 setFixtureDir();
 
-test('Return value properties are not missing and are ordered', async t => {
-	const result = await execa('empty.js', {...fullStdio, all: true});
+const testSuccessShape = async (t, execaMethod) => {
+	const result = await execaMethod('empty.js', {...fullStdio, all: true});
 	t.deepEqual(Reflect.ownKeys(result), [
 		'command',
 		'escapedCommand',
@@ -29,10 +29,14 @@ test('Return value properties are not missing and are ordered', async t => {
 		'stdio',
 		'pipedFrom',
 	]);
-});
+};
 
-test('Error properties are not missing and are ordered', async t => {
-	const error = await t.throwsAsync(execa('fail.js', {...fullStdio, all: true}));
+test('Return value properties are not missing and are ordered', testSuccessShape, execa);
+test('Return value properties are not missing and are ordered, sync', testSuccessShape, execaSync);
+
+const testErrorShape = async (t, execaMethod) => {
+	const error = await execaMethod('fail.js', {...fullStdio, all: true, reject: false});
+	t.is(error.exitCode, 2);
 	t.deepEqual(Reflect.ownKeys(error), [
 		'stack',
 		'message',
@@ -56,26 +60,39 @@ test('Error properties are not missing and are ordered', async t => {
 		'stdio',
 		'pipedFrom',
 	]);
-});
+};
+
+test('Error properties are not missing and are ordered', testErrorShape, execa);
+test('Error properties are not missing and are ordered, sync', testErrorShape, execaSync);
 
 test('error.message contains the command', async t => {
 	await t.throwsAsync(execa('exit.js', ['2', 'foo', 'bar']), {message: /exit.js 2 foo bar/});
 });
 
-const testStdioMessage = async (t, encoding, all, objectMode) => {
-	const {message} = await t.throwsAsync(execa('echo-fail.js', {...getStdio(1, noopGenerator(objectMode), 4), encoding, all}));
+// eslint-disable-next-line max-params
+const testStdioMessage = async (t, encoding, all, objectMode, execaMethod) => {
+	const {exitCode, message} = await execaMethod('echo-fail.js', {...getStdio(1, noopGenerator(objectMode), 4), encoding, all, reject: false});
+	t.is(exitCode, 1);
 	const output = all ? 'stdout\nstderr' : 'stderr\n\nstdout';
 	t.true(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));
 };
 
-test('error.message contains stdout/stderr/stdio if available', testStdioMessage, 'utf8', false, false);
-test('error.message contains stdout/stderr/stdio even with encoding "buffer"', testStdioMessage, 'buffer', false, false);
-test('error.message contains all if available', testStdioMessage, 'utf8', true, false);
-test('error.message contains all even with encoding "buffer"', testStdioMessage, 'buffer', true, false);
-test('error.message contains stdout/stderr/stdio if available, objectMode', testStdioMessage, 'utf8', false, true);
-test('error.message contains stdout/stderr/stdio even with encoding "buffer", objectMode', testStdioMessage, 'buffer', false, true);
-test('error.message contains all if available, objectMode', testStdioMessage, 'utf8', true, true);
-test('error.message contains all even with encoding "buffer", objectMode', testStdioMessage, 'buffer', true, true);
+test('error.message contains stdout/stderr/stdio if available', testStdioMessage, 'utf8', false, false, execa);
+test('error.message contains stdout/stderr/stdio even with encoding "buffer"', testStdioMessage, 'buffer', false, false, execa);
+test('error.message contains all if available', testStdioMessage, 'utf8', true, false, execa);
+test('error.message contains all even with encoding "buffer"', testStdioMessage, 'buffer', true, false, execa);
+test('error.message contains stdout/stderr/stdio if available, objectMode', testStdioMessage, 'utf8', false, true, execa);
+test('error.message contains stdout/stderr/stdio even with encoding "buffer", objectMode', testStdioMessage, 'buffer', false, true, execa);
+test('error.message contains all if available, objectMode', testStdioMessage, 'utf8', true, true, execa);
+test('error.message contains all even with encoding "buffer", objectMode', testStdioMessage, 'buffer', true, true, execa);
+test('error.message contains stdout/stderr/stdio if available, sync', testStdioMessage, 'utf8', false, false, execaSync);
+test('error.message contains stdout/stderr/stdio even with encoding "buffer", sync', testStdioMessage, 'buffer', false, false, execaSync);
+test('error.message contains all if available, sync', testStdioMessage, 'utf8', true, false, execaSync);
+test('error.message contains all even with encoding "buffer", sync', testStdioMessage, 'buffer', true, false, execaSync);
+test('error.message contains stdout/stderr/stdio if available, objectMode, sync', testStdioMessage, 'utf8', false, true, execaSync);
+test('error.message contains stdout/stderr/stdio even with encoding "buffer", objectMode, sync', testStdioMessage, 'buffer', false, true, execaSync);
+test('error.message contains all if available, objectMode, sync', testStdioMessage, 'utf8', true, true, execaSync);
+test('error.message contains all even with encoding "buffer", objectMode, sync', testStdioMessage, 'buffer', true, true, execaSync);
 
 const testLinesMessage = async (t, encoding, stripFinalNewline, execaMethod) => {
 	const {failed, message} = await execaMethod('noop-fail.js', ['1', `${foobarString}\n${foobarString}\n`], {
@@ -118,7 +135,7 @@ test('error.message does not contain stdout/stderr/stdio if not available', test
 test('error.shortMessage does not contain stdout/stderr/stdio', testFullIgnoreMessage, fullStdio, 'shortMessage');
 
 const testErrorMessageConsistent = async (t, stdout) => {
-	const {message} = await t.throwsAsync(execa('noop-both-fail.js', [stdout, 'stderr']));
+	const {message} = await t.throwsAsync(execa('noop-both-fail-strict.js', [stdout, 'stderr']));
 	t.true(message.endsWith(' stderr\n\nstderr\n\nstdout'));
 };
 

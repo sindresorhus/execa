@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import process from 'node:process';
+import {foobarString} from '../helpers/input.js';
 
-const stdoutBytes = process.argv[2];
-const stderrBytes = process.argv[3];
-process.stdout.write(stdoutBytes);
-process.stderr.write(stderrBytes);
+const bytes = process.argv[2] || foobarString;
+console.log(bytes);
+console.error(bytes);
 process.exitCode = 1;

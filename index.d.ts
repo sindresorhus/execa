@@ -31,12 +31,16 @@ type BaseStdioOption<
 
 // @todo Use `string`, `Uint8Array` or `unknown` for both the argument and the return type, based on whether `encoding: 'buffer'` and `objectMode: true` are used.
 // See https://github.com/sindresorhus/execa/issues/694
-type GeneratorTransform = (chunk: unknown) => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
-type GeneratorFinal = () => AsyncGenerator<unknown, void, void> | Generator<unknown, void, void>;
+type GeneratorTransform<IsSync extends boolean> = (chunk: unknown) =>
+| Unless<IsSync, AsyncGenerator<unknown, void, void>>
+| Generator<unknown, void, void>;
+type GeneratorFinal<IsSync extends boolean> = () =>
+| Unless<IsSync, AsyncGenerator<unknown, void, void>>
+| Generator<unknown, void, void>;
 
-type GeneratorTransformFull = {
-	transform: GeneratorTransform;
-	final?: GeneratorFinal;
+type GeneratorTransformFull<IsSync extends boolean> = {
+	transform: GeneratorTransform<IsSync>;
+	final?: GeneratorFinal<IsSync>;
 	binary?: boolean;
 	preserveNewlines?: boolean;
 	objectMode?: boolean;
@@ -59,20 +63,17 @@ type CommonStdioOption<
 	| BaseStdioOption<IsSync, IsArray>
 	| URL
 	| {file: string}
+	| GeneratorTransform<IsSync>
+	| GeneratorTransformFull<IsSync>
 	| Unless<And<IsSync, IsArray>, number>
 	| Unless<Or<IsSync, IsArray>, 'ipc'>
 	| Unless<IsSync,
-	| GeneratorTransform
-	| GeneratorTransformFull
 	| DuplexTransform
 	| WebTransform
 	| TransformStream>;
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
-type IterableObject<
-	IsSync extends boolean = boolean,
-	IsArray extends boolean = boolean,
-> = Iterable<Unless<IsSync, unknown, string | Uint8Array>>
+type IterableObject<IsArray extends boolean = boolean> = Iterable<unknown>
 & object
 & {readonly BYTES_PER_ELEMENT?: never}
 & AndUnless<IsArray, {readonly lastIndexOf?: never}>;
@@ -82,7 +83,7 @@ type InputStdioOption<
 	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
 > =
-	| Unless<And<IsSync, IsExtra>, Uint8Array | IterableObject<IsSync, IsArray>>
+	| Unless<And<IsSync, IsExtra>, Uint8Array | IterableObject<IsArray>>
 	| Unless<And<IsSync, IsArray>, Readable>
 	| Unless<IsSync, AsyncIterable<unknown> | ReadableStream>;
 
@@ -181,7 +182,7 @@ type IsObjectOutputOptions<OutputOptions extends StdioOptionCommon> = IsObjectOu
 	: OutputOptions
 >;
 
-type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends GeneratorTransformFull | WebTransform
+type IsObjectOutputOption<OutputOption extends StdioSingleOption> = OutputOption extends GeneratorTransformFull<boolean> | WebTransform
 	? BooleanObjectMode<OutputOption['objectMode']>
 	: OutputOption extends DuplexTransform
 		? DuplexObjectMode<OutputOption>
@@ -1402,7 +1403,7 @@ Same as `execa()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an iterable of objects, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1516,7 +1517,7 @@ Same as `execaCommand()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an iterable of objects, a transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `buffer`, `detached`, `ipc`, `serialization`, `cancelSignal`, `forceKillAfterDelay`, `lines` and `verbose: 'full'`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

@@ -87,13 +87,15 @@ export const uppercaseGenerator = getGenerator(function * (string) {
 });
 
 // eslint-disable-next-line require-yield
-export const throwingGenerator = getGenerator(function * () {
-	throw new Error('Generator error');
+export const throwingGenerator = error => getGenerator(function * () {
+	throw error;
 });
 
-export const GENERATOR_ERROR_REGEXP = /Generator error/;
-
 export const appendGenerator = getGenerator(function * (string) {
+	yield `${string}${casedSuffix}`;
+});
+
+export const appendAsyncGenerator = getGenerator(async function * (string) {
 	yield `${string}${casedSuffix}`;
 });
 

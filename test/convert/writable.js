@@ -24,7 +24,6 @@ import {foobarString, foobarBuffer, foobarObject, foobarObjectString} from '../h
 import {prematureClose, fullReadableStdio} from '../helpers/stdio.js';
 import {
 	throwingGenerator,
-	GENERATOR_ERROR_REGEXP,
 	serializeGenerator,
 	noopAsyncGenerator,
 } from '../helpers/generator.js';
@@ -338,10 +337,11 @@ test('.duplex() waits when its buffer is full', async t => {
 });
 
 const testPropagateError = async (t, methodName) => {
-	const subprocess = getReadWriteSubprocess({stdin: throwingGenerator()});
+	const cause = new Error(foobarString);
+	const subprocess = getReadWriteSubprocess({stdin: throwingGenerator(cause)()});
 	const stream = subprocess[methodName]();
 	stream.end('.');
-	await t.throwsAsync(finishedStream(stream), {message: GENERATOR_ERROR_REGEXP});
+	await assertStreamError(t, stream, {cause});
 };
 
 test('.writable() propagates write errors', testPropagateError, 'writable');

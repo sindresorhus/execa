@@ -4,8 +4,8 @@ import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
-import {foobarObject, foobarObjectString, foobarArray} from '../helpers/input.js';
-import {serializeGenerator, infiniteGenerator, throwingGenerator} from '../helpers/generator.js';
+import {foobarString, foobarObject, foobarObjectString, foobarArray} from '../helpers/input.js';
+import {noopGenerator, serializeGenerator, infiniteGenerator, throwingGenerator} from '../helpers/generator.js';
 
 const stringGenerator = function * () {
 	yield * foobarArray;
@@ -64,17 +64,37 @@ const foobarAsyncObjectGenerator = async function * () {
 	yield foobarObject;
 };
 
-const testObjectIterable = async (t, stdioOption, fdNumber) => {
-	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stdioOption, serializeGenerator(true)]));
+const testObjectIterable = async (t, stdioOption, fdNumber, execaMethod) => {
+	const {stdout} = await execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [stdioOption, serializeGenerator(true)]));
 	t.is(stdout, foobarObjectString);
 };
 
-test('stdin option can be an array of objects', testObjectIterable, [foobarObject], 0);
-test('stdio[*] option can be an array of objects', testObjectIterable, [foobarObject], 3);
-test('stdin option can be an iterable of objects', testObjectIterable, foobarObjectGenerator(), 0);
-test('stdio[*] option can be an iterable of objects', testObjectIterable, foobarObjectGenerator(), 3);
-test('stdin option can be an async iterable of objects', testObjectIterable, foobarAsyncObjectGenerator(), 0);
-test('stdio[*] option can be an async iterable of objects', testObjectIterable, foobarAsyncObjectGenerator(), 3);
+test('stdin option can be an array of objects', testObjectIterable, [foobarObject], 0, execa);
+test('stdio[*] option can be an array of objects', testObjectIterable, [foobarObject], 3, execa);
+test('stdin option can be an iterable of objects', testObjectIterable, foobarObjectGenerator(), 0, execa);
+test('stdio[*] option can be an iterable of objects', testObjectIterable, foobarObjectGenerator(), 3, execa);
+test('stdin option can be an async iterable of objects', testObjectIterable, foobarAsyncObjectGenerator(), 0, execa);
+test('stdio[*] option can be an async iterable of objects', testObjectIterable, foobarAsyncObjectGenerator(), 3, execa);
+test('stdin option can be an array of objects - sync', testObjectIterable, [foobarObject], 0, execaSync);
+test('stdin option can be an iterable of objects - sync', testObjectIterable, foobarObjectGenerator(), 0, execaSync);
+
+const testIterableNoGeneratorsSync = (t, stdioOption, fdNumber) => {
+	t.throws(() => {
+		execaSync('empty.js', getStdio(fdNumber, stdioOption));
+	}, {message: /must be used to serialize/});
+};
+
+test('stdin option cannot be an array of objects without generators - sync', testIterableNoGeneratorsSync, [[foobarObject]], 0);
+test('stdin option cannot be an iterable of objects without generators - sync', testIterableNoGeneratorsSync, foobarObjectGenerator(), 0);
+
+const testIterableNoSerializeSync = (t, stdioOption, fdNumber) => {
+	t.throws(() => {
+		execaSync('empty.js', getStdio(fdNumber, [stdioOption, noopGenerator()]));
+	}, {message: /The `stdin` option's transform must use "objectMode: true" to receive as input: object/});
+};
+
+test('stdin option cannot be an array of objects without serializing - sync', testIterableNoSerializeSync, [foobarObject], 0);
+test('stdin option cannot be an iterable of objects without serializing - sync', testIterableNoSerializeSync, foobarObjectGenerator(), 0);
 
 const testIterableSync = (t, stdioOption, fdNumber) => {
 	t.throws(() => {
@@ -90,15 +110,6 @@ test('stdio[*] option cannot be an iterable of Uint8Arrays - sync', testIterable
 test('stdio[*] option cannot be an iterable of objects - sync', testIterableSync, foobarObjectGenerator(), 3);
 test('stdio[*] option cannot be multiple iterables - sync', testIterableSync, [stringGenerator(), stringGenerator()], 3);
 
-const testIterableObjectSync = (t, stdioOption, fdNumber) => {
-	t.throws(() => {
-		execaSync('empty.js', getStdio(fdNumber, stdioOption));
-	}, {message: /only strings or Uint8Arrays/});
-};
-
-test('stdin option cannot be an array of objects - sync', testIterableObjectSync, [[foobarObject]], 0);
-test('stdin option cannot be an iterable of objects - sync', testIterableObjectSync, foobarObjectGenerator(), 0);
-
 const testAsyncIterableSync = (t, stdioOption, fdNumber) => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(fdNumber, stdioOption));
@@ -110,22 +121,25 @@ test('stdio[*] option cannot be an async iterable - sync', testAsyncIterableSync
 test('stdin option cannot be an async iterable of objects - sync', testAsyncIterableSync, foobarAsyncObjectGenerator(), 0);
 test('stdio[*] option cannot be an async iterable of objects - sync', testAsyncIterableSync, foobarAsyncObjectGenerator(), 3);
 
-const testIterableError = async (t, fdNumber, execaMethod) => {
-	const {originalMessage} = await t.throwsAsync(execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator().transform())));
-	t.is(originalMessage, 'Generator error');
+const testIterableError = async (t, fdNumber) => {
+	const cause = new Error(foobarString);
+	const error = await t.throwsAsync(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator(cause)().transform())));
+	t.is(error.cause, cause);
 };
 
-test('stdin option handles errors in iterables', testIterableError, 0, execa);
-test('stdio[*] option handles errors in iterables', testIterableError, 3, execa);
+test('stdin option handles errors in iterables', testIterableError, 0);
+test('stdio[*] option handles errors in iterables', testIterableError, 3);
 
-const testIterableErrorSync = (t, fdNumber, execaMethod) => {
-	t.throws(() => {
-		execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator().transform()));
-	}, {message: 'Generator error'});
+const testIterableErrorSync = (t, fdNumber) => {
+	const cause = new Error(foobarString);
+	const error = t.throws(() => {
+		execaSync('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator(cause)().transform()));
+	});
+	t.is(error, cause);
 };
 
-test('stdin option handles errors in iterables - sync', testIterableErrorSync, 0, execaSync);
-test('stdio[*] option handles errors in iterables - sync', testIterableErrorSync, 3, execaSync);
+test('stdin option handles errors in iterables - sync', testIterableErrorSync, 0);
+test('stdio[*] option handles errors in iterables - sync', testIterableErrorSync, 3);
 
 const testNoIterableOutput = (t, stdioOption, fdNumber, execaMethod) => {
 	t.throws(() => {

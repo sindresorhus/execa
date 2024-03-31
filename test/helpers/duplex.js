@@ -47,8 +47,8 @@ export const uppercaseEncodingDuplex = (encoding, outerObjectMode) => getDuplex(
 
 export const uppercaseBufferDuplex = uppercaseEncodingDuplex();
 
-export const throwingDuplex = getDuplex(() => {
-	throw new Error('Generator error');
+export const throwingDuplex = cause => getDuplex(() => {
+	throw cause;
 });
 
 export const appendDuplex = getDuplex(string => `${string}${casedSuffix}`);

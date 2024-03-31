@@ -45,8 +45,8 @@ export const uppercaseBufferWebTransform = getWebTransform((string, controller) 
 	controller.enqueue(string.toString().toUpperCase());
 });
 
-export const throwingWebTransform = getWebTransform(() => {
-	throw new Error('Generator error');
+export const throwingWebTransform = cause => getWebTransform(() => {
+	throw cause;
 });
 
 export const appendWebTransform = getWebTransform((string, controller) => {

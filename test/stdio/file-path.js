@@ -3,12 +3,14 @@ import {relative, dirname, basename} from 'node:path';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
+import {pathExists} from 'path-exists';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {identity, getStdio} from '../helpers/stdio.js';
 import {runExeca, runExecaSync, runScript, runScriptSync} from '../helpers/run.js';
-import {foobarString, foobarUint8Array} from '../helpers/input.js';
+import {foobarString, foobarUint8Array, foobarUppercase} from '../helpers/input.js';
+import {outputObjectGenerator, uppercaseGenerator, serializeGenerator, throwingGenerator} from '../helpers/generator.js';
 
 setFixtureDir();
 
@@ -233,3 +235,122 @@ const testInputFileHanging = async (t, mapFilePath) => {
 
 test('Passing an input file path when subprocess exits does not make promise hang', testInputFileHanging, getAbsolutePath);
 test('Passing an input file URL when subprocess exits does not make promise hang', testInputFileHanging, pathToFileURL);
+
+const testInputFileTransform = async (t, fdNumber, mapFile, execaMethod) => {
+	const filePath = tempfile();
+	await writeFile(filePath, foobarString);
+	const {stdout} = await execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [
+		new Uint8Array(),
+		mapFile(filePath),
+		uppercaseGenerator(),
+	]));
+	t.is(stdout, foobarUppercase);
+	await rm(filePath);
+};
+
+test('stdin can use generators together with input file paths', testInputFileTransform, 0, getAbsolutePath, execa);
+test('stdin can use generators together with input file URLs', testInputFileTransform, 0, pathToFileURL, execa);
+test('stdio[*] can use generators together with input file paths', testInputFileTransform, 3, getAbsolutePath, execa);
+test('stdio[*] can use generators together with input file URLs', testInputFileTransform, 3, pathToFileURL, execa);
+test('stdin can use generators together with input file paths, sync', testInputFileTransform, 0, getAbsolutePath, execaSync);
+test('stdin can use generators together with input file URLs, sync', testInputFileTransform, 0, pathToFileURL, execaSync);
+
+const testInputFileObject = async (t, fdNumber, mapFile, execaMethod) => {
+	const filePath = tempfile();
+	await writeFile(filePath, foobarString);
+	t.throws(() => {
+		execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [
+			new Uint8Array(),
+			mapFile(filePath),
+			serializeGenerator(true),
+		]));
+	}, {message: /cannot use both files and transforms in objectMode/});
+	await rm(filePath);
+};
+
+test('stdin cannot use objectMode together with input file paths', testInputFileObject, 0, getAbsolutePath, execa);
+test('stdin cannot use objectMode together with input file URLs', testInputFileObject, 0, pathToFileURL, execa);
+test('stdio[*] cannot use objectMode together with input file paths', testInputFileObject, 3, getAbsolutePath, execa);
+test('stdio[*] cannot use objectMode together with input file URLs', testInputFileObject, 3, pathToFileURL, execa);
+test('stdin cannot use objectMode together with input file paths, sync', testInputFileObject, 0, getAbsolutePath, execaSync);
+test('stdin cannot use objectMode together with input file URLs, sync', testInputFileObject, 0, pathToFileURL, execaSync);
+
+const testOutputFileTransform = async (t, fdNumber, mapFile, execaMethod) => {
+	const filePath = tempfile();
+	await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, [
+		uppercaseGenerator(),
+		mapFile(filePath),
+	]));
+	t.is(await readFile(filePath, 'utf8'), `${foobarUppercase}\n`);
+	await rm(filePath);
+};
+
+test('stdout can use generators together with output file paths', testOutputFileTransform, 1, getAbsolutePath, execa);
+test('stdout can use generators together with output file URLs', testOutputFileTransform, 1, pathToFileURL, execa);
+test('stderr can use generators together with output file paths', testOutputFileTransform, 2, getAbsolutePath, execa);
+test('stderr can use generators together with output file URLs', testOutputFileTransform, 2, pathToFileURL, execa);
+test('stdio[*] can use generators together with output file paths', testOutputFileTransform, 3, getAbsolutePath, execa);
+test('stdio[*] can use generators together with output file URLs', testOutputFileTransform, 3, pathToFileURL, execa);
+test('stdout can use generators together with output file paths, sync', testOutputFileTransform, 1, getAbsolutePath, execaSync);
+test('stdout can use generators together with output file URLs, sync', testOutputFileTransform, 1, pathToFileURL, execaSync);
+test('stderr can use generators together with output file paths, sync', testOutputFileTransform, 2, getAbsolutePath, execaSync);
+test('stderr can use generators together with output file URLs, sync', testOutputFileTransform, 2, pathToFileURL, execaSync);
+test('stdio[*] can use generators together with output file paths, sync', testOutputFileTransform, 3, getAbsolutePath, execaSync);
+test('stdio[*] can use generators together with output file URLs, sync', testOutputFileTransform, 3, pathToFileURL, execaSync);
+
+const testOutputFileObject = async (t, fdNumber, mapFile, execaMethod) => {
+	const filePath = tempfile();
+	t.throws(() => {
+		execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, [
+			outputObjectGenerator(),
+			mapFile(filePath),
+		]));
+	}, {message: /cannot use both files and transforms in objectMode/});
+	t.false(await pathExists(filePath));
+};
+
+test('stdout cannot use objectMode together with output file paths', testOutputFileObject, 1, getAbsolutePath, execa);
+test('stdout cannot use objectMode together with output file URLs', testOutputFileObject, 1, pathToFileURL, execa);
+test('stderr cannot use objectMode together with output file paths', testOutputFileObject, 2, getAbsolutePath, execa);
+test('stderr cannot use objectMode together with output file URLs', testOutputFileObject, 2, pathToFileURL, execa);
+test('stdio[*] cannot use objectMode together with output file paths', testOutputFileObject, 3, getAbsolutePath, execa);
+test('stdio[*] cannot use objectMode together with output file URLs', testOutputFileObject, 3, pathToFileURL, execa);
+test('stdout cannot use objectMode together with output file paths, sync', testOutputFileObject, 1, getAbsolutePath, execaSync);
+test('stdout cannot use objectMode together with output file URLs, sync', testOutputFileObject, 1, pathToFileURL, execaSync);
+test('stderr cannot use objectMode together with output file paths, sync', testOutputFileObject, 2, getAbsolutePath, execaSync);
+test('stderr cannot use objectMode together with output file URLs, sync', testOutputFileObject, 2, pathToFileURL, execaSync);
+test('stdio[*] cannot use objectMode together with output file paths, sync', testOutputFileObject, 3, getAbsolutePath, execaSync);
+test('stdio[*] cannot use objectMode together with output file URLs, sync', testOutputFileObject, 3, pathToFileURL, execaSync);
+
+test('Generator error stops writing to output file', async t => {
+	const filePath = tempfile();
+	const cause = new Error(foobarString);
+	const error = await t.throwsAsync(execa('noop.js', {
+		stdout: [throwingGenerator(cause)(), getAbsolutePath(filePath)],
+	}));
+	t.is(error.cause, cause);
+	t.is(await readFile(filePath, 'utf8'), '');
+});
+
+test('Generator error does not create output file, sync', async t => {
+	const filePath = tempfile();
+	const cause = new Error(foobarString);
+	const error = t.throws(() => {
+		execaSync('noop.js', {
+			stdout: [throwingGenerator(cause)(), getAbsolutePath(filePath)],
+		});
+	});
+	t.is(error.cause, cause);
+	t.false(await pathExists(filePath));
+});
+
+test('Output file error still returns transformed output, sync', async t => {
+	const filePath = tempfile();
+	const {stdout} = t.throws(() => {
+		execaSync('noop-fd.js', ['1', foobarString], {
+			stdout: [uppercaseGenerator(), getAbsolutePath('./unknown/file')],
+		});
+	}, {code: 'ENOENT'});
+	t.false(await pathExists(filePath));
+	t.is(stdout, foobarUppercase);
+});

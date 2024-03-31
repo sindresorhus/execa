@@ -10,7 +10,6 @@ setFixtureDir();
 
 const getArrayMessage = singleValueName => `The \`${singleValueName}\` option cannot be set as an array`;
 const getInputMessage = (singleValueName, inputName) => `The \`${singleValueName}\` and the \`${inputName}\` options cannot be both set`;
-const getFd3InputMessage = type => `not \`stdio[3]\`, can be ${type}`;
 
 const inputOptions = {input: ''};
 const inputFileOptions = {inputFile: fileURLToPath(import.meta.url)};
@@ -46,13 +45,3 @@ test('Cannot use [Writable, "pipe"] with stderr, sync', testInvalidStdioArraySyn
 test('Cannot use ["inherit", "pipe"] with stdio[*], sync', testInvalidStdioArraySync, 3, ['inherit', 'pipe'], {}, getArrayMessage('stdio[3]: "inherit"'));
 test('Cannot use [3, "pipe"] with stdio[*], sync', testInvalidStdioArraySync, 3, [3, 'pipe'], {}, getArrayMessage('stdio[3]: 3'));
 test('Cannot use [Writable, "pipe"] with stdio[*], sync', testInvalidStdioArraySync, 3, [noopWritable(), 'pipe'], {}, getArrayMessage('stdio[3]: Stream'));
-
-const testFd3InputSync = (t, stdioOption, expectedMessage) => {
-	const {message} = t.throws(() => {
-		execaSync('empty.js', getStdio(3, stdioOption));
-	});
-	t.true(message.includes(expectedMessage));
-};
-
-test('Cannot use Uint8Array with stdio[*], sync', testFd3InputSync, new Uint8Array(), getFd3InputMessage('a Uint8Array'));
-test('Cannot use iterable with stdio[*], sync', testFd3InputSync, [[]], getFd3InputMessage('an iterable'));

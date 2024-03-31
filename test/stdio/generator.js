@@ -4,7 +4,7 @@ import {PassThrough} from 'node:stream';
 import test from 'ava';
 import getStream, {getStreamAsArray} from 'get-stream';
 import tempfile from 'tempfile';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {getStdio} from '../helpers/stdio.js';
 import {
@@ -21,6 +21,7 @@ import {
 	uppercaseGenerator,
 	uppercaseBufferGenerator,
 	appendGenerator,
+	appendAsyncGenerator,
 	casedSuffix,
 } from '../helpers/generator.js';
 import {appendDuplex, uppercaseBufferDuplex} from '../helpers/duplex.js';
@@ -56,36 +57,40 @@ const getOutputObjectMode = (objectMode, addNoopTransform, type, binary) => obje
 	};
 
 // eslint-disable-next-line max-params
-const testGeneratorInput = async (t, fdNumber, objectMode, addNoopTransform, type) => {
+const testGeneratorInput = async (t, fdNumber, objectMode, addNoopTransform, type, execaMethod) => {
 	const {input, generators, output} = getInputObjectMode(objectMode, addNoopTransform, type);
-	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [input, ...generators]));
+	const {stdout} = await execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [input, ...generators]));
 	t.is(stdout, output);
 };
 
-test('Can use generators with result.stdin', testGeneratorInput, 0, false, false, 'generator');
-test('Can use generators with result.stdio[*] as input', testGeneratorInput, 3, false, false, 'generator');
-test('Can use generators with result.stdin, objectMode', testGeneratorInput, 0, true, false, 'generator');
-test('Can use generators with result.stdio[*] as input, objectMode', testGeneratorInput, 3, true, false, 'generator');
-test('Can use generators with result.stdin, noop transform', testGeneratorInput, 0, false, true, 'generator');
-test('Can use generators with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'generator');
-test('Can use generators with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'generator');
-test('Can use generators with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'generator');
-test('Can use duplexes with result.stdin', testGeneratorInput, 0, false, false, 'duplex');
-test('Can use duplexes with result.stdio[*] as input', testGeneratorInput, 3, false, false, 'duplex');
-test('Can use duplexes with result.stdin, objectMode', testGeneratorInput, 0, true, false, 'duplex');
-test('Can use duplexes with result.stdio[*] as input, objectMode', testGeneratorInput, 3, true, false, 'duplex');
-test('Can use duplexes with result.stdin, noop transform', testGeneratorInput, 0, false, true, 'duplex');
-test('Can use duplexes with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'duplex');
-test('Can use duplexes with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'duplex');
-test('Can use duplexes with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'duplex');
-test('Can use webTransforms with result.stdin', testGeneratorInput, 0, false, false, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as input', testGeneratorInput, 3, false, false, 'webTransform');
-test('Can use webTransforms with result.stdin, objectMode', testGeneratorInput, 0, true, false, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as input, objectMode', testGeneratorInput, 3, true, false, 'webTransform');
-test('Can use webTransforms with result.stdin, noop transform', testGeneratorInput, 0, false, true, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'webTransform');
-test('Can use webTransforms with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'webTransform');
+test('Can use generators with result.stdin', testGeneratorInput, 0, false, false, 'generator', execa);
+test('Can use generators with result.stdio[*] as input', testGeneratorInput, 3, false, false, 'generator', execa);
+test('Can use generators with result.stdin, objectMode', testGeneratorInput, 0, true, false, 'generator', execa);
+test('Can use generators with result.stdio[*] as input, objectMode', testGeneratorInput, 3, true, false, 'generator', execa);
+test('Can use generators with result.stdin, noop transform', testGeneratorInput, 0, false, true, 'generator', execa);
+test('Can use generators with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'generator', execa);
+test('Can use generators with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'generator', execa);
+test('Can use generators with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'generator', execa);
+test('Can use generators with result.stdin, sync', testGeneratorInput, 0, false, false, 'generator', execaSync);
+test('Can use generators with result.stdin, objectMode, sync', testGeneratorInput, 0, true, false, 'generator', execaSync);
+test('Can use generators with result.stdin, noop transform, sync', testGeneratorInput, 0, false, true, 'generator', execaSync);
+test('Can use generators with result.stdin, objectMode, noop transform, sync', testGeneratorInput, 0, true, true, 'generator', execaSync);
+test('Can use duplexes with result.stdin', testGeneratorInput, 0, false, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as input', testGeneratorInput, 3, false, false, 'duplex', execa);
+test('Can use duplexes with result.stdin, objectMode', testGeneratorInput, 0, true, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as input, objectMode', testGeneratorInput, 3, true, false, 'duplex', execa);
+test('Can use duplexes with result.stdin, noop transform', testGeneratorInput, 0, false, true, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'duplex', execa);
+test('Can use duplexes with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'duplex', execa);
+test('Can use webTransforms with result.stdin', testGeneratorInput, 0, false, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as input', testGeneratorInput, 3, false, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdin, objectMode', testGeneratorInput, 0, true, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as input, objectMode', testGeneratorInput, 3, true, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdin, noop transform', testGeneratorInput, 0, false, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as input, noop transform', testGeneratorInput, 3, false, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdin, objectMode, noop transform', testGeneratorInput, 0, true, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as input, objectMode, noop transform', testGeneratorInput, 3, true, true, 'webTransform', execa);
 
 // eslint-disable-next-line max-params
 const testGeneratorInputPipe = async (t, useShortcutProperty, objectMode, addNoopTransform, type, input) => {
@@ -168,134 +173,174 @@ test('Can use webTransforms with subprocess.stdio[*] as input, noop transform', 
 test('Can use webTransforms with subprocess.stdio[*] as input, objectMode, noop transform', testGeneratorStdioInputPipe, true, true, 'webTransform');
 
 // eslint-disable-next-line max-params
-const testGeneratorOutput = async (t, fdNumber, reject, useShortcutProperty, objectMode, addNoopTransform, type) => {
+const testGeneratorOutput = async (t, fdNumber, reject, useShortcutProperty, objectMode, addNoopTransform, type, execaMethod) => {
 	const {generators, output} = getOutputObjectMode(objectMode, addNoopTransform, type);
 	const fixtureName = reject ? 'noop-fd.js' : 'noop-fail.js';
-	const {stdout, stderr, stdio} = await execa(fixtureName, [`${fdNumber}`, foobarString], {...getStdio(fdNumber, generators), reject});
+	const {stdout, stderr, stdio} = await execaMethod(fixtureName, [`${fdNumber}`, foobarString], {...getStdio(fdNumber, generators), reject});
 	const result = useShortcutProperty ? [stdout, stderr][fdNumber - 1] : stdio[fdNumber];
 	t.deepEqual(result, output);
 };
 
-test('Can use generators with result.stdio[1]', testGeneratorOutput, 1, true, false, false, false, 'generator');
-test('Can use generators with result.stdout', testGeneratorOutput, 1, true, true, false, false, 'generator');
-test('Can use generators with result.stdio[2]', testGeneratorOutput, 2, true, false, false, false, 'generator');
-test('Can use generators with result.stderr', testGeneratorOutput, 2, true, true, false, false, 'generator');
-test('Can use generators with result.stdio[*] as output', testGeneratorOutput, 3, true, false, false, false, 'generator');
-test('Can use generators with error.stdio[1]', testGeneratorOutput, 1, false, false, false, false, 'generator');
-test('Can use generators with error.stdout', testGeneratorOutput, 1, false, true, false, false, 'generator');
-test('Can use generators with error.stdio[2]', testGeneratorOutput, 2, false, false, false, false, 'generator');
-test('Can use generators with error.stderr', testGeneratorOutput, 2, false, true, false, false, 'generator');
-test('Can use generators with error.stdio[*] as output', testGeneratorOutput, 3, false, false, false, false, 'generator');
-test('Can use generators with result.stdio[1], objectMode', testGeneratorOutput, 1, true, false, true, false, 'generator');
-test('Can use generators with result.stdout, objectMode', testGeneratorOutput, 1, true, true, true, false, 'generator');
-test('Can use generators with result.stdio[2], objectMode', testGeneratorOutput, 2, true, false, true, false, 'generator');
-test('Can use generators with result.stderr, objectMode', testGeneratorOutput, 2, true, true, true, false, 'generator');
-test('Can use generators with result.stdio[*] as output, objectMode', testGeneratorOutput, 3, true, false, true, false, 'generator');
-test('Can use generators with error.stdio[1], objectMode', testGeneratorOutput, 1, false, false, true, false, 'generator');
-test('Can use generators with error.stdout, objectMode', testGeneratorOutput, 1, false, true, true, false, 'generator');
-test('Can use generators with error.stdio[2], objectMode', testGeneratorOutput, 2, false, false, true, false, 'generator');
-test('Can use generators with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true, false, 'generator');
-test('Can use generators with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true, false, 'generator');
-test('Can use generators with result.stdio[1], noop transform', testGeneratorOutput, 1, true, false, false, true, 'generator');
-test('Can use generators with result.stdout, noop transform', testGeneratorOutput, 1, true, true, false, true, 'generator');
-test('Can use generators with result.stdio[2], noop transform', testGeneratorOutput, 2, true, false, false, true, 'generator');
-test('Can use generators with result.stderr, noop transform', testGeneratorOutput, 2, true, true, false, true, 'generator');
-test('Can use generators with result.stdio[*] as output, noop transform', testGeneratorOutput, 3, true, false, false, true, 'generator');
-test('Can use generators with error.stdio[1], noop transform', testGeneratorOutput, 1, false, false, false, true, 'generator');
-test('Can use generators with error.stdout, noop transform', testGeneratorOutput, 1, false, true, false, true, 'generator');
-test('Can use generators with error.stdio[2], noop transform', testGeneratorOutput, 2, false, false, false, true, 'generator');
-test('Can use generators with error.stderr, noop transform', testGeneratorOutput, 2, false, true, false, true, 'generator');
-test('Can use generators with error.stdio[*] as output, noop transform', testGeneratorOutput, 3, false, false, false, true, 'generator');
-test('Can use generators with result.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, true, false, true, true, 'generator');
-test('Can use generators with result.stdout, objectMode, noop transform', testGeneratorOutput, 1, true, true, true, true, 'generator');
-test('Can use generators with result.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, true, false, true, true, 'generator');
-test('Can use generators with result.stderr, objectMode, noop transform', testGeneratorOutput, 2, true, true, true, true, 'generator');
-test('Can use generators with result.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, true, false, true, true, 'generator');
-test('Can use generators with error.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, false, false, true, true, 'generator');
-test('Can use generators with error.stdout, objectMode, noop transform', testGeneratorOutput, 1, false, true, true, true, 'generator');
-test('Can use generators with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'generator');
-test('Can use generators with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'generator');
-test('Can use generators with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'generator');
-test('Can use duplexes with result.stdio[1]', testGeneratorOutput, 1, true, false, false, false, 'duplex');
-test('Can use duplexes with result.stdout', testGeneratorOutput, 1, true, true, false, false, 'duplex');
-test('Can use duplexes with result.stdio[2]', testGeneratorOutput, 2, true, false, false, false, 'duplex');
-test('Can use duplexes with result.stderr', testGeneratorOutput, 2, true, true, false, false, 'duplex');
-test('Can use duplexes with result.stdio[*] as output', testGeneratorOutput, 3, true, false, false, false, 'duplex');
-test('Can use duplexes with error.stdio[1]', testGeneratorOutput, 1, false, false, false, false, 'duplex');
-test('Can use duplexes with error.stdout', testGeneratorOutput, 1, false, true, false, false, 'duplex');
-test('Can use duplexes with error.stdio[2]', testGeneratorOutput, 2, false, false, false, false, 'duplex');
-test('Can use duplexes with error.stderr', testGeneratorOutput, 2, false, true, false, false, 'duplex');
-test('Can use duplexes with error.stdio[*] as output', testGeneratorOutput, 3, false, false, false, false, 'duplex');
-test('Can use duplexes with result.stdio[1], objectMode', testGeneratorOutput, 1, true, false, true, false, 'duplex');
-test('Can use duplexes with result.stdout, objectMode', testGeneratorOutput, 1, true, true, true, false, 'duplex');
-test('Can use duplexes with result.stdio[2], objectMode', testGeneratorOutput, 2, true, false, true, false, 'duplex');
-test('Can use duplexes with result.stderr, objectMode', testGeneratorOutput, 2, true, true, true, false, 'duplex');
-test('Can use duplexes with result.stdio[*] as output, objectMode', testGeneratorOutput, 3, true, false, true, false, 'duplex');
-test('Can use duplexes with error.stdio[1], objectMode', testGeneratorOutput, 1, false, false, true, false, 'duplex');
-test('Can use duplexes with error.stdout, objectMode', testGeneratorOutput, 1, false, true, true, false, 'duplex');
-test('Can use duplexes with error.stdio[2], objectMode', testGeneratorOutput, 2, false, false, true, false, 'duplex');
-test('Can use duplexes with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true, false, 'duplex');
-test('Can use duplexes with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true, false, 'duplex');
-test('Can use duplexes with result.stdio[1], noop transform', testGeneratorOutput, 1, true, false, false, true, 'duplex');
-test('Can use duplexes with result.stdout, noop transform', testGeneratorOutput, 1, true, true, false, true, 'duplex');
-test('Can use duplexes with result.stdio[2], noop transform', testGeneratorOutput, 2, true, false, false, true, 'duplex');
-test('Can use duplexes with result.stderr, noop transform', testGeneratorOutput, 2, true, true, false, true, 'duplex');
-test('Can use duplexes with result.stdio[*] as output, noop transform', testGeneratorOutput, 3, true, false, false, true, 'duplex');
-test('Can use duplexes with error.stdio[1], noop transform', testGeneratorOutput, 1, false, false, false, true, 'duplex');
-test('Can use duplexes with error.stdout, noop transform', testGeneratorOutput, 1, false, true, false, true, 'duplex');
-test('Can use duplexes with error.stdio[2], noop transform', testGeneratorOutput, 2, false, false, false, true, 'duplex');
-test('Can use duplexes with error.stderr, noop transform', testGeneratorOutput, 2, false, true, false, true, 'duplex');
-test('Can use duplexes with error.stdio[*] as output, noop transform', testGeneratorOutput, 3, false, false, false, true, 'duplex');
-test('Can use duplexes with result.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, true, false, true, true, 'duplex');
-test('Can use duplexes with result.stdout, objectMode, noop transform', testGeneratorOutput, 1, true, true, true, true, 'duplex');
-test('Can use duplexes with result.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, true, false, true, true, 'duplex');
-test('Can use duplexes with result.stderr, objectMode, noop transform', testGeneratorOutput, 2, true, true, true, true, 'duplex');
-test('Can use duplexes with result.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, true, false, true, true, 'duplex');
-test('Can use duplexes with error.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, false, false, true, true, 'duplex');
-test('Can use duplexes with error.stdout, objectMode, noop transform', testGeneratorOutput, 1, false, true, true, true, 'duplex');
-test('Can use duplexes with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'duplex');
-test('Can use duplexes with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'duplex');
-test('Can use duplexes with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'duplex');
-test('Can use webTransforms with result.stdio[1]', testGeneratorOutput, 1, true, false, false, false, 'webTransform');
-test('Can use webTransforms with result.stdout', testGeneratorOutput, 1, true, true, false, false, 'webTransform');
-test('Can use webTransforms with result.stdio[2]', testGeneratorOutput, 2, true, false, false, false, 'webTransform');
-test('Can use webTransforms with result.stderr', testGeneratorOutput, 2, true, true, false, false, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as output', testGeneratorOutput, 3, true, false, false, false, 'webTransform');
-test('Can use webTransforms with error.stdio[1]', testGeneratorOutput, 1, false, false, false, false, 'webTransform');
-test('Can use webTransforms with error.stdout', testGeneratorOutput, 1, false, true, false, false, 'webTransform');
-test('Can use webTransforms with error.stdio[2]', testGeneratorOutput, 2, false, false, false, false, 'webTransform');
-test('Can use webTransforms with error.stderr', testGeneratorOutput, 2, false, true, false, false, 'webTransform');
-test('Can use webTransforms with error.stdio[*] as output', testGeneratorOutput, 3, false, false, false, false, 'webTransform');
-test('Can use webTransforms with result.stdio[1], objectMode', testGeneratorOutput, 1, true, false, true, false, 'webTransform');
-test('Can use webTransforms with result.stdout, objectMode', testGeneratorOutput, 1, true, true, true, false, 'webTransform');
-test('Can use webTransforms with result.stdio[2], objectMode', testGeneratorOutput, 2, true, false, true, false, 'webTransform');
-test('Can use webTransforms with result.stderr, objectMode', testGeneratorOutput, 2, true, true, true, false, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as output, objectMode', testGeneratorOutput, 3, true, false, true, false, 'webTransform');
-test('Can use webTransforms with error.stdio[1], objectMode', testGeneratorOutput, 1, false, false, true, false, 'webTransform');
-test('Can use webTransforms with error.stdout, objectMode', testGeneratorOutput, 1, false, true, true, false, 'webTransform');
-test('Can use webTransforms with error.stdio[2], objectMode', testGeneratorOutput, 2, false, false, true, false, 'webTransform');
-test('Can use webTransforms with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true, false, 'webTransform');
-test('Can use webTransforms with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true, false, 'webTransform');
-test('Can use webTransforms with result.stdio[1], noop transform', testGeneratorOutput, 1, true, false, false, true, 'webTransform');
-test('Can use webTransforms with result.stdout, noop transform', testGeneratorOutput, 1, true, true, false, true, 'webTransform');
-test('Can use webTransforms with result.stdio[2], noop transform', testGeneratorOutput, 2, true, false, false, true, 'webTransform');
-test('Can use webTransforms with result.stderr, noop transform', testGeneratorOutput, 2, true, true, false, true, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as output, noop transform', testGeneratorOutput, 3, true, false, false, true, 'webTransform');
-test('Can use webTransforms with error.stdio[1], noop transform', testGeneratorOutput, 1, false, false, false, true, 'webTransform');
-test('Can use webTransforms with error.stdout, noop transform', testGeneratorOutput, 1, false, true, false, true, 'webTransform');
-test('Can use webTransforms with error.stdio[2], noop transform', testGeneratorOutput, 2, false, false, false, true, 'webTransform');
-test('Can use webTransforms with error.stderr, noop transform', testGeneratorOutput, 2, false, true, false, true, 'webTransform');
-test('Can use webTransforms with error.stdio[*] as output, noop transform', testGeneratorOutput, 3, false, false, false, true, 'webTransform');
-test('Can use webTransforms with result.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, true, false, true, true, 'webTransform');
-test('Can use webTransforms with result.stdout, objectMode, noop transform', testGeneratorOutput, 1, true, true, true, true, 'webTransform');
-test('Can use webTransforms with result.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, true, false, true, true, 'webTransform');
-test('Can use webTransforms with result.stderr, objectMode, noop transform', testGeneratorOutput, 2, true, true, true, true, 'webTransform');
-test('Can use webTransforms with result.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, true, false, true, true, 'webTransform');
-test('Can use webTransforms with error.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, false, false, true, true, 'webTransform');
-test('Can use webTransforms with error.stdout, objectMode, noop transform', testGeneratorOutput, 1, false, true, true, true, 'webTransform');
-test('Can use webTransforms with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'webTransform');
-test('Can use webTransforms with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'webTransform');
-test('Can use webTransforms with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'webTransform');
+test('Can use generators with result.stdio[1]', testGeneratorOutput, 1, true, false, false, false, 'generator', execa);
+test('Can use generators with result.stdout', testGeneratorOutput, 1, true, true, false, false, 'generator', execa);
+test('Can use generators with result.stdio[2]', testGeneratorOutput, 2, true, false, false, false, 'generator', execa);
+test('Can use generators with result.stderr', testGeneratorOutput, 2, true, true, false, false, 'generator', execa);
+test('Can use generators with result.stdio[*] as output', testGeneratorOutput, 3, true, false, false, false, 'generator', execa);
+test('Can use generators with error.stdio[1]', testGeneratorOutput, 1, false, false, false, false, 'generator', execa);
+test('Can use generators with error.stdout', testGeneratorOutput, 1, false, true, false, false, 'generator', execa);
+test('Can use generators with error.stdio[2]', testGeneratorOutput, 2, false, false, false, false, 'generator', execa);
+test('Can use generators with error.stderr', testGeneratorOutput, 2, false, true, false, false, 'generator', execa);
+test('Can use generators with error.stdio[*] as output', testGeneratorOutput, 3, false, false, false, false, 'generator', execa);
+test('Can use generators with result.stdio[1], objectMode', testGeneratorOutput, 1, true, false, true, false, 'generator', execa);
+test('Can use generators with result.stdout, objectMode', testGeneratorOutput, 1, true, true, true, false, 'generator', execa);
+test('Can use generators with result.stdio[2], objectMode', testGeneratorOutput, 2, true, false, true, false, 'generator', execa);
+test('Can use generators with result.stderr, objectMode', testGeneratorOutput, 2, true, true, true, false, 'generator', execa);
+test('Can use generators with result.stdio[*] as output, objectMode', testGeneratorOutput, 3, true, false, true, false, 'generator', execa);
+test('Can use generators with error.stdio[1], objectMode', testGeneratorOutput, 1, false, false, true, false, 'generator', execa);
+test('Can use generators with error.stdout, objectMode', testGeneratorOutput, 1, false, true, true, false, 'generator', execa);
+test('Can use generators with error.stdio[2], objectMode', testGeneratorOutput, 2, false, false, true, false, 'generator', execa);
+test('Can use generators with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true, false, 'generator', execa);
+test('Can use generators with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true, false, 'generator', execa);
+test('Can use generators with result.stdio[1], noop transform', testGeneratorOutput, 1, true, false, false, true, 'generator', execa);
+test('Can use generators with result.stdout, noop transform', testGeneratorOutput, 1, true, true, false, true, 'generator', execa);
+test('Can use generators with result.stdio[2], noop transform', testGeneratorOutput, 2, true, false, false, true, 'generator', execa);
+test('Can use generators with result.stderr, noop transform', testGeneratorOutput, 2, true, true, false, true, 'generator', execa);
+test('Can use generators with result.stdio[*] as output, noop transform', testGeneratorOutput, 3, true, false, false, true, 'generator', execa);
+test('Can use generators with error.stdio[1], noop transform', testGeneratorOutput, 1, false, false, false, true, 'generator', execa);
+test('Can use generators with error.stdout, noop transform', testGeneratorOutput, 1, false, true, false, true, 'generator', execa);
+test('Can use generators with error.stdio[2], noop transform', testGeneratorOutput, 2, false, false, false, true, 'generator', execa);
+test('Can use generators with error.stderr, noop transform', testGeneratorOutput, 2, false, true, false, true, 'generator', execa);
+test('Can use generators with error.stdio[*] as output, noop transform', testGeneratorOutput, 3, false, false, false, true, 'generator', execa);
+test('Can use generators with result.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, true, false, true, true, 'generator', execa);
+test('Can use generators with result.stdout, objectMode, noop transform', testGeneratorOutput, 1, true, true, true, true, 'generator', execa);
+test('Can use generators with result.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, true, false, true, true, 'generator', execa);
+test('Can use generators with result.stderr, objectMode, noop transform', testGeneratorOutput, 2, true, true, true, true, 'generator', execa);
+test('Can use generators with result.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, true, false, true, true, 'generator', execa);
+test('Can use generators with error.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, false, false, true, true, 'generator', execa);
+test('Can use generators with error.stdout, objectMode, noop transform', testGeneratorOutput, 1, false, true, true, true, 'generator', execa);
+test('Can use generators with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'generator', execa);
+test('Can use generators with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'generator', execa);
+test('Can use generators with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'generator', execa);
+test('Can use generators with result.stdio[1], sync', testGeneratorOutput, 1, true, false, false, false, 'generator', execaSync);
+test('Can use generators with result.stdout, sync', testGeneratorOutput, 1, true, true, false, false, 'generator', execaSync);
+test('Can use generators with result.stdio[2], sync', testGeneratorOutput, 2, true, false, false, false, 'generator', execaSync);
+test('Can use generators with result.stderr, sync', testGeneratorOutput, 2, true, true, false, false, 'generator', execaSync);
+test('Can use generators with result.stdio[*] as output, sync', testGeneratorOutput, 3, true, false, false, false, 'generator', execaSync);
+test('Can use generators with error.stdio[1], sync', testGeneratorOutput, 1, false, false, false, false, 'generator', execaSync);
+test('Can use generators with error.stdout, sync', testGeneratorOutput, 1, false, true, false, false, 'generator', execaSync);
+test('Can use generators with error.stdio[2], sync', testGeneratorOutput, 2, false, false, false, false, 'generator', execaSync);
+test('Can use generators with error.stderr, sync', testGeneratorOutput, 2, false, true, false, false, 'generator', execaSync);
+test('Can use generators with error.stdio[*] as output, sync', testGeneratorOutput, 3, false, false, false, false, 'generator', execaSync);
+test('Can use generators with result.stdio[1], objectMode, sync', testGeneratorOutput, 1, true, false, true, false, 'generator', execaSync);
+test('Can use generators with result.stdout, objectMode, sync', testGeneratorOutput, 1, true, true, true, false, 'generator', execaSync);
+test('Can use generators with result.stdio[2], objectMode, sync', testGeneratorOutput, 2, true, false, true, false, 'generator', execaSync);
+test('Can use generators with result.stderr, objectMode, sync', testGeneratorOutput, 2, true, true, true, false, 'generator', execaSync);
+test('Can use generators with result.stdio[*] as output, objectMode, sync', testGeneratorOutput, 3, true, false, true, false, 'generator', execaSync);
+test('Can use generators with error.stdio[1], objectMode, sync', testGeneratorOutput, 1, false, false, true, false, 'generator', execaSync);
+test('Can use generators with error.stdout, objectMode, sync', testGeneratorOutput, 1, false, true, true, false, 'generator', execaSync);
+test('Can use generators with error.stdio[2], objectMode, sync', testGeneratorOutput, 2, false, false, true, false, 'generator', execaSync);
+test('Can use generators with error.stderr, objectMode, sync', testGeneratorOutput, 2, false, true, true, false, 'generator', execaSync);
+test('Can use generators with error.stdio[*] as output, objectMode, sync', testGeneratorOutput, 3, false, false, true, false, 'generator', execaSync);
+test('Can use generators with result.stdio[1], noop transform, sync', testGeneratorOutput, 1, true, false, false, true, 'generator', execaSync);
+test('Can use generators with result.stdout, noop transform, sync', testGeneratorOutput, 1, true, true, false, true, 'generator', execaSync);
+test('Can use generators with result.stdio[2], noop transform, sync', testGeneratorOutput, 2, true, false, false, true, 'generator', execaSync);
+test('Can use generators with result.stderr, noop transform, sync', testGeneratorOutput, 2, true, true, false, true, 'generator', execaSync);
+test('Can use generators with result.stdio[*] as output, noop transform, sync', testGeneratorOutput, 3, true, false, false, true, 'generator', execaSync);
+test('Can use generators with error.stdio[1], noop transform, sync', testGeneratorOutput, 1, false, false, false, true, 'generator', execaSync);
+test('Can use generators with error.stdout, noop transform, sync', testGeneratorOutput, 1, false, true, false, true, 'generator', execaSync);
+test('Can use generators with error.stdio[2], noop transform, sync', testGeneratorOutput, 2, false, false, false, true, 'generator', execaSync);
+test('Can use generators with error.stderr, noop transform, sync', testGeneratorOutput, 2, false, true, false, true, 'generator', execaSync);
+test('Can use generators with error.stdio[*] as output, noop transform, sync', testGeneratorOutput, 3, false, false, false, true, 'generator', execaSync);
+test('Can use generators with result.stdio[1], objectMode, noop transform, sync', testGeneratorOutput, 1, true, false, true, true, 'generator', execaSync);
+test('Can use generators with result.stdout, objectMode, noop transform, sync', testGeneratorOutput, 1, true, true, true, true, 'generator', execaSync);
+test('Can use generators with result.stdio[2], objectMode, noop transform, sync', testGeneratorOutput, 2, true, false, true, true, 'generator', execaSync);
+test('Can use generators with result.stderr, objectMode, noop transform, sync', testGeneratorOutput, 2, true, true, true, true, 'generator', execaSync);
+test('Can use generators with result.stdio[*] as output, objectMode, noop transform, sync', testGeneratorOutput, 3, true, false, true, true, 'generator', execaSync);
+test('Can use generators with error.stdio[1], objectMode, noop transform, sync', testGeneratorOutput, 1, false, false, true, true, 'generator', execaSync);
+test('Can use generators with error.stdout, objectMode, noop transform, sync', testGeneratorOutput, 1, false, true, true, true, 'generator', execaSync);
+test('Can use generators with error.stdio[2], objectMode, noop transform, sync', testGeneratorOutput, 2, false, false, true, true, 'generator', execaSync);
+test('Can use generators with error.stderr, objectMode, noop transform, sync', testGeneratorOutput, 2, false, true, true, true, 'generator', execaSync);
+test('Can use generators with error.stdio[*] as output, objectMode, noop transform, sync', testGeneratorOutput, 3, false, false, true, true, 'generator', execaSync);
+test('Can use duplexes with result.stdio[1]', testGeneratorOutput, 1, true, false, false, false, 'duplex', execa);
+test('Can use duplexes with result.stdout', testGeneratorOutput, 1, true, true, false, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[2]', testGeneratorOutput, 2, true, false, false, false, 'duplex', execa);
+test('Can use duplexes with result.stderr', testGeneratorOutput, 2, true, true, false, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as output', testGeneratorOutput, 3, true, false, false, false, 'duplex', execa);
+test('Can use duplexes with error.stdio[1]', testGeneratorOutput, 1, false, false, false, false, 'duplex', execa);
+test('Can use duplexes with error.stdout', testGeneratorOutput, 1, false, true, false, false, 'duplex', execa);
+test('Can use duplexes with error.stdio[2]', testGeneratorOutput, 2, false, false, false, false, 'duplex', execa);
+test('Can use duplexes with error.stderr', testGeneratorOutput, 2, false, true, false, false, 'duplex', execa);
+test('Can use duplexes with error.stdio[*] as output', testGeneratorOutput, 3, false, false, false, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[1], objectMode', testGeneratorOutput, 1, true, false, true, false, 'duplex', execa);
+test('Can use duplexes with result.stdout, objectMode', testGeneratorOutput, 1, true, true, true, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[2], objectMode', testGeneratorOutput, 2, true, false, true, false, 'duplex', execa);
+test('Can use duplexes with result.stderr, objectMode', testGeneratorOutput, 2, true, true, true, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as output, objectMode', testGeneratorOutput, 3, true, false, true, false, 'duplex', execa);
+test('Can use duplexes with error.stdio[1], objectMode', testGeneratorOutput, 1, false, false, true, false, 'duplex', execa);
+test('Can use duplexes with error.stdout, objectMode', testGeneratorOutput, 1, false, true, true, false, 'duplex', execa);
+test('Can use duplexes with error.stdio[2], objectMode', testGeneratorOutput, 2, false, false, true, false, 'duplex', execa);
+test('Can use duplexes with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true, false, 'duplex', execa);
+test('Can use duplexes with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true, false, 'duplex', execa);
+test('Can use duplexes with result.stdio[1], noop transform', testGeneratorOutput, 1, true, false, false, true, 'duplex', execa);
+test('Can use duplexes with result.stdout, noop transform', testGeneratorOutput, 1, true, true, false, true, 'duplex', execa);
+test('Can use duplexes with result.stdio[2], noop transform', testGeneratorOutput, 2, true, false, false, true, 'duplex', execa);
+test('Can use duplexes with result.stderr, noop transform', testGeneratorOutput, 2, true, true, false, true, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as output, noop transform', testGeneratorOutput, 3, true, false, false, true, 'duplex', execa);
+test('Can use duplexes with error.stdio[1], noop transform', testGeneratorOutput, 1, false, false, false, true, 'duplex', execa);
+test('Can use duplexes with error.stdout, noop transform', testGeneratorOutput, 1, false, true, false, true, 'duplex', execa);
+test('Can use duplexes with error.stdio[2], noop transform', testGeneratorOutput, 2, false, false, false, true, 'duplex', execa);
+test('Can use duplexes with error.stderr, noop transform', testGeneratorOutput, 2, false, true, false, true, 'duplex', execa);
+test('Can use duplexes with error.stdio[*] as output, noop transform', testGeneratorOutput, 3, false, false, false, true, 'duplex', execa);
+test('Can use duplexes with result.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, true, false, true, true, 'duplex', execa);
+test('Can use duplexes with result.stdout, objectMode, noop transform', testGeneratorOutput, 1, true, true, true, true, 'duplex', execa);
+test('Can use duplexes with result.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, true, false, true, true, 'duplex', execa);
+test('Can use duplexes with result.stderr, objectMode, noop transform', testGeneratorOutput, 2, true, true, true, true, 'duplex', execa);
+test('Can use duplexes with result.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, true, false, true, true, 'duplex', execa);
+test('Can use duplexes with error.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, false, false, true, true, 'duplex', execa);
+test('Can use duplexes with error.stdout, objectMode, noop transform', testGeneratorOutput, 1, false, true, true, true, 'duplex', execa);
+test('Can use duplexes with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'duplex', execa);
+test('Can use duplexes with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'duplex', execa);
+test('Can use duplexes with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'duplex', execa);
+test('Can use webTransforms with result.stdio[1]', testGeneratorOutput, 1, true, false, false, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdout', testGeneratorOutput, 1, true, true, false, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[2]', testGeneratorOutput, 2, true, false, false, false, 'webTransform', execa);
+test('Can use webTransforms with result.stderr', testGeneratorOutput, 2, true, true, false, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as output', testGeneratorOutput, 3, true, false, false, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[1]', testGeneratorOutput, 1, false, false, false, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdout', testGeneratorOutput, 1, false, true, false, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[2]', testGeneratorOutput, 2, false, false, false, false, 'webTransform', execa);
+test('Can use webTransforms with error.stderr', testGeneratorOutput, 2, false, true, false, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[*] as output', testGeneratorOutput, 3, false, false, false, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[1], objectMode', testGeneratorOutput, 1, true, false, true, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdout, objectMode', testGeneratorOutput, 1, true, true, true, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[2], objectMode', testGeneratorOutput, 2, true, false, true, false, 'webTransform', execa);
+test('Can use webTransforms with result.stderr, objectMode', testGeneratorOutput, 2, true, true, true, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as output, objectMode', testGeneratorOutput, 3, true, false, true, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[1], objectMode', testGeneratorOutput, 1, false, false, true, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdout, objectMode', testGeneratorOutput, 1, false, true, true, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[2], objectMode', testGeneratorOutput, 2, false, false, true, false, 'webTransform', execa);
+test('Can use webTransforms with error.stderr, objectMode', testGeneratorOutput, 2, false, true, true, false, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[*] as output, objectMode', testGeneratorOutput, 3, false, false, true, false, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[1], noop transform', testGeneratorOutput, 1, true, false, false, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdout, noop transform', testGeneratorOutput, 1, true, true, false, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[2], noop transform', testGeneratorOutput, 2, true, false, false, true, 'webTransform', execa);
+test('Can use webTransforms with result.stderr, noop transform', testGeneratorOutput, 2, true, true, false, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as output, noop transform', testGeneratorOutput, 3, true, false, false, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[1], noop transform', testGeneratorOutput, 1, false, false, false, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdout, noop transform', testGeneratorOutput, 1, false, true, false, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[2], noop transform', testGeneratorOutput, 2, false, false, false, true, 'webTransform', execa);
+test('Can use webTransforms with error.stderr, noop transform', testGeneratorOutput, 2, false, true, false, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[*] as output, noop transform', testGeneratorOutput, 3, false, false, false, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, true, false, true, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdout, objectMode, noop transform', testGeneratorOutput, 1, true, true, true, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, true, false, true, true, 'webTransform', execa);
+test('Can use webTransforms with result.stderr, objectMode, noop transform', testGeneratorOutput, 2, true, true, true, true, 'webTransform', execa);
+test('Can use webTransforms with result.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, true, false, true, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[1], objectMode, noop transform', testGeneratorOutput, 1, false, false, true, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdout, objectMode, noop transform', testGeneratorOutput, 1, false, true, true, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[2], objectMode, noop transform', testGeneratorOutput, 2, false, false, true, true, 'webTransform', execa);
+test('Can use webTransforms with error.stderr, objectMode, noop transform', testGeneratorOutput, 2, false, true, true, true, 'webTransform', execa);
+test('Can use webTransforms with error.stdio[*] as output, objectMode, noop transform', testGeneratorOutput, 3, false, false, true, true, 'webTransform', execa);
 
 // eslint-disable-next-line max-params
 const testGeneratorOutputPipe = async (t, fdNumber, useShortcutProperty, objectMode, addNoopTransform, type) => {
@@ -460,51 +505,60 @@ test('Can use generators with error.all = pipe + transform, objectMode, encoding
 test('Can use generators with result.all = pipe + transform, objectMode, encoding "hex"', testGeneratorAll, true, 'hex', true, true, false);
 test('Can use generators with error.all = pipe + transform, objectMode, encoding "hex"', testGeneratorAll, false, 'hex', true, true, false);
 
-const testInputOption = async (t, type) => {
-	const {stdout} = await execa('stdin-fd.js', ['0'], {stdin: generatorsMap[type].uppercase(), input: foobarUint8Array});
+const testInputOption = async (t, type, execaMethod) => {
+	const {stdout} = await execaMethod('stdin-fd.js', ['0'], {stdin: generatorsMap[type].uppercase(), input: foobarUint8Array});
 	t.is(stdout, foobarUppercase);
 };
 
-test('Can use generators with input option', testInputOption, 'generator');
-test('Can use duplexes with input option', testInputOption, 'duplex');
-test('Can use webTransforms with input option', testInputOption, 'webTransform');
+test('Can use generators with input option', testInputOption, 'generator', execa);
+test('Can use generators with input option, sync', testInputOption, 'generator', execaSync);
+test('Can use duplexes with input option', testInputOption, 'duplex', execa);
+test('Can use webTransforms with input option', testInputOption, 'webTransform', execa);
 
-const testInputFile = async (t, getOptions, reversed) => {
+// eslint-disable-next-line max-params
+const testInputFile = async (t, stdinOption, useInputFile, reversed, execaMethod) => {
 	const filePath = tempfile();
 	await writeFile(filePath, foobarString);
-	const {stdin, ...options} = getOptions(filePath);
-	const reversedStdin = reversed ? stdin.reverse() : stdin;
-	const {stdout} = await execa('stdin-fd.js', ['0'], {...options, stdin: reversedStdin});
+	const options = useInputFile
+		? {inputFile: filePath, stdin: stdinOption}
+		: {stdin: [{file: filePath}, stdinOption]};
+	options.stdin = reversed ? options.stdin.reverse() : options.stdin;
+	const {stdout} = await execaMethod('stdin-fd.js', ['0'], options);
 	t.is(stdout, foobarUppercase);
 	await rm(filePath);
 };
 
-test('Can use generators with a file as input', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseGenerator()]}), false);
-test('Can use generators with a file as input, reversed', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseGenerator()]}), true);
-test('Can use generators with inputFile option', testInputFile, filePath => ({inputFile: filePath, stdin: uppercaseGenerator()}), false);
-test('Can use duplexes with a file as input', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferDuplex()]}), false);
-test('Can use duplexes with a file as input, reversed', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferDuplex()]}), true);
-test('Can use duplexes with inputFile option', testInputFile, filePath => ({inputFile: filePath, stdin: uppercaseBufferDuplex()}), false);
-test('Can use webTransforms with a file as input', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferWebTransform()]}), false);
-test('Can use webTransforms with a file as input, reversed', testInputFile, filePath => ({stdin: [{file: filePath}, uppercaseBufferWebTransform()]}), true);
-test('Can use webTransforms with inputFile option', testInputFile, filePath => ({inputFile: filePath, stdin: uppercaseBufferWebTransform()}), false);
+test('Can use generators with a file as input', testInputFile, uppercaseGenerator(), false, false, execa);
+test('Can use generators with a file as input, reversed', testInputFile, uppercaseGenerator(), false, true, execa);
+test('Can use generators with inputFile option', testInputFile, uppercaseGenerator(), true, false, execa);
+test('Can use generators with a file as input, sync', testInputFile, uppercaseGenerator(), false, false, execaSync);
+test('Can use generators with a file as input, reversed, sync', testInputFile, uppercaseGenerator(), false, true, execaSync);
+test('Can use generators with inputFile option, sync', testInputFile, uppercaseGenerator(), true, false, execaSync);
+test('Can use duplexes with a file as input', testInputFile, uppercaseBufferDuplex(), false, false, execa);
+test('Can use duplexes with a file as input, reversed', testInputFile, uppercaseBufferDuplex(), false, true, execa);
+test('Can use duplexes with inputFile option', testInputFile, uppercaseBufferDuplex(), true, false, execa);
+test('Can use webTransforms with a file as input', testInputFile, uppercaseBufferWebTransform(), false, false, execa);
+test('Can use webTransforms with a file as input, reversed', testInputFile, uppercaseBufferWebTransform(), false, true, execa);
+test('Can use webTransforms with inputFile option', testInputFile, uppercaseBufferWebTransform(), true, false, execa);
 
-const testOutputFile = async (t, reversed, type) => {
+const testOutputFile = async (t, reversed, type, execaMethod) => {
 	const filePath = tempfile();
 	const stdoutOption = [generatorsMap[type].uppercaseBuffer(false, true), {file: filePath}];
 	const reversedStdoutOption = reversed ? stdoutOption.reverse() : stdoutOption;
-	const {stdout} = await execa('noop-fd.js', ['1'], {stdout: reversedStdoutOption});
+	const {stdout} = await execaMethod('noop-fd.js', ['1'], {stdout: reversedStdoutOption});
 	t.is(stdout, foobarUppercase);
 	t.is(await readFile(filePath, 'utf8'), foobarUppercase);
 	await rm(filePath);
 };
 
-test('Can use generators with a file as output', testOutputFile, false, 'generator');
-test('Can use generators with a file as output, reversed', testOutputFile, true, 'generator');
-test('Can use duplexes with a file as output', testOutputFile, false, 'duplex');
-test('Can use duplexes with a file as output, reversed', testOutputFile, true, 'duplex');
-test('Can use webTransforms with a file as output', testOutputFile, false, 'webTransform');
-test('Can use webTransforms with a file as output, reversed', testOutputFile, true, 'webTransform');
+test('Can use generators with a file as output', testOutputFile, false, 'generator', execa);
+test('Can use generators with a file as output, reversed', testOutputFile, true, 'generator', execa);
+test('Can use generators with a file as output, sync', testOutputFile, false, 'generator', execaSync);
+test('Can use generators with a file as output, reversed, sync', testOutputFile, true, 'generator', execaSync);
+test('Can use duplexes with a file as output', testOutputFile, false, 'duplex', execa);
+test('Can use duplexes with a file as output, reversed', testOutputFile, true, 'duplex', execa);
+test('Can use webTransforms with a file as output', testOutputFile, false, 'webTransform', execa);
+test('Can use webTransforms with a file as output, reversed', testOutputFile, true, 'webTransform', execa);
 
 const testWritableDestination = async (t, type) => {
 	const passThrough = new PassThrough();
@@ -541,57 +595,68 @@ test('Can use generators with "inherit"', testInherit, 'generator');
 test('Can use duplexes with "inherit"', testInherit, 'duplex');
 test('Can use webTransforms with "inherit"', testInherit, 'webTransform');
 
-const testAppendInput = async (t, reversed, type) => {
+const testAppendInput = async (t, reversed, type, execaMethod) => {
 	const stdin = [foobarUint8Array, generatorsMap[type].uppercase(), generatorsMap[type].append()];
 	const reversedStdin = reversed ? stdin.reverse() : stdin;
-	const {stdout} = await execa('stdin-fd.js', ['0'], {stdin: reversedStdin});
+	const {stdout} = await execaMethod('stdin-fd.js', ['0'], {stdin: reversedStdin});
 	const reversedSuffix = reversed ? casedSuffix.toUpperCase() : casedSuffix;
 	t.is(stdout, `${foobarUppercase}${reversedSuffix}`);
 };
 
-test('Can use multiple generators as input', testAppendInput, false, 'generator');
-test('Can use multiple generators as input, reversed', testAppendInput, true, 'generator');
-test('Can use multiple duplexes as input', testAppendInput, false, 'duplex');
-test('Can use multiple duplexes as input, reversed', testAppendInput, true, 'duplex');
-test('Can use multiple webTransforms as input', testAppendInput, false, 'webTransform');
-test('Can use multiple webTransforms as input, reversed', testAppendInput, true, 'webTransform');
+test('Can use multiple generators as input', testAppendInput, false, 'generator', execa);
+test('Can use multiple generators as input, reversed', testAppendInput, true, 'generator', execa);
+test('Can use multiple generators as input, sync', testAppendInput, false, 'generator', execaSync);
+test('Can use multiple generators as input, reversed, sync', testAppendInput, true, 'generator', execaSync);
+test('Can use multiple duplexes as input', testAppendInput, false, 'duplex', execa);
+test('Can use multiple duplexes as input, reversed', testAppendInput, true, 'duplex', execa);
+test('Can use multiple webTransforms as input', testAppendInput, false, 'webTransform', execa);
+test('Can use multiple webTransforms as input, reversed', testAppendInput, true, 'webTransform', execa);
 
-const testAppendOutput = async (t, reversed, type) => {
+const testAppendOutput = async (t, reversed, type, execaMethod) => {
 	const stdoutOption = [generatorsMap[type].uppercase(), generatorsMap[type].append()];
 	const reversedStdoutOption = reversed ? stdoutOption.reverse() : stdoutOption;
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: reversedStdoutOption});
+	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {stdout: reversedStdoutOption});
 	const reversedSuffix = reversed ? casedSuffix.toUpperCase() : casedSuffix;
 	t.is(stdout, `${foobarUppercase}${reversedSuffix}`);
 };
 
-test('Can use multiple generators as output', testAppendOutput, false, 'generator');
-test('Can use multiple generators as output, reversed', testAppendOutput, true, 'generator');
-test('Can use multiple duplexes as output', testAppendOutput, false, 'duplex');
-test('Can use multiple duplexes as output, reversed', testAppendOutput, true, 'duplex');
-test('Can use multiple webTransforms as output', testAppendOutput, false, 'webTransform');
-test('Can use multiple webTransforms as output, reversed', testAppendOutput, true, 'webTransform');
+test('Can use multiple generators as output', testAppendOutput, false, 'generator', execa);
+test('Can use multiple generators as output, reversed', testAppendOutput, true, 'generator', execa);
+test('Can use multiple generators as output, sync', testAppendOutput, false, 'generator', execaSync);
+test('Can use multiple generators as output, reversed, sync', testAppendOutput, true, 'generator', execaSync);
+test('Can use multiple duplexes as output', testAppendOutput, false, 'duplex', execa);
+test('Can use multiple duplexes as output, reversed', testAppendOutput, true, 'duplex', execa);
+test('Can use multiple webTransforms as output', testAppendOutput, false, 'webTransform', execa);
+test('Can use multiple webTransforms as output, reversed', testAppendOutput, true, 'webTransform', execa);
 
-const testTwoGenerators = async (t, producesTwo, firstGenerator, secondGenerator = firstGenerator) => {
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: [firstGenerator, secondGenerator]});
+// eslint-disable-next-line max-params
+const testTwoGenerators = async (t, producesTwo, execaMethod, firstGenerator, secondGenerator = firstGenerator) => {
+	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {stdout: [firstGenerator, secondGenerator]});
 	const expectedSuffix = producesTwo ? `${casedSuffix}${casedSuffix}` : casedSuffix;
 	t.is(stdout, `${foobarString}${expectedSuffix}`);
 };
 
-test('Can use multiple identical generators', testTwoGenerators, true, appendGenerator().transform);
-test('Can use multiple identical generators, options object', testTwoGenerators, true, appendGenerator());
-test('Ignore duplicate identical duplexes', testTwoGenerators, false, appendDuplex());
-test('Ignore duplicate identical webTransforms', testTwoGenerators, false, appendWebTransform());
-test('Can use multiple generators with duplexes', testTwoGenerators, true, appendGenerator(false, false, true), appendDuplex());
-test('Can use multiple generators with webTransforms', testTwoGenerators, true, appendGenerator(false, false, true), appendWebTransform());
-test('Can use multiple duplexes with webTransforms', testTwoGenerators, true, appendDuplex(), appendWebTransform());
+test('Can use multiple identical generators', testTwoGenerators, true, execa, appendGenerator().transform);
+test('Can use multiple identical generators, options object', testTwoGenerators, true, execa, appendGenerator());
+test('Can use multiple identical generators, async', testTwoGenerators, true, execa, appendAsyncGenerator().transform);
+test('Can use multiple identical generators, options object, async', testTwoGenerators, true, execa, appendAsyncGenerator());
+test('Can use multiple identical generators, sync', testTwoGenerators, true, execaSync, appendGenerator().transform);
+test('Can use multiple identical generators, options object, sync', testTwoGenerators, true, execaSync, appendGenerator());
+test('Ignore duplicate identical duplexes', testTwoGenerators, false, execa, appendDuplex());
+test('Ignore duplicate identical webTransforms', testTwoGenerators, false, execa, appendWebTransform());
+test('Can use multiple generators with duplexes', testTwoGenerators, true, execa, appendGenerator(false, false, true), appendDuplex());
+test('Can use multiple generators with webTransforms', testTwoGenerators, true, execa, appendGenerator(false, false, true), appendWebTransform());
+test('Can use multiple duplexes with webTransforms', testTwoGenerators, true, execa, appendDuplex(), appendWebTransform());
 
-const testGeneratorSyntax = async (t, type, usePlainObject) => {
+const testGeneratorSyntax = async (t, type, usePlainObject, execaMethod) => {
 	const transform = generatorsMap[type].uppercase();
-	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: usePlainObject ? transform : transform.transform});
+	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {stdout: usePlainObject ? transform : transform.transform});
 	t.is(stdout, foobarUppercase);
 };
 
-test('Can pass generators with an options plain object', testGeneratorSyntax, 'generator', false);
-test('Can pass generators without an options plain object', testGeneratorSyntax, 'generator', true);
-test('Can pass webTransforms with an options plain object', testGeneratorSyntax, 'webTransform', true);
-test('Can pass webTransforms without an options plain object', testGeneratorSyntax, 'webTransform', false);
+test('Can pass generators with an options plain object', testGeneratorSyntax, 'generator', false, execa);
+test('Can pass generators without an options plain object', testGeneratorSyntax, 'generator', true, execa);
+test('Can pass generators with an options plain object, sync', testGeneratorSyntax, 'generator', false, execaSync);
+test('Can pass generators without an options plain object, sync', testGeneratorSyntax, 'generator', true, execaSync);
+test('Can pass webTransforms with an options plain object', testGeneratorSyntax, 'webTransform', true, execa);
+test('Can pass webTransforms without an options plain object', testGeneratorSyntax, 'webTransform', false, execa);

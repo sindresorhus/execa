@@ -3,7 +3,7 @@ import {once} from 'node:events';
 import {scheduler} from 'node:timers/promises';
 import test from 'ava';
 import {getStreamAsArray} from 'get-stream';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 import {
 	noopGenerator,
@@ -14,7 +14,6 @@ import {
 	convertTransformToFinal,
 	prefix,
 	suffix,
-	GENERATOR_ERROR_REGEXP,
 } from '../helpers/generator.js';
 import {generatorsMap} from '../helpers/map.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
@@ -22,29 +21,33 @@ import {setFixtureDir} from '../helpers/fixtures-dir.js';
 
 setFixtureDir();
 
-const testGeneratorFinal = async (t, fixtureName) => {
-	const {stdout} = await execa(fixtureName, {stdout: convertTransformToFinal(getOutputGenerator(foobarString)(), true)});
+const testGeneratorFinal = async (t, fixtureName, execaMethod) => {
+	const {stdout} = await execaMethod(fixtureName, {stdout: convertTransformToFinal(getOutputGenerator(foobarString)(), true)});
 	t.is(stdout, foobarString);
 };
 
-test('Generators "final" can be used', testGeneratorFinal, 'noop.js');
-test('Generators "final" is used even on empty streams', testGeneratorFinal, 'empty.js');
+test('Generators "final" can be used', testGeneratorFinal, 'noop.js', execa);
+test('Generators "final" is used even on empty streams', testGeneratorFinal, 'empty.js', execa);
+test('Generators "final" can be used, sync', testGeneratorFinal, 'noop.js', execaSync);
+test('Generators "final" is used even on empty streams, sync', testGeneratorFinal, 'empty.js', execaSync);
 
-const testFinalAlone = async (t, final) => {
-	const {stdout} = await execa('noop-fd.js', ['1', '.'], {stdout: {final: final(foobarString)().transform, binary: true}});
+const testFinalAlone = async (t, final, execaMethod) => {
+	const {stdout} = await execaMethod('noop-fd.js', ['1', '.'], {stdout: {final: final(foobarString)().transform, binary: true}});
 	t.is(stdout, `.${foobarString}`);
 };
 
-test('Generators "final" can be used without "transform"', testFinalAlone, getOutputGenerator);
-test('Generators "final" can be used without "transform", async', testFinalAlone, getOutputAsyncGenerator);
+test('Generators "final" can be used without "transform"', testFinalAlone, getOutputGenerator, execa);
+test('Generators "final" can be used without "transform", sync', testFinalAlone, getOutputGenerator, execaSync);
+test('Generators "final" can be used without "transform", async', testFinalAlone, getOutputAsyncGenerator, execa);
 
-const testFinalNoOutput = async (t, final) => {
-	const {stdout} = await execa('empty.js', {stdout: {final: final(foobarString)().transform}});
+const testFinalNoOutput = async (t, final, execaMethod) => {
+	const {stdout} = await execaMethod('empty.js', {stdout: {final: final(foobarString)().transform}});
 	t.is(stdout, foobarString);
 };
 
-test('Generators "final" can be used without "transform" nor output', testFinalNoOutput, getOutputGenerator);
-test('Generators "final" can be used without "transform" nor output, async', testFinalNoOutput, getOutputAsyncGenerator);
+test('Generators "final" can be used without "transform" nor output', testFinalNoOutput, getOutputGenerator, execa);
+test('Generators "final" can be used without "transform" nor output, sync', testFinalNoOutput, getOutputGenerator, execaSync);
+test('Generators "final" can be used without "transform" nor output, async', testFinalNoOutput, getOutputAsyncGenerator, execa);
 
 const repeatCount = defaultHighWaterMark * 3;
 
@@ -59,8 +62,9 @@ const getLengthGenerator = function * (t, chunk) {
 	yield chunk;
 };
 
-const testHighWaterMark = async (t, passThrough, binary, objectMode) => {
-	const {stdout} = await execa('noop.js', {
+// eslint-disable-next-line max-params
+const testHighWaterMark = async (t, passThrough, binary, objectMode, execaMethod) => {
+	const {stdout} = await execaMethod('noop.js', {
 		stdout: [
 			...(objectMode ? [outputObjectGenerator()] : []),
 			writerGenerator,
@@ -72,25 +76,33 @@ const testHighWaterMark = async (t, passThrough, binary, objectMode) => {
 	t.true(stdout.every(chunk => chunk === '\n'));
 };
 
-test('Synchronous yields are not buffered, no passThrough', testHighWaterMark, false, false, false);
-test('Synchronous yields are not buffered, line-wise passThrough', testHighWaterMark, true, false, false);
-test('Synchronous yields are not buffered, binary passThrough', testHighWaterMark, true, true, false);
-test('Synchronous yields are not buffered, objectMode as input but not output', testHighWaterMark, false, false, true);
+test('Synchronous yields are not buffered, no passThrough', testHighWaterMark, false, false, false, execa);
+test('Synchronous yields are not buffered, line-wise passThrough', testHighWaterMark, true, false, false, execa);
+test('Synchronous yields are not buffered, binary passThrough', testHighWaterMark, true, true, false, execa);
+test('Synchronous yields are not buffered, objectMode as input but not output', testHighWaterMark, false, false, true, execa);
+test('Synchronous yields are not buffered, no passThrough, sync', testHighWaterMark, false, false, false, execaSync);
+test('Synchronous yields are not buffered, line-wise passThrough, sync', testHighWaterMark, true, false, false, execaSync);
+test('Synchronous yields are not buffered, binary passThrough, sync', testHighWaterMark, true, true, false, execaSync);
+test('Synchronous yields are not buffered, objectMode as input but not output, sync', testHighWaterMark, false, false, true, execaSync);
 
 // eslint-disable-next-line max-params
-const testNoYield = async (t, type, objectMode, final, output) => {
-	const {stdout} = await execa('noop.js', {stdout: convertTransformToFinal(generatorsMap[type].noYield(objectMode), final)});
+const testNoYield = async (t, type, objectMode, final, output, execaMethod) => {
+	const {stdout} = await execaMethod('noop.js', {stdout: convertTransformToFinal(generatorsMap[type].noYield(objectMode), final)});
 	t.deepEqual(stdout, output);
 };
 
-test('Generator can filter "transform" by not calling yield', testNoYield, 'generator', false, false, '');
-test('Generator can filter "transform" by not calling yield, objectMode', testNoYield, 'generator', true, false, []);
-test('Generator can filter "final" by not calling yield', testNoYield, 'generator', false, true, '');
-test('Generator can filter "final" by not calling yield, objectMode', testNoYield, 'generator', true, true, []);
-test('Duplex can filter by not calling push', testNoYield, 'duplex', false, false, '');
-test('Duplex can filter by not calling push, objectMode', testNoYield, 'duplex', true, false, []);
-test('WebTransform can filter by not calling push', testNoYield, 'webTransform', false, false, '');
-test('WebTransform can filter by not calling push, objectMode', testNoYield, 'webTransform', true, false, []);
+test('Generator can filter "transform" by not calling yield', testNoYield, 'generator', false, false, '', execa);
+test('Generator can filter "transform" by not calling yield, objectMode', testNoYield, 'generator', true, false, [], execa);
+test('Generator can filter "final" by not calling yield', testNoYield, 'generator', false, true, '', execa);
+test('Generator can filter "final" by not calling yield, objectMode', testNoYield, 'generator', true, true, [], execa);
+test('Generator can filter "transform" by not calling yield, sync', testNoYield, 'generator', false, false, '', execaSync);
+test('Generator can filter "transform" by not calling yield, objectMode, sync', testNoYield, 'generator', true, false, [], execaSync);
+test('Generator can filter "final" by not calling yield, sync', testNoYield, 'generator', false, true, '', execaSync);
+test('Generator can filter "final" by not calling yield, objectMode, sync', testNoYield, 'generator', true, true, [], execaSync);
+test('Duplex can filter by not calling push', testNoYield, 'duplex', false, false, '', execa);
+test('Duplex can filter by not calling push, objectMode', testNoYield, 'duplex', true, false, [], execa);
+test('WebTransform can filter by not calling push', testNoYield, 'webTransform', false, false, '', execa);
+test('WebTransform can filter by not calling push, objectMode', testNoYield, 'webTransform', true, false, [], execa);
 
 const testMultipleYields = async (t, type, final, binary) => {
 	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(generatorsMap[type].multipleYield(), final)});
@@ -175,38 +187,60 @@ test('Generators "final" is awaited on success', testAsyncGenerators, 'generator
 test('Duplex is awaited on success', testAsyncGenerators, 'duplex', false);
 test('WebTransform is awaited on success', testAsyncGenerators, 'webTransform', false);
 
-const testThrowingGenerator = async (t, type, final) => {
-	await t.throwsAsync(
-		execa('noop-fd.js', ['1', foobarString], {stdout: convertTransformToFinal(generatorsMap[type].throwing(), final)}),
-		{message: GENERATOR_ERROR_REGEXP},
-	);
+const assertProcessError = async (t, type, execaMethod, getSubprocess) => {
+	const cause = new Error(foobarString);
+	const transform = generatorsMap[type].throwing(cause)();
+	const error = execaMethod === execa
+		? await t.throwsAsync(getSubprocess(transform))
+		: t.throws(() => {
+			getSubprocess(transform);
+		});
+	t.is(error.cause, cause);
 };
 
-test('Generators "transform" errors make subprocess fail', testThrowingGenerator, 'generator', false);
-test('Generators "final" errors make subprocess fail', testThrowingGenerator, 'generator', true);
-test('Duplexes "transform" errors make subprocess fail', testThrowingGenerator, 'duplex', false);
-test('WebTransform "transform" errors make subprocess fail', testThrowingGenerator, 'webTransform', false);
-
-const testSingleErrorOutput = async (t, type) => {
-	await t.throwsAsync(
-		execa('noop-fd.js', ['1', foobarString], {stdout: [generatorsMap[type].noop(false), generatorsMap[type].throwing(), generatorsMap[type].noop(false)]}),
-		{message: GENERATOR_ERROR_REGEXP},
-	);
+const testThrowingGenerator = async (t, type, final, execaMethod) => {
+	await assertProcessError(t, type, execaMethod, transform => execaMethod('noop.js', {
+		stdout: convertTransformToFinal(transform, final),
+	}));
 };
 
-test('Generators errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'generator');
-test('Duplexes errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'duplex');
-test('WebTransform errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'webTransform');
+test('Generators "transform" errors make subprocess fail', testThrowingGenerator, 'generator', false, execa);
+test('Generators "final" errors make subprocess fail', testThrowingGenerator, 'generator', true, execa);
+test('Generators "transform" errors make subprocess fail, sync', testThrowingGenerator, 'generator', false, execaSync);
+test('Generators "final" errors make subprocess fail, sync', testThrowingGenerator, 'generator', true, execaSync);
+test('Duplexes "transform" errors make subprocess fail', testThrowingGenerator, 'duplex', false, execa);
+test('WebTransform "transform" errors make subprocess fail', testThrowingGenerator, 'webTransform', false, execa);
 
-const testSingleErrorInput = async (t, type) => {
-	const subprocess = execa('stdin-fd.js', ['0'], {stdin: [generatorsMap[type].noop(false), generatorsMap[type].throwing(), generatorsMap[type].noop(false)]});
-	subprocess.stdin.write('foobar\n');
-	await t.throwsAsync(subprocess, {message: GENERATOR_ERROR_REGEXP});
+const testSingleErrorOutput = async (t, type, execaMethod) => {
+	await assertProcessError(t, type, execaMethod, transform => execaMethod('noop.js', {
+		stdout: [
+			generatorsMap[type].noop(false),
+			transform,
+			generatorsMap[type].noop(false),
+		],
+	}));
 };
 
-test('Generators errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'generator');
-test('Duplexes errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'duplex');
-test('WebTransform errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'webTransform');
+test('Generators errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'generator', execa);
+test('Generators errors make subprocess fail even when other output generators do not throw, sync', testSingleErrorOutput, 'generator', execaSync);
+test('Duplexes errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'duplex', execa);
+test('WebTransform errors make subprocess fail even when other output generators do not throw', testSingleErrorOutput, 'webTransform', execa);
+
+const testSingleErrorInput = async (t, type, execaMethod) => {
+	await assertProcessError(t, type, execaMethod, transform => execaMethod('stdin.js', {
+		stdin: [
+			['foobar\n'],
+			generatorsMap[type].noop(false),
+			transform,
+			generatorsMap[type].noop(false),
+		],
+	}));
+};
+
+test('Generators errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'generator', execa);
+test('Generators errors make subprocess fail even when other input generators do not throw, sync', testSingleErrorInput, 'generator', execaSync);
+test('Duplexes errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'duplex', execa);
+test('WebTransform errors make subprocess fail even when other input generators do not throw', testSingleErrorInput, 'webTransform', execa);
 
 const testGeneratorCancel = async (t, error) => {
 	const subprocess = execa('noop.js', {stdout: infiniteGenerator()});

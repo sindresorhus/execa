@@ -25,12 +25,16 @@ const testAllBoth = async (t, expectedOutput, encoding, lines, stripFinalNewline
 
 test('result.all is defined', testAllBoth, doubleFoobarStringFull, 'utf8', false, false, false, execa);
 test('result.all is defined, encoding "buffer"', testAllBoth, doubleFoobarUint8ArrayFull, 'buffer', false, false, false, execa);
+test('result.all is defined, lines', testAllBoth, doubleFoobarArrayFull, 'utf8', true, false, false, execa);
 test('result.all is defined, stripFinalNewline', testAllBoth, doubleFoobarString, 'utf8', false, true, false, execa);
 test('result.all is defined, encoding "buffer", stripFinalNewline', testAllBoth, doubleFoobarUint8Array, 'buffer', false, true, false, execa);
+test('result.all is defined, lines, stripFinalNewline', testAllBoth, doubleFoobarArray, 'utf8', true, true, false, execa);
 test('result.all is defined, failure', testAllBoth, doubleFoobarStringFull, 'utf8', false, false, true, execa);
 test('result.all is defined, encoding "buffer", failure', testAllBoth, doubleFoobarUint8ArrayFull, 'buffer', false, false, true, execa);
+test('result.all is defined, lines, failure', testAllBoth, doubleFoobarArrayFull, 'utf8', true, false, true, execa);
 test('result.all is defined, stripFinalNewline, failure', testAllBoth, doubleFoobarString, 'utf8', false, true, true, execa);
 test('result.all is defined, encoding "buffer", stripFinalNewline, failure', testAllBoth, doubleFoobarUint8Array, 'buffer', false, true, true, execa);
+test('result.all is defined, lines, stripFinalNewline, failure', testAllBoth, doubleFoobarArray, 'utf8', true, true, true, execa);
 test('result.all is defined, sync', testAllBoth, doubleFoobarStringFull, 'utf8', false, false, false, execaSync);
 test('result.all is defined, encoding "buffer", sync', testAllBoth, doubleFoobarUint8ArrayFull, 'buffer', false, false, false, execaSync);
 test('result.all is defined, lines, sync', testAllBoth, doubleFoobarArrayFull, 'utf8', true, false, false, execaSync);

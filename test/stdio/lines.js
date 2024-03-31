@@ -1,5 +1,3 @@
-import {Buffer} from 'node:buffer';
-import {once} from 'node:events';
 import {Writable} from 'node:stream';
 import test from 'ava';
 import {MaxBufferError} from 'get-stream';
@@ -8,7 +6,7 @@ import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {getOutputsGenerator} from '../helpers/generator.js';
 import {foobarString, foobarObject} from '../helpers/input.js';
-import {assertStreamOutput, assertIterableChunks} from '../helpers/convert.js';
+import {assertStreamOutput, assertStreamDataEvents, assertIterableChunks} from '../helpers/convert.js';
 import {
 	simpleFull,
 	simpleChunks,
@@ -165,6 +163,15 @@ test('"lines: true" stops on stream error', async t => {
 	t.deepEqual(error.stdout, noNewlinesChunks.slice(0, 2));
 });
 
+test('"lines: true" stops on stream error event', async t => {
+	const cause = new Error(foobarString);
+	const subprocess = getSimpleChunkSubprocessAsync();
+	subprocess.stdout.emit('error', cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.deepEqual(error.stdout, []);
+});
+
 const testAsyncIteration = async (t, expectedLines, stripFinalNewline) => {
 	const subprocess = getSimpleChunkSubprocessAsync({stripFinalNewline});
 	t.false(subprocess.stdout.readableObjectMode);
@@ -178,8 +185,7 @@ test('"lines: true" works with stream async iteration, stripFinalNewline', testA
 
 const testDataEvents = async (t, expectedLines, stripFinalNewline) => {
 	const subprocess = getSimpleChunkSubprocessAsync({stripFinalNewline});
-	const [firstLine] = await once(subprocess.stdout, 'data');
-	t.deepEqual(firstLine, Buffer.from(simpleLines[0]));
+	await assertStreamDataEvents(t, subprocess.stdout, simpleFull);
 	const {stdout} = await subprocess;
 	t.deepEqual(stdout, expectedLines);
 };
@@ -188,16 +194,16 @@ test('"lines: true" works with stream "data" events', testDataEvents, simpleLine
 test('"lines: true" works with stream "data" events, stripFinalNewline', testDataEvents, noNewlinesChunks, true);
 
 const testWritableStream = async (t, expectedLines, stripFinalNewline) => {
-	const lines = [];
+	let output = '';
 	const writable = new Writable({
 		write(line, encoding, done) {
-			lines.push(line.toString());
+			output += line.toString();
 			done();
 		},
 		decodeStrings: false,
 	});
 	const {stdout} = await getSimpleChunkSubprocessAsync({stripFinalNewline, stdout: ['pipe', writable]});
-	t.deepEqual(lines, simpleLines);
+	t.deepEqual(output, simpleFull);
 	t.deepEqual(stdout, expectedLines);
 };
 

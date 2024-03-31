@@ -71,7 +71,7 @@ test('error.message contains the command', async t => {
 
 // eslint-disable-next-line max-params
 const testStdioMessage = async (t, encoding, all, objectMode, execaMethod) => {
-	const {exitCode, message} = await execaMethod('echo-fail.js', {...getStdio(1, noopGenerator(objectMode), 4), encoding, all, reject: false});
+	const {exitCode, message} = await execaMethod('echo-fail.js', {...getStdio(1, noopGenerator(objectMode, false, true), 4), encoding, all, reject: false});
 	t.is(exitCode, 1);
 	const output = all ? 'stdout\nstderr' : 'stderr\n\nstdout';
 	t.true(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));

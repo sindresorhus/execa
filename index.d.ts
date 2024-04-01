@@ -7,6 +7,8 @@ type Or<First extends boolean, Second extends boolean> = First extends true ? tr
 
 type Unless<Condition extends boolean, ThenValue, ElseValue = never> = Condition extends true ? ElseValue : ThenValue;
 
+type AndUnless<Condition extends boolean, ThenValue, ElseValue = unknown> = Condition extends true ? ElseValue : ThenValue;
+
 // When the `stdin`/`stdout`/`stderr`/`stdio` option is set to one of those values, no stream is created
 type NoStreamStdioOption =
 	| 'ignore'
@@ -66,16 +68,20 @@ type CommonStdioOption<
 	| WebTransform
 	| TransformStream>;
 
+// Synchronous iterables excluding strings, Uint8Arrays and Arrays
+type IterableObject<IsArray extends boolean = boolean> = Iterable<unknown>
+& object
+& {readonly BYTES_PER_ELEMENT?: never}
+& AndUnless<IsArray, {readonly lastIndexOf?: never}>;
+
 type InputStdioOption<
 	IsSync extends boolean = boolean,
+	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
 > =
-	| Uint8Array
+	| Unless<And<IsSync, IsExtra>, Uint8Array>
 	| Unless<And<IsSync, IsArray>, Readable>
-	| Unless<IsSync,
-	| Iterable<unknown>
-	| AsyncIterable<unknown>
-	| ReadableStream>;
+	| Unless<IsSync, IterableObject<IsArray> | AsyncIterable<unknown> | ReadableStream>;
 
 type OutputStdioOption<
 	IsSync extends boolean = boolean,
@@ -86,16 +92,21 @@ type OutputStdioOption<
 
 type StdinSingleOption<
 	IsSync extends boolean = boolean,
+	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
 > =
 	| CommonStdioOption<IsSync, IsArray>
-	| InputStdioOption<IsSync, IsArray>;
+	| InputStdioOption<IsSync, IsExtra, IsArray>;
 
-type StdinOptionCommon<IsSync extends boolean = boolean> =
-	| StdinSingleOption<IsSync, false>
-	| Array<StdinSingleOption<IsSync, true>>;
-export type StdinOption = StdinOptionCommon<false>;
-export type StdinOptionSync = StdinOptionCommon<true>;
+type StdinOptionCommon<
+	IsSync extends boolean = boolean,
+	IsExtra extends boolean = boolean,
+> =
+	| StdinSingleOption<IsSync, IsExtra, false>
+	| ReadonlyArray<StdinSingleOption<IsSync, IsExtra, true>>;
+
+export type StdinOption = StdinOptionCommon<false, false>;
+export type StdinOptionSync = StdinOptionCommon<true, false>;
 
 type StdoutStderrSingleOption<
 	IsSync extends boolean = boolean,
@@ -106,29 +117,35 @@ type StdoutStderrSingleOption<
 
 type StdoutStderrOptionCommon<IsSync extends boolean = boolean> =
 	| StdoutStderrSingleOption<IsSync, false>
-	| Array<StdoutStderrSingleOption<IsSync, true>>;
+	| ReadonlyArray<StdoutStderrSingleOption<IsSync, true>>;
+
 export type StdoutStderrOption = StdoutStderrOptionCommon<false>;
 export type StdoutStderrOptionSync = StdoutStderrOptionCommon<true>;
 
+type StdioExtraOptionCommon<IsSync extends boolean = boolean> =
+	| StdinOptionCommon<IsSync, true>
+	| StdoutStderrOptionCommon<IsSync>;
+
 type StdioSingleOption<
 	IsSync extends boolean = boolean,
+	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
 > =
-	| CommonStdioOption<IsSync, IsArray>
-	| InputStdioOption<IsSync, IsArray>
-	| OutputStdioOption<IsSync, IsArray>;
+	| StdinSingleOption<IsSync, IsExtra, IsArray>
+	| StdoutStderrSingleOption<IsSync, IsArray>;
 
 type StdioOptionCommon<IsSync extends boolean = boolean> =
-	| StdioSingleOption<IsSync, false>
-	| Array<StdioSingleOption<IsSync, true>>;
+	| StdinOptionCommon<IsSync>
+	| StdoutStderrOptionCommon<IsSync>;
+
 export type StdioOption = StdioOptionCommon<false>;
 export type StdioOptionSync = StdioOptionCommon<true>;
 
 type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
-	StdinOptionCommon<IsSync>,
+	StdinOptionCommon<IsSync, false>,
 	StdoutStderrOptionCommon<IsSync>,
 	StdoutStderrOptionCommon<IsSync>,
-	...Array<StdioOptionCommon<IsSync>>,
+	...ReadonlyArray<StdioExtraOptionCommon<IsSync>>,
 ];
 
 type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption<IsSync> | StdioOptionsArray<IsSync>;
@@ -154,17 +171,9 @@ type EncodingOption =
 type IsObjectStream<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IsObjectModeStream<FdNumber, IsObjectOutputOptions<StreamOption<FdNumber, OptionsType>>, OptionsType>;
+> = IsObjectOutputOptions<StreamOption<FdNumber, OptionsType>>;
 
-type IsObjectModeStream<
-	FdNumber extends string,
-	IsObjectModeStreamOption extends boolean,
-	OptionsType extends CommonOptions = CommonOptions,
-> = IsObjectModeStreamOption extends true
-	? true
-	: IsObjectOutputOptions<StdioProperty<FdNumber, OptionsType>>;
-
-type IsObjectOutputOptions<OutputOptions extends StdioOptionCommon> = IsObjectOutputOption<OutputOptions extends StdioSingleOption[]
+type IsObjectOutputOptions<OutputOptions extends StdioOptionCommon> = IsObjectOutputOption<OutputOptions extends readonly StdioSingleOption[]
 	? OutputOptions[number]
 	: OutputOptions
 >;
@@ -185,15 +194,7 @@ type DuplexObjectMode<OutputOption extends DuplexTransform> = OutputOption['obje
 type IgnoresStreamResult<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IgnoresStreamReturn<FdNumber, IgnoresStdioResult<StreamOption<FdNumber, OptionsType>>, OptionsType>;
-
-type IgnoresStreamReturn<
-	FdNumber extends string,
-	IsIgnoredStreamOption extends boolean,
-	OptionsType extends CommonOptions = CommonOptions,
-> = IsIgnoredStreamOption extends true
-	? true
-	: IgnoresStdioResult<StdioProperty<FdNumber, OptionsType>>;
+> = IgnoresStdioResult<StreamOption<FdNumber, OptionsType>>;
 
 // Whether `result.stdio[*]` is `undefined`
 type IgnoresStdioResult<StdioOptionType extends StdioOptionCommon> = StdioOptionType extends NoStreamStdioOption ? true : false;
@@ -225,15 +226,20 @@ type IsInputStdio<StdioOptionType extends StdioOptionCommon> = StdioOptionType e
 		: true
 	: false;
 
-// `options.stdin|stdout|stderr`
+// `options.stdin|stdout|stderr|stdio`
 type StreamOption<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
 > = string extends FdNumber ? StdioOptionCommon
-	: FdNumber extends '0' ? OptionsType['stdin']
-		: FdNumber extends '1' ? OptionsType['stdout']
-			: FdNumber extends '2' ? OptionsType['stderr']
-				: undefined;
+	: FdNumber extends keyof StreamOptionsNames
+		? StreamOptionsNames[FdNumber] extends keyof OptionsType
+			? OptionsType[StreamOptionsNames[FdNumber]] extends undefined
+				? StdioProperty<FdNumber, OptionsType>
+				: OptionsType[StreamOptionsNames[FdNumber]]
+			: StdioProperty<FdNumber, OptionsType>
+		: StdioProperty<FdNumber, OptionsType>;
+
+type StreamOptionsNames = ['stdin', 'stdout', 'stderr'];
 
 // `options.stdio[FdNumber]`
 type StdioProperty<
@@ -249,7 +255,9 @@ type StdioOptionProperty<
 	: StdioOptionsType extends StdioOptionsArray
 		? FdNumber extends keyof StdioOptionsType
 			? StdioOptionsType[FdNumber]
-			: undefined
+			: StdioArrayOption extends StdioOptionsType
+				? StdioOptionsType[number]
+				: undefined
 		: undefined;
 
 // Type of `result.stdout|stderr`
@@ -304,22 +312,24 @@ type MapStdioOptions<
 	StdioOptionsArrayType extends StdioOptionsArray,
 	OptionsType extends CommonOptions = CommonOptions,
 > = {
-	[FdNumber in keyof StdioOptionsArrayType]: StdioOutput<
+	-readonly [FdNumber in keyof StdioOptionsArrayType]: StdioOutput<
 	FdNumber extends string ? FdNumber : string,
 	OptionsType
 	>
 };
 
 // `stdio` option
-type StdioArrayOption<OptionsType extends CommonOptions = CommonOptions> = OptionsType['stdio'] extends StdioOptionsArray
-	? OptionsType['stdio']
-	: OptionsType['stdio'] extends StdinOptionCommon
-		? OptionsType['stdio'] extends StdoutStderrOptionCommon
-			? [OptionsType['stdio'], OptionsType['stdio'], OptionsType['stdio']]
+type StdioArrayOption<OptionsType extends CommonOptions = CommonOptions> = StdioArrayOptionValue<OptionsType['stdio']>;
+
+type StdioArrayOptionValue<StdioOption extends CommonOptions['stdio'] = CommonOptions['stdio']> = StdioOption extends StdioOptionsArray
+	? StdioOption
+	: StdioOption extends StdinOptionCommon
+		? StdioOption extends StdoutStderrOptionCommon
+			? readonly [StdioOption, StdioOption, StdioOption]
 			: DefaultStdio
 		: DefaultStdio;
 
-type DefaultStdio = ['pipe', 'pipe', 'pipe'];
+type DefaultStdio = readonly ['pipe', 'pipe', 'pipe'];
 
 type StricterOptions<
 	WideOptions extends CommonOptions,
@@ -368,7 +378,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
 	*/
-	readonly nodeOptions?: string[];
+	readonly nodeOptions?: readonly string[];
 
 	/**
 	Write some input to the subprocess' `stdin`.
@@ -1164,10 +1174,10 @@ ExecaResultPromise<OptionsType> &
 Promise<ExecaResult<OptionsType>>;
 
 type TemplateExpression = string | number | CommonResultInstance
-| Array<string | number | CommonResultInstance>;
+| ReadonlyArray<string | number | CommonResultInstance>;
 
-type TemplateString = [TemplateStringsArray, ...readonly TemplateExpression[]];
-type SimpleTemplateString = [TemplateStringsArray, string?];
+type TemplateString = readonly [TemplateStringsArray, ...readonly TemplateExpression[]];
+type SimpleTemplateString = readonly [TemplateStringsArray, string?];
 
 type Execa<OptionsType extends Options> = {
 	<NewOptionsType extends Options = {}>(options: NewOptionsType): Execa<OptionsType & NewOptionsType>;

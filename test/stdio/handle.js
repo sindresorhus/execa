@@ -63,16 +63,21 @@ test('stdio[*] can be ["inherit"]', testNoPipeOption, ['inherit'], 3);
 test('stdio[*] can be 3', testNoPipeOption, 3, 3);
 test('stdio[*] can be [3]', testNoPipeOption, [3], 3);
 
-const testNoIpcSync = (t, fdNumber) => {
-	t.throws(() => {
-		execaSync('empty.js', getStdio(fdNumber, 'ipc'));
-	}, {message: /cannot be "ipc" with synchronous methods/});
+const testInvalidValueSync = (t, fdNumber, stdioOption) => {
+	const {message} = t.throws(() => {
+		execaSync('empty.js', getStdio(fdNumber, stdioOption));
+	});
+	t.true(message.includes(`cannot be "${stdioOption}" with synchronous methods`));
 };
 
-test('stdin cannot be "ipc", sync', testNoIpcSync, 0);
-test('stdout cannot be "ipc", sync', testNoIpcSync, 1);
-test('stderr cannot be "ipc", sync', testNoIpcSync, 2);
-test('stdio[*] cannot be "ipc", sync', testNoIpcSync, 3);
+test('stdin cannot be "ipc", sync', testInvalidValueSync, 0, 'ipc');
+test('stdout cannot be "ipc", sync', testInvalidValueSync, 1, 'ipc');
+test('stderr cannot be "ipc", sync', testInvalidValueSync, 2, 'ipc');
+test('stdio[*] cannot be "ipc", sync', testInvalidValueSync, 3, 'ipc');
+test('stdin cannot be "overlapped", sync', testInvalidValueSync, 0, 'overlapped');
+test('stdout cannot be "overlapped", sync', testInvalidValueSync, 1, 'overlapped');
+test('stderr cannot be "overlapped", sync', testInvalidValueSync, 2, 'overlapped');
+test('stdio[*] cannot be "overlapped", sync', testInvalidValueSync, 3, 'overlapped');
 
 const testInvalidArrayValue = (t, invalidStdio, fdNumber, execaMethod) => {
 	t.throws(() => {

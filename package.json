@@ -67,6 +67,7 @@
 		"get-node": "^15.0.0",
 		"is-running": "^2.1.0",
 		"p-event": "^6.0.0",
+		"path-exists": "^5.0.0",
 		"path-key": "^4.0.0",
 		"tempfile": "^5.0.0",
 		"tsd": "^0.29.0",

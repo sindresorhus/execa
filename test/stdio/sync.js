@@ -55,3 +55,4 @@ const testFd3InputSync = (t, stdioOption, expectedMessage) => {
 };
 
 test('Cannot use Uint8Array with stdio[*], sync', testFd3InputSync, new Uint8Array(), getFd3InputMessage('a Uint8Array'));
+test('Cannot use iterable with stdio[*], sync', testFd3InputSync, [[]], getFd3InputMessage('an iterable'));

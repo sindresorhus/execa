@@ -9,15 +9,18 @@ type Unless<Condition extends boolean, ThenValue, ElseValue = never> = Condition
 
 type AndUnless<Condition extends boolean, ThenValue, ElseValue = unknown> = Condition extends true ? ElseValue : ThenValue;
 
+type IsMainFd<FdNumber extends string> = FdNumber extends keyof StreamOptionsNames ? true : false;
+
 // When the `stdin`/`stdout`/`stderr`/`stdio` option is set to one of those values, no stream is created
-type NoStreamStdioOption =
+type NoStreamStdioOption<FdNumber extends string> =
 	| 'ignore'
 	| 'inherit'
 	| 'ipc'
 	| number
 	| Readable
 	| Writable
-	| [NoStreamStdioOption];
+	| Unless<IsMainFd<FdNumber>, undefined>
+	| readonly [NoStreamStdioOption<FdNumber>];
 
 type BaseStdioOption<
 	IsSync extends boolean = boolean,
@@ -198,10 +201,13 @@ type DuplexObjectMode<OutputOption extends DuplexTransform> = OutputOption['obje
 type IgnoresStreamResult<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = IgnoresStdioResult<StreamOption<FdNumber, OptionsType>>;
+> = IgnoresStdioResult<FdNumber, StreamOption<FdNumber, OptionsType>>;
 
 // Whether `result.stdio[*]` is `undefined`
-type IgnoresStdioResult<StdioOptionType extends StdioOptionCommon> = StdioOptionType extends NoStreamStdioOption ? true : false;
+type IgnoresStdioResult<
+	FdNumber extends string,
+	StdioOptionType extends StdioOptionCommon,
+> = StdioOptionType extends NoStreamStdioOption<FdNumber> ? true : false;
 
 // Whether `result.stdout|stderr|all` is `undefined`
 type IgnoresStreamOutput<

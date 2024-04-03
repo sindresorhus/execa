@@ -162,8 +162,7 @@ const preserveNewlinesOnly = {preserveNewlines: true} as const;
 const objectModeOnly = {objectMode: true} as const;
 const finalOnly = {final: unknownFinal} as const;
 
-type AnySyncChunk = string | Uint8Array | unknown[] | undefined;
-type AnyChunk = AnySyncChunk | string[];
+type AnyChunk = string | Uint8Array | string[] | unknown[] | undefined;
 expectType<Writable | null>({} as ExecaSubprocess['stdin']);
 expectType<Readable | null>({} as ExecaSubprocess['stdout']);
 expectType<Readable | null>({} as ExecaSubprocess['stderr']);
@@ -172,9 +171,9 @@ expectType<AnyChunk>({} as ExecaResult['stdout']);
 expectType<AnyChunk>({} as ExecaResult['stderr']);
 expectType<AnyChunk>({} as ExecaResult['all']);
 expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaResult['stdio']);
-expectType<AnySyncChunk>({} as ExecaSyncResult['stdout']);
-expectType<AnySyncChunk>({} as ExecaSyncResult['stderr']);
-expectAssignable<[undefined, AnySyncChunk, AnySyncChunk, ...AnySyncChunk[]]>({} as ExecaSyncResult['stdio']);
+expectType<AnyChunk>({} as ExecaSyncResult['stdout']);
+expectType<AnyChunk>({} as ExecaSyncResult['stderr']);
+expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaSyncResult['stdio']);
 
 try {
 	const execaPromise = execa('unicorns', {all: true});
@@ -1123,6 +1122,18 @@ try {
 	expectType<Uint8Array>(bufferResult.stdio[2]);
 	expectError(bufferResult.all.toString());
 
+	const linesResult = execaSync('unicorns', {lines: true});
+	expectType<string[]>(linesResult.stdout);
+	expectType<string[]>(linesResult.stderr);
+
+	const linesBufferResult = execaSync('unicorns', {lines: true, encoding: 'buffer'});
+	expectType<Uint8Array>(linesBufferResult.stdout);
+	expectType<Uint8Array>(linesBufferResult.stderr);
+
+	const linesHexResult = execaSync('unicorns', {lines: true, encoding: 'hex'});
+	expectType<string>(linesHexResult.stdout);
+	expectType<string>(linesHexResult.stderr);
+
 	const ignoreStdoutResult = execaSync('unicorns', {stdout: 'ignore'});
 	expectType<undefined>(ignoreStdoutResult.stdout);
 	expectType<undefined>(ignoreStdoutResult.stdio[1]);
@@ -1189,6 +1200,14 @@ try {
 	expectType<Uint8Array>(execaBufferError.stderr);
 	expectType<Uint8Array>(execaBufferError.stdio[2]);
 	expectError(execaBufferError.all.toString());
+
+	const execaLinesError = error as ExecaSyncError<{lines: true}>;
+	expectType<string[]>(execaLinesError.stdout);
+	expectType<string[]>(execaLinesError.stderr);
+
+	const execaLinesBufferError = error as ExecaSyncError<{lines: true; encoding: 'buffer'}>;
+	expectType<Uint8Array>(execaLinesBufferError.stdout);
+	expectType<Uint8Array>(execaLinesBufferError.stderr);
 
 	const ignoreStdoutError = error as ExecaSyncError<{stdout: 'ignore'}>;
 	expectType<undefined>(ignoreStdoutError.stdout);
@@ -1281,7 +1300,7 @@ execaSync('unicorns', {inputFile: fileUrl});
 expectError(execa('unicorns', {inputFile: false}));
 expectError(execaSync('unicorns', {inputFile: false}));
 execa('unicorns', {lines: false});
-expectError(execaSync('unicorns', {lines: false}));
+execaSync('unicorns', {lines: false});
 expectError(execa('unicorns', {lines: 'false'}));
 expectError(execaSync('unicorns', {lines: 'false'}));
 execa('unicorns', {reject: false});

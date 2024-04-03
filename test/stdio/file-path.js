@@ -298,6 +298,30 @@ test('stderr can use generators together with output file URLs, sync', testOutpu
 test('stdio[*] can use generators together with output file paths, sync', testOutputFileTransform, 3, getAbsolutePath, execaSync);
 test('stdio[*] can use generators together with output file URLs, sync', testOutputFileTransform, 3, pathToFileURL, execaSync);
 
+const testOutputFileLines = async (t, fdNumber, mapFile, execaMethod) => {
+	const filePath = tempfile();
+	const {stdio} = await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], {
+		...getStdio(fdNumber, mapFile(filePath)),
+		lines: true,
+	});
+	t.deepEqual(stdio[fdNumber], [foobarString]);
+	t.is(await readFile(filePath, 'utf8'), foobarString);
+	await rm(filePath);
+};
+
+test('stdout can use "lines: true" together with output file paths', testOutputFileLines, 1, getAbsolutePath, execa);
+test('stdout can use "lines: true" together with output file URLs', testOutputFileLines, 1, pathToFileURL, execa);
+test('stderr can use "lines: true" together with output file paths', testOutputFileLines, 2, getAbsolutePath, execa);
+test('stderr can use "lines: true" together with output file URLs', testOutputFileLines, 2, pathToFileURL, execa);
+test('stdio[*] can use "lines: true" together with output file paths', testOutputFileLines, 3, getAbsolutePath, execa);
+test('stdio[*] can use "lines: true" together with output file URLs', testOutputFileLines, 3, pathToFileURL, execa);
+test('stdout can use "lines: true" together with output file paths, sync', testOutputFileLines, 1, getAbsolutePath, execaSync);
+test('stdout can use "lines: true" together with output file URLs, sync', testOutputFileLines, 1, pathToFileURL, execaSync);
+test('stderr can use "lines: true" together with output file paths, sync', testOutputFileLines, 2, getAbsolutePath, execaSync);
+test('stderr can use "lines: true" together with output file URLs, sync', testOutputFileLines, 2, pathToFileURL, execaSync);
+test('stdio[*] can use "lines: true" together with output file paths, sync', testOutputFileLines, 3, getAbsolutePath, execaSync);
+test('stdio[*] can use "lines: true" together with output file URLs, sync', testOutputFileLines, 3, pathToFileURL, execaSync);
+
 const testOutputFileObject = async (t, fdNumber, mapFile, execaMethod) => {
 	const filePath = tempfile();
 	t.throws(() => {

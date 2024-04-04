@@ -27,3 +27,16 @@ export const assertEpipe = (t, stderr, fdNumber = 1) => {
 		t.true(stderr.includes('EPIPE'));
 	}
 };
+
+export const parseStdioOption = stdioOption => {
+	const optionValue = JSON.parse(stdioOption);
+	if (typeof optionValue === 'string' && optionValue in process) {
+		return process[optionValue];
+	}
+
+	if (Array.isArray(optionValue) && typeof optionValue[0] === 'string' && optionValue[0] in process) {
+		return [process[optionValue[0]], ...optionValue.slice(1)];
+	}
+
+	return optionValue;
+};

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
+import {parseStdioOption} from '../helpers/stdio.js';
 
-const [options] = process.argv.slice(2);
-const subprocess = execa('stdin.js', {stdin: JSON.parse(options)});
-subprocess.stdin.write(foobarString);
-const {stdout} = await subprocess;
-console.log(stdout);
+const [stdioOption, isSyncString] = process.argv.slice(2);
+const stdin = parseStdioOption(stdioOption);
+const execaMethod = isSyncString === 'true' ? execaSync : execa;
+await execaMethod('stdin.js', {input: foobarString, stdin, stdout: 'inherit'});

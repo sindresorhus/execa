@@ -1,6 +1,8 @@
 import {type ChildProcess} from 'node:child_process';
 import {type Readable, type Writable, type Duplex} from 'node:stream';
 
+type Not<Value extends boolean> = Value extends true ? false : true;
+
 type And<First extends boolean, Second extends boolean> = First extends true ? Second : false;
 
 type Or<First extends boolean, Second extends boolean> = First extends true ? true : Second;
@@ -23,12 +25,13 @@ type NoStreamStdioOption<FdNumber extends string> =
 	| readonly [NoStreamStdioOption<FdNumber>];
 
 type BaseStdioOption<
-	IsSync extends boolean = boolean,
-	IsArray extends boolean = boolean,
+	IsSync extends boolean,
+	IsExtra extends boolean,
+	IsArray extends boolean,
 > =
 	| 'pipe'
 	| undefined
-	| Unless<And<IsSync, IsArray>, 'inherit'>
+	| Unless<And<And<Not<IsSync>, IsArray>, IsExtra>, 'inherit'>
 	| Unless<IsArray, 'ignore'>
 	| Unless<IsSync, 'overlapped'>;
 
@@ -60,40 +63,41 @@ type WebTransform = {
 };
 
 type CommonStdioOption<
-	IsSync extends boolean = boolean,
-	IsArray extends boolean = boolean,
+	IsSync extends boolean,
+	IsExtra extends boolean,
+	IsArray extends boolean,
 > =
-	| BaseStdioOption<IsSync, IsArray>
+	| BaseStdioOption<IsSync, IsExtra, IsArray>
 	| URL
 	| {file: string}
 	| GeneratorTransform<IsSync>
 	| GeneratorTransformFull<IsSync>
-	| Unless<And<IsSync, IsArray>, number>
+	| Unless<And<Not<IsSync>, IsArray>, number>
 	| Unless<Or<IsSync, IsArray>, 'ipc'>
-	| Unless<IsSync,
-	| DuplexTransform
-	| WebTransform
-	| TransformStream>;
+	| Unless<IsSync, DuplexTransform | WebTransform | TransformStream>;
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
-type IterableObject<IsArray extends boolean = boolean> = Iterable<unknown>
+type IterableObject<IsArray extends boolean> = Iterable<unknown>
 & object
 & {readonly BYTES_PER_ELEMENT?: never}
 & AndUnless<IsArray, {readonly lastIndexOf?: never}>;
 
 type InputStdioOption<
-	IsSync extends boolean = boolean,
-	IsExtra extends boolean = boolean,
-	IsArray extends boolean = boolean,
+	IsSync extends boolean,
+	IsExtra extends boolean,
+	IsArray extends boolean,
 > =
+	| 0
 	| Unless<And<IsSync, IsExtra>, Uint8Array | IterableObject<IsArray>>
 	| Unless<And<IsSync, IsArray>, Readable>
 	| Unless<IsSync, AsyncIterable<unknown> | ReadableStream>;
 
 type OutputStdioOption<
-	IsSync extends boolean = boolean,
-	IsArray extends boolean = boolean,
+	IsSync extends boolean,
+	IsArray extends boolean,
 > =
+	| 1
+	| 2
 	| Unless<And<IsSync, IsArray>, Writable>
 	| Unless<IsSync, WritableStream>;
 
@@ -102,7 +106,7 @@ type StdinSingleOption<
 	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
 > =
-	| CommonStdioOption<IsSync, IsArray>
+	| CommonStdioOption<IsSync, IsExtra, IsArray>
 	| InputStdioOption<IsSync, IsExtra, IsArray>;
 
 type StdinOptionCommon<
@@ -117,21 +121,25 @@ export type StdinOptionSync = StdinOptionCommon<true, false>;
 
 type StdoutStderrSingleOption<
 	IsSync extends boolean = boolean,
+	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
 > =
-  | CommonStdioOption<IsSync, IsArray>
+  | CommonStdioOption<IsSync, IsExtra, IsArray>
   | OutputStdioOption<IsSync, IsArray>;
 
-type StdoutStderrOptionCommon<IsSync extends boolean = boolean> =
-	| StdoutStderrSingleOption<IsSync, false>
-	| ReadonlyArray<StdoutStderrSingleOption<IsSync, true>>;
+type StdoutStderrOptionCommon<
+	IsSync extends boolean = boolean,
+	IsExtra extends boolean = boolean,
+> =
+	| StdoutStderrSingleOption<IsSync, IsExtra, false>
+	| ReadonlyArray<StdoutStderrSingleOption<IsSync, IsExtra, true>>;
 
-export type StdoutStderrOption = StdoutStderrOptionCommon<false>;
-export type StdoutStderrOptionSync = StdoutStderrOptionCommon<true>;
+export type StdoutStderrOption = StdoutStderrOptionCommon<false, false>;
+export type StdoutStderrOptionSync = StdoutStderrOptionCommon<true, false>;
 
 type StdioExtraOptionCommon<IsSync extends boolean = boolean> =
 	| StdinOptionCommon<IsSync, true>
-	| StdoutStderrOptionCommon<IsSync>;
+	| StdoutStderrOptionCommon<IsSync, true>;
 
 type StdioSingleOption<
 	IsSync extends boolean = boolean,
@@ -139,7 +147,7 @@ type StdioSingleOption<
 	IsArray extends boolean = boolean,
 > =
 	| StdinSingleOption<IsSync, IsExtra, IsArray>
-	| StdoutStderrSingleOption<IsSync, IsArray>;
+	| StdoutStderrSingleOption<IsSync, IsExtra, IsArray>;
 
 type StdioOptionCommon<IsSync extends boolean = boolean> =
 	| StdinOptionCommon<IsSync>
@@ -150,12 +158,14 @@ export type StdioOptionSync = StdioOptionCommon<true>;
 
 type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 	StdinOptionCommon<IsSync, false>,
-	StdoutStderrOptionCommon<IsSync>,
-	StdoutStderrOptionCommon<IsSync>,
+	StdoutStderrOptionCommon<IsSync, false>,
+	StdoutStderrOptionCommon<IsSync, false>,
 	...ReadonlyArray<StdioExtraOptionCommon<IsSync>>,
 ];
 
-type StdioOptions<IsSync extends boolean = boolean> = BaseStdioOption<IsSync> | StdioOptionsArray<IsSync>;
+type StdioOptions<IsSync extends boolean = boolean> =
+	| BaseStdioOption<IsSync, false, false>
+	| StdioOptionsArray<IsSync>;
 
 type DefaultEncodingOption = 'utf8';
 type TextEncodingOption =
@@ -835,7 +845,7 @@ declare abstract class CommonResult<
 
 	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
-	all: Unless<IsSync, AllOutput<OptionsType>>;
+	all: Unless<IsSync, AllOutput<StricterOptions<OptionsType, Options>>>;
 
 	/**
 	Results of the other subprocesses that were piped into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
@@ -1409,7 +1419,7 @@ Same as `execa()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1523,7 +1533,7 @@ Same as `execaCommand()` but synchronous.
 
 Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
 
-Cannot use the following options: `all`, `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be a `['pipe', 'inherit']` array, [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+Cannot use the following options: `all`, `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

@@ -6,7 +6,7 @@ import tempfile from 'tempfile';
 import {red} from 'yoctocolors';
 import {execa} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {foobarString, foobarObject} from '../helpers/input.js';
+import {foobarString, foobarObject, foobarUppercase} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {
 	nestedExeca,
@@ -237,11 +237,25 @@ test('Prints stdout, stdout "pipe"', testPrintOutputOptions, {stdout: 'pipe'}, n
 test('Prints stdout, stdout "overlapped"', testPrintOutputOptions, {stdout: 'overlapped'}, nestedExecaAsync);
 test('Prints stdout, stdout null', testPrintOutputOptions, {stdout: null}, nestedExecaAsync);
 test('Prints stdout, stdout ["pipe"]', testPrintOutputOptions, {stdout: ['pipe']}, nestedExecaAsync);
-test('Prints stdout, buffer false', testPrintOutputOptions, {buffer: false}, nestedExecaAsync);
 test('Prints stdout, stdout "pipe", sync', testPrintOutputOptions, {stdout: 'pipe'}, nestedExecaSync);
 test('Prints stdout, stdout null, sync', testPrintOutputOptions, {stdout: null}, nestedExecaSync);
 test('Prints stdout, stdout ["pipe"], sync', testPrintOutputOptions, {stdout: ['pipe']}, nestedExecaSync);
-test('Prints stdout, buffer false, sync', testPrintOutputOptions, {buffer: false}, nestedExecaSync);
+
+const testPrintOutputNoBuffer = async (t, execaMethod) => {
+	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'full', buffer: false});
+	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
+};
+
+test('Prints stdout, buffer: false', testPrintOutputNoBuffer, nestedExecaAsync);
+test('Prints stdout, buffer: false, sync', testPrintOutputNoBuffer, nestedExecaSync);
+
+const testPrintOutputNoBufferTransform = async (t, isSync) => {
+	const {stderr} = await nestedExeca('nested-transform.js', 'noop.js', [foobarString], {verbose: 'full', buffer: false, type: 'generator', isSync});
+	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarUppercase}`);
+};
+
+test('Prints stdout, buffer: false, transform', testPrintOutputNoBufferTransform, false);
+test('Prints stdout, buffer: false, transform, sync', testPrintOutputNoBufferTransform, true);
 
 const testPrintOutputFixture = async (t, fixtureName, ...args) => {
 	const {stderr} = await nestedExeca(fixtureName, 'noop.js', [foobarString, ...args], {verbose: 'full'});

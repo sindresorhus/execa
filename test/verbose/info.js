@@ -1,6 +1,6 @@
 import test from 'ava';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 import {
 	QUOTE,
@@ -14,8 +14,8 @@ import {
 
 setFixtureDir();
 
-test('Prints command, NODE_DEBUG=execa + "inherit"', async t => {
-	const {all} = await execa('verbose-script.js', {env: {NODE_DEBUG: 'execa'}, all: true});
+const testVerboseGeneral = async (t, execaMethod) => {
+	const {all} = await execaMethod('verbose-script.js', {env: {NODE_DEBUG: 'execa'}, all: true});
 	t.deepEqual(getNormalizedLines(all), [
 		`${testTimestamp} [0] $ node -e ${QUOTE}console.error(1)${QUOTE}`,
 		'1',
@@ -24,7 +24,10 @@ test('Prints command, NODE_DEBUG=execa + "inherit"', async t => {
 		`${testTimestamp} [1] ‼ Command failed with exit code 2: node -e ${QUOTE}process.exit(2)${QUOTE}`,
 		`${testTimestamp} [1] ‼ (done in 0ms)`,
 	]);
-});
+};
+
+test('Prints command, NODE_DEBUG=execa + "inherit"', testVerboseGeneral, execa);
+test('Prints command, NODE_DEBUG=execa + "inherit", sync', testVerboseGeneral, execaSync);
 
 test('NODE_DEBUG=execa changes verbose default value to "full"', async t => {
 	const {stderr} = await nestedExecaAsync('noop.js', [foobarString], {}, {env: {NODE_DEBUG: 'execa'}});

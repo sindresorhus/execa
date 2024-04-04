@@ -66,14 +66,17 @@ const testUndefinedErrorStdio = async (t, execaMethod) => {
 test('undefined error.stdout/stderr/stdio', testUndefinedErrorStdio, execa);
 test('undefined error.stdout/stderr/stdio - sync', testUndefinedErrorStdio, execaSync);
 
-const testEmptyAll = async (t, options, expectedValue) => {
-	const {all} = await t.throwsAsync(execa('fail.js', options));
+const testEmptyAll = async (t, options, expectedValue, execaMethod) => {
+	const {all} = await execaMethod('empty.js', options);
 	t.is(all, expectedValue);
 };
 
-test('empty error.all', testEmptyAll, {all: true}, '');
-test('undefined error.all', testEmptyAll, {}, undefined);
-test('ignored error.all', testEmptyAll, {all: true, stdio: 'ignore'}, undefined);
+test('empty error.all', testEmptyAll, {all: true}, '', execa);
+test('undefined error.all', testEmptyAll, {}, undefined, execa);
+test('ignored error.all', testEmptyAll, {all: true, stdio: 'ignore'}, undefined, execa);
+test('empty error.all, sync', testEmptyAll, {all: true}, '', execaSync);
+test('undefined error.all, sync', testEmptyAll, {}, undefined, execaSync);
+test('ignored error.all, sync', testEmptyAll, {all: true, stdio: 'ignore'}, undefined, execaSync);
 
 test('empty error.stdio[0] even with input', async t => {
 	const {stdio} = await t.throwsAsync(execa('fail.js', {input: 'test'}));
@@ -83,23 +86,17 @@ test('empty error.stdio[0] even with input', async t => {
 // `error.code` is OS-specific here
 const SPAWN_ERROR_CODES = new Set(['EINVAL', 'ENOTSUP', 'EPERM']);
 
-test('stdout/stderr/stdio on subprocess spawning errors', async t => {
-	const {code, stdout, stderr, stdio} = await t.throwsAsync(execa('empty.js', {uid: -1}));
+const testSpawnError = async (t, execaMethod) => {
+	const {code, stdout, stderr, stdio, all} = await execaMethod('empty.js', {uid: -1, all: true, reject: false});
 	t.true(SPAWN_ERROR_CODES.has(code));
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
+	t.is(all, undefined);
 	t.deepEqual(stdio, [undefined, undefined, undefined]);
-});
+};
 
-test('stdout/stderr/all/stdio on subprocess spawning errors - sync', t => {
-	const {code, stdout, stderr, stdio} = t.throws(() => {
-		execaSync('empty.js', {uid: -1});
-	});
-	t.true(SPAWN_ERROR_CODES.has(code));
-	t.is(stdout, undefined);
-	t.is(stderr, undefined);
-	t.deepEqual(stdio, [undefined, undefined, undefined]);
-});
+test('stdout/stderr/all/stdio on subprocess spawning errors', testSpawnError, execa);
+test('stdout/stderr/all/stdio on subprocess spawning errors - sync', testSpawnError, execaSync);
 
 const testErrorOutput = async (t, execaMethod) => {
 	const {failed, stdout, stderr, stdio} = await execaMethod('echo-fail.js', {...fullStdio, reject: false});

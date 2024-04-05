@@ -1,5 +1,6 @@
 import {text} from 'node:stream/consumers';
 import {finished} from 'node:stream/promises';
+import getStream from 'get-stream';
 import isPlainObj from 'is-plain-obj';
 import {execa} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
@@ -33,6 +34,10 @@ export const assertProcessNormalExit = (t, error, exitCode = 0) => {
 
 export const assertStreamOutput = async (t, stream, expectedOutput = foobarString) => {
 	t.is(await text(stream), expectedOutput);
+};
+
+export const assertStreamDataEvents = async (t, stream, expectedOutput = foobarString) => {
+	t.is(await getStream(stream), expectedOutput);
 };
 
 export const assertIterableChunks = async (t, asyncIterable, expectedChunks) => {

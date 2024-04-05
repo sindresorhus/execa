@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-console.log('stdout');
-console.error('stderr');
+console.log('std\nout');
+console.error('std\nerr');

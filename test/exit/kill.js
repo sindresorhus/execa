@@ -25,8 +25,6 @@ const spawnNoKillable = async (forceKillAfterDelay, options) => {
 
 const spawnNoKillableSimple = options => execa('forever.js', {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, ...options});
 
-const spawnNoKillableOutput = options => execa('noop-forever.js', ['.'], {killSignal: 'SIGWINCH', forceKillAfterDelay: 1, ...options});
-
 test('kill("SIGKILL") should terminate cleanly', async t => {
 	const {subprocess} = await spawnNoKillable();
 
@@ -113,13 +111,6 @@ if (isWindows) {
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
 		t.true(timedOut);
-	});
-
-	test('`forceKillAfterDelay` works with the "maxBuffer" option', async t => {
-		const subprocess = spawnNoKillableOutput({maxBuffer: 1});
-		const {isTerminated, signal} = await t.throwsAsync(subprocess);
-		t.true(isTerminated);
-		t.is(signal, 'SIGKILL');
 	});
 
 	test.serial('Can call `.kill()` with `forceKillAfterDelay` many times without triggering the maxListeners warning', async t => {

@@ -99,11 +99,14 @@ const testGeneratorInputPipe = async (t, useShortcutProperty, objectMode, addNoo
 	const stream = useShortcutProperty ? subprocess.stdin : subprocess.stdio[0];
 	stream.end(...input);
 	const {stdout} = await subprocess;
-	t.is(stdout, output);
+	const expectedOutput = input[1] === 'utf16le' ? Buffer.from(output, input[1]).toString() : output;
+	t.is(stdout, expectedOutput);
 };
 
 test('Can use generators with subprocess.stdio[0] and default encoding', testGeneratorInputPipe, false, false, false, 'generator', [foobarString, 'utf8']);
 test('Can use generators with subprocess.stdin and default encoding', testGeneratorInputPipe, true, false, false, 'generator', [foobarString, 'utf8']);
+test('Can use generators with subprocess.stdio[0] and encoding "utf16le"', testGeneratorInputPipe, false, false, false, 'generator', [foobarString, 'utf16le']);
+test('Can use generators with subprocess.stdin and encoding "utf16le"', testGeneratorInputPipe, true, false, false, 'generator', [foobarString, 'utf16le']);
 test('Can use generators with subprocess.stdio[0] and encoding "buffer"', testGeneratorInputPipe, false, false, false, 'generator', [foobarBuffer, 'buffer']);
 test('Can use generators with subprocess.stdin and encoding "buffer"', testGeneratorInputPipe, true, false, false, 'generator', [foobarBuffer, 'buffer']);
 test('Can use generators with subprocess.stdio[0] and encoding "hex"', testGeneratorInputPipe, false, false, false, 'generator', [foobarHex, 'hex']);
@@ -112,6 +115,8 @@ test('Can use generators with subprocess.stdio[0], objectMode', testGeneratorInp
 test('Can use generators with subprocess.stdin, objectMode', testGeneratorInputPipe, true, true, false, 'generator', [foobarObject]);
 test('Can use generators with subprocess.stdio[0] and default encoding, noop transform', testGeneratorInputPipe, false, false, true, 'generator', [foobarString, 'utf8']);
 test('Can use generators with subprocess.stdin and default encoding, noop transform', testGeneratorInputPipe, true, false, true, 'generator', [foobarString, 'utf8']);
+test('Can use generators with subprocess.stdio[0] and encoding "utf16le", noop transform', testGeneratorInputPipe, false, false, true, 'generator', [foobarString, 'utf16le']);
+test('Can use generators with subprocess.stdin and encoding "utf16le", noop transform', testGeneratorInputPipe, true, false, true, 'generator', [foobarString, 'utf16le']);
 test('Can use generators with subprocess.stdio[0] and encoding "buffer", noop transform', testGeneratorInputPipe, false, false, true, 'generator', [foobarBuffer, 'buffer']);
 test('Can use generators with subprocess.stdin and encoding "buffer", noop transform', testGeneratorInputPipe, true, false, true, 'generator', [foobarBuffer, 'buffer']);
 test('Can use generators with subprocess.stdio[0] and encoding "hex", noop transform', testGeneratorInputPipe, false, false, true, 'generator', [foobarHex, 'hex']);
@@ -120,6 +125,8 @@ test('Can use generators with subprocess.stdio[0], objectMode, noop transform', 
 test('Can use generators with subprocess.stdin, objectMode, noop transform', testGeneratorInputPipe, true, true, true, 'generator', [foobarObject]);
 test('Can use duplexes with subprocess.stdio[0] and default encoding', testGeneratorInputPipe, false, false, false, 'duplex', [foobarString, 'utf8']);
 test('Can use duplexes with subprocess.stdin and default encoding', testGeneratorInputPipe, true, false, false, 'duplex', [foobarString, 'utf8']);
+test('Can use duplexes with subprocess.stdio[0] and encoding "utf16le"', testGeneratorInputPipe, false, false, false, 'duplex', [foobarString, 'utf16le']);
+test('Can use duplexes with subprocess.stdin and encoding "utf16le"', testGeneratorInputPipe, true, false, false, 'duplex', [foobarString, 'utf16le']);
 test('Can use duplexes with subprocess.stdio[0] and encoding "buffer"', testGeneratorInputPipe, false, false, false, 'duplex', [foobarBuffer, 'buffer']);
 test('Can use duplexes with subprocess.stdin and encoding "buffer"', testGeneratorInputPipe, true, false, false, 'duplex', [foobarBuffer, 'buffer']);
 test('Can use duplexes with subprocess.stdio[0] and encoding "hex"', testGeneratorInputPipe, false, false, false, 'duplex', [foobarHex, 'hex']);
@@ -128,6 +135,8 @@ test('Can use duplexes with subprocess.stdio[0], objectMode', testGeneratorInput
 test('Can use duplexes with subprocess.stdin, objectMode', testGeneratorInputPipe, true, true, false, 'duplex', [foobarObject]);
 test('Can use duplexes with subprocess.stdio[0] and default encoding, noop transform', testGeneratorInputPipe, false, false, true, 'duplex', [foobarString, 'utf8']);
 test('Can use duplexes with subprocess.stdin and default encoding, noop transform', testGeneratorInputPipe, true, false, true, 'duplex', [foobarString, 'utf8']);
+test('Can use duplexes with subprocess.stdio[0] and encoding "utf16le", noop transform', testGeneratorInputPipe, false, false, true, 'duplex', [foobarString, 'utf16le']);
+test('Can use duplexes with subprocess.stdin and encoding "utf16le", noop transform', testGeneratorInputPipe, true, false, true, 'duplex', [foobarString, 'utf16le']);
 test('Can use duplexes with subprocess.stdio[0] and encoding "buffer", noop transform', testGeneratorInputPipe, false, false, true, 'duplex', [foobarBuffer, 'buffer']);
 test('Can use duplexes with subprocess.stdin and encoding "buffer", noop transform', testGeneratorInputPipe, true, false, true, 'duplex', [foobarBuffer, 'buffer']);
 test('Can use duplexes with subprocess.stdio[0] and encoding "hex", noop transform', testGeneratorInputPipe, false, false, true, 'duplex', [foobarHex, 'hex']);
@@ -136,6 +145,8 @@ test('Can use duplexes with subprocess.stdio[0], objectMode, noop transform', te
 test('Can use duplexes with subprocess.stdin, objectMode, noop transform', testGeneratorInputPipe, true, true, true, 'duplex', [foobarObject]);
 test('Can use webTransforms with subprocess.stdio[0] and default encoding', testGeneratorInputPipe, false, false, false, 'webTransform', [foobarString, 'utf8']);
 test('Can use webTransforms with subprocess.stdin and default encoding', testGeneratorInputPipe, true, false, false, 'webTransform', [foobarString, 'utf8']);
+test('Can use webTransforms with subprocess.stdio[0] and encoding "utf16le"', testGeneratorInputPipe, false, false, false, 'webTransform', [foobarString, 'utf16le']);
+test('Can use webTransforms with subprocess.stdin and encoding "utf16le"', testGeneratorInputPipe, true, false, false, 'webTransform', [foobarString, 'utf16le']);
 test('Can use webTransforms with subprocess.stdio[0] and encoding "buffer"', testGeneratorInputPipe, false, false, false, 'webTransform', [foobarBuffer, 'buffer']);
 test('Can use webTransforms with subprocess.stdin and encoding "buffer"', testGeneratorInputPipe, true, false, false, 'webTransform', [foobarBuffer, 'buffer']);
 test('Can use webTransforms with subprocess.stdio[0] and encoding "hex"', testGeneratorInputPipe, false, false, false, 'webTransform', [foobarHex, 'hex']);
@@ -144,6 +155,8 @@ test('Can use webTransforms with subprocess.stdio[0], objectMode', testGenerator
 test('Can use webTransforms with subprocess.stdin, objectMode', testGeneratorInputPipe, true, true, false, 'webTransform', [foobarObject]);
 test('Can use webTransforms with subprocess.stdio[0] and default encoding, noop transform', testGeneratorInputPipe, false, false, true, 'webTransform', [foobarString, 'utf8']);
 test('Can use webTransforms with subprocess.stdin and default encoding, noop transform', testGeneratorInputPipe, true, false, true, 'webTransform', [foobarString, 'utf8']);
+test('Can use webTransforms with subprocess.stdio[0] and encoding "utf16le", noop transform', testGeneratorInputPipe, false, false, true, 'webTransform', [foobarString, 'utf16le']);
+test('Can use webTransforms with subprocess.stdin and encoding "utf16le", noop transform', testGeneratorInputPipe, true, false, true, 'webTransform', [foobarString, 'utf16le']);
 test('Can use webTransforms with subprocess.stdio[0] and encoding "buffer", noop transform', testGeneratorInputPipe, false, false, true, 'webTransform', [foobarBuffer, 'buffer']);
 test('Can use webTransforms with subprocess.stdin and encoding "buffer", noop transform', testGeneratorInputPipe, true, false, true, 'webTransform', [foobarBuffer, 'buffer']);
 test('Can use webTransforms with subprocess.stdio[0] and encoding "hex", noop transform', testGeneratorInputPipe, false, false, true, 'webTransform', [foobarHex, 'hex']);

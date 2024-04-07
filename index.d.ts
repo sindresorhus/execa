@@ -1417,9 +1417,18 @@ type ExecaSync<OptionsType extends SyncOptions> = {
 /**
 Same as `execa()` but synchronous.
 
-Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available.
 
-Cannot use the following options: `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. `result.all` is not interleaved. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+The following features cannot be used:
+- Streams: [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
+- The `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
+- Signal termination: [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`subprocess.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `cleanup` option, `cancelSignal` option, `forceKillAfterDelay` option.
+- Piping multiple processes: `subprocess.pipe()`.
+- `subprocess.iterable()`.
+- `ipc` and `serialization` options.
+- `result.all` is not interleaved.
+- `detached` option.
+- The `maxBuffer` option is always measured in bytes, not in characters, lines nor objects. Also, it ignores transforms and the `encoding` option.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
@@ -1531,9 +1540,18 @@ type ExecaCommandSync<OptionsType extends SyncOptions> = {
 /**
 Same as `execaCommand()` but synchronous.
 
-Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available. This includes [`.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `.pipe()`, `.iterable()`, `.readable()`, `.writable()`, `.duplex()` and the [`.stdin`/`.stdout`/`.stderr`](https://nodejs.org/api/child_process.html#subprocessstdout) streams.
+Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available.
 
-Cannot use the following options: `cleanup`, `detached`, `ipc`, `serialization`, `cancelSignal` and `forceKillAfterDelay`. `result.all` is not interleaved. Also, the `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, or a web stream. Node.js streams must have a file descriptor unless the `input` option is used.
+The following features cannot be used:
+- Streams: [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
+- The `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
+- Signal termination: [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`subprocess.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `cleanup` option, `cancelSignal` option, `forceKillAfterDelay` option.
+- Piping multiple processes: `subprocess.pipe()`.
+- `subprocess.iterable()`.
+- `ipc` and `serialization` options.
+- `result.all` is not interleaved.
+- `detached` option.
+- The `maxBuffer` option is always measured in bytes, not in characters, lines nor objects. Also, it ignores transforms and the `encoding` option.
 
 @param command - The program/script to execute and its arguments.
 @returns A `subprocessResult` object

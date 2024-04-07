@@ -153,27 +153,51 @@ const testMaxBuffer = async (t, type) => {
 	});
 	t.is(stdout, bigString);
 
-	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: generatorsMap[type].getOutput(`${bigString}.`)(false)}));
+	await t.throwsAsync(execa('noop.js', {
+		maxBuffer,
+		stdout: generatorsMap[type].getOutput(`${bigString}.`)(false, true),
+	}));
 };
 
 test('Generators take "maxBuffer" into account', testMaxBuffer, 'generator');
 test('Duplexes take "maxBuffer" into account', testMaxBuffer, 'duplex');
 test('WebTransforms take "maxBuffer" into account', testMaxBuffer, 'webTransform');
 
+test('Generators does not take "maxBuffer" into account, sync', t => {
+	const bigString = '.'.repeat(maxBuffer);
+	const {stdout} = execaSync('noop.js', {
+		maxBuffer,
+		stdout: generatorsMap.generator.getOutput(`${bigString}.`)(false, true),
+	});
+	t.is(stdout.length, maxBuffer + 1);
+});
+
 const testMaxBufferObject = async (t, type) => {
-	const bigArray = Array.from({length: maxBuffer}).fill('.');
+	const bigArray = Array.from({length: maxBuffer}).fill('..');
 	const {stdout} = await execa('noop.js', {
 		maxBuffer,
 		stdout: generatorsMap[type].getOutputs(bigArray)(true, true),
 	});
 	t.is(stdout.length, maxBuffer);
 
-	await t.throwsAsync(execa('noop.js', {maxBuffer, stdout: generatorsMap[type].getOutputs([...bigArray, ''])(true)}));
+	await t.throwsAsync(execa('noop.js', {
+		maxBuffer,
+		stdout: generatorsMap[type].getOutputs([...bigArray, ''])(true, true),
+	}));
 };
 
 test('Generators take "maxBuffer" into account, objectMode', testMaxBufferObject, 'generator');
 test('Duplexes take "maxBuffer" into account, objectMode', testMaxBufferObject, 'duplex');
 test('WebTransforms take "maxBuffer" into account, objectMode', testMaxBufferObject, 'webTransform');
+
+test('Generators does not take "maxBuffer" into account, objectMode, sync', t => {
+	const bigArray = Array.from({length: maxBuffer}).fill('..');
+	const {stdout} = execaSync('noop.js', {
+		maxBuffer,
+		stdout: generatorsMap.generator.getOutputs([...bigArray, ''])(true, true),
+	});
+	t.is(stdout.length, maxBuffer + 1);
+});
 
 const testAsyncGenerators = async (t, type, final) => {
 	const {stdout} = await execa('noop.js', {

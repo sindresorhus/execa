@@ -1635,6 +1635,19 @@ execaSync('unicorns', {buffer: {fd2: true}});
 execaSync('unicorns', {buffer: {fd3: true}});
 expectError(execaSync('unicorns', {buffer: {stdout: 'true'}}));
 
+expectType<string[]>(execaSync('unicorns', {lines: {stdout: true, fd1: false}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {stdout: true, all: false}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {fd1: true, all: false}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {stderr: true, fd2: false}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {stderr: true, all: false}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {fd2: true, all: false}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {fd1: false, stdout: true}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, stdout: true}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, fd1: true}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {fd2: false, stderr: true}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, stderr: true}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, fd2: true}}).stderr);
+
 const linesStdoutResult = await execa('unicorns', {all: true, lines: {stdout: true}});
 expectType<string[]>(linesStdoutResult.stdout);
 expectType<string[]>(linesStdoutResult.stdio[1]);

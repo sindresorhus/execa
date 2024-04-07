@@ -419,8 +419,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly inputFile?: string | URL;
 
 	/**
-	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard input. This can be:
-	- `'pipe'`: Sets [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin) stream.
+	How to setup the subprocess' standard input. This can be:
+	- `'pipe'`: Sets `subprocess.stdin` stream.
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdin`.
 	- `'inherit'`: Re-use the current process' `stdin`.
@@ -441,8 +441,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stdin?: StdinOptionCommon<IsSync>;
 
 	/**
-	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard output. This can be:
-	- `'pipe'`: Sets `result.stdout` (as a string or `Uint8Array`) and [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
+	How to setup the subprocess' standard output. This can be:
+	- `'pipe'`: Sets `result.stdout` (as a string or `Uint8Array`) and `subprocess.stdout` (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdout`.
 	- `'inherit'`: Re-use the current process' `stdout`.
@@ -461,8 +461,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stdout?: StdoutStderrOptionCommon<IsSync>;
 
 	/**
-	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard error. This can be:
-	- `'pipe'`: Sets `result.stderr` (as a string or `Uint8Array`) and [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
+	How to setup the subprocess' standard error. This can be:
+	- `'pipe'`: Sets `result.stderr` (as a string or `Uint8Array`) and `subprocess.stderr` (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stderr`.
 	- `'inherit'`: Re-use the current process' `stderr`.
@@ -609,7 +609,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Signal used to terminate the subprocess when:
 	- using the `cancelSignal`, `timeout`, `maxBuffer` or `cleanup` option
-	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
+	- calling `subprocess.kill()` with no arguments
 
 	This can be either a name (like `"SIGTERM"`) or a number (like `9`).
 
@@ -624,10 +624,10 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This works when the subprocess is terminated by either:
 	- the `cancelSignal`, `timeout`, `maxBuffer` or `cleanup` option
-	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with no arguments
+	- calling `subprocess.kill()` with no arguments
 
 	This does not work when the subprocess is terminated by either:
-	- calling [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal) with an argument
+	- calling `subprocess.kill()` with an argument
 	- calling [`process.kill(subprocess.pid)`](https://nodejs.org/api/process.html#processkillpid-signal)
 	- sending a termination signal from another process
 
@@ -667,8 +667,8 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	Kill the subprocess when the current process exits unless either:
-	- the subprocess is [`detached`](https://nodejs.org/api/child_process.html#child_process_options_detached)
-	- the current process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit
+	- the subprocess is `detached`.
+	- the current process is terminated abruptly, for example, with `SIGKILL` as opposed to `SIGTERM` or a normal exit.
 
 	@default true
 	*/
@@ -693,7 +693,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly all?: boolean;
 
 	/**
-	Enables exchanging messages with the subprocess using [`subprocess.send(value)`](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [`subprocess.on('message', (value) => {})`](https://nodejs.org/api/child_process.html#event-message).
+	Enables exchanging messages with the subprocess using `subprocess.send(message)` and `subprocess.on('message', (message) => {})`.
 
 	@default `true` if the `node` option is enabled, `false` otherwise
 	*/
@@ -711,7 +711,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly serialization?: Unless<IsSync, 'json' | 'advanced'>;
 
 	/**
-	Prepare subprocess to run independently of the current process. Specific behavior [depends on the platform](https://nodejs.org/api/child_process.html#child_process_options_detached).
+	Prepare subprocess to run independently of the current process. Specific behavior depends on the platform.
 
 	@default false
 	*/
@@ -803,21 +803,21 @@ declare abstract class CommonResult<
 	/**
 	The output of the subprocess on `stdout`.
 
-	This is `undefined` if the `stdout` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
+	This is `undefined` if the `stdout` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
 	*/
 	stdout: StdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the subprocess on `stderr`.
 
-	This is `undefined` if the `stderr` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
+	This is `undefined` if the `stderr` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
 	*/
 	stderr: StdioOutput<'2', OptionsType>;
 
 	/**
 	The output of the subprocess on `stdin`, `stdout`, `stderr` and other file descriptors.
 
-	Items are `undefined` when their corresponding `stdio` option is set to only [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio). Items are arrays when their corresponding `stdio` option is a transform in object mode.
+	Items are `undefined` when their corresponding `stdio` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
 	stdio: StdioArrayOutput<OptionsType>;
 
@@ -875,11 +875,11 @@ declare abstract class CommonResult<
 	isMaxBuffer: boolean;
 
 	/**
-	The output of the subprocess with `stdout` and `stderr` interleaved.
+	The output of the subprocess with `result.stdout` and `result.stderr` interleaved.
 
 	This is `undefined` if either:
-	- the `all` option is `false` (default value)
-	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+	- the `all` option is `false` (default value).
+	- both `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
 
 	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/
@@ -1016,6 +1016,21 @@ type SubprocessStream<
 > = StreamResultIgnored extends true
 	? null
 	: InputOutputStream<IsInputStdioDescriptor<FdNumber, OptionsType>>;
+
+// Type of `subprocess.stdio`
+type StdioArrayStreams<OptionsType extends Options = Options> = MapStdioStreams<StdioArrayOption<OptionsType>, OptionsType>;
+
+// We cannot use mapped types because it must be compatible with Node.js `ChildProcess["stdio"]` which uses a tuple with exactly 5 items
+type MapStdioStreams<
+	StdioOptionsArrayType extends StdioOptionsArray,
+	OptionsType extends Options = Options,
+> = [
+	StreamUnlessIgnored<'0', OptionsType>,
+	StreamUnlessIgnored<'1', OptionsType>,
+	StreamUnlessIgnored<'2', OptionsType>,
+	'3' extends keyof StdioOptionsArrayType ? StreamUnlessIgnored<'3', OptionsType> : never,
+	'4' extends keyof StdioOptionsArrayType ? StreamUnlessIgnored<'4', OptionsType> : never,
+];
 
 type InputOutputStream<IsInput extends boolean> = IsInput extends true
 	? Writable
@@ -1155,21 +1170,78 @@ EncodingOption extends BinaryEncodingOption
 		: string
 >;
 
+type HasIpc<OptionsType extends Options> = OptionsType['ipc'] extends true
+	? true
+	: OptionsType['stdio'] extends StdioOptionsArray
+		? 'ipc' extends OptionsType['stdio'][number] ? true : false
+		: false;
+
 export type ExecaResultPromise<OptionsType extends Options = Options> = {
+	/**
+	Process identifier ([PID](https://en.wikipedia.org/wiki/Process_identifier)).
+
+	This is `undefined` if the subprocess failed to spawn.
+	*/
+	pid?: number;
+
+	/**
+	Send a `message` to the subprocess. The type of `message` depends on the `serialization` option.
+	The subprocess receives it as a [`message` event](https://nodejs.org/api/process.html#event-message).
+
+	This returns `true` on success.
+
+	This requires the `ipc` option to be `true`.
+
+	[More info.](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback)
+	*/
+	send: HasIpc<OptionsType> extends true ? ChildProcess['send'] : undefined;
+
+	/**
+	The subprocess `stdin` as a stream.
+
+	This is `null` if the `stdin` option is set to `'inherit'`, `'ignore'`, `Readable` or `integer`.
+
+	This is intended for advanced cases. Please consider using the `stdin` option, `input` option, `inputFile` option, or `subprocess.pipe()` instead.
+	*/
 	stdin: StreamUnlessIgnored<'0', OptionsType>;
 
+	/**
+	The subprocess `stdout` as a stream.
+
+	This is `null` if the `stdout` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
+
+	This is intended for advanced cases. Please consider using `result.stdout`, the `stdout` option, `subprocess.iterable()`, or `subprocess.pipe()` instead.
+	*/
 	stdout: StreamUnlessIgnored<'1', OptionsType>;
 
+	/**
+	The subprocess `stderr` as a stream.
+
+	This is `null` if the `stderr` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
+
+	This is intended for advanced cases. Please consider using `result.stderr`, the `stderr` option, `subprocess.iterable()`, or `subprocess.pipe()` instead.
+	*/
 	stderr: StreamUnlessIgnored<'2', OptionsType>;
 
 	/**
-	Stream combining/interleaving [`stdout`](https://nodejs.org/api/child_process.html#child_process_subprocess_stdout) and [`stderr`](https://nodejs.org/api/child_process.html#child_process_subprocess_stderr).
+	Stream combining/interleaving `subprocess.stdout` and `subprocess.stderr`.
 
 	This is `undefined` if either:
-	- the `all` option is `false` (the default value)
-	- both `stdout` and `stderr` options are set to [`'inherit'`, `'ignore'`, `Stream` or `integer`](https://nodejs.org/api/child_process.html#child_process_options_stdio)
+	- the `all` option is `false` (the default value).
+	- both `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
+
+	This is intended for advanced cases. Please consider using `result.all`, the `stdout`/`stderr` option, `subprocess.iterable()`, or `subprocess.pipe()` instead.
 	*/
 	all: AllStream<OptionsType>;
+
+	/**
+	The subprocess `stdin`, `stdout`, `stderr` and other files descriptors as an array of streams.
+
+	Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`.
+
+	This is intended for advanced cases. Please consider using `result.stdio`, the `stdio` option, `subprocess.iterable()` or `subprocess.pipe()` instead.
+	*/
+	stdio: StdioArrayStreams<OptionsType>;
 
 	catch<ResultType = never>(
 		onRejected?: (reason: ExecaError<OptionsType>) => ResultType | PromiseLike<ResultType>
@@ -1202,7 +1274,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	/**
 	Converts the subprocess to a readable stream.
 
-	Unlike [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
+	Unlike `subprocess.stdout`, the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
 
 	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options, `subprocess.pipe()` or `subprocess.iterable()`.
 	*/
@@ -1211,7 +1283,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	/**
 	Converts the subprocess to a writable stream.
 
-	Unlike [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options) or [`await pipeline(stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) which throw an exception when the stream errors.
+	Unlike `subprocess.stdin`, the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options) or [`await pipeline(stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) which throw an exception when the stream errors.
 
 	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or `subprocess.pipe()`.
 	*/
@@ -1227,7 +1299,7 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	duplex(duplexOptions?: DuplexOptions): Duplex;
 } & PipableSubprocess;
 
-export type ExecaSubprocess<OptionsType extends Options = Options> = ChildProcess &
+export type ExecaSubprocess<OptionsType extends Options = Options> = Omit<ChildProcess, keyof ExecaResultPromise<OptionsType>> &
 ExecaResultPromise<OptionsType> &
 Promise<ExecaResult<OptionsType>>;
 
@@ -1459,9 +1531,9 @@ Same as `execa()` but synchronous.
 Returns or throws a subprocess `result`. The `subprocess` is not returned: its methods and properties are not available.
 
 The following features cannot be used:
-- Streams: [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
-- The `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
-- Signal termination: [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`subprocess.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `cleanup` option, `cancelSignal` option, `forceKillAfterDelay` option.
+- Streams: `subprocess.stdin`, `subprocess.stdout`, `subprocess.stderr`, `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
+- The `stdin`, `stdout`, `stderr` and `stdio` options cannot be `'overlapped'`, an async iterable, an async transform, a `Duplex`, nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
+- Signal termination: `subprocess.kill()`, `subprocess.pid`, `cleanup` option, `cancelSignal` option, `forceKillAfterDelay` option.
 - Piping multiple processes: `subprocess.pipe()`.
 - `subprocess.iterable()`.
 - `ipc` and `serialization` options.
@@ -1583,9 +1655,9 @@ Same as `execaCommand()` but synchronous.
 Returns or throws a subprocess `result`. The `subprocess` is not returned: its methods and properties are not available.
 
 The following features cannot be used:
-- Streams: [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
-- The `stdin`, `stdout`, `stderr` and `stdio` options cannot be [`'overlapped'`](https://nodejs.org/api/child_process.html#optionsstdio), an async iterable, an async transform, a `Duplex`, nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
-- Signal termination: [`subprocess.kill()`](https://nodejs.org/api/child_process.html#subprocesskillsignal), [`subprocess.pid`](https://nodejs.org/api/child_process.html#subprocesspid), `cleanup` option, `cancelSignal` option, `forceKillAfterDelay` option.
+- Streams: `subprocess.stdin`, `subprocess.stdout`, `subprocess.stderr`, `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
+- The `stdin`, `stdout`, `stderr` and `stdio` options cannot be `'overlapped'`, an async iterable, an async transform, a `Duplex`, nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
+- Signal termination: `subprocess.kill()`, `subprocess.pid`, `cleanup` option, `cancelSignal` option, `forceKillAfterDelay` option.
 - Piping multiple processes: `subprocess.pipe()`.
 - `subprocess.iterable()`.
 - `ipc` and `serialization` options.

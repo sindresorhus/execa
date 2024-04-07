@@ -19,9 +19,9 @@ const branch = await $`git branch --show-current`;
 await $`dep deploy --branch=${branch}`;
 
 await Promise.all([
-  $`sleep 1`,
-  $`sleep 2`,
-  $`sleep 3`,
+	$`sleep 1`,
+	$`sleep 2`,
+	$`sleep 3`,
 ]);
 
 const dirName = 'foo bar';
@@ -101,8 +101,8 @@ await $`echo example`;
 ```sh
 # Bash
 npm run build \
-  --example-flag-one \
-  --example-flag-two
+	--example-flag-one \
+	--example-flag-two
 ```
 
 ```js
@@ -544,19 +544,19 @@ const {
 ```js
 // Execa
 const {
-  stdout,
-  stderr,
-  exitCode,
-  signal,
-  signalDescription,
-  originalMessage,
-  shortMessage,
-  command,
-  escapedCommand,
-  failed,
-  timedOut,
-  isCanceled,
-  isTerminated,
+	stdout,
+	stderr,
+	exitCode,
+	signal,
+	signalDescription,
+	originalMessage,
+	shortMessage,
+	command,
+	escapedCommand,
+	failed,
+	timedOut,
+	isCanceled,
+	isTerminated,
 	isMaxBuffer,
 	// and other error-related properties: code, etc.
 } = await $({timeout: 1})`sleep 2`;

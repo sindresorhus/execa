@@ -147,15 +147,17 @@ test('"lines: true" is a noop with "encoding: hex", fd-specific, sync', testEnco
 test('"lines: true" is a noop with "encoding: hex", stripFinalNewline, sync', testEncoding, simpleFull, simpleFullHex, 'hex', true, true, execaSync);
 test('"lines: true" is a noop with "encoding: hex", stripFinalNewline, fd-specific, sync', testEncoding, simpleFull, simpleFullHex, 'hex', true, {stdout: true}, execaSync);
 
-const testLinesNoBuffer = async (t, lines, execaMethod) => {
-	const {stdout} = await getSimpleChunkSubprocess(execaMethod, {lines, buffer: false});
+const testLinesNoBuffer = async (t, lines, buffer, execaMethod) => {
+	const {stdout} = await getSimpleChunkSubprocess(execaMethod, {lines, buffer});
 	t.is(stdout, undefined);
 };
 
-test('"lines: true" is a noop with "buffer: false"', testLinesNoBuffer, true, execa);
-test('"lines: true" is a noop with "buffer: false", fd-specific', testLinesNoBuffer, {stdout: true}, execa);
-test('"lines: true" is a noop with "buffer: false", sync', testLinesNoBuffer, true, execaSync);
-test('"lines: true" is a noop with "buffer: false", fd-specific, sync', testLinesNoBuffer, {stdout: true}, execaSync);
+test('"lines: true" is a noop with "buffer: false"', testLinesNoBuffer, true, false, execa);
+test('"lines: true" is a noop with "buffer: false", fd-specific buffer', testLinesNoBuffer, true, {stdout: false}, execa);
+test('"lines: true" is a noop with "buffer: false", fd-specific lines', testLinesNoBuffer, {stdout: true}, false, execa);
+test('"lines: true" is a noop with "buffer: false", sync', testLinesNoBuffer, true, false, execaSync);
+test('"lines: true" is a noop with "buffer: false", fd-specific buffer, sync', testLinesNoBuffer, true, {stdout: false}, execaSync);
+test('"lines: true" is a noop with "buffer: false", fd-specific lines, sync', testLinesNoBuffer, {stdout: true}, false, execaSync);
 
 const maxBuffer = simpleLines.length - 1;
 

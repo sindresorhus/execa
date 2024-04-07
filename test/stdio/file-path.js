@@ -322,19 +322,21 @@ test('stderr can use "lines: true" together with output file URLs, sync', testOu
 test('stdio[*] can use "lines: true" together with output file paths, sync', testOutputFileLines, 3, getAbsolutePath, execaSync);
 test('stdio[*] can use "lines: true" together with output file URLs, sync', testOutputFileLines, 3, pathToFileURL, execaSync);
 
-const testOutputFileNoBuffer = async (t, execaMethod) => {
+const testOutputFileNoBuffer = async (t, buffer, execaMethod) => {
 	const filePath = tempfile();
 	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {
 		stdout: getAbsolutePath(filePath),
-		buffer: false,
+		buffer,
 	});
 	t.is(stdout, undefined);
 	t.is(await readFile(filePath, 'utf8'), foobarString);
 	await rm(filePath);
 };
 
-test('stdout can use "buffer: false" together with output file paths', testOutputFileNoBuffer, execa);
-test('stdout can use "buffer: false" together with output file paths, sync', testOutputFileNoBuffer, execaSync);
+test('stdout can use "buffer: false" together with output file paths', testOutputFileNoBuffer, false, execa);
+test('stdout can use "buffer: false" together with output file paths, fd-specific', testOutputFileNoBuffer, {stdout: false}, execa);
+test('stdout can use "buffer: false" together with output file paths, sync', testOutputFileNoBuffer, false, execaSync);
+test('stdout can use "buffer: false" together with output file paths, fd-specific, sync', testOutputFileNoBuffer, {stdout: false}, execaSync);
 
 const testOutputFileObject = async (t, fdNumber, mapFile, execaMethod) => {
 	const filePath = tempfile();

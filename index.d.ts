@@ -247,13 +247,13 @@ type IgnoresStdioResult<
 type IgnoresStreamOutput<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = LacksBuffer<OptionsType['buffer']> extends true
+> = LacksBuffer<FdSpecificOption<OptionsType['buffer'], FdNumber>> extends true
 	? true
 	: IsInputStdioDescriptor<FdNumber, OptionsType> extends true
 		? true
 		: IgnoresStreamResult<FdNumber, OptionsType>;
 
-type LacksBuffer<BufferOption extends CommonOptions['buffer']> = BufferOption extends false ? true : false;
+type LacksBuffer<BufferOption extends boolean | undefined> = BufferOption extends false ? true : false;
 
 // Whether `result.stdio[FdNumber]` is an input stream
 type IsInputStdioDescriptor<
@@ -774,9 +774,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	When `buffer` is `false`, the output can still be read using the `subprocess.stdout`, `subprocess.stderr`, `subprocess.stdio` and `subprocess.all` streams. If the output is read, this should be done right away to avoid missing any data.
 
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
 	@default true
 	*/
-	readonly buffer?: boolean;
+	readonly buffer?: FdGenericOption<boolean>;
 
 	/**
 	Add a `subprocess.all` stream and a `result.all` property. They contain the combined/[interleaved](#ensuring-all-output-is-interleaved) output of the subprocess' `stdout` and `stderr`.
@@ -840,7 +842,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 /**
 Subprocess options.
 
-Some options are related to the subprocess output: `verbose`, `lines`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `lines`, `stripFinalNewline`, `buffer`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 
@@ -854,7 +856,7 @@ export type Options = CommonOptions<false>;
 /**
 Subprocess options, with synchronous methods.
 
-Some options are related to the subprocess output: `verbose`, `lines`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `lines`, `stripFinalNewline`, `buffer`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 

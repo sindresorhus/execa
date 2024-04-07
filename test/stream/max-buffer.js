@@ -210,8 +210,8 @@ test('maxBuffer ignores other encodings and stdout, sync', testMaxBufferHexSync,
 test('maxBuffer ignores other encodings and stderr, sync', testMaxBufferHexSync, 2);
 test('maxBuffer ignores other encodings and stdio[*], sync', testMaxBufferHexSync, 3);
 
-const testNoMaxBuffer = async (t, fdNumber) => {
-	const subprocess = getMaxBufferSubprocess(execa, fdNumber, {buffer: false});
+const testNoMaxBuffer = async (t, fdNumber, buffer) => {
+	const subprocess = getMaxBufferSubprocess(execa, fdNumber, {buffer});
 	const [{isMaxBuffer, stdio}, output] = await Promise.all([
 		subprocess,
 		getStream(subprocess.stdio[fdNumber]),
@@ -221,20 +221,25 @@ const testNoMaxBuffer = async (t, fdNumber) => {
 	t.is(output, getExpectedOutput(maxBuffer + 1));
 };
 
-test('do not buffer stdout when `buffer` set to `false`', testNoMaxBuffer, 1);
-test('do not buffer stderr when `buffer` set to `false`', testNoMaxBuffer, 2);
-test('do not buffer stdio[*] when `buffer` set to `false`', testNoMaxBuffer, 3);
+test('do not buffer stdout when `buffer` set to `false`', testNoMaxBuffer, 1, false);
+test('do not buffer stdout when `buffer` set to `false`, fd-specific', testNoMaxBuffer, 1, {stdout: false});
+test('do not buffer stderr when `buffer` set to `false`', testNoMaxBuffer, 2, false);
+test('do not buffer stderr when `buffer` set to `false`, fd-specific', testNoMaxBuffer, 2, {stderr: false});
+test('do not buffer stdio[*] when `buffer` set to `false`', testNoMaxBuffer, 3, false);
+test('do not buffer stdio[*] when `buffer` set to `false`, fd-specific', testNoMaxBuffer, 3, {fd3: false});
 
-const testNoMaxBufferSync = (t, fdNumber) => {
-	const {isMaxBuffer, stdio} = getMaxBufferSubprocess(execaSync, fdNumber, {buffer: false});
+const testNoMaxBufferSync = (t, fdNumber, buffer) => {
+	const {isMaxBuffer, stdio} = getMaxBufferSubprocess(execaSync, fdNumber, {buffer});
 	t.false(isMaxBuffer);
 	t.is(stdio[fdNumber], undefined);
 };
 
-// @todo: add a test for fd3 once the following Node.js bug is fixed.
-// https://github.com/nodejs/node/issues/52338
-test('do not buffer stdout when `buffer` set to `false`, sync', testNoMaxBufferSync, 1);
-test('do not buffer stderr when `buffer` set to `false`, sync', testNoMaxBufferSync, 2);
+// @todo: add tests for fd3 once the following Node.js bug is fixed.
+// https://github.com/nodejs/node/issues/52422
+test('do not buffer stdout when `buffer` set to `false`, sync', testNoMaxBufferSync, 1, false);
+test('do not buffer stdout when `buffer` set to `false`, fd-specific, sync', testNoMaxBufferSync, 1, {stdout: false});
+test('do not buffer stderr when `buffer` set to `false`, sync', testNoMaxBufferSync, 2, false);
+test('do not buffer stderr when `buffer` set to `false`, fd-specific, sync', testNoMaxBufferSync, 2, {stderr: false});
 
 const testMaxBufferAbort = async (t, fdNumber) => {
 	const subprocess = getMaxBufferSubprocess(execa, fdNumber);

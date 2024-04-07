@@ -2,7 +2,7 @@
 
 ## Summary
 
-Transforms map or filter the input or output of a subprocess. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) to the [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) or [`stdio`](../readme.md#optionsstdio) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
+Transforms map or filter the input or output of a subprocess. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) or a [transform options object](#transform-options) to the [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) or [`stdio`](../readme.md#optionsstdio) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
 
 ```js
 import {execa} from 'execa';
@@ -19,7 +19,7 @@ console.log(stdout); // HELLO
 ## Encoding
 
 The `line` argument passed to the transform is a string by default.\
-However, if either a `{transform, binary: true}` plain object is passed, or if the [`encoding`](../readme.md#optionsencoding) option is binary, it is an `Uint8Array` instead.
+However, if the [`binary`](#transformoptionsbinary) transform option is `true` or if the [`encoding`](../readme.md#optionsencoding) subprocess option is binary, it is an `Uint8Array` instead.
 
 The transform can `yield` either a `string` or an `Uint8Array`, regardless of the `line` argument's type.
 
@@ -43,7 +43,7 @@ console.log(stdout); // ''
 ## Binary data
 
 The transform iterates over lines by default.\
-However, if either a `{transform, binary: true}` plain object is passed, or if the [`encoding`](../readme.md#optionsencoding) option is binary, it iterates over arbitrary chunks of data instead.
+However, if the [`binary`](#transformoptionsbinary) transform option is `true` or if the [`encoding`](../readme.md#optionsencoding) subprocess option is binary, it iterates over arbitrary chunks of data instead.
 
 ```js
 await execa('./binary.js', {stdout: {transform, binary: true}});
@@ -55,7 +55,7 @@ This is more efficient and recommended if the data is either:
 
 ## Newlines
 
-Unless [`{transform, binary: true}`](#binary-data) is used, the transform iterates over lines.
+Unless the [`binary`](#transformoptionsbinary) transform option is `true`, the transform iterates over lines.
 By default, newlines are stripped from each `line` argument.
 
 ```js
@@ -65,7 +65,7 @@ const transform = function * (line) { /* ... */ };
 await execa('./run.js', {stdout: transform});
 ```
 
-However, if a `{transform, preserveNewlines: true}` plain object is passed, newlines are kept.
+However, if the [`preserveNewlines`](#transformoptionspreservenewlines) transform option is `true`, newlines are kept.
 
 ```js
 // `line`'s value ends with '\n'.
@@ -97,7 +97,7 @@ const transform = function * (line) {
 await execa('./run.js', {stdout: transform});
 ```
 
-However, if a `{transform, preserveNewlines: true}` plain object is passed, multiple `yield`s produce a single line instead.
+However, if the [`preserveNewlines`](#transformoptionspreservenewlines) transform option is `true`, multiple `yield`s produce a single line instead.
 
 ```js
 const transform = function * (line) {
@@ -116,7 +116,7 @@ await execa('./run.js', {stdout: {transform, preserveNewlines: true}});
 ## Object mode
 
 By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`.\
-However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null` or `undefined`. The subprocess' [`stdout`](../readme.md#resultstdout)/[`stderr`](../readme.md#resultstderr) will be an array of values.
+However, if the [`objectMode`](#transformoptionsobjectmode) transform option is `true`, any type can be returned instead, except `null` or `undefined`. The subprocess' [`result.stdout`](../readme.md#resultstdout)/[`result.stderr`](../readme.md#resultstderr) will be an array of values.
 
 ```js
 const transform = function * (line) {
@@ -129,7 +129,7 @@ for (const data of stdout) {
 }
 ```
 
-`stdin` can also use `objectMode: true`.
+[`stdin`](../readme.md#optionsstdin) can also use `objectMode: true`.
 
 ```js
 const transform = function * (line) {
@@ -142,7 +142,7 @@ await execa('./jsonlines-input.js', {stdin: [input, {transform, objectMode: true
 
 ## Sharing state
 
-State can be shared between calls of the `transform` and [`final`](#finalizing) functions.
+State can be shared between calls of the [`transform`](#transformoptionstransform) and [`final`](#transformoptionsfinal) functions.
 
 ```js
 let count = 0
@@ -155,7 +155,7 @@ const transform = function * (line) {
 
 ## Finalizing
 
-To create additional lines after the last one, a `final` generator function can be used by passing a `{final}` or `{transform, final}` plain object.
+To create additional lines after the last one, a [`final`](#transformoptionsfinal) generator function can be used.
 
 ```js
 let count = 0;
@@ -228,3 +228,52 @@ for await (const line of execa('./run.js')) {
 	console.log(`${prefix}: ${line}`);
 }
 ```
+
+## Transform options
+
+A transform or an [array of transforms](#combining) can be passed to the [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) or [`stdio`](../readme.md#optionsstdio) option.
+
+A transform is either a [generator function](#transformoptionstransform) or a plain object with the following members.
+
+### transformOptions.transform
+
+Type: `GeneratorFunction<string | Uint8Array | unknown>` | `AsyncGeneratorFunction<string | Uint8Array | unknown>`
+
+Map or [filter](#filtering) the input or output of the subprocess.
+
+More info [here](#summary) and [there](#sharing-state).
+
+### transformOptions.final
+
+Type: `GeneratorFunction<string | Uint8Array | unknown>` | `AsyncGeneratorFunction<string | Uint8Array | unknown>`
+
+Create additional lines after the last one.
+
+[More info.](#finalizing)
+
+### transformOptions.binary
+
+Type: `boolean`\
+Default: `false`
+
+If `true`, iterate over arbitrary chunks of `Uint8Array`s instead of line `string`s.
+
+More info [here](#encoding) and [there](#binary-data).
+
+### transformOptions.preserveNewlines
+
+Type: `boolean`\
+Default: `false`
+
+If `true`, keep newlines in each `line` argument. Also, this allows multiple `yield`s to produces a single line.
+
+[More info.](#newlines)
+
+### transformOptions.objectMode
+
+Type: `boolean`\
+Default: `false`
+
+If `true`, allow [`transformOptions.transform`](#transformoptionstransform) and [`transformOptions.final`](#transformoptionsfinal) to return any type, not just `string` or `Uint8Array`.
+
+[More info.](#object-mode)

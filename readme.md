@@ -754,7 +754,14 @@ Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), whe
 
 Type: `object`
 
-This lists all Execa options, including some options which are the same as for [`child_process#spawn()`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)/[`child_process#exec()`](https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback).
+This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
+
+Some options are related to the subprocess output: [`maxBuffer`](#maxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+
+```js
+await execa('./run.js', {maxBuffer: 1e6}) // Same value for stdout and stderr
+await execa('./run.js', {maxBuffer: {stdout: 1e4, stderr: 1e6}}) // Different values
+```
 
 #### reject
 
@@ -1009,6 +1016,8 @@ This is measured:
 - If the [`encoding` option](#encoding) is `'buffer'`: in bytes.
 - If the [`lines` option](#lines) is `true`: in lines.
 - If a [transform in object mode](docs/transform.md#object-mode) is used: in objects.
+
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](#options).
 
 #### ipc
 

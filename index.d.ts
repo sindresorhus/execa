@@ -356,6 +356,10 @@ type StricterOptions<
 	StrictOptions extends CommonOptions,
 > = WideOptions extends StrictOptions ? WideOptions : StrictOptions;
 
+type FdGenericOption<OptionType> = OptionType | {
+	readonly [FdName in FromOption]?: OptionType
+};
+
 type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Prefer locally installed binaries when looking for a binary to execute.
@@ -596,9 +600,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	- If the `lines` option is `true`: in lines.
 	- If a transform in object mode is used: in objects.
 
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
 	@default 100_000_000
 	*/
-	readonly maxBuffer?: number;
+	readonly maxBuffer?: FdGenericOption<number>;
 
 	/**
 	Signal used to terminate the subprocess when:
@@ -738,7 +744,32 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly cancelSignal?: Unless<IsSync, AbortSignal>;
 };
 
+/**
+Subprocess options.
+
+Some options are related to the subprocess output: `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+
+@example
+
+```
+await execa('./run.js', {maxBuffer: 1e6}) // Same value for stdout and stderr
+await execa('./run.js', {maxBuffer: {stdout: 1e4, stderr: 1e6}}) // Different values
+```
+*/
 export type Options = CommonOptions<false>;
+
+/**
+Subprocess options, with synchronous methods.
+
+Some options are related to the subprocess output: `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+
+@example
+
+```
+execaSync('./run.js', {maxBuffer: 1e6}) // Same value for stdout and stderr
+execaSync('./run.js', {maxBuffer: {stdout: 1e4, stderr: 1e6}}) // Different values
+```
+*/
 export type SyncOptions = CommonOptions<true>;
 
 declare abstract class CommonResult<

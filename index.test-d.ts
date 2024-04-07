@@ -1469,6 +1469,27 @@ execaSync('unicorns', {encoding: 'ascii'});
 expectError(execa('unicorns', {encoding: 'unknownEncoding'}));
 expectError(execaSync('unicorns', {encoding: 'unknownEncoding'}));
 
+execa('unicorns', {maxBuffer: {}});
+expectError(execa('unicorns', {maxBuffer: []}));
+execa('unicorns', {maxBuffer: {stdout: 0}});
+execa('unicorns', {maxBuffer: {stderr: 0}});
+execa('unicorns', {maxBuffer: {stdout: 0, stderr: 0} as const});
+execa('unicorns', {maxBuffer: {all: 0}});
+execa('unicorns', {maxBuffer: {fd1: 0}});
+execa('unicorns', {maxBuffer: {fd2: 0}});
+execa('unicorns', {maxBuffer: {fd3: 0}});
+expectError(execa('unicorns', {maxBuffer: {stdout: '0'}}));
+execaSync('unicorns', {maxBuffer: {}});
+expectError(execaSync('unicorns', {maxBuffer: []}));
+execaSync('unicorns', {maxBuffer: {stdout: 0}});
+execaSync('unicorns', {maxBuffer: {stderr: 0}});
+execaSync('unicorns', {maxBuffer: {stdout: 0, stderr: 0} as const});
+execaSync('unicorns', {maxBuffer: {all: 0}});
+execaSync('unicorns', {maxBuffer: {fd1: 0}});
+execaSync('unicorns', {maxBuffer: {fd2: 0}});
+execaSync('unicorns', {maxBuffer: {fd3: 0}});
+expectError(execaSync('unicorns', {maxBuffer: {stdout: '0'}}));
+
 expectError(execa('unicorns', {stdio: []}));
 expectError(execaSync('unicorns', {stdio: []}));
 expectError(execa('unicorns', {stdio: ['pipe']}));

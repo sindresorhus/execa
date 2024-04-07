@@ -5,7 +5,7 @@ With Execa, you can write scripts with Node.js instead of a shell language. [Com
   - [cross-platform](#shell): [no shell](../readme.md#shell-syntax) is used, only JavaScript.
   - [secure](#escaping): no shell injection.
   - [simple](#simplicity): minimalistic API, no [globals](#global-variables), no [binary](#main-binary), no [builtin CLI utilities](#builtin-utilities).
-  - [featureful](#simplicity): all Execa features are available ([subprocess piping](#piping-stdout-to-another-command), [IPC](#ipc), [transforms](#transforms), [background subprocesses](#background-subprocesses), [cancellation](#cancellation), [local binaries](#local-binaries), [cleanup on exit](../readme.md#cleanup), [interleaved output](#interleaved-output), [forceful termination](../readme.md#forcekillafterdelay), etc.).
+  - [featureful](#simplicity): all Execa features are available ([subprocess piping](#piping-stdout-to-another-command), [IPC](#ipc), [transforms](#transforms), [background subprocesses](#background-subprocesses), [cancellation](#cancellation), [local binaries](#local-binaries), [cleanup on exit](../readme.md#optionscleanup), [interleaved output](#interleaved-output), [forceful termination](../readme.md#optionsforcekillafterdelay), etc.).
   - [easy to debug](#debugging): [verbose mode](#verbose-mode), [detailed errors](#errors), [messages and stack traces](#cancellation), stateless API.
 
 ```js
@@ -817,7 +817,7 @@ This is more cross-platform. For example, your code works the same on Windows ma
 
 Also, there is no shell syntax to remember: everything is just plain JavaScript.
 
-If you really need a shell though, the [`shell` option](../readme.md#shell) can be used.
+If you really need a shell though, the [`shell`](../readme.md#optionsshell) option can be used.
 
 ### Simplicity
 
@@ -841,8 +841,8 @@ Also, [local binaries](#local-binaries) can be directly executed without using `
 
 ### Debugging
 
-Subprocesses can be hard to debug, which is why Execa includes a [`verbose` option](#verbose-mode).
+Subprocesses can be hard to debug, which is why Execa includes a [`verbose`](#verbose-mode) option.
 
-Also, Execa's error messages and [properties](#errors) are very detailed to make it clear to determine why a subprocess failed. Error messages and stack traces can be set with [`subprocess.kill(error)`](../readme.md#killerror).
+Also, Execa's error messages and [properties](#errors) are very detailed to make it clear to determine why a subprocess failed. Error messages and stack traces can be set with [`subprocess.kill(error)`](../readme.md#subprocesskillerror).
 
 Finally, unlike Bash and zx, which are stateful (options, current directory, etc.), Execa is [purely functional](#current-directory), which also helps with debugging.

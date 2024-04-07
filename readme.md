@@ -831,7 +831,7 @@ Type: `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
 
-Some options are related to the subprocess output: [`verbose`](#optionsverbose), [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: [`verbose`](#optionsverbose), [`stripFinalNewline`](#optionsstripfinalnewline), [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 ```js
 await execa('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
@@ -1086,6 +1086,8 @@ Default: `true`
 Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
 
 If the [`lines`](#optionslines) option is true, this applies to each output line instead.
+
+By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
 
 #### options.maxBuffer
 

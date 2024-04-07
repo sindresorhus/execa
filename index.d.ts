@@ -536,9 +536,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	If the `lines` option is true, this applies to each output line instead.
 
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
 	@default true
 	*/
-	readonly stripFinalNewline?: boolean;
+	readonly stripFinalNewline?: FdGenericOption<boolean>;
 
 	/**
 	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
@@ -773,7 +775,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 /**
 Subprocess options.
 
-Some options are related to the subprocess output: `verbose`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 
@@ -787,7 +789,7 @@ export type Options = CommonOptions<false>;
 /**
 Subprocess options, with synchronous methods.
 
-Some options are related to the subprocess output: `verbose`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 

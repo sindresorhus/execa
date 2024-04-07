@@ -17,6 +17,7 @@ import {
 	simpleFullUtf16Uint8Array,
 	simpleChunksUint8Array,
 	simpleFullEnd,
+	simpleFullEndChunks,
 	simpleFullEndUtf16Inverted,
 	simpleFullHex,
 	simpleLines,
@@ -27,7 +28,6 @@ import {
 
 setFixtureDir();
 
-const simpleFullEndChunks = [simpleFullEnd];
 const windowsFull = 'aaa\r\nbbb\r\nccc';
 const windowsFullEnd = `${windowsFull}\r\n`;
 const windowsChunks = [windowsFull];

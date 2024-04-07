@@ -160,15 +160,17 @@ const testStdioSame = async (t, fdNumber) => {
 test('Does not change subprocess.stdout', testStdioSame, 1);
 test('Does not change subprocess.stderr', testStdioSame, 2);
 
-const testLines = async (t, stripFinalNewline, execaMethod) => {
-	const {stderr} = await execaMethod('noop-fd.js', ['1', simpleFull], {verbose: 'full', lines: true, stripFinalNewline});
+const testLines = async (t, lines, stripFinalNewline, execaMethod) => {
+	const {stderr} = await execaMethod('noop-fd.js', ['1', simpleFull], {verbose: 'full', lines, stripFinalNewline});
 	t.deepEqual(getOutputLines(stderr), noNewlinesChunks.map(line => `${testTimestamp} [0]   ${line}`));
 };
 
-test('Prints stdout, "lines: true"', testLines, false, parentExecaAsync);
-test('Prints stdout, "lines: true", stripFinalNewline', testLines, true, parentExecaAsync);
-test('Prints stdout, "lines: true", sync', testLines, false, parentExecaSync);
-test('Prints stdout, "lines: true", stripFinalNewline, sync', testLines, true, parentExecaSync);
+test('Prints stdout, "lines: true"', testLines, true, false, parentExecaAsync);
+test('Prints stdout, "lines: true", fd-specific', testLines, {stdout: true}, false, parentExecaAsync);
+test('Prints stdout, "lines: true", stripFinalNewline', testLines, true, true, parentExecaAsync);
+test('Prints stdout, "lines: true", sync', testLines, true, false, parentExecaSync);
+test('Prints stdout, "lines: true", fd-specific, sync', testLines, {stdout: true}, false, parentExecaSync);
+test('Prints stdout, "lines: true", stripFinalNewline, sync', testLines, true, true, parentExecaSync);
 
 const testOnlyTransforms = async (t, type, isSync) => {
 	const {stderr} = await parentExeca('nested-transform.js', 'noop.js', [foobarString], {verbose: 'full', type, isSync});

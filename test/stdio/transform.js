@@ -18,6 +18,7 @@ import {
 import {generatorsMap} from '../helpers/map.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {maxBuffer, assertErrorMessage} from '../helpers/max-buffer.js';
 
 setFixtureDir();
 
@@ -143,8 +144,6 @@ const testManyYields = async (t, final) => {
 test('Generator "transform" yields are sent right away', testManyYields, false);
 test('Generator "final" yields are sent right away', testManyYields, true);
 
-const maxBuffer = 10;
-
 const testMaxBuffer = async (t, type) => {
 	const bigString = '.'.repeat(maxBuffer);
 	const {stdout} = await execa('noop.js', {
@@ -153,10 +152,12 @@ const testMaxBuffer = async (t, type) => {
 	});
 	t.is(stdout, bigString);
 
-	await t.throwsAsync(execa('noop.js', {
+	const {isMaxBuffer, shortMessage} = await t.throwsAsync(execa('noop.js', {
 		maxBuffer,
 		stdout: generatorsMap[type].getOutput(`${bigString}.`)(false, true),
 	}));
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage);
 };
 
 test('Generators take "maxBuffer" into account', testMaxBuffer, 'generator');
@@ -165,10 +166,11 @@ test('WebTransforms take "maxBuffer" into account', testMaxBuffer, 'webTransform
 
 test('Generators does not take "maxBuffer" into account, sync', t => {
 	const bigString = '.'.repeat(maxBuffer);
-	const {stdout} = execaSync('noop.js', {
+	const {isMaxBuffer, stdout} = execaSync('noop.js', {
 		maxBuffer,
 		stdout: generatorsMap.generator.getOutput(`${bigString}.`)(false, true),
 	});
+	t.false(isMaxBuffer);
 	t.is(stdout.length, maxBuffer + 1);
 });
 
@@ -180,10 +182,12 @@ const testMaxBufferObject = async (t, type) => {
 	});
 	t.is(stdout.length, maxBuffer);
 
-	await t.throwsAsync(execa('noop.js', {
+	const {isMaxBuffer, shortMessage} = await t.throwsAsync(execa('noop.js', {
 		maxBuffer,
 		stdout: generatorsMap[type].getOutputs([...bigArray, ''])(true, true),
 	}));
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage, {unit: 'objects'});
 };
 
 test('Generators take "maxBuffer" into account, objectMode', testMaxBufferObject, 'generator');
@@ -192,10 +196,11 @@ test('WebTransforms take "maxBuffer" into account, objectMode', testMaxBufferObj
 
 test('Generators does not take "maxBuffer" into account, objectMode, sync', t => {
 	const bigArray = Array.from({length: maxBuffer}).fill('..');
-	const {stdout} = execaSync('noop.js', {
+	const {isMaxBuffer, stdout} = execaSync('noop.js', {
 		maxBuffer,
 		stdout: generatorsMap.generator.getOutputs([...bigArray, ''])(true, true),
 	});
+	t.false(isMaxBuffer);
 	t.is(stdout.length, maxBuffer + 1);
 });
 

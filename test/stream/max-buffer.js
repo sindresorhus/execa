@@ -4,48 +4,51 @@ import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
+import {getEarlyErrorSubprocess, getEarlyErrorSubprocessSync} from '../helpers/early-error.js';
+import {maxBuffer, assertErrorMessage} from '../helpers/max-buffer.js';
 
 setFixtureDir();
 
-const maxBuffer = 10;
-const maxBufferMessage = /maxBuffer exceeded/;
+const maxBufferMessage = {message: /maxBuffer exceeded/};
+const maxBufferCodeSync = {code: 'ENOBUFS'};
 
-const runMaxBuffer = (t, execaMethod, fdNumber, options) => execaMethod === execa
-	? t.throwsAsync(getMaxBufferSubprocess(execaMethod, fdNumber, options), {message: maxBufferMessage})
-	: t.throws(() => {
-		getMaxBufferSubprocess(execaMethod, fdNumber, options);
-	}, {code: 'ENOBUFS'});
+const runMaxBuffer = async (t, execaMethod, fdNumber, options) => {
+	const error = execaMethod === execa
+		? await t.throwsAsync(getMaxBufferSubprocess(execaMethod, fdNumber, options), maxBufferMessage)
+		: t.throws(() => {
+			getMaxBufferSubprocess(execaMethod, fdNumber, options);
+		}, maxBufferCodeSync);
+	t.true(error.isMaxBuffer);
+	t.is(error.maxBufferInfo, undefined);
+	return error;
+};
 
 const getMaxBufferSubprocess = (execaMethod, fdNumber, {length = maxBuffer, ...options} = {}) =>
 	execaMethod('max-buffer.js', [`${fdNumber}`, `${length + 1}`], {...fullStdio, maxBuffer, ...options});
 
 const getExpectedOutput = (length = maxBuffer) => '.'.repeat(length);
 
-const testMaxBufferSuccess = async (t, fdNumber, all) => {
-	await t.notThrowsAsync(getMaxBufferSubprocess(execa, fdNumber, {all, length: maxBuffer - 1}));
+const testMaxBufferSuccess = async (t, execaMethod, fdNumber, all) => {
+	const {isMaxBuffer} = await getMaxBufferSubprocess(execaMethod, fdNumber, {all, length: maxBuffer - 1});
+	t.false(isMaxBuffer);
 };
 
-test('maxBuffer does not affect stdout if too high', testMaxBufferSuccess, 1, false);
-test('maxBuffer does not affect stderr if too high', testMaxBufferSuccess, 2, false);
-test('maxBuffer does not affect stdio[*] if too high', testMaxBufferSuccess, 3, false);
-test('maxBuffer does not affect all if too high', testMaxBufferSuccess, 1, true);
-
-const testMaxBufferSuccessSync = (t, fdNumber, all) => {
-	t.notThrows(() => {
-		getMaxBufferSubprocess(execaSync, fdNumber, {all, length: maxBuffer - 1});
-	});
-};
-
-test('maxBuffer does not affect stdout if too high, sync', testMaxBufferSuccessSync, 1, false);
-test('maxBuffer does not affect stderr if too high, sync', testMaxBufferSuccessSync, 2, false);
-test('maxBuffer does not affect stdio[*] if too high, sync', testMaxBufferSuccessSync, 3, false);
-test('maxBuffer does not affect all if too high, sync', testMaxBufferSuccessSync, 1, true);
+test('maxBuffer does not affect stdout if too high', testMaxBufferSuccess, execa, 1, false);
+test('maxBuffer does not affect stderr if too high', testMaxBufferSuccess, execa, 2, false);
+test('maxBuffer does not affect stdio[*] if too high', testMaxBufferSuccess, execa, 3, false);
+test('maxBuffer does not affect all if too high', testMaxBufferSuccess, execa, 1, true);
+test('maxBuffer does not affect stdout if too high, sync', testMaxBufferSuccess, execaSync, 1, false);
+test('maxBuffer does not affect stderr if too high, sync', testMaxBufferSuccess, execaSync, 2, false);
+test('maxBuffer does not affect stdio[*] if too high, sync', testMaxBufferSuccess, execaSync, 3, false);
+test('maxBuffer does not affect all if too high, sync', testMaxBufferSuccess, execaSync, 1, true);
 
 const testGracefulExit = async (t, fixtureName, expectedExitCode) => {
-	const {exitCode, signal, stdout} = await t.throwsAsync(
+	const {isMaxBuffer, shortMessage, exitCode, signal, stdout} = await t.throwsAsync(
 		execa(fixtureName, ['1', '.'.repeat(maxBuffer + 1)], {maxBuffer}),
-		{message: maxBufferMessage},
+		maxBufferMessage,
 	);
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage);
 	t.is(exitCode, expectedExitCode);
 	t.is(signal, undefined);
 	t.is(stdout, getExpectedOutput());
@@ -55,9 +58,11 @@ test('maxBuffer terminates stream gracefully, more writes', testGracefulExit, 'n
 test('maxBuffer terminates stream gracefully, no more writes', testGracefulExit, 'noop-fd.js', 0);
 
 const testGracefulExitSync = (t, fixtureName) => {
-	const {exitCode, signal, stdout} = t.throws(() => {
+	const {isMaxBuffer, shortMessage, exitCode, signal, stdout} = t.throws(() => {
 		execaSync(fixtureName, ['1', '.'.repeat(maxBuffer + 1)], {maxBuffer, killSignal: 'SIGINT'});
-	}, {code: 'ENOBUFS'});
+	}, maxBufferCodeSync);
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage, {execaMethod: execaSync});
 	t.is(exitCode, undefined);
 	t.is(signal, 'SIGINT');
 	t.is(stdout, getExpectedOutput());
@@ -68,8 +73,9 @@ test('maxBuffer terminate stream with killSignal, no more writes, sync', testGra
 
 const testMaxBufferLimit = async (t, execaMethod, fdNumber, all) => {
 	const length = all && execaMethod === execa ? maxBuffer * 2 : maxBuffer;
-	const result = await runMaxBuffer(t, execaMethod, fdNumber, {all, length});
-	t.is(all ? result.all : result.stdio[fdNumber], getExpectedOutput(length));
+	const {shortMessage, all: allOutput, stdio} = await runMaxBuffer(t, execaMethod, fdNumber, {all, length});
+	assertErrorMessage(t, shortMessage, {execaMethod, fdNumber});
+	t.is(all ? allOutput : stdio[fdNumber], getExpectedOutput(length));
 };
 
 test('maxBuffer truncates stdout', testMaxBufferLimit, execa, 1, false);
@@ -82,8 +88,9 @@ test('maxBuffer truncates stdio[*], sync', testMaxBufferLimit, execaSync, 3, fal
 test('maxBuffer truncates all, sync', testMaxBufferLimit, execaSync, 1, true);
 
 const testMaxBufferEncoding = async (t, execaMethod, fdNumber) => {
-	const result = await runMaxBuffer(t, execaMethod, fdNumber, {encoding: 'buffer'});
-	const stream = result.stdio[fdNumber];
+	const {shortMessage, stdio} = await runMaxBuffer(t, execaMethod, fdNumber, {encoding: 'buffer'});
+	assertErrorMessage(t, shortMessage, {execaMethod, fdNumber, unit: 'bytes'});
+	const stream = stdio[fdNumber];
 	t.true(stream instanceof Uint8Array);
 	t.is(Buffer.from(stream).toString(), getExpectedOutput());
 };
@@ -97,7 +104,8 @@ test('maxBuffer works with encoding buffer and stdio[*], sync', testMaxBufferEnc
 
 const testMaxBufferHex = async (t, fdNumber) => {
 	const length = maxBuffer / 2;
-	const {stdio} = await runMaxBuffer(t, execa, fdNumber, {length, encoding: 'hex'});
+	const {shortMessage, stdio} = await runMaxBuffer(t, execa, fdNumber, {length, encoding: 'hex'});
+	assertErrorMessage(t, shortMessage, {fdNumber});
 	t.is(stdio[fdNumber], Buffer.from(getExpectedOutput(length)).toString('hex'));
 };
 
@@ -107,7 +115,8 @@ test('maxBuffer works with other encodings and stdio[*]', testMaxBufferHex, 3);
 
 const testMaxBufferHexSync = async (t, fdNumber) => {
 	const length = maxBuffer / 2;
-	const {stdio} = await getMaxBufferSubprocess(execaSync, fdNumber, {length, encoding: 'hex'});
+	const {isMaxBuffer, stdio} = await getMaxBufferSubprocess(execaSync, fdNumber, {length, encoding: 'hex'});
+	t.false(isMaxBuffer);
 	t.is(stdio[fdNumber], Buffer.from(getExpectedOutput(length + 1)).toString('hex'));
 };
 
@@ -117,10 +126,11 @@ test('maxBuffer ignores other encodings and stdio[*], sync', testMaxBufferHexSyn
 
 const testNoMaxBuffer = async (t, fdNumber) => {
 	const subprocess = getMaxBufferSubprocess(execa, fdNumber, {buffer: false});
-	const [{stdio}, output] = await Promise.all([
+	const [{isMaxBuffer, stdio}, output] = await Promise.all([
 		subprocess,
 		getStream(subprocess.stdio[fdNumber]),
 	]);
+	t.false(isMaxBuffer);
 	t.is(stdio[fdNumber], undefined);
 	t.is(output, getExpectedOutput(maxBuffer + 1));
 };
@@ -130,7 +140,8 @@ test('do not buffer stderr when `buffer` set to `false`', testNoMaxBuffer, 2);
 test('do not buffer stdio[*] when `buffer` set to `false`', testNoMaxBuffer, 3);
 
 const testNoMaxBufferSync = (t, fdNumber) => {
-	const {stdio} = getMaxBufferSubprocess(execaSync, fdNumber, {buffer: false});
+	const {isMaxBuffer, stdio} = getMaxBufferSubprocess(execaSync, fdNumber, {buffer: false});
+	t.false(isMaxBuffer);
 	t.is(stdio[fdNumber], undefined);
 };
 
@@ -141,12 +152,23 @@ test('do not buffer stderr when `buffer` set to `false`, sync', testNoMaxBufferS
 
 const testMaxBufferAbort = async (t, fdNumber) => {
 	const subprocess = getMaxBufferSubprocess(execa, fdNumber);
-	await Promise.all([
-		t.throwsAsync(subprocess, {message: maxBufferMessage}),
+	const [{isMaxBuffer, shortMessage}] = await Promise.all([
+		t.throwsAsync(subprocess, maxBufferMessage),
 		t.throwsAsync(getStream(subprocess.stdio[fdNumber]), {code: 'ERR_STREAM_PREMATURE_CLOSE'}),
 	]);
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage, {execaMethod: execa, fdNumber});
 };
 
 test('abort stream when hitting maxBuffer with stdout', testMaxBufferAbort, 1);
 test('abort stream when hitting maxBuffer with stderr', testMaxBufferAbort, 2);
 test('abort stream when hitting maxBuffer with stdio[*]', testMaxBufferAbort, 3);
+
+const testEarlyError = async (t, getSubprocess) => {
+	const {failed, isMaxBuffer} = await getSubprocess({reject: false, maxBuffer: 1});
+	t.true(failed);
+	t.false(isMaxBuffer);
+};
+
+test('error.isMaxBuffer is false on early errors', testEarlyError, getEarlyErrorSubprocess);
+test('error.isMaxBuffer is false on early errors, sync', testEarlyError, getEarlyErrorSubprocessSync);

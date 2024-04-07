@@ -502,6 +502,7 @@ try {
 	expectType<boolean>(unicornsResult.timedOut);
 	expectType<boolean>(unicornsResult.isCanceled);
 	expectType<boolean>(unicornsResult.isTerminated);
+	expectType<boolean>(unicornsResult.isMaxBuffer);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
@@ -948,6 +949,7 @@ try {
 		expectType<boolean>(error.timedOut);
 		expectType<boolean>(error.isCanceled);
 		expectType<boolean>(error.isTerminated);
+		expectType<boolean>(error.isMaxBuffer);
 		expectType<string | undefined>(error.signal);
 		expectType<string | undefined>(error.signalDescription);
 		expectType<string>(error.cwd);
@@ -1103,6 +1105,7 @@ try {
 	expectType<boolean>(unicornsResult.timedOut);
 	expectType<boolean>(unicornsResult.isCanceled);
 	expectType<boolean>(unicornsResult.isTerminated);
+	expectType<boolean>(unicornsResult.isMaxBuffer);
 	expectType<string | undefined>(unicornsResult.signal);
 	expectType<string | undefined>(unicornsResult.signalDescription);
 	expectType<string>(unicornsResult.cwd);
@@ -1184,6 +1187,7 @@ try {
 		expectType<boolean>(error.timedOut);
 		expectType<boolean>(error.isCanceled);
 		expectType<boolean>(error.isTerminated);
+		expectType<boolean>(error.isMaxBuffer);
 		expectType<string | undefined>(error.signal);
 		expectType<string | undefined>(error.signalDescription);
 		expectType<string>(error.cwd);

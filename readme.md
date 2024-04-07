@@ -254,6 +254,7 @@ try {
 		timedOut: false,
 		isCanceled: false,
 		isTerminated: false,
+		isMaxBuffer: false,
 		code: 'ENOENT',
 		stdout: '',
 		stderr: '',
@@ -659,6 +660,12 @@ Whether the subprocess was terminated by a signal (like `SIGTERM`) sent by eithe
 - The current process.
 - Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
+#### isMaxBuffer
+
+Type: `boolean`
+
+Whether the subprocess failed because its output was larger than the [`maxBuffer`](#maxbuffer) option.
+
 #### exitCode
 
 Type: `number | undefined`
@@ -994,6 +1001,8 @@ Type: `number`\
 Default: `100_000_000`
 
 Largest amount of data allowed on [`stdout`](#stdout), [`stderr`](#stderr) and [`stdio`](#stdio).
+
+When this threshold is hit, the subprocess fails and [`error.isMaxBuffer`](#ismaxbuffer) becomes `true`.
 
 This is measured:
 - By default: in [characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).

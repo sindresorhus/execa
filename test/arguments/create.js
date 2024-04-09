@@ -104,6 +104,16 @@ test('execaNode() bound options are merged multiple times', testMergeMultiple, e
 test('$ bound options are merged multiple times', testMergeMultiple, $);
 test('$.sync bound options are merged multiple times', testMergeMultiple, $.sync);
 
+const testMergeFdSpecific = async (t, execaMethod) => {
+	const {isMaxBuffer, shortMessage} = await t.throwsAsync(execaMethod({maxBuffer: {stdout: 1}})(NOOP_PATH, [foobarString], {maxBuffer: {stderr: 100}}));
+	t.true(isMaxBuffer);
+	t.true(shortMessage.includes('Command\'s stdout was larger than 1'));
+};
+
+test('execa() bound options merge fd-specific ones', testMergeFdSpecific, execa);
+test('execaNode() bound options merge fd-specific ones', testMergeFdSpecific, execaNode);
+test('$ bound options merge fd-specific ones', testMergeFdSpecific, $);
+
 const testMergeEnvUndefined = async (t, execaMethod) => {
 	const {stdout} = await execaMethod({env: {FOO: 'foo'}})(PRINT_ENV_PATH, {env: {BAR: undefined}});
 	t.is(stdout, 'foo\nundefined');

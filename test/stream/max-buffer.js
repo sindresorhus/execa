@@ -87,6 +87,92 @@ test('maxBuffer truncates stderr, sync', testMaxBufferLimit, execaSync, 2, false
 test('maxBuffer truncates stdio[*], sync', testMaxBufferLimit, execaSync, 3, false);
 test('maxBuffer truncates all, sync', testMaxBufferLimit, execaSync, 1, true);
 
+const MAX_BUFFER_DEFAULT = 1e8;
+
+const testMaxBufferDefault = async (t, execaMethod, fdNumber, maxBuffer) => {
+	const length = MAX_BUFFER_DEFAULT;
+	const {shortMessage, stdio} = await runMaxBuffer(t, execaMethod, fdNumber, {length: MAX_BUFFER_DEFAULT + 1, maxBuffer});
+	assertErrorMessage(t, shortMessage, {execaMethod, fdNumber, length});
+	t.is(stdio[fdNumber], getExpectedOutput(length));
+};
+
+test('maxBuffer has a default value with stdout', testMaxBufferDefault, execa, 1, undefined);
+test('maxBuffer has a default value with stderr', testMaxBufferDefault, execa, 2, undefined);
+test('maxBuffer has a default value with stdio[*]', testMaxBufferDefault, execa, 3, undefined);
+test('maxBuffer has a default value with stdout, sync', testMaxBufferDefault, execaSync, 1, undefined);
+test('maxBuffer has a default value with stderr, sync', testMaxBufferDefault, execaSync, 2, undefined);
+test('maxBuffer has a default value with stdio[*], sync', testMaxBufferDefault, execaSync, 3, undefined);
+test('maxBuffer has a default value with stdout with fd-specific options', testMaxBufferDefault, execa, 1, {stderr: 1e9});
+test('maxBuffer has a default value with stderr with fd-specific options', testMaxBufferDefault, execa, 2, {stdout: 1e9});
+test('maxBuffer has a default value with stdio[*] with fd-specific options', testMaxBufferDefault, execa, 3, {stdout: 1e9});
+test('maxBuffer has a default value with stdout with empty fd-specific options', testMaxBufferDefault, execa, 1, {});
+
+const testFdSpecific = async (t, fdNumber, fdName, execaMethod) => {
+	const length = 1;
+	const {shortMessage, stdio} = await runMaxBuffer(t, execaMethod, fdNumber, {maxBuffer: {[fdName]: length}});
+	assertErrorMessage(t, shortMessage, {execaMethod, fdNumber, length});
+	t.is(stdio[fdNumber], getExpectedOutput(length));
+};
+
+test('maxBuffer truncates file descriptors with fd-specific options, stdout', testFdSpecific, 1, 'stdout', execa);
+test('maxBuffer truncates file descriptors with fd-specific options, fd1', testFdSpecific, 1, 'fd1', execa);
+test('maxBuffer truncates file descriptors with fd-specific options, stderr', testFdSpecific, 2, 'stderr', execa);
+test('maxBuffer truncates file descriptors with fd-specific options, fd2', testFdSpecific, 2, 'fd2', execa);
+test('maxBuffer truncates file descriptors with fd-specific options, stdout, all', testFdSpecific, 1, 'all', execa);
+test('maxBuffer truncates file descriptors with fd-specific options, stderr, all', testFdSpecific, 2, 'all', execa);
+test('maxBuffer truncates file descriptors with fd-specific options, fd3', testFdSpecific, 3, 'fd3', execa);
+test('maxBuffer.stdout is used for stdout with fd-specific options, stdout, sync', testFdSpecific, 1, 'stdout', execaSync);
+
+test('maxBuffer does not affect other file descriptors with fd-specific options', async t => {
+	const {isMaxBuffer} = await getMaxBufferSubprocess(execa, 2, {maxBuffer: {stdout: 1}});
+	t.false(isMaxBuffer);
+});
+
+test('maxBuffer.stdout is used for other file descriptors with fd-specific options, sync', async t => {
+	const length = 1;
+	const {shortMessage, stderr} = await runMaxBuffer(t, execaSync, 2, {maxBuffer: {stdout: length}});
+	assertErrorMessage(t, shortMessage, {execaMethod: execaSync, fdNumber: 2, length});
+	t.is(stderr, getExpectedOutput(length));
+});
+
+const testAll = async (t, shouldFail) => {
+	const difference = shouldFail ? 0 : 1;
+	const maxBufferStdout = 2;
+	const maxBufferStderr = 4 - difference;
+	const {isMaxBuffer, shortMessage, stdout, stderr, all} = await execa(
+		'noop-both.js',
+		['\n'.repeat(maxBufferStdout - 1), '\n'.repeat(maxBufferStderr - difference)],
+		{maxBuffer: {stdout: maxBufferStdout, stderr: maxBufferStderr}, all: true, stripFinalNewline: false, reject: false},
+	);
+	t.is(isMaxBuffer, shouldFail);
+	if (shouldFail) {
+		assertErrorMessage(t, shortMessage, {fdNumber: 2, length: maxBufferStderr});
+	}
+
+	t.is(stdout, '\n'.repeat(maxBufferStdout));
+	t.is(stderr, '\n'.repeat(maxBufferStderr));
+	t.is(all, '\n'.repeat(maxBufferStdout + maxBufferStderr));
+};
+
+test('maxBuffer.stdout can differ from maxBuffer.stderr, combined with all, below threshold', testAll, false);
+test('maxBuffer.stdout can differ from maxBuffer.stderr, combined with all, above threshold', testAll, true);
+
+const testInvalidFd = async (t, fdName, execaMethod) => {
+	const {message} = t.throws(() => {
+		execaMethod('empty.js', {maxBuffer: {[fdName]: 0}});
+	});
+	t.true(message.includes(`"maxBuffer.${fdName}" is invalid`));
+};
+
+test('maxBuffer.stdin is invalid', testInvalidFd, 'stdin', execa);
+test('maxBuffer.fd0 is invalid', testInvalidFd, 'fd0', execa);
+test('maxBuffer.other is invalid', testInvalidFd, 'other', execa);
+test('maxBuffer.fd10 is invalid', testInvalidFd, 'fd10', execa);
+test('maxBuffer.stdin is invalid, sync', testInvalidFd, 'stdin', execaSync);
+test('maxBuffer.fd0 is invalid, sync', testInvalidFd, 'fd0', execaSync);
+test('maxBuffer.other is invalid, sync', testInvalidFd, 'other', execaSync);
+test('maxBuffer.fd10 is invalid, sync', testInvalidFd, 'fd10', execaSync);
+
 const testMaxBufferEncoding = async (t, execaMethod, fdNumber) => {
 	const {shortMessage, stdio} = await runMaxBuffer(t, execaMethod, fdNumber, {encoding: 'buffer'});
 	assertErrorMessage(t, shortMessage, {execaMethod, fdNumber, unit: 'bytes'});

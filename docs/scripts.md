@@ -825,7 +825,7 @@ Execa's scripting API mostly consists of only two methods: [`` $`command` ``](..
 
 [No special binary](#main-binary) is recommended, no [global variable](#global-variables) is injected: scripts are regular Node.js files.
 
-Execa is a thin wrapper around the core Node.js [`child_process` module](https://nodejs.org/api/child_process.html). Unlike zx, it lets you use [any of its native features](#background-subprocesses): [`pid`](#pid), [IPC](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback), [`unref()`](https://nodejs.org/api/child_process.html#subprocessunref), [`detached`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`uid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`gid`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), [`cancelSignal`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options), etc.
+Execa is a thin wrapper around the core Node.js [`child_process` module](https://nodejs.org/api/child_process.html). Unlike zx, it lets you use [any of its native features](#background-subprocesses): [`pid`](#pid), [IPC](../readme.md#optionsipc), [`unref()`](https://nodejs.org/api/child_process.html#subprocessunref), [`detached`](../readme.md#optionsdetached), [`uid`](../readme.md#optionsuid), [`gid`](../readme.md#optionsgid), [`cancelSignal`](../readme.md#optionscancelsignal), etc.
 
 ### Modularity
 

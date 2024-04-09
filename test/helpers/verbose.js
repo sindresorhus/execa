@@ -7,11 +7,11 @@ import {nestedExecaAsync, nestedExecaSync} from './nested.js';
 const isWindows = platform === 'win32';
 export const QUOTE = isWindows ? '"' : '\'';
 
-const runErrorSubprocess = async (execaMethod, t, verbose) => {
+const runErrorSubprocess = async (execaMethod, t, verbose, expectExitCode = true) => {
 	const subprocess = execaMethod('noop-fail.js', ['1', foobarString], {verbose});
 	await t.throwsAsync(subprocess);
 	const {stderr} = await subprocess.parent;
-	if (verbose !== 'none') {
+	if (expectExitCode) {
 		t.true(stderr.includes('exit code 2'));
 	}
 
@@ -62,3 +62,14 @@ const normalizeTimestamp = stderr => stderr.replaceAll(/^\[\d{2}:\d{2}:\d{2}.\d{
 const normalizeDuration = stderr => stderr.replaceAll(/\(done in [^)]+\)/g, '(done in 0ms)');
 
 export const getVerboseOption = (isVerbose, verbose = 'short') => ({verbose: isVerbose ? verbose : 'none'});
+
+export const fdNoneOption = {stdout: 'none', stderr: 'none'};
+export const fdShortOption = {stdout: 'short', stderr: 'none'};
+export const fdFullOption = {stdout: 'full', stderr: 'none'};
+export const fdStdoutNoneOption = {stdout: 'none', stderr: 'full'};
+export const fdStderrNoneOption = {stdout: 'full', stderr: 'none'};
+export const fdStderrShortOption = {stdout: 'none', stderr: 'short'};
+export const fdStderrFullOption = {stdout: 'none', stderr: 'full'};
+export const fd3NoneOption = {stdout: 'full', fd3: 'none'};
+export const fd3ShortOption = {stdout: 'none', fd3: 'short'};
+export const fd3FullOption = {stdout: 'none', fd3: 'full'};

@@ -831,11 +831,11 @@ Type: `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
 
-Some options are related to the subprocess output: [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: [`verbose`](#optionsverbose), [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 ```js
-await execa('./run.js', {maxBuffer: 1e6}) // Same value for stdout and stderr
-await execa('./run.js', {maxBuffer: {stdout: 1e4, stderr: 1e6}}) // Different values
+await execa('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
+await execa('./run.js', {verbose: {stdout: 'none', stderr: 'full'}}) // Different values
 ```
 
 #### options.reject
@@ -938,6 +938,8 @@ If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, u
 - the [`encoding`](#optionsencoding) option is binary.
 
 This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
+
+By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
 
 #### options.buffer
 

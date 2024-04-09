@@ -442,7 +442,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard output. This can be:
-	- `'pipe'`: Sets `subprocessResult.stdout` (as a string or `Uint8Array`) and [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
+	- `'pipe'`: Sets `result.stdout` (as a string or `Uint8Array`) and [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout) (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stdout`.
 	- `'inherit'`: Re-use the current process' `stdout`.
@@ -462,7 +462,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	/**
 	[How to setup](https://nodejs.org/api/child_process.html#child_process_options_stdio) the subprocess' standard error. This can be:
-	- `'pipe'`: Sets `subprocessResult.stderr` (as a string or `Uint8Array`) and [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
+	- `'pipe'`: Sets `result.stderr` (as a string or `Uint8Array`) and [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr) (as a stream).
 	- `'overlapped'`: Like `'pipe'` but asynchronous on Windows.
 	- `'ignore'`: Do not use `stderr`.
 	- `'inherit'`: Re-use the current process' `stderr`.
@@ -686,7 +686,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly buffer?: boolean;
 
 	/**
-	Add an `.all` property on the promise and the resolved value. The property contains the output of the subprocess with `stdout` and `stderr` interleaved.
+	Add a `subprocess.all` stream and a `result.all` property. They contain the combined/[interleaved](#ensuring-all-output-is-interleaved) output of the subprocess' `stdout` and `stderr`.
 
 	@default false
 	*/
@@ -720,7 +720,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-	When `AbortController.abort()` is called, `.isCanceled` becomes `true`.
+	When `AbortController.abort()` is called, `result.isCanceled` becomes `true`.
 
 	@example
 	```
@@ -888,7 +888,7 @@ declare abstract class CommonResult<
 	/**
 	Results of the other subprocesses that were piped into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
 
-	This array is initially empty and is populated each time the `.pipe()` method resolves.
+	This array is initially empty and is populated each time the `subprocess.pipe()` method resolves.
 	*/
 	pipedFrom: Unless<IsSync, ExecaResult[], []>;
 
@@ -912,7 +912,7 @@ declare abstract class CommonResult<
 	originalMessage?: string;
 
 	/**
-	Underlying error, if there is one. For example, this is set by `.kill(error)`.
+	Underlying error, if there is one. For example, this is set by `subprocess.kill(error)`.
 
 	This is usually an `Error` instance.
 	*/
@@ -979,7 +979,7 @@ declare abstract class CommonError<
 /**
 Exception thrown when the subprocess fails, either:
 - its exit code is not `0`
-- it was terminated with a signal, including `.kill()`
+- it was terminated with a signal, including `subprocess.kill()`
 - timing out
 - being canceled
 - there's not enough memory or there are already too many subprocesses
@@ -1061,7 +1061,7 @@ type PipeOptions = {
 	/**
 	Unpipe the subprocess when the signal aborts.
 
-	The `.pipe()` method will be rejected with a cancellation error.
+	The `subprocess.pipe()` method will be rejected with a cancellation error.
 	*/
 	readonly unpipeSignal?: AbortSignal;
 };
@@ -1087,7 +1087,7 @@ type PipableSubprocess = {
 	): Promise<ExecaResult<OptionsType>> & PipableSubprocess;
 
 	/**
-	Like `.pipe(file, arguments?, options?)` but using a `command` template string instead. This follows the same syntax as `$`.
+	Like `subprocess.pipe(file, arguments?, options?)` but using a `command` template string instead. This follows the same syntax as `$`.
 	*/
 	pipe(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
 	Promise<ExecaResult<{}>> & PipableSubprocess;
@@ -1096,7 +1096,7 @@ type PipableSubprocess = {
 	=> Promise<ExecaResult<OptionsType>> & PipableSubprocess;
 
 	/**
-	Like `.pipe(file, arguments?, options?)` but using the return value of another `execa()` call instead.
+	Like `subprocess.pipe(file, arguments?, options?)` but using the return value of another `execa()` call instead.
 
 	This is the most advanced method to pipe subprocesses. It is useful in specific cases, such as piping multiple subprocesses to the same subprocess.
 	*/
@@ -1117,18 +1117,18 @@ type ReadableOptions = {
 	/**
 	If `false`, the stream iterates over lines. Each line is a string. Also, the stream is in [object mode](https://nodejs.org/api/stream.html#object-mode).
 
-	If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with `.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
+	If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with `subprocess.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
 
 	This is always `true` when the `encoding` option is binary.
 
-	@default `false` with `.iterable()`, `true` otherwise
+	@default `false` with `subprocess.iterable()`, `true` otherwise
 	*/
 	readonly binary?: boolean;
 
 	/**
 	If both this option and the `binary` option is `false`, newlines are stripped from each line.
 
-	@default `false` with `.iterable()`, `true` otherwise
+	@default `false` with `subprocess.iterable()`, `true` otherwise
 	*/
 	readonly preserveNewlines?: boolean;
 };
@@ -1272,9 +1272,9 @@ The `command` template string can use multiple lines and indentation.
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
 @returns An `ExecaSubprocess` that is both:
-- a `Promise` resolving or rejecting with a `subprocessResult`.
+- a `Promise` resolving or rejecting with a subprocess `result`.
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `subprocessResult` error
+@throws A subprocess `result` error
 
 @example <caption>Promise interface</caption>
 ```
@@ -1456,7 +1456,7 @@ type ExecaSync<OptionsType extends SyncOptions> = {
 /**
 Same as `execa()` but synchronous.
 
-Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available.
+Returns or throws a subprocess `result`. The `subprocess` is not returned: its methods and properties are not available.
 
 The following features cannot be used:
 - Streams: [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
@@ -1471,8 +1471,8 @@ The following features cannot be used:
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
-@returns A `subprocessResult` object
-@throws A `subprocessResult` error
+@returns A subprocess `result` object
+@throws A subprocess `result` error
 
 @example <caption>Promise interface</caption>
 ```
@@ -1551,9 +1551,9 @@ Arguments are automatically escaped. They can contain any character, but spaces 
 
 @param command - The program/script to execute and its arguments.
 @returns An `ExecaSubprocess` that is both:
-- a `Promise` resolving or rejecting with a `subprocessResult`.
+- a `Promise` resolving or rejecting with a subprocess `result`.
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `subprocessResult` error
+@throws A subprocess `result` error
 
 @example
 ```
@@ -1580,7 +1580,7 @@ type ExecaCommandSync<OptionsType extends SyncOptions> = {
 /**
 Same as `execaCommand()` but synchronous.
 
-Returns or throws a `subprocessResult`. The `subprocess` is not returned: its methods and properties are not available.
+Returns or throws a subprocess `result`. The `subprocess` is not returned: its methods and properties are not available.
 
 The following features cannot be used:
 - Streams: [`subprocess.stdin`](https://nodejs.org/api/child_process.html#subprocessstdin), [`subprocess.stdout`](https://nodejs.org/api/child_process.html#subprocessstdout), [`subprocess.stderr`](https://nodejs.org/api/child_process.html#subprocessstderr), `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
@@ -1594,8 +1594,8 @@ The following features cannot be used:
 - The `maxBuffer` option is always measured in bytes, not in characters, lines nor objects. Also, it ignores transforms and the `encoding` option.
 
 @param command - The program/script to execute and its arguments.
-@returns A `subprocessResult` object
-@throws A `subprocessResult` error
+@returns A subprocess `result` object
+@throws A subprocess `result` error
 
 @example
 ```
@@ -1655,9 +1655,9 @@ Just like `execa()`, this can use the template string syntax or bind options. It
 This is the preferred method when executing multiple commands in a script file.
 
 @returns An `ExecaSubprocess` that is both:
-	- a `Promise` resolving or rejecting with a `subprocessResult`.
+	- a `Promise` resolving or rejecting with a subprocess `result`.
 	- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `subprocessResult` error
+@throws A subprocess `result` error
 
 @example <caption>Basic</caption>
 ```
@@ -1712,9 +1712,9 @@ This is the preferred method when executing Node.js files.
 @param scriptPath - Node.js script to execute, as a string or file URL
 @param arguments - Arguments to pass to `scriptPath` on execution.
 @returns An `ExecaSubprocess` that is both:
-- a `Promise` resolving or rejecting with a `subprocessResult`.
+- a `Promise` resolving or rejecting with a subprocess `result`.
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A `subprocessResult` error
+@throws A subprocess `result` error
 
 @example
 ```

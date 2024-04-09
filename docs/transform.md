@@ -2,7 +2,7 @@
 
 ## Summary
 
-Transforms map or filter the input or output of a subprocess. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) to the [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) or [`stdio`](../readme.md#stdio-1) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
+Transforms map or filter the input or output of a subprocess. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) to the [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) or [`stdio`](../readme.md#optionsstdio) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
 
 ```js
 import {execa} from 'execa';
@@ -19,7 +19,7 @@ console.log(stdout); // HELLO
 ## Encoding
 
 The `line` argument passed to the transform is a string by default.\
-However, if either a `{transform, binary: true}` plain object is passed, or if the [`encoding` option](../readme.md#encoding) is binary, it is an `Uint8Array` instead.
+However, if either a `{transform, binary: true}` plain object is passed, or if the [`encoding`](../readme.md#optionsencoding) option is binary, it is an `Uint8Array` instead.
 
 The transform can `yield` either a `string` or an `Uint8Array`, regardless of the `line` argument's type.
 
@@ -43,7 +43,7 @@ console.log(stdout); // ''
 ## Binary data
 
 The transform iterates over lines by default.\
-However, if either a `{transform, binary: true}` plain object is passed, or if the [`encoding` option](../readme.md#encoding) is binary, it iterates over arbitrary chunks of data instead.
+However, if either a `{transform, binary: true}` plain object is passed, or if the [`encoding`](../readme.md#optionsencoding) option is binary, it iterates over arbitrary chunks of data instead.
 
 ```js
 await execa('./binary.js', {stdout: {transform, binary: true}});
@@ -116,7 +116,7 @@ await execa('./run.js', {stdout: {transform, preserveNewlines: true}});
 ## Object mode
 
 By default, `stdout` and `stderr`'s transforms must return a string or an `Uint8Array`.\
-However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null` or `undefined`. The subprocess' [`stdout`](../readme.md#stdout)/[`stderr`](../readme.md#stderr) will be an array of values.
+However, if a `{transform, objectMode: true}` plain object is passed, any type can be returned instead, except `null` or `undefined`. The subprocess' [`stdout`](../readme.md#resultstdout)/[`stderr`](../readme.md#resultstderr) will be an array of values.
 
 ```js
 const transform = function * (line) {
@@ -198,7 +198,7 @@ console.log(stdout); // `stdout` is compressed with gzip
 
 ## Combining
 
-The [`stdin`](../readme.md#stdin), [`stdout`](../readme.md#stdout-1), [`stderr`](../readme.md#stderr-1) and [`stdio`](../readme.md#stdio-1) options can accept an array of values. While this is not specific to transforms, this can be useful with them too. For example, the following transform impacts the value printed by `inherit`.
+The [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) and [`stdio`](../readme.md#optionsstdio) options can accept an array of values. While this is not specific to transforms, this can be useful with them too. For example, the following transform impacts the value printed by `inherit`.
 
 ```js
 await execa('echo', ['hello'], {stdout: [transform, 'inherit']});
@@ -218,7 +218,7 @@ await execa('./run.js', {stdout: [new CompressionStream('gzip'), {file: './outpu
 
 ## Async iteration
 
-In some cases, [iterating](../readme.md#iterablereadableoptions) over the subprocess can be an alternative to transforms.
+In some cases, [iterating](../readme.md#subprocessiterablereadableoptions) over the subprocess can be an alternative to transforms.
 
 ```js
 import {execa} from 'execa';

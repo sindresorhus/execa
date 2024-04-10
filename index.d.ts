@@ -685,9 +685,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
 
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
 	@default 'none'
 	*/
-	readonly verbose?: 'none' | 'short' | 'full';
+	readonly verbose?: FdGenericOption<'none' | 'short' | 'full'>;
 
 	/**
 	Kill the subprocess when the current process exits unless either:
@@ -771,13 +773,13 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 /**
 Subprocess options.
 
-Some options are related to the subprocess output: `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 
 ```
-await execa('./run.js', {maxBuffer: 1e6}) // Same value for stdout and stderr
-await execa('./run.js', {maxBuffer: {stdout: 1e4, stderr: 1e6}}) // Different values
+await execa('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
+await execa('./run.js', {verbose: {stdout: 'none', stderr: 'full'}}) // Different values
 ```
 */
 export type Options = CommonOptions<false>;
@@ -785,13 +787,13 @@ export type Options = CommonOptions<false>;
 /**
 Subprocess options, with synchronous methods.
 
-Some options are related to the subprocess output: `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 
 ```
-execaSync('./run.js', {maxBuffer: 1e6}) // Same value for stdout and stderr
-execaSync('./run.js', {maxBuffer: {stdout: 1e4, stderr: 1e6}}) // Different values
+execaSync('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
+execaSync('./run.js', {verbose: {stdout: 'none', stderr: 'full'}}) // Different values
 ```
 */
 export type SyncOptions = CommonOptions<true>;

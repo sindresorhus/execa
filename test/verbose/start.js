@@ -14,6 +14,9 @@ import {
 	getCommandLines,
 	testTimestamp,
 	getVerboseOption,
+	fdNoneOption,
+	fdShortOption,
+	fdFullOption,
 } from '../helpers/verbose.js';
 
 setFixtureDir();
@@ -25,18 +28,30 @@ const testPrintCommand = async (t, verbose, execaMethod) => {
 
 test('Prints command, verbose "short"', testPrintCommand, 'short', parentExecaAsync);
 test('Prints command, verbose "full"', testPrintCommand, 'full', parentExecaAsync);
+test('Prints command, verbose "short", fd-specific', testPrintCommand, fdShortOption, parentExecaAsync);
+test('Prints command, verbose "full", fd-specific', testPrintCommand, fdFullOption, parentExecaAsync);
 test('Prints command, verbose "short", sync', testPrintCommand, 'short', parentExecaSync);
 test('Prints command, verbose "full", sync', testPrintCommand, 'full', parentExecaSync);
+test('Prints command, verbose "short", fd-specific, sync', testPrintCommand, fdShortOption, parentExecaSync);
+test('Prints command, verbose "full", fd-specific, sync', testPrintCommand, fdFullOption, parentExecaSync);
 test('Prints command, verbose "short", worker', testPrintCommand, 'short', parentWorker);
 test('Prints command, verbose "full", work', testPrintCommand, 'full', parentWorker);
+test('Prints command, verbose "short", fd-specific, worker', testPrintCommand, fdShortOption, parentWorker);
+test('Prints command, verbose "full", fd-specific, work', testPrintCommand, fdFullOption, parentWorker);
 
-const testNoPrintCommand = async (t, execaMethod) => {
-	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'none'});
+const testNoPrintCommand = async (t, verbose, execaMethod) => {
+	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose});
 	t.is(stderr, '');
 };
 
-test('Does not print command, verbose "none"', testNoPrintCommand, parentExecaAsync);
-test('Does not print command, verbose "none", sync', testNoPrintCommand, parentExecaSync);
+test('Does not print command, verbose "none"', testNoPrintCommand, 'none', parentExecaAsync);
+test('Does not print command, verbose default', testNoPrintCommand, undefined, parentExecaAsync);
+test('Does not print command, verbose "none", fd-specific', testNoPrintCommand, fdNoneOption, parentExecaAsync);
+test('Does not print command, verbose default, fd-specific', testNoPrintCommand, {}, parentExecaAsync);
+test('Does not print command, verbose "none", sync', testNoPrintCommand, 'none', parentExecaSync);
+test('Does not print command, verbose default, sync', testNoPrintCommand, undefined, parentExecaSync);
+test('Does not print command, verbose "none", fd-specific, sync', testNoPrintCommand, fdNoneOption, parentExecaSync);
+test('Does not print command, verbose default, fd-specific, sync', testNoPrintCommand, {}, parentExecaSync);
 
 const testPrintCommandError = async (t, execaMethod) => {
 	const stderr = await execaMethod(t, 'short');

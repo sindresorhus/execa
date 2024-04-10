@@ -161,7 +161,7 @@ test('Does not change subprocess.stdout', testStdioSame, 1);
 test('Does not change subprocess.stderr', testStdioSame, 2);
 
 const testLines = async (t, stripFinalNewline, execaMethod) => {
-	const {stderr} = await execaMethod('noop-fd.js', ['1', simpleFull], {verbose: 'full', lines: true});
+	const {stderr} = await execaMethod('noop-fd.js', ['1', simpleFull], {verbose: 'full', lines: true, stripFinalNewline});
 	t.deepEqual(getOutputLines(stderr), noNewlinesChunks.map(line => `${testTimestamp} [0]   ${line}`));
 };
 

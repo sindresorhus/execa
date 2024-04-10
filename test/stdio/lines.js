@@ -9,6 +9,7 @@ import {assertStreamOutput, assertStreamDataEvents, assertIterableChunks} from '
 import {
 	simpleFull,
 	simpleChunks,
+	simpleFullEndChunks,
 	simpleFullUint8Array,
 	simpleFullHex,
 	simpleFullUtf16Uint8Array,
@@ -37,14 +38,20 @@ test('"lines: true" splits lines, stdout, string', testStreamLines, 1, simpleFul
 test('"lines: true" splits lines, stderr, string', testStreamLines, 2, simpleFull, simpleLines, false, execa);
 test('"lines: true" splits lines, stdio[*], string', testStreamLines, 3, simpleFull, simpleLines, false, execa);
 test('"lines: true" splits lines, stdout, string, stripFinalNewline', testStreamLines, 1, simpleFull, noNewlinesChunks, true, execa);
+test('"lines: true" splits lines, stdout, string, stripFinalNewline, fd-specific', testStreamLines, 1, simpleFull, noNewlinesChunks, {stdout: true}, execa);
 test('"lines: true" splits lines, stderr, string, stripFinalNewline', testStreamLines, 2, simpleFull, noNewlinesChunks, true, execa);
+test('"lines: true" splits lines, stderr, string, stripFinalNewline, fd-specific', testStreamLines, 2, simpleFull, noNewlinesChunks, {stderr: true}, execa);
 test('"lines: true" splits lines, stdio[*], string, stripFinalNewline', testStreamLines, 3, simpleFull, noNewlinesChunks, true, execa);
+test('"lines: true" splits lines, stdio[*], string, stripFinalNewline, fd-specific', testStreamLines, 3, simpleFull, noNewlinesChunks, {fd3: true}, execa);
 test('"lines: true" splits lines, stdout, string, sync', testStreamLines, 1, simpleFull, simpleLines, false, execaSync);
 test('"lines: true" splits lines, stderr, string, sync', testStreamLines, 2, simpleFull, simpleLines, false, execaSync);
 test('"lines: true" splits lines, stdio[*], string, sync', testStreamLines, 3, simpleFull, simpleLines, false, execaSync);
 test('"lines: true" splits lines, stdout, string, stripFinalNewline, sync', testStreamLines, 1, simpleFull, noNewlinesChunks, true, execaSync);
+test('"lines: true" splits lines, stdout, string, stripFinalNewline, fd-specific, sync', testStreamLines, 1, simpleFull, noNewlinesChunks, {stdout: true}, execaSync);
 test('"lines: true" splits lines, stderr, string, stripFinalNewline, sync', testStreamLines, 2, simpleFull, noNewlinesChunks, true, execaSync);
+test('"lines: true" splits lines, stderr, string, stripFinalNewline, fd-specific, sync', testStreamLines, 2, simpleFull, noNewlinesChunks, {stderr: true}, execaSync);
 test('"lines: true" splits lines, stdio[*], string, stripFinalNewline, sync', testStreamLines, 3, simpleFull, noNewlinesChunks, true, execaSync);
+test('"lines: true" splits lines, stdio[*], string, stripFinalNewline, fd-specific, sync', testStreamLines, 3, simpleFull, noNewlinesChunks, {fd3: true}, execaSync);
 
 const testStreamLinesNoop = async (t, lines, execaMethod) => {
 	const {stdout} = await execaMethod('noop-fd.js', ['1', simpleFull], {lines});
@@ -60,31 +67,35 @@ const bigStringNoNewlines = '.'.repeat(1e6);
 const bigStringNoNewlinesEnd = `${bigStringNoNewlines}\n`;
 
 // eslint-disable-next-line max-params
-const testStreamLinesGenerator = async (t, input, expectedLines, objectMode, binary, execaMethod) => {
+const testStreamLinesGenerator = async (t, input, expectedLines, objectMode, binary, stripFinalNewline, execaMethod) => {
 	const {stdout} = await execaMethod('noop.js', {
 		stdout: getOutputsGenerator(input)(objectMode, binary),
 		lines: true,
-		stripFinalNewline: false,
+		stripFinalNewline,
 	});
 	t.deepEqual(stdout, expectedLines);
 };
 
-test('"lines: true" works with strings generators', testStreamLinesGenerator, simpleChunks, simpleFullEndLines, false, false, execa);
-test('"lines: true" works with strings generators, binary', testStreamLinesGenerator, simpleChunks, simpleLines, false, true, execa);
-test('"lines: true" works with big strings generators', testStreamLinesGenerator, [bigString], bigArray, false, false, execa);
-test('"lines: true" works with big strings generators without newlines', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlinesEnd], false, false, execa);
-test('"lines: true" is a noop with strings generators, objectMode', testStreamLinesGenerator, simpleChunks, simpleChunks, true, false, execa);
-test('"lines: true" is a noop with strings generators, binary, objectMode', testStreamLinesGenerator, simpleChunks, simpleChunks, true, true, execa);
-test('"lines: true" is a noop big strings generators, objectMode', testStreamLinesGenerator, [bigString], [bigString], true, false, execa);
-test('"lines: true" is a noop big strings generators without newlines, objectMode', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlines], true, false, execa);
-test('"lines: true" works with strings generators, sync', testStreamLinesGenerator, simpleChunks, simpleFullEndLines, false, false, execaSync);
-test('"lines: true" works with strings generators, binary, sync', testStreamLinesGenerator, simpleChunks, simpleLines, false, true, execaSync);
-test('"lines: true" works with big strings generators, sync', testStreamLinesGenerator, [bigString], bigArray, false, false, execaSync);
-test('"lines: true" works with big strings generators without newlines, sync', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlinesEnd], false, false, execaSync);
-test('"lines: true" is a noop with strings generators, objectMode, sync', testStreamLinesGenerator, simpleChunks, simpleChunks, true, false, execaSync);
-test('"lines: true" is a noop with strings generators, binary, objectMode, sync', testStreamLinesGenerator, simpleChunks, simpleChunks, true, true, execaSync);
-test('"lines: true" is a noop big strings generators, objectMode, sync', testStreamLinesGenerator, [bigString], [bigString], true, false, execaSync);
-test('"lines: true" is a noop big strings generators without newlines, objectMode, sync', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlines], true, false, execaSync);
+test('"lines: true" works with strings generators', testStreamLinesGenerator, simpleChunks, simpleFullEndLines, false, false, false, execa);
+test('"lines: true" works with strings generators, binary', testStreamLinesGenerator, simpleChunks, simpleLines, false, true, false, execa);
+test('"lines: true" works with big strings generators', testStreamLinesGenerator, [bigString], bigArray, false, false, false, execa);
+test('"lines: true" works with big strings generators without newlines', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlinesEnd], false, false, false, execa);
+test('"lines: true" is a noop with strings generators, objectMode', testStreamLinesGenerator, simpleFullEndChunks, simpleFullEndChunks, true, false, false, execa);
+test('"lines: true" is a noop with strings generators, stripFinalNewline, objectMode', testStreamLinesGenerator, simpleFullEndChunks, simpleFullEndChunks, true, false, true, execa);
+test('"lines: true" is a noop with strings generators, stripFinalNewline, fd-specific, objectMode', testStreamLinesGenerator, simpleFullEndChunks, simpleFullEndChunks, true, false, {stdout: true}, execa);
+test('"lines: true" is a noop with strings generators, binary, objectMode', testStreamLinesGenerator, simpleChunks, simpleChunks, true, true, false, execa);
+test('"lines: true" is a noop big strings generators, objectMode', testStreamLinesGenerator, [bigString], [bigString], true, false, false, execa);
+test('"lines: true" is a noop big strings generators without newlines, objectMode', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlines], true, false, false, execa);
+test('"lines: true" works with strings generators, sync', testStreamLinesGenerator, simpleChunks, simpleFullEndLines, false, false, false, execaSync);
+test('"lines: true" works with strings generators, binary, sync', testStreamLinesGenerator, simpleChunks, simpleLines, false, true, false, execaSync);
+test('"lines: true" works with big strings generators, sync', testStreamLinesGenerator, [bigString], bigArray, false, false, false, execaSync);
+test('"lines: true" works with big strings generators without newlines, sync', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlinesEnd], false, false, false, execaSync);
+test('"lines: true" is a noop with strings generators, objectMode, sync', testStreamLinesGenerator, simpleFullEndChunks, simpleFullEndChunks, true, false, false, execaSync);
+test('"lines: true" is a noop with strings generators, stripFinalNewline, objectMode, sync', testStreamLinesGenerator, simpleFullEndChunks, simpleFullEndChunks, true, false, true, execaSync);
+test('"lines: true" is a noop with strings generators, stripFinalNewline, fd-specific, objectMode, sync', testStreamLinesGenerator, simpleFullEndChunks, simpleFullEndChunks, true, false, {stdout: true}, execaSync);
+test('"lines: true" is a noop with strings generators, binary, objectMode, sync', testStreamLinesGenerator, simpleChunks, simpleChunks, true, true, false, execaSync);
+test('"lines: true" is a noop big strings generators, objectMode, sync', testStreamLinesGenerator, [bigString], [bigString], true, false, false, execaSync);
+test('"lines: true" is a noop big strings generators without newlines, objectMode, sync', testStreamLinesGenerator, [bigStringNoNewlines], [bigStringNoNewlines], true, false, false, execaSync);
 
 const testLinesObjectMode = async (t, execaMethod) => {
 	const {stdout} = await execaMethod('noop.js', {
@@ -105,16 +116,22 @@ const testEncoding = async (t, input, expectedOutput, encoding, stripFinalNewlin
 
 test('"lines: true" is a noop with "encoding: utf16"', testEncoding, simpleFullUtf16Uint8Array, simpleLines, 'utf16le', false, execa);
 test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline', testEncoding, simpleFullUtf16Uint8Array, noNewlinesChunks, 'utf16le', true, execa);
+test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline, fd-specific', testEncoding, simpleFullUtf16Uint8Array, noNewlinesChunks, 'utf16le', {stdout: true}, execa);
 test('"lines: true" is a noop with "encoding: buffer"', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execa);
 test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execa);
+test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline, fd-specific', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', {stdout: false}, execa);
 test('"lines: true" is a noop with "encoding: hex"', testEncoding, simpleFull, simpleFullHex, 'hex', false, execa);
 test('"lines: true" is a noop with "encoding: hex", stripFinalNewline', testEncoding, simpleFull, simpleFullHex, 'hex', true, execa);
+test('"lines: true" is a noop with "encoding: hex", stripFinalNewline, fd-specific', testEncoding, simpleFull, simpleFullHex, 'hex', {stdout: true}, execa);
 test('"lines: true" is a noop with "encoding: utf16", sync', testEncoding, simpleFullUtf16Uint8Array, simpleLines, 'utf16le', false, execaSync);
 test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline, sync', testEncoding, simpleFullUtf16Uint8Array, noNewlinesChunks, 'utf16le', true, execaSync);
+test('"lines: true" is a noop with "encoding: utf16", stripFinalNewline, fd-specific, sync', testEncoding, simpleFullUtf16Uint8Array, noNewlinesChunks, 'utf16le', {stdout: true}, execaSync);
 test('"lines: true" is a noop with "encoding: buffer", sync', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execaSync);
 test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline, sync', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', false, execaSync);
+test('"lines: true" is a noop with "encoding: buffer", stripFinalNewline, fd-specific, sync', testEncoding, simpleFull, simpleFullUint8Array, 'buffer', {stdout: false}, execaSync);
 test('"lines: true" is a noop with "encoding: hex", sync', testEncoding, simpleFull, simpleFullHex, 'hex', false, execaSync);
 test('"lines: true" is a noop with "encoding: hex", stripFinalNewline, sync', testEncoding, simpleFull, simpleFullHex, 'hex', true, execaSync);
+test('"lines: true" is a noop with "encoding: hex", stripFinalNewline, fd-specific, sync', testEncoding, simpleFull, simpleFullHex, 'hex', {stdout: true}, execaSync);
 
 const testLinesNoBuffer = async (t, execaMethod) => {
 	const {stdout} = await getSimpleChunkSubprocess(execaMethod, {buffer: false});

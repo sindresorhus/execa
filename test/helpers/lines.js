@@ -20,6 +20,7 @@ const simpleFullUtf16Buffer = Buffer.from(simpleFull, 'utf16le');
 export const simpleFullUtf16Uint8Array = new Uint8Array(simpleFullUtf16Buffer);
 export const simpleFullEnd = `${simpleFull}\n`;
 const simpleFullEndBuffer = Buffer.from(simpleFullEnd);
+export const simpleFullEndChunks = [simpleFullEnd];
 export const simpleFullEndUtf16Inverted = simpleFullEndBuffer.toString('utf16le');
 export const simpleLines = ['aaa\n', 'bbb\n', 'ccc'];
 export const simpleFullEndLines = ['aaa\n', 'bbb\n', 'ccc\n'];

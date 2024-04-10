@@ -23,30 +23,57 @@ const testAllBoth = async (t, expectedOutput, encoding, lines, stripFinalNewline
 	t.deepEqual(all, expectedOutput);
 };
 
+const stripOne = {stderr: true};
+const stripBoth = {stdout: true, stderr: true};
+
 test('result.all is defined', testAllBoth, doubleFoobarStringFull, 'utf8', false, false, false, execa);
 test('result.all is defined, encoding "buffer"', testAllBoth, doubleFoobarUint8ArrayFull, 'buffer', false, false, false, execa);
 test('result.all is defined, lines', testAllBoth, doubleFoobarArrayFull, 'utf8', true, false, false, execa);
 test('result.all is defined, stripFinalNewline', testAllBoth, doubleFoobarString, 'utf8', false, true, false, execa);
+test('result.all is defined, stripFinalNewline, fd-specific one', testAllBoth, doubleFoobarString, 'utf8', false, stripOne, false, execa);
+test('result.all is defined, stripFinalNewline, fd-specific both', testAllBoth, doubleFoobarString, 'utf8', false, stripBoth, false, execa);
 test('result.all is defined, encoding "buffer", stripFinalNewline', testAllBoth, doubleFoobarUint8Array, 'buffer', false, true, false, execa);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific one', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripOne, false, execa);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific both', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripBoth, false, execa);
 test('result.all is defined, lines, stripFinalNewline', testAllBoth, doubleFoobarArray, 'utf8', true, true, false, execa);
+test('result.all is defined, lines, stripFinalNewline, fd-specific one', testAllBoth, doubleFoobarArray, 'utf8', true, stripOne, false, execa);
+test('result.all is defined, lines, stripFinalNewline, fd-specific both', testAllBoth, doubleFoobarArray, 'utf8', true, stripBoth, false, execa);
 test('result.all is defined, failure', testAllBoth, doubleFoobarStringFull, 'utf8', false, false, true, execa);
 test('result.all is defined, encoding "buffer", failure', testAllBoth, doubleFoobarUint8ArrayFull, 'buffer', false, false, true, execa);
 test('result.all is defined, lines, failure', testAllBoth, doubleFoobarArrayFull, 'utf8', true, false, true, execa);
 test('result.all is defined, stripFinalNewline, failure', testAllBoth, doubleFoobarString, 'utf8', false, true, true, execa);
+test('result.all is defined, stripFinalNewline, fd-specific one, failure', testAllBoth, doubleFoobarString, 'utf8', false, stripOne, true, execa);
+test('result.all is defined, stripFinalNewline, fd-specific both, failure', testAllBoth, doubleFoobarString, 'utf8', false, stripBoth, true, execa);
 test('result.all is defined, encoding "buffer", stripFinalNewline, failure', testAllBoth, doubleFoobarUint8Array, 'buffer', false, true, true, execa);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific one, failure', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripOne, true, execa);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific both, failure', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripBoth, true, execa);
 test('result.all is defined, lines, stripFinalNewline, failure', testAllBoth, doubleFoobarArray, 'utf8', true, true, true, execa);
+test('result.all is defined, lines, stripFinalNewline, fd-specific one, failure', testAllBoth, doubleFoobarArray, 'utf8', true, stripOne, true, execa);
+test('result.all is defined, lines, stripFinalNewline, fd-specific both, failure', testAllBoth, doubleFoobarArray, 'utf8', true, stripBoth, true, execa);
 test('result.all is defined, sync', testAllBoth, doubleFoobarStringFull, 'utf8', false, false, false, execaSync);
 test('result.all is defined, encoding "buffer", sync', testAllBoth, doubleFoobarUint8ArrayFull, 'buffer', false, false, false, execaSync);
 test('result.all is defined, lines, sync', testAllBoth, doubleFoobarArrayFull, 'utf8', true, false, false, execaSync);
 test('result.all is defined, stripFinalNewline, sync', testAllBoth, doubleFoobarString, 'utf8', false, true, false, execaSync);
+test('result.all is defined, stripFinalNewline, fd-specific one, sync', testAllBoth, doubleFoobarString, 'utf8', false, stripOne, false, execaSync);
+test('result.all is defined, stripFinalNewline, fd-specific both, sync', testAllBoth, doubleFoobarString, 'utf8', false, stripBoth, false, execaSync);
 test('result.all is defined, encoding "buffer", stripFinalNewline, sync', testAllBoth, doubleFoobarUint8Array, 'buffer', false, true, false, execaSync);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific one, sync', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripOne, false, execaSync);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific both, sync', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripBoth, false, execaSync);
 test('result.all is defined, lines, stripFinalNewline, sync', testAllBoth, doubleFoobarArray, 'utf8', true, true, false, execaSync);
+test('result.all is defined, lines, stripFinalNewline, fd-specific one, sync', testAllBoth, doubleFoobarArray, 'utf8', true, stripOne, false, execaSync);
+test('result.all is defined, lines, stripFinalNewline, fd-specific both, sync', testAllBoth, doubleFoobarArray, 'utf8', true, stripBoth, false, execaSync);
 test('result.all is defined, failure, sync', testAllBoth, doubleFoobarStringFull, 'utf8', false, false, true, execaSync);
 test('result.all is defined, encoding "buffer", failure, sync', testAllBoth, doubleFoobarUint8ArrayFull, 'buffer', false, false, true, execaSync);
 test('result.all is defined, lines, failure, sync', testAllBoth, doubleFoobarArrayFull, 'utf8', true, false, true, execaSync);
 test('result.all is defined, stripFinalNewline, failure, sync', testAllBoth, doubleFoobarString, 'utf8', false, true, true, execaSync);
+test('result.all is defined, stripFinalNewline, fd-specific one, failure, sync', testAllBoth, doubleFoobarString, 'utf8', false, stripOne, true, execaSync);
+test('result.all is defined, stripFinalNewline, fd-specific both, failure, sync', testAllBoth, doubleFoobarString, 'utf8', false, stripBoth, true, execaSync);
 test('result.all is defined, encoding "buffer", stripFinalNewline, failure, sync', testAllBoth, doubleFoobarUint8Array, 'buffer', false, true, true, execaSync);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific one, failure, sync', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripOne, true, execaSync);
+test('result.all is defined, encoding "buffer", stripFinalNewline, fd-specific both, failure, sync', testAllBoth, doubleFoobarUint8Array, 'buffer', false, stripBoth, true, execaSync);
 test('result.all is defined, lines, stripFinalNewline, failure, sync', testAllBoth, doubleFoobarArray, 'utf8', true, true, true, execaSync);
+test('result.all is defined, lines, stripFinalNewline, fd-specific one, failure, sync', testAllBoth, doubleFoobarArray, 'utf8', true, stripOne, true, execaSync);
+test('result.all is defined, lines, stripFinalNewline, fd-specific both, failure, sync', testAllBoth, doubleFoobarArray, 'utf8', true, stripBoth, true, execaSync);
 
 test.serial('result.all shows both `stdout` and `stderr` intermixed', async t => {
 	const {all} = await execa('noop-132.js', {all: true});

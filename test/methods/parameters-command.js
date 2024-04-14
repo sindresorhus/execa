@@ -1,14 +1,21 @@
 import {join, basename} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import test from 'ava';
-import {execa, execaSync, execaCommand, execaCommandSync, execaNode, $} from '../../index.js';
-import {setFixtureDir, FIXTURES_DIR_URL} from '../helpers/fixtures-dir.js';
+import {
+	execa,
+	execaSync,
+	execaCommand,
+	execaCommandSync,
+	execaNode,
+	$,
+} from '../../index.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY_URL} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testFileUrl = async (t, execaMethod) => {
-	const command = new URL('noop.js', FIXTURES_DIR_URL);
+	const command = new URL('noop.js', FIXTURES_DIRECTORY_URL);
 	const {stdout} = await execaMethod(command);
 	t.is(stdout, foobarString);
 };
@@ -36,9 +43,9 @@ test('execaNode()\'s command argument cannot be a non-file URL', testInvalidFile
 test('$\'s command argument cannot be a non-file URL', testInvalidFileUrl, $);
 test('$.sync\'s command argument cannot be a non-file URL', testInvalidFileUrl, $.sync);
 
-const testInvalidCommand = async (t, arg, execaMethod) => {
+const testInvalidCommand = async (t, commandArgument, execaMethod) => {
 	t.throws(() => {
-		execaMethod(arg);
+		execaMethod(commandArgument);
 	}, {message: /First argument must be a string or a file URL/});
 };
 
@@ -65,9 +72,9 @@ test('$\'s command argument must be a string or file URL', testInvalidCommand, [
 test('$.sync\'s command argument must be a string or file URL', testInvalidCommand, ['command', 'arg'], $.sync);
 
 const testRelativePath = async (t, execaMethod) => {
-	const rootDir = basename(fileURLToPath(new URL('../..', import.meta.url)));
-	const pathViaParentDir = join('..', rootDir, 'test', 'fixtures', 'noop.js');
-	const {stdout} = await execaMethod(pathViaParentDir);
+	const rootDirectory = basename(fileURLToPath(new URL('../..', import.meta.url)));
+	const pathViaParentDirectory = join('..', rootDirectory, 'test', 'fixtures', 'noop.js');
+	const {stdout} = await execaMethod(pathViaParentDirectory);
 	t.is(stdout, foobarString);
 };
 

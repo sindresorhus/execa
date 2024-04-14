@@ -1,6 +1,17 @@
 import type {Readable, Writable} from 'node:stream';
-import type {Not, And, Or, Unless, AndUnless} from '../utils';
-import type {GeneratorTransform, GeneratorTransformFull, DuplexTransform, WebTransform} from '../transform/normalize';
+import type {
+	Not,
+	And,
+	Or,
+	Unless,
+	AndUnless,
+} from '../utils';
+import type {
+	GeneratorTransform,
+	GeneratorTransformFull,
+	DuplexTransform,
+	WebTransform,
+} from '../transform/normalize';
 
 type IsStandardStream<FdNumber extends string> = FdNumber extends keyof StandardStreams ? true : false;
 

@@ -2,10 +2,10 @@ import {readFile, open, rm} from 'node:fs/promises';
 import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testFileDescriptorOption = async (t, fdNumber, execaMethod) => {
 	const filePath = tempfile();

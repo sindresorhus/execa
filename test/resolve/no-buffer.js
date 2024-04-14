@@ -2,12 +2,12 @@ import {once} from 'node:events';
 import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUppercase, foobarUppercaseUint8Array} from '../helpers/input.js';
 import {resultGenerator, uppercaseGenerator, uppercaseBufferGenerator} from '../helpers/generator.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testLateStream = async (t, fdNumber, all) => {
 	const subprocess = execa('noop-fd-ipc.js', [`${fdNumber}`, foobarString], {...getStdio(4, 'ipc', 4), buffer: false, all});

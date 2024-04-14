@@ -4,14 +4,14 @@ import test from 'ava';
 import getStream from 'get-stream';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUppercase, foobarUint8Array} from '../helpers/input.js';
 import {uppercaseGenerator} from '../helpers/generator.js';
 import {uppercaseBufferDuplex} from '../helpers/duplex.js';
 import {uppercaseBufferWebTransform} from '../helpers/web-transform.js';
 import {generatorsMap} from '../helpers/map.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInputOption = async (t, type, execaMethod) => {
 	const {stdout} = await execaMethod('stdin-fd.js', ['0'], {stdin: generatorsMap[type].uppercase(), input: foobarUint8Array});

@@ -2,7 +2,7 @@ import {inspect} from 'node:util';
 import test from 'ava';
 import {normalizeStdioOption} from '../../lib/stdio/stdio-option.js';
 
-const macro = (t, input, expected, func) => {
+const stdioMacro = (t, input, expected) => {
 	if (expected instanceof Error) {
 		t.throws(() => {
 			normalizeStdioOption(input);
@@ -10,13 +10,10 @@ const macro = (t, input, expected, func) => {
 		return;
 	}
 
-	t.deepEqual(func(input), expected);
+	t.deepEqual(normalizeStdioOption(input), expected);
 };
 
-const macroTitle = name => (title, input) => `${name} ${(inspect(input))}`;
-
-const stdioMacro = (...args) => macro(...args, normalizeStdioOption);
-stdioMacro.title = macroTitle('execa()');
+stdioMacro.title = (_, input) => `execa() ${(inspect(input))}`;
 
 test(stdioMacro, {stdio: 'inherit'}, ['inherit', 'inherit', 'inherit']);
 test(stdioMacro, {stdio: 'pipe'}, ['pipe', 'pipe', 'pipe']);

@@ -3,11 +3,11 @@ import test from 'ava';
 import tempfile from 'tempfile';
 import {execa} from '../../index.js';
 import {getStdio, fullStdio} from '../helpers/stdio.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInheritStdin = async (t, stdioOption, isSync) => {
 	const {stdout} = await execa('nested-multiple-stdin.js', [JSON.stringify(stdioOption), `${isSync}`], {input: foobarString});

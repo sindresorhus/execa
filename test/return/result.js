@@ -1,12 +1,12 @@
 import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio} from '../helpers/stdio.js';
 
 const isWindows = process.platform === 'win32';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testSuccessShape = async (t, execaMethod) => {
 	const result = await execaMethod('empty.js', {...fullStdio, all: true});

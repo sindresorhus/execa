@@ -4,11 +4,11 @@ import test from 'ava';
 import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {nestedExecaAsync, nestedWorker} from '../helpers/nested.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const isWindows = process.platform === 'win32';
 

@@ -1,8 +1,8 @@
 import test from 'ava';
 import {$} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // Workaround since some text editors or IDEs do not allow inputting \r directly
 const escapedCall = string => {

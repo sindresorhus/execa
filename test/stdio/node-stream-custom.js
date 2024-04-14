@@ -7,12 +7,12 @@ import {callbackify} from 'node:util';
 import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {noopReadable, noopWritable} from '../helpers/stream.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testLazyFileReadable = async (t, fdNumber) => {
 	const filePath = tempfile();

@@ -2,9 +2,9 @@ import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 import {getOutputAsyncGenerator, getOutputGenerator, convertTransformToFinal} from '../helpers/generator.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testGeneratorFinal = async (t, fixtureName, execaMethod) => {
 	const {stdout} = await execaMethod(fixtureName, {stdout: convertTransformToFinal(getOutputGenerator(foobarString)(), true)});

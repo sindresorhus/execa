@@ -1,6 +1,11 @@
 import * as process from 'node:process';
 import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
-import {execa, execaSync, type Options, type SyncOptions} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	type Options,
+	type SyncOptions,
+} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
 

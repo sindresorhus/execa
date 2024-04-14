@@ -1,7 +1,7 @@
 import {stripVTControlCharacters} from 'node:util';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 import {
@@ -20,7 +20,7 @@ import {
 	fdFullOption,
 } from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testPrintCompletion = async (t, verbose, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose});

@@ -1,11 +1,16 @@
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {fullStdio, getStdio, prematureClose, assertEpipe} from '../helpers/stdio.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {
+	fullStdio,
+	getStdio,
+	prematureClose,
+	assertEpipe,
+} from '../helpers/stdio.js';
 import {infiniteGenerator} from '../helpers/generator.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getStreamInputSubprocess = fdNumber => execa('stdin-fd.js', [`${fdNumber}`], fdNumber === 3
 	? getStdio(3, [new Uint8Array(), infiniteGenerator()])

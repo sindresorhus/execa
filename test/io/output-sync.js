@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {throwingGenerator} from '../helpers/generator.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('Handles errors with stdout generator, sync', t => {
 	const cause = new Error(foobarString);

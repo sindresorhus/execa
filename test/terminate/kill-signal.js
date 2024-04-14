@@ -2,9 +2,9 @@ import {once} from 'node:events';
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('Can call `.kill()` multiple times', async t => {
 	const subprocess = execa('forever.js');

@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const textEncoder = new TextEncoder();
 const foobarStringFull = `${foobarString}\n`;
@@ -18,7 +18,13 @@ const doubleFoobarArray = [foobarString, foobarString];
 // eslint-disable-next-line max-params
 const testAllBoth = async (t, expectedOutput, encoding, lines, stripFinalNewline, isFailure, execaMethod) => {
 	const fixtureName = isFailure ? 'noop-both-fail.js' : 'noop-both.js';
-	const {exitCode, all} = await execaMethod(fixtureName, [foobarString], {all: true, encoding, lines, stripFinalNewline, reject: !isFailure});
+	const {exitCode, all} = await execaMethod(fixtureName, [foobarString], {
+		all: true,
+		encoding,
+		lines,
+		stripFinalNewline,
+		reject: !isFailure,
+	});
 	t.is(exitCode, isFailure ? 1 : 0);
 	t.deepEqual(all, expectedOutput);
 };

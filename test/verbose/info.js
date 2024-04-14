@@ -1,5 +1,5 @@
 import test from 'ava';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
@@ -11,7 +11,7 @@ import {
 	testTimestamp,
 } from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testVerboseGeneral = async (t, execaMethod) => {
 	const {all} = await execaMethod('verbose-script.js', {env: {NODE_DEBUG: 'execa'}, all: true});

@@ -4,7 +4,12 @@ import type {StdioOptionsArray} from '../stdio/type';
 import type {Options} from '../arguments/options';
 import type {ExecaResult} from '../return/result';
 import type {PipableSubprocess} from '../pipe';
-import type {ReadableOptions, WritableOptions, DuplexOptions, SubprocessAsyncIterable} from '../convert';
+import type {
+	ReadableOptions,
+	WritableOptions,
+	DuplexOptions,
+	SubprocessAsyncIterable,
+} from '../convert';
 import type {SubprocessStdioStream} from './stdout';
 import type {SubprocessStdioArray} from './stdio';
 import type {SubprocessAll} from './all';

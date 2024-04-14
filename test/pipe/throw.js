@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {assertPipeError} from '../helpers/pipe.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('Destination stream is ended when first argument is invalid', async t => {
 	const source = execa('empty.js', {stdout: 'ignore'});

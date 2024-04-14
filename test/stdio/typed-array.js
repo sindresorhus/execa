@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarUint8Array, foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testUint8Array = async (t, fdNumber, execaMethod) => {
 	const {stdout} = await execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, foobarUint8Array));

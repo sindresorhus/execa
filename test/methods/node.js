@@ -6,17 +6,17 @@ import test from 'ava';
 import getNode from 'get-node';
 import {pEvent} from 'p-event';
 import {execa, execaSync, execaNode} from '../../index.js';
-import {FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {identity, fullStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 
-process.chdir(FIXTURES_DIR);
+process.chdir(FIXTURES_DIRECTORY);
 
-const runWithNodeOption = (file, args, options) => Array.isArray(args)
-	? execa(file, args, {...options, node: true})
+const runWithNodeOption = (file, commandArguments, options) => Array.isArray(commandArguments)
+	? execa(file, commandArguments, {...options, node: true})
 	: execa(file, {...options, node: true});
-const runWithNodeOptionSync = (file, args, options) => Array.isArray(args)
-	? execaSync(file, args, {...options, node: true})
+const runWithNodeOptionSync = (file, commandArguments, options) => Array.isArray(commandArguments)
+	? execaSync(file, commandArguments, {...options, node: true})
 	: execaSync(file, {...options, node: true});
 const runWithIpc = (file, options) => execa('node', [file], {...options, ipc: true});
 
@@ -188,7 +188,7 @@ test('The "nodeOptions" option can be used - "node" option sync', testNodeOption
 const spawnNestedExecaNode = (realExecArgv, fakeExecArgv, execaMethod, nodeOptions) => execa(
 	'node',
 	[...realExecArgv, 'nested-node.js', fakeExecArgv, execaMethod, nodeOptions, 'noop.js', foobarString],
-	{...fullStdio, cwd: FIXTURES_DIR},
+	{...fullStdio, cwd: FIXTURES_DIRECTORY},
 );
 
 const testInspectRemoval = async (t, fakeExecArgv, execaMethod) => {

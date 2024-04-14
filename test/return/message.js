@@ -1,12 +1,12 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {QUOTE} from '../helpers/verbose.js';
 import {noopGenerator, outputObjectGenerator} from '../helpers/generator.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('error.message contains the command', async t => {
 	await t.throwsAsync(execa('exit.js', ['2', 'foo', 'bar']), {message: /exit.js 2 foo bar/});
@@ -14,7 +14,12 @@ test('error.message contains the command', async t => {
 
 // eslint-disable-next-line max-params
 const testStdioMessage = async (t, encoding, all, objectMode, execaMethod) => {
-	const {exitCode, message} = await execaMethod('echo-fail.js', {...getStdio(1, noopGenerator(objectMode, false, true), 4), encoding, all, reject: false});
+	const {exitCode, message} = await execaMethod('echo-fail.js', {
+		...getStdio(1, noopGenerator(objectMode, false, true), 4),
+		encoding,
+		all,
+		reject: false,
+	});
 	t.is(exitCode, 1);
 	const output = all ? 'stdout\nstderr' : 'stderr\n\nstdout';
 	t.true(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));

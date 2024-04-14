@@ -1,6 +1,11 @@
 import type {Readable, Writable} from 'node:stream';
 import {expectType, expectError} from 'tsd';
-import {execa, execaSync, type ExecaError, type ExecaSyncError} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	type ExecaError,
+	type ExecaSyncError,
+} from '../../index.js';
 
 const noBufferPromise = execa('unicorns', {buffer: false, all: true});
 expectType<Writable>(noBufferPromise.stdin);

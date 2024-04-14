@@ -1,9 +1,9 @@
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // eslint-disable-next-line max-params
 const testRedirect = async (t, stdioOption, fdNumber, isInput, isSync) => {

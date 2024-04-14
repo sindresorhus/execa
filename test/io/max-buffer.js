@@ -2,12 +2,12 @@ import {Buffer} from 'node:buffer';
 import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {getEarlyErrorSubprocess, getEarlyErrorSubprocessSync} from '../helpers/early-error.js';
 import {maxBuffer, assertErrorMessage} from '../helpers/max-buffer.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const maxBufferMessage = {message: /maxBuffer exceeded/};
 const maxBufferCodeSync = {code: 'ENOBUFS'};
@@ -142,7 +142,12 @@ const testAll = async (t, shouldFail) => {
 	const {isMaxBuffer, shortMessage, stdout, stderr, all} = await execa(
 		'noop-both.js',
 		['\n'.repeat(maxBufferStdout - 1), '\n'.repeat(maxBufferStderr - difference)],
-		{maxBuffer: {stdout: maxBufferStdout, stderr: maxBufferStderr}, all: true, stripFinalNewline: false, reject: false},
+		{
+			maxBuffer: {stdout: maxBufferStdout, stderr: maxBufferStderr},
+			all: true,
+			stripFinalNewline: false,
+			reject: false,
+		},
 	);
 	t.is(isMaxBuffer, shouldFail);
 	if (shouldFail) {

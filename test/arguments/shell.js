@@ -3,10 +3,10 @@ import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import which from 'which';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {identity} from '../helpers/stdio.js';
 
-setFixtureDir();
+setFixtureDirectory();
 process.env.FOO = 'foo';
 
 const isWindows = process.platform === 'win32';

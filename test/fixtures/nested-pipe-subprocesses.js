@@ -2,6 +2,13 @@
 import process from 'node:process';
 import {execa} from '../../index.js';
 
-const [sourceOptions, sourceFile, sourceArg, destinationOptions, destinationFile, destinationArg] = process.argv.slice(2);
-await execa(sourceFile, [sourceArg], JSON.parse(sourceOptions))
-	.pipe(execa(destinationFile, destinationArg === undefined ? [] : [destinationArg], JSON.parse(destinationOptions)));
+const [
+	sourceOptions,
+	sourceFile,
+	sourceArgument,
+	destinationOptions,
+	destinationFile,
+	destinationArgument,
+] = process.argv.slice(2);
+await execa(sourceFile, [sourceArgument], JSON.parse(sourceOptions))
+	.pipe(execa(destinationFile, destinationArgument === undefined ? [] : [destinationArgument], JSON.parse(destinationOptions)));

@@ -1,5 +1,11 @@
 import {expectType, expectError, expectAssignable} from 'tsd';
-import {execaCommand, execaCommandSync, type ExecaResult, type ExecaSubprocess, type ExecaSyncResult} from '../../index.js';
+import {
+	execaCommand,
+	execaCommandSync,
+	type ExecaResult,
+	type ExecaSubprocess,
+	type ExecaSyncResult,
+} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
 const stringArray = ['foo', 'bar'] as const;

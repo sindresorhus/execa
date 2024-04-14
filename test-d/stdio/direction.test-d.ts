@@ -1,6 +1,11 @@
 import {Readable, Writable} from 'node:stream';
 import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
-import {execa, execaSync, type StdioOption, type StdioOptionSync} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	type StdioOption,
+	type StdioOptionSync,
+} from '../../index.js';
 
 await execa('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});
 execaSync('unicorns', {stdio: [new Readable(), 'pipe', 'pipe']});

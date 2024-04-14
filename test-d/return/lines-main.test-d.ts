@@ -1,5 +1,10 @@
 import {expectType} from 'tsd';
-import {execa, execaSync, type ExecaError, type ExecaSyncError} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	type ExecaError,
+	type ExecaSyncError,
+} from '../../index.js';
 
 const linesResult = await execa('unicorns', {lines: true, all: true});
 expectType<string[]>(linesResult.stdout);

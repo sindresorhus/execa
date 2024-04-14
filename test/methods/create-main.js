@@ -1,12 +1,17 @@
 import {join} from 'node:path';
 import test from 'ava';
-import {execa, execaSync, execaNode, $} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	execaNode,
+	$,
+} from '../../index.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
-import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
-const NOOP_PATH = join(FIXTURES_DIR, 'noop.js');
+const NOOP_PATH = join(FIXTURES_DIRECTORY, 'noop.js');
 
 const testTemplate = async (t, execaMethod) => {
 	const {stdout} = await execaMethod`${NOOP_PATH} ${foobarString}`;
@@ -42,9 +47,9 @@ const testTemplateOptionsSync = (t, execaMethod) => {
 test('execaSync() can use template strings with options', testTemplateOptionsSync, execaSync);
 test('$.sync can use template strings with options', testTemplateOptionsSync, $.sync);
 
-const testSpacedCommand = async (t, args, execaMethod) => {
-	const {stdout} = await execaMethod('command with space.js', args);
-	const expectedStdout = args === undefined ? '' : args.join('\n');
+const testSpacedCommand = async (t, commandArguments, execaMethod) => {
+	const {stdout} = await execaMethod('command with space.js', commandArguments);
+	const expectedStdout = commandArguments === undefined ? '' : commandArguments.join('\n');
 	t.is(stdout, expectedStdout);
 };
 

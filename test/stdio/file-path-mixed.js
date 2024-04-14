@@ -3,13 +3,13 @@ import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUppercase} from '../helpers/input.js';
 import {uppercaseGenerator} from '../helpers/generator.js';
 import {getAbsolutePath} from '../helpers/file-path.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInputFileTransform = async (t, fdNumber, mapFile, execaMethod) => {
 	const filePath = tempfile();

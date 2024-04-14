@@ -2,10 +2,10 @@ import {spawn} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import {$, execa} from '../../index.js';
-import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('$.pipe(subprocess)', async t => {
 	const {stdout} = await $`noop.js ${foobarString}`.pipe($({stdin: 'pipe'})`stdin.js`);
@@ -59,24 +59,24 @@ test('$.pipe.pipe("file")', async t => {
 });
 
 test('execa.$.pipe(fileUrl)`', async t => {
-	const {stdout} = await execa('noop.js', [foobarString]).pipe(pathToFileURL(`${FIXTURES_DIR}/stdin.js`));
+	const {stdout} = await execa('noop.js', [foobarString]).pipe(pathToFileURL(`${FIXTURES_DIRECTORY}/stdin.js`));
 	t.is(stdout, foobarString);
 });
 
-test('$.pipe("file", args, options)', async t => {
-	const {stdout} = await $`noop.js ${foobarString}`.pipe('node', ['stdin.js'], {cwd: FIXTURES_DIR});
+test('$.pipe("file", commandArguments, options)', async t => {
+	const {stdout} = await $`noop.js ${foobarString}`.pipe('node', ['stdin.js'], {cwd: FIXTURES_DIRECTORY});
 	t.is(stdout, foobarString);
 });
 
-test('execa.$.pipe("file", args, options)`', async t => {
-	const {stdout} = await execa('noop.js', [foobarString]).pipe('node', ['stdin.js'], {cwd: FIXTURES_DIR});
+test('execa.$.pipe("file", commandArguments, options)`', async t => {
+	const {stdout} = await execa('noop.js', [foobarString]).pipe('node', ['stdin.js'], {cwd: FIXTURES_DIRECTORY});
 	t.is(stdout, foobarString);
 });
 
-test('$.pipe.pipe("file", args, options)', async t => {
+test('$.pipe.pipe("file", commandArguments, options)', async t => {
 	const {stdout} = await $`noop.js ${foobarString}`
 		.pipe`stdin.js`
-		.pipe('node', ['stdin.js'], {cwd: FIXTURES_DIR});
+		.pipe('node', ['stdin.js'], {cwd: FIXTURES_DIRECTORY});
 	t.is(stdout, foobarString);
 });
 
@@ -261,9 +261,9 @@ test('execa.$.pipe(options)("file") fails', async t => {
 	);
 });
 
-const testInvalidPipe = async (t, ...args) => {
+const testInvalidPipe = async (t, ...pipeArguments) => {
 	await t.throwsAsync(
-		$`empty.js`.pipe(...args),
+		$`empty.js`.pipe(...pipeArguments),
 		{message: /must be a template string/},
 	);
 };

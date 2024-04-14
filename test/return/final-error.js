@@ -1,10 +1,15 @@
 import test from 'ava';
-import {execa, execaSync, ExecaError, ExecaSyncError} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {
+	execa,
+	execaSync,
+	ExecaError,
+	ExecaSyncError,
+} from '../../index.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {getEarlyErrorSubprocess, getEarlyErrorSubprocessSync} from '../helpers/early-error.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testUnusualError = async (t, error, expectedOriginalMessage = String(error)) => {
 	const subprocess = execa('empty.js');

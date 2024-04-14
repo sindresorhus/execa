@@ -1,6 +1,6 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {getOutputsGenerator} from '../helpers/generator.js';
 import {foobarString} from '../helpers/input.js';
@@ -14,7 +14,7 @@ import {
 	getSimpleChunkSubprocessAsync,
 } from '../helpers/lines.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // eslint-disable-next-line max-params
 const testStreamLines = async (t, fdNumber, input, expectedOutput, lines, stripFinalNewline, execaMethod) => {

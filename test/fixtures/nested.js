@@ -2,9 +2,9 @@
 import process from 'node:process';
 import {execa} from '../../index.js';
 
-const [options, file, ...args] = process.argv.slice(2);
+const [options, file, ...commandArguments] = process.argv.slice(2);
 try {
-	const result = await execa(file, args, JSON.parse(options));
+	const result = await execa(file, commandArguments, JSON.parse(options));
 	process.send({result});
 } catch (error) {
 	process.send({error});

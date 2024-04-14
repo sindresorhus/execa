@@ -1,8 +1,18 @@
 import {type Readable, type Writable} from 'node:stream';
 import {expectType, expectError} from 'tsd';
-import {execa, execaSync, type ExecaError, type ExecaSyncError} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	type ExecaError,
+	type ExecaSyncError,
+} from '../../index.js';
 
-const ignoreAnyPromise = execa('unicorns', {stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', all: true});
+const ignoreAnyPromise = execa('unicorns', {
+	stdin: 'ignore',
+	stdout: 'ignore',
+	stderr: 'ignore',
+	all: true,
+});
 expectType<null>(ignoreAnyPromise.stdin);
 expectType<null>(ignoreAnyPromise.stdio[0]);
 expectType<null>(ignoreAnyPromise.stdout);

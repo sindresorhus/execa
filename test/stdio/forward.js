@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUint8Array} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInputOverlapped = async (t, fdNumber) => {
 	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, [foobarUint8Array, 'overlapped', 'pipe']));

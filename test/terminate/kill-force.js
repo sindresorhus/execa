@@ -6,10 +6,10 @@ import test from 'ava';
 import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {assertMaxListeners} from '../helpers/listeners.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const isWindows = process.platform === 'win32';
 

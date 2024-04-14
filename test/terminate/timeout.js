@@ -1,8 +1,8 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('timeout kills the subprocess if it times out', async t => {
 	const {isTerminated, signal, timedOut, originalMessage, shortMessage, message} = await t.throwsAsync(execa('forever.js', {timeout: 1}));
@@ -16,7 +16,7 @@ test('timeout kills the subprocess if it times out', async t => {
 
 test('timeout kills the subprocess if it times out, in sync mode', async t => {
 	const {isTerminated, signal, timedOut, originalMessage, shortMessage, message} = await t.throws(() => {
-		execaSync('node', ['forever.js'], {timeout: 1, cwd: FIXTURES_DIR});
+		execaSync('node', ['forever.js'], {timeout: 1, cwd: FIXTURES_DIRECTORY});
 	});
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');

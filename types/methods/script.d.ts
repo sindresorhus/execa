@@ -1,4 +1,9 @@
-import type {CommonOptions, Options, SyncOptions, StricterOptions} from '../arguments/options';
+import type {
+	CommonOptions,
+	Options,
+	SyncOptions,
+	StricterOptions,
+} from '../arguments/options';
 import type {ExecaSyncResult} from '../return/result';
 import type {ExecaSubprocess} from '../subprocess/subprocess';
 import type {TemplateString} from './template';
@@ -12,12 +17,12 @@ type ExecaScriptCommon<OptionsType extends CommonOptions> = {
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: NewOptionsType,
-	): ExecaSubprocess<OptionsType & NewOptionsType>;
+	): ExecaSubprocess<StricterOptions<OptionsType & NewOptionsType, Options>>;
 
 	<NewOptionsType extends Options = {}>(
 		file: string | URL,
 		options?: NewOptionsType,
-	): ExecaSubprocess<OptionsType & NewOptionsType>;
+	): ExecaSubprocess<StricterOptions<OptionsType & NewOptionsType, Options>>;
 };
 
 type ExecaScriptSync<OptionsType extends CommonOptions> = {
@@ -29,12 +34,12 @@ type ExecaScriptSync<OptionsType extends CommonOptions> = {
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: NewOptionsType,
-	): ExecaSyncResult<OptionsType & NewOptionsType>;
+	): ExecaSyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
 
 	<NewOptionsType extends SyncOptions = {}>(
 		file: string | URL,
 		options?: NewOptionsType,
-	): ExecaSyncResult<OptionsType & NewOptionsType>;
+	): ExecaSyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
 };
 
 type ExecaScript<OptionsType extends CommonOptions> = {

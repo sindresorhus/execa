@@ -2,8 +2,8 @@
 import process from 'node:process';
 import {execa} from '../../index.js';
 
-const [options, file, arg, unpipe] = process.argv.slice(2);
-const source = execa(file, [arg], JSON.parse(options));
+const [options, file, commandArgument, unpipe] = process.argv.slice(2);
+const source = execa(file, [commandArgument], JSON.parse(options));
 const destination = execa('stdin.js');
 const controller = new AbortController();
 const pipePromise = source.pipe(destination, {unpipeSignal: controller.signal});

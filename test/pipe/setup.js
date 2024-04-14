@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, fullReadableStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // eslint-disable-next-line max-params
 const pipeToSubprocess = async (t, readableFdNumber, writableFdNumber, from, to, readableOptions = {}, writableOptions = {}) => {

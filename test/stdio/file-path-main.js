@@ -5,13 +5,18 @@ import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {identity, getStdio} from '../helpers/stdio.js';
-import {runExeca, runExecaSync, runScript, runScriptSync} from '../helpers/run.js';
+import {
+	runExeca,
+	runExecaSync,
+	runScript,
+	runScriptSync,
+} from '../helpers/run.js';
 import {foobarString, foobarUint8Array} from '../helpers/input.js';
 import {getAbsolutePath, getRelativePath} from '../helpers/file-path.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getStdioInput = (fdNumberOrName, file) => {
 	if (fdNumberOrName === 'string') {

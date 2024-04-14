@@ -1,12 +1,17 @@
 import {Buffer} from 'node:buffer';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
-import {foobarString, foobarUint8Array, foobarBuffer, foobarObject} from '../helpers/input.js';
+import {
+	foobarString,
+	foobarUint8Array,
+	foobarBuffer,
+	foobarObject,
+} from '../helpers/input.js';
 import {noopGenerator, getOutputGenerator} from '../helpers/generator.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getTypeofGenerator = lines => (objectMode, binary) => ({
 	* transform(line) {

@@ -1,7 +1,7 @@
 import test from 'ava';
 import {red} from 'yoctocolors';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 import {
@@ -19,7 +19,7 @@ import {
 	fdFullOption,
 } from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const parentExecaFail = parentExeca.bind(undefined, 'nested-fail.js');
 

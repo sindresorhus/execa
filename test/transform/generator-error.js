@@ -4,9 +4,9 @@ import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 import {noopGenerator, infiniteGenerator, convertTransformToFinal} from '../helpers/generator.js';
 import {generatorsMap} from '../helpers/map.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const assertProcessError = async (t, type, execaMethod, getSubprocess) => {
 	const cause = new Error(foobarString);

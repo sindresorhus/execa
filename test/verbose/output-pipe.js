@@ -1,11 +1,16 @@
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExeca} from '../helpers/nested.js';
-import {getOutputLine, getOutputLines, testTimestamp, getVerboseOption} from '../helpers/verbose.js';
+import {
+	getOutputLine,
+	getOutputLines,
+	testTimestamp,
+	getVerboseOption,
+} from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testPipeOutput = async (t, fixtureName, sourceVerbose, destinationVerbose) => {
 	const {stderr} = await execa(`nested-pipe-${fixtureName}.js`, [
@@ -36,8 +41,8 @@ test('Does not print stdout if neither verbose with .pipe("file")', testPipeOutp
 test('Does not print stdout if neither verbose with .pipe`command`', testPipeOutput, 'script', false, false);
 test('Does not print stdout if neither verbose with .pipe(subprocess)', testPipeOutput, 'subprocesses', false, false);
 
-const testPrintOutputFixture = async (t, fixtureName, ...args) => {
-	const {stderr} = await parentExeca(fixtureName, 'noop.js', [foobarString, ...args], {verbose: 'full'});
+const testPrintOutputFixture = async (t, fixtureName, ...commandArguments) => {
+	const {stderr} = await parentExeca(fixtureName, 'noop.js', [foobarString, ...commandArguments], {verbose: 'full'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 };
 

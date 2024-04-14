@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {simpleLines, noNewlinesChunks, getSimpleChunkSubprocessAsync} from '../helpers/lines.js';
 import {assertErrorMessage} from '../helpers/max-buffer.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const maxBuffer = simpleLines.length - 1;
 

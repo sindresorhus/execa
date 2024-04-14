@@ -1,4 +1,4 @@
-import {expectType, expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectType, expectError, expectAssignable} from 'tsd';
 import {execaNode, type ExecaResult, type ExecaSubprocess} from '../../index.js';
 
 const fileUrl = new URL('file:///test');

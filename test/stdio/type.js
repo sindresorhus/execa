@@ -5,9 +5,9 @@ import {noopGenerator, uppercaseGenerator} from '../helpers/generator.js';
 import {uppercaseBufferDuplex} from '../helpers/duplex.js';
 import {uppercaseBufferWebTransform} from '../helpers/web-transform.js';
 import {generatorsMap} from '../helpers/map.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInvalidGenerator = (t, fdNumber, stdioOption, execaMethod) => {
 	t.throws(() => {

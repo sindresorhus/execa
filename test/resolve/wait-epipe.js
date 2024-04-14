@@ -1,13 +1,18 @@
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {assertEpipe} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {noopWritable, noopDuplex} from '../helpers/stream.js';
-import {endOptionStream, destroyOptionStream, destroySubprocessStream, getStreamStdio} from '../helpers/wait.js';
+import {
+	endOptionStream,
+	destroyOptionStream,
+	destroySubprocessStream,
+	getStreamStdio,
+} from '../helpers/wait.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // eslint-disable-next-line max-params
 const testStreamEpipeFail = async (t, streamMethod, stream, fdNumber, useTransform) => {

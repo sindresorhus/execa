@@ -1,9 +1,9 @@
 import process from 'node:process';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir, PATH_KEY} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory, PATH_KEY} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 process.env.FOO = 'foo';
 
 const isWindows = process.platform === 'win32';

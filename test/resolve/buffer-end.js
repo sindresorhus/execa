@@ -2,10 +2,10 @@ import {once} from 'node:events';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testBufferIgnore = async (t, fdNumber, all) => {
 	await t.notThrowsAsync(execa('max-buffer.js', [`${fdNumber}`], {...getStdio(fdNumber, 'ignore'), buffer: false, all}));

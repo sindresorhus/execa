@@ -305,22 +305,39 @@ type StdioOptionProperty<
 		: undefined;
 
 // Type of `result.stdout|stderr`
-type StdioOutput<
+type NonAllStdioOutput<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = StdioOutputResult<FdNumber, IgnoresStreamOutput<FdNumber, OptionsType>, OptionsType>;
+> = StdioOutput<FdNumber, FdNumber, FdNumber, OptionsType>;
+
+type StdioOutput<
+	MainFdNumber extends string,
+	ObjectFdNumber extends string,
+	LinesFdNumber extends string,
+	OptionsType extends CommonOptions = CommonOptions,
+> = StdioOutputResult<
+ObjectFdNumber,
+LinesFdNumber,
+IgnoresStreamOutput<MainFdNumber, OptionsType>,
+OptionsType
+>;
 
 type StdioOutputResult<
-	FdNumber extends string,
+	ObjectFdNumber extends string,
+	LinesFdNumber extends string,
 	StreamOutputIgnored extends boolean,
 	OptionsType extends CommonOptions = CommonOptions,
 > = StreamOutputIgnored extends true
 	? undefined
-	: StreamEncoding<IsObjectStream<FdNumber, OptionsType>, OptionsType['lines'], OptionsType['encoding']>;
+	: StreamEncoding<
+	IsObjectStream<ObjectFdNumber, OptionsType>,
+	FdSpecificOption<OptionsType['lines'], LinesFdNumber>,
+	OptionsType['encoding']
+	>;
 
 type StreamEncoding<
 	IsObjectResult extends boolean,
-	LinesOption extends CommonOptions['lines'],
+	LinesOption extends boolean | undefined,
 	Encoding extends CommonOptions['encoding'],
 > = IsObjectResult extends true ? unknown[]
 	: Encoding extends BufferEncodingOption
@@ -338,16 +355,19 @@ type AllOutputProperty<
 	AllOption extends CommonOptions['all'] = CommonOptions['all'],
 	OptionsType extends CommonOptions = CommonOptions,
 > = AllOption extends true
-	? StdioOutput<AllUsesStdout<OptionsType> extends true ? '1' : '2', OptionsType>
+	? StdioOutput<
+	AllMainFd<OptionsType>,
+	AllObjectFd<OptionsType>,
+	AllLinesFd<OptionsType>,
+	OptionsType
+	>
 	: undefined;
 
-type AllUsesStdout<OptionsType extends CommonOptions = CommonOptions> = IgnoresStreamOutput<'1', OptionsType> extends true
-	? false
-	: IgnoresStreamOutput<'2', OptionsType> extends true
-		? true
-		: IsObjectStream<'2', OptionsType> extends true
-			? false
-			: IsObjectStream<'1', OptionsType>;
+type AllMainFd<OptionsType extends CommonOptions = CommonOptions> = IgnoresStreamOutput<'1', OptionsType> extends true ? '2' : '1';
+
+type AllObjectFd<OptionsType extends CommonOptions = CommonOptions> = IsObjectStream<'1', OptionsType> extends true ? '1' : '2';
+
+type AllLinesFd<OptionsType extends CommonOptions = CommonOptions> = FdSpecificOption<OptionsType['lines'], '1'> extends true ? '1' : '2';
 
 // Type of `result.stdio`
 type StdioArrayOutput<OptionsType extends CommonOptions = CommonOptions> = MapStdioOptions<StdioArrayOption<OptionsType>, OptionsType>;
@@ -356,7 +376,7 @@ type MapStdioOptions<
 	StdioOptionsArrayType extends StdioOptionsArray,
 	OptionsType extends CommonOptions = CommonOptions,
 > = {
-	-readonly [FdNumber in keyof StdioOptionsArrayType]: StdioOutput<
+	-readonly [FdNumber in keyof StdioOptionsArrayType]: NonAllStdioOutput<
 	FdNumber extends string ? FdNumber : string,
 	OptionsType
 	>
@@ -380,9 +400,52 @@ type StricterOptions<
 	StrictOptions extends CommonOptions,
 > = WideOptions extends StrictOptions ? WideOptions : StrictOptions;
 
-type FdGenericOption<OptionType> = OptionType | {
+// Options which can be fd-specific like `{verbose: {stdout: 'none', stderr: 'full'}}`
+type FdGenericOption<OptionType = unknown> = OptionType | GenericOptionObject<OptionType>;
+
+type GenericOptionObject<OptionType = unknown> = {
 	readonly [FdName in FromOption]?: OptionType
 };
+
+// Retrieve fd-specific option's value
+type FdSpecificOption<
+	GenericOption extends FdGenericOption,
+	FdNumber extends string,
+> = GenericOption extends GenericOptionObject
+	? FdSpecificObjectOption<GenericOption, FdNumber>
+	: GenericOption;
+
+type FdSpecificObjectOption<
+	GenericOption extends GenericOptionObject,
+	FdNumber extends string,
+> = keyof GenericOption extends FromOption
+	? FdNumberToFromOption<FdNumber, keyof GenericOption> extends never
+		? undefined
+		: GenericOption[FdNumberToFromOption<FdNumber, keyof GenericOption>]
+	: GenericOption;
+
+type FdNumberToFromOption<
+	FdNumber extends string,
+	FromOptions extends FromOption,
+> = FdNumber extends '1'
+	? 'stdout' extends FromOptions
+		? 'stdout'
+		: 'fd1' extends FromOptions
+			? 'fd1'
+			: 'all' extends FromOptions
+				? 'all'
+				: never
+	: FdNumber extends '2'
+		? 'stderr' extends FromOptions
+			? 'stderr'
+			: 'fd2' extends FromOptions
+				? 'fd2'
+				: 'all' extends FromOptions
+					? 'all'
+					: never
+		: `fd${FdNumber}` extends FromOptions
+			? `fd${FdNumber}`
+			: never;
 
 type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
@@ -520,9 +583,11 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 
 	This cannot be used if the `encoding` option is binary.
 
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
 	@default false
 	*/
-	readonly lines?: boolean;
+	readonly lines?: FdGenericOption<boolean>;
 
 	/**
 	Setting this to `false` resolves the promise with the error instead of rejecting it.
@@ -775,7 +840,7 @@ type CommonOptions<IsSync extends boolean = boolean> = {
 /**
 Subprocess options.
 
-Some options are related to the subprocess output: `verbose`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `lines`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 
@@ -789,7 +854,7 @@ export type Options = CommonOptions<false>;
 /**
 Subprocess options, with synchronous methods.
 
-Some options are related to the subprocess output: `verbose`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: `verbose`, `lines`, `stripFinalNewline`, `maxBuffer`. By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 @example
 
@@ -833,14 +898,14 @@ declare abstract class CommonResult<
 
 	This is `undefined` if the `stdout` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
 	*/
-	stdout: StdioOutput<'1', OptionsType>;
+	stdout: NonAllStdioOutput<'1', OptionsType>;
 
 	/**
 	The output of the subprocess on `stderr`.
 
 	This is `undefined` if the `stderr` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
 	*/
-	stderr: StdioOutput<'2', OptionsType>;
+	stderr: NonAllStdioOutput<'2', OptionsType>;
 
 	/**
 	The output of the subprocess on `stdin`, `stdout`, `stderr` and other file descriptors.

@@ -831,7 +831,7 @@ Type: `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
 
-Some options are related to the subprocess output: [`verbose`](#optionsverbose), [`stripFinalNewline`](#optionsstripfinalnewline), [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: [`verbose`](#optionsverbose), [`lines`](#optionslines), [`stripFinalNewline`](#optionsstripfinalnewline), [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 ```js
 await execa('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
@@ -939,7 +939,7 @@ If `verbose` is `'full'`, the command's `stdout` and `stderr` are printed too, u
 
 This can also be set to `'full'` by setting the `NODE_DEBUG=execa` environment variable in the current process.
 
-By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](#options).
 
 #### options.buffer
 
@@ -1065,6 +1065,8 @@ Set [`result.stdout`](#resultstdout), [`result.stderr`](#resultstdout), [`result
 
 This cannot be used if the [`encoding`](#optionsencoding) option is binary.
 
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](#options).
+
 #### options.encoding
 
 Type: `string`\
@@ -1087,7 +1089,7 @@ Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from 
 
 If the [`lines`](#optionslines) option is true, this applies to each output line instead.
 
-By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](#options).
 
 #### options.maxBuffer
 

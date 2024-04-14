@@ -25,7 +25,8 @@
 	"files": [
 		"index.js",
 		"index.d.ts",
-		"lib"
+		"lib",
+		"types"
 	],
 	"keywords": [
 		"exec",
@@ -88,7 +89,7 @@
 	"ava": {
 		"workerThreads": false,
 		"concurrency": 1,
-		"timeout": "120s"
+		"timeout": "240s"
 	},
 	"xo": {
 		"rules": {

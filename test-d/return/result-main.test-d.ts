@@ -1,0 +1,95 @@
+import {expectType, expectAssignable} from 'tsd';
+import {
+	execa,
+	execaSync,
+	ExecaError,
+	ExecaSyncError,
+	type ExecaResult,
+	type ExecaSyncResult,
+} from '../../index.js';
+
+type AnyChunk = string | Uint8Array | string[] | unknown[] | undefined;
+expectType<AnyChunk>({} as ExecaResult['stdout']);
+expectType<AnyChunk>({} as ExecaResult['stderr']);
+expectType<AnyChunk>({} as ExecaResult['all']);
+expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaResult['stdio']);
+expectType<AnyChunk>({} as ExecaSyncResult['stdout']);
+expectType<AnyChunk>({} as ExecaSyncResult['stderr']);
+expectType<AnyChunk>({} as ExecaSyncResult['all']);
+expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaSyncResult['stdio']);
+
+const unicornsResult = await execa('unicorns', {all: true});
+expectAssignable<ExecaResult>(unicornsResult);
+expectType<string>(unicornsResult.command);
+expectType<string>(unicornsResult.escapedCommand);
+expectType<number | undefined>(unicornsResult.exitCode);
+expectType<boolean>(unicornsResult.failed);
+expectType<boolean>(unicornsResult.timedOut);
+expectType<boolean>(unicornsResult.isCanceled);
+expectType<boolean>(unicornsResult.isTerminated);
+expectType<boolean>(unicornsResult.isMaxBuffer);
+expectType<string | undefined>(unicornsResult.signal);
+expectType<string | undefined>(unicornsResult.signalDescription);
+expectType<string>(unicornsResult.cwd);
+expectType<number>(unicornsResult.durationMs);
+expectType<ExecaResult[]>(unicornsResult.pipedFrom);
+
+const unicornsResultSync = execaSync('unicorns', {all: true});
+expectAssignable<ExecaSyncResult>(unicornsResultSync);
+expectType<string>(unicornsResultSync.command);
+expectType<string>(unicornsResultSync.escapedCommand);
+expectType<number | undefined>(unicornsResultSync.exitCode);
+expectType<boolean>(unicornsResultSync.failed);
+expectType<boolean>(unicornsResultSync.timedOut);
+expectType<boolean>(unicornsResultSync.isCanceled);
+expectType<boolean>(unicornsResultSync.isTerminated);
+expectType<boolean>(unicornsResultSync.isMaxBuffer);
+expectType<string | undefined>(unicornsResultSync.signal);
+expectType<string | undefined>(unicornsResultSync.signalDescription);
+expectType<string>(unicornsResultSync.cwd);
+expectType<number>(unicornsResultSync.durationMs);
+expectType<[]>(unicornsResultSync.pipedFrom);
+
+const error = new Error('.');
+if (error instanceof ExecaError) {
+	expectAssignable<ExecaError>(error);
+	expectType<'ExecaError'>(error.name);
+	expectType<string>(error.message);
+	expectType<number | undefined>(error.exitCode);
+	expectType<boolean>(error.failed);
+	expectType<boolean>(error.timedOut);
+	expectType<boolean>(error.isCanceled);
+	expectType<boolean>(error.isTerminated);
+	expectType<boolean>(error.isMaxBuffer);
+	expectType<string | undefined>(error.signal);
+	expectType<string | undefined>(error.signalDescription);
+	expectType<string>(error.cwd);
+	expectType<number>(error.durationMs);
+	expectType<string>(error.shortMessage);
+	expectType<string>(error.originalMessage);
+	expectType<string | undefined>(error.code);
+	expectType<unknown>(error.cause);
+	expectType<ExecaResult[]>(error.pipedFrom);
+}
+
+const errorSync = new Error('.');
+if (errorSync instanceof ExecaSyncError) {
+	expectAssignable<ExecaSyncError>(errorSync);
+	expectType<'ExecaSyncError'>(errorSync.name);
+	expectType<string>(errorSync.message);
+	expectType<number | undefined>(errorSync.exitCode);
+	expectType<boolean>(errorSync.failed);
+	expectType<boolean>(errorSync.timedOut);
+	expectType<boolean>(errorSync.isCanceled);
+	expectType<boolean>(errorSync.isTerminated);
+	expectType<boolean>(errorSync.isMaxBuffer);
+	expectType<string | undefined>(errorSync.signal);
+	expectType<string | undefined>(errorSync.signalDescription);
+	expectType<string>(errorSync.cwd);
+	expectType<number>(errorSync.durationMs);
+	expectType<string>(errorSync.shortMessage);
+	expectType<string>(errorSync.originalMessage);
+	expectType<string | undefined>(errorSync.code);
+	expectType<unknown>(errorSync.cause);
+	expectType<[]>(errorSync.pipedFrom);
+}

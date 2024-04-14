@@ -1,0 +1,147 @@
+import {expectType, expectError} from 'tsd';
+import {execa, execaSync} from '../../index.js';
+
+await execa('unicorns', {maxBuffer: {}});
+expectError(await execa('unicorns', {maxBuffer: []}));
+await execa('unicorns', {maxBuffer: {stdout: 0}});
+await execa('unicorns', {maxBuffer: {stderr: 0}});
+await execa('unicorns', {maxBuffer: {stdout: 0, stderr: 0} as const});
+await execa('unicorns', {maxBuffer: {all: 0}});
+await execa('unicorns', {maxBuffer: {fd1: 0}});
+await execa('unicorns', {maxBuffer: {fd2: 0}});
+await execa('unicorns', {maxBuffer: {fd3: 0}});
+expectError(await execa('unicorns', {maxBuffer: {stdout: '0'}}));
+
+execaSync('unicorns', {maxBuffer: {}});
+expectError(execaSync('unicorns', {maxBuffer: []}));
+execaSync('unicorns', {maxBuffer: {stdout: 0}});
+execaSync('unicorns', {maxBuffer: {stderr: 0}});
+execaSync('unicorns', {maxBuffer: {stdout: 0, stderr: 0} as const});
+execaSync('unicorns', {maxBuffer: {all: 0}});
+execaSync('unicorns', {maxBuffer: {fd1: 0}});
+execaSync('unicorns', {maxBuffer: {fd2: 0}});
+execaSync('unicorns', {maxBuffer: {fd3: 0}});
+expectError(execaSync('unicorns', {maxBuffer: {stdout: '0'}}));
+
+await execa('unicorns', {verbose: {}});
+expectError(await execa('unicorns', {verbose: []}));
+await execa('unicorns', {verbose: {stdout: 'none'}});
+await execa('unicorns', {verbose: {stderr: 'none'}});
+await execa('unicorns', {verbose: {stdout: 'none', stderr: 'none'} as const});
+await execa('unicorns', {verbose: {all: 'none'}});
+await execa('unicorns', {verbose: {fd1: 'none'}});
+await execa('unicorns', {verbose: {fd2: 'none'}});
+await execa('unicorns', {verbose: {fd3: 'none'}});
+expectError(await execa('unicorns', {verbose: {stdout: 'other'}}));
+
+execaSync('unicorns', {verbose: {}});
+expectError(execaSync('unicorns', {verbose: []}));
+execaSync('unicorns', {verbose: {stdout: 'none'}});
+execaSync('unicorns', {verbose: {stderr: 'none'}});
+execaSync('unicorns', {verbose: {stdout: 'none', stderr: 'none'} as const});
+execaSync('unicorns', {verbose: {all: 'none'}});
+execaSync('unicorns', {verbose: {fd1: 'none'}});
+execaSync('unicorns', {verbose: {fd2: 'none'}});
+execaSync('unicorns', {verbose: {fd3: 'none'}});
+expectError(execaSync('unicorns', {verbose: {stdout: 'other'}}));
+
+await execa('unicorns', {stripFinalNewline: {}});
+expectError(await execa('unicorns', {stripFinalNewline: []}));
+await execa('unicorns', {stripFinalNewline: {stdout: true}});
+await execa('unicorns', {stripFinalNewline: {stderr: true}});
+await execa('unicorns', {stripFinalNewline: {stdout: true, stderr: true} as const});
+await execa('unicorns', {stripFinalNewline: {all: true}});
+await execa('unicorns', {stripFinalNewline: {fd1: true}});
+await execa('unicorns', {stripFinalNewline: {fd2: true}});
+await execa('unicorns', {stripFinalNewline: {fd3: true}});
+expectError(await execa('unicorns', {stripFinalNewline: {stdout: 'true'}}));
+
+execaSync('unicorns', {stripFinalNewline: {}});
+expectError(execaSync('unicorns', {stripFinalNewline: []}));
+execaSync('unicorns', {stripFinalNewline: {stdout: true}});
+execaSync('unicorns', {stripFinalNewline: {stderr: true}});
+execaSync('unicorns', {stripFinalNewline: {stdout: true, stderr: true} as const});
+execaSync('unicorns', {stripFinalNewline: {all: true}});
+execaSync('unicorns', {stripFinalNewline: {fd1: true}});
+execaSync('unicorns', {stripFinalNewline: {fd2: true}});
+execaSync('unicorns', {stripFinalNewline: {fd3: true}});
+expectError(execaSync('unicorns', {stripFinalNewline: {stdout: 'true'}}));
+
+await execa('unicorns', {lines: {}});
+expectError(await execa('unicorns', {lines: []}));
+await execa('unicorns', {lines: {stdout: true}});
+await execa('unicorns', {lines: {stderr: true}});
+await execa('unicorns', {lines: {stdout: true, stderr: true} as const});
+await execa('unicorns', {lines: {all: true}});
+await execa('unicorns', {lines: {fd1: true}});
+await execa('unicorns', {lines: {fd2: true}});
+await execa('unicorns', {lines: {fd3: true}});
+expectError(await execa('unicorns', {lines: {stdout: 'true'}}));
+
+execaSync('unicorns', {lines: {}});
+expectError(execaSync('unicorns', {lines: []}));
+execaSync('unicorns', {lines: {stdout: true}});
+execaSync('unicorns', {lines: {stderr: true}});
+execaSync('unicorns', {lines: {stdout: true, stderr: true} as const});
+execaSync('unicorns', {lines: {all: true}});
+execaSync('unicorns', {lines: {fd1: true}});
+execaSync('unicorns', {lines: {fd2: true}});
+execaSync('unicorns', {lines: {fd3: true}});
+expectError(execaSync('unicorns', {lines: {stdout: 'true'}}));
+
+await execa('unicorns', {buffer: {}});
+expectError(await execa('unicorns', {buffer: []}));
+await execa('unicorns', {buffer: {stdout: true}});
+await execa('unicorns', {buffer: {stderr: true}});
+await execa('unicorns', {buffer: {stdout: true, stderr: true} as const});
+await execa('unicorns', {buffer: {all: true}});
+await execa('unicorns', {buffer: {fd1: true}});
+await execa('unicorns', {buffer: {fd2: true}});
+await execa('unicorns', {buffer: {fd3: true}});
+expectError(await execa('unicorns', {buffer: {stdout: 'true'}}));
+
+execaSync('unicorns', {buffer: {}});
+expectError(execaSync('unicorns', {buffer: []}));
+execaSync('unicorns', {buffer: {stdout: true}});
+execaSync('unicorns', {buffer: {stderr: true}});
+execaSync('unicorns', {buffer: {stdout: true, stderr: true} as const});
+execaSync('unicorns', {buffer: {all: true}});
+execaSync('unicorns', {buffer: {fd1: true}});
+execaSync('unicorns', {buffer: {fd2: true}});
+execaSync('unicorns', {buffer: {fd3: true}});
+expectError(execaSync('unicorns', {buffer: {stdout: 'true'}}));
+
+expectError(await execa('unicorns', {preferLocal: {}}));
+expectError(await execa('unicorns', {preferLocal: []}));
+expectError(await execa('unicorns', {preferLocal: {stdout: 0}}));
+expectError(await execa('unicorns', {preferLocal: {stderr: 0}}));
+expectError(await execa('unicorns', {preferLocal: {stdout: 0, stderr: 0} as const}));
+expectError(await execa('unicorns', {preferLocal: {all: 0}}));
+expectError(await execa('unicorns', {preferLocal: {fd1: 0}}));
+expectError(await execa('unicorns', {preferLocal: {fd2: 0}}));
+expectError(await execa('unicorns', {preferLocal: {fd3: 0}}));
+expectError(await execa('unicorns', {preferLocal: {stdout: '0'}}));
+
+expectError(execaSync('unicorns', {preferLocal: {}}));
+expectError(execaSync('unicorns', {preferLocal: []}));
+expectError(execaSync('unicorns', {preferLocal: {stdout: 0}}));
+expectError(execaSync('unicorns', {preferLocal: {stderr: 0}}));
+expectError(execaSync('unicorns', {preferLocal: {stdout: 0, stderr: 0} as const}));
+expectError(execaSync('unicorns', {preferLocal: {all: 0}}));
+expectError(execaSync('unicorns', {preferLocal: {fd1: 0}}));
+expectError(execaSync('unicorns', {preferLocal: {fd2: 0}}));
+expectError(execaSync('unicorns', {preferLocal: {fd3: 0}}));
+expectError(execaSync('unicorns', {preferLocal: {stdout: '0'}}));
+
+expectType<string[]>(execaSync('unicorns', {lines: {stdout: true, fd1: false}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {stdout: true, all: false}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {fd1: true, all: false}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {stderr: true, fd2: false}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {stderr: true, all: false}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {fd2: true, all: false}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {fd1: false, stdout: true}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, stdout: true}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, fd1: true}}).stdout);
+expectType<string[]>(execaSync('unicorns', {lines: {fd2: false, stderr: true}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, stderr: true}}).stderr);
+expectType<string[]>(execaSync('unicorns', {lines: {all: false, fd2: true}}).stderr);

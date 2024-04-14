@@ -4,7 +4,7 @@ import type {IgnoresSubprocessOutput} from '../return/ignore';
 import type {Options} from '../arguments/options';
 
 // `subprocess.stdin|stdout|stderr|stdio`
-type SubprocessStdioStream<
+export type SubprocessStdioStream<
 	FdNumber extends string,
 	OptionsType extends Options = Options,
 > = SubprocessStream<FdNumber, IgnoresSubprocessOutput<FdNumber, OptionsType>, OptionsType>;

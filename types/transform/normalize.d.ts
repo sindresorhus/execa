@@ -20,37 +20,37 @@ export type GeneratorTransformFull<IsSync extends boolean> = {
 	/**
 	Map or filter the input or output of the subprocess.
 	*/
-	transform: GeneratorTransform<IsSync>;
+	readonly transform: GeneratorTransform<IsSync>;
 
 	/**
 	Create additional lines after the last one.
 	*/
-	final?: GeneratorFinal<IsSync>;
+	readonly final?: GeneratorFinal<IsSync>;
 
 	/**
 	If `true`, iterate over arbitrary chunks of `Uint8Array`s instead of line `string`s.
 	*/
-	binary?: boolean;
+	readonly binary?: boolean;
 
 	/**
 	If `true`, keep newlines in each `line` argument. Also, this allows multiple `yield`s to produces a single line.
 	*/
-	preserveNewlines?: boolean;
+	readonly preserveNewlines?: boolean;
 
 	/**
 	If `true`, allow `transformOptions.transform` and `transformOptions.final` to return any type, not just `string` or `Uint8Array`.
 	*/
-	objectMode?: boolean;
+	readonly objectMode?: boolean;
 };
 
 // `options.std*: Duplex`
 export type DuplexTransform = {
-	transform: Duplex;
-	objectMode?: boolean;
+	readonly transform: Duplex;
+	readonly objectMode?: boolean;
 };
 
 // `options.std*: TransformStream`
 export type WebTransform = {
-	transform: TransformStream;
-	objectMode?: boolean;
+	readonly transform: TransformStream;
+	readonly objectMode?: boolean;
 };

@@ -15,7 +15,7 @@ import type {
 
 type IsStandardStream<FdNumber extends string> = FdNumber extends keyof StandardStreams ? true : false;
 
-export type StandardStreams = ['stdin', 'stdout', 'stderr'];
+export type StandardStreams = readonly ['stdin', 'stdout', 'stderr'];
 
 // When `options.stdin|stdout|stderr|stdio` is set to one of those values, no stream is created
 export type NoStreamStdioOption<FdNumber extends string> =
@@ -48,7 +48,7 @@ type CommonStdioOption<
 > =
 	| SimpleStdioOption<IsSync, IsExtra, IsArray>
 	| URL
-	| {file: string}
+	| {readonly file: string}
 	| GeneratorTransform<IsSync>
 	| GeneratorTransformFull<IsSync>
 	| Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9>

@@ -831,7 +831,7 @@ Type: `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
 
-Some options are related to the subprocess output: [`verbose`](#optionsverbose), [`lines`](#optionslines), [`stripFinalNewline`](#optionsstripfinalnewline), [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
+Some options are related to the subprocess output: [`verbose`](#optionsverbose), [`lines`](#optionslines), [`stripFinalNewline`](#optionsstripfinalnewline), [`buffer`](#optionsbuffer), [`maxBuffer`](#optionsmaxbuffer). By default, those options apply to all file descriptors (`stdout`, `stderr`, etc.). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `fd3`, etc.
 
 ```js
 await execa('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
@@ -951,6 +951,8 @@ Whether to return the subprocess' output using the [`result.stdout`](#resultstdo
 On failure, the [`error.stdout`](#resultstdout), [`error.stderr`](#resultstderr), [`error.all`](#resultall) and [`error.stdio`](#resultstdio) properties are used instead.
 
 When `buffer` is `false`, the output can still be read using the [`subprocess.stdout`](#subprocessstdout), [`subprocess.stderr`](#subprocessstderr), [`subprocess.stdio`](#subprocessstdio) and [`subprocess.all`](#subprocessall) streams. If the output is read, this should be done right away to avoid missing any data.
+
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](#options).
 
 #### options.input
 

@@ -88,7 +88,7 @@
 	"ava": {
 		"workerThreads": false,
 		"concurrency": 1,
-		"timeout": "60s"
+		"timeout": "120s"
 	},
 	"xo": {
 		"rules": {

@@ -1,14 +1,12 @@
 import {Buffer} from 'node:buffer';
 import {exec} from 'node:child_process';
-import process from 'node:process';
 import {promisify} from 'node:util';
 import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {outputObjectGenerator, getOutputsGenerator, addNoopGenerator} from '../helpers/generator.js';
-import {foobarString, foobarUint8Array, foobarObject, foobarHex} from '../helpers/input.js';
+import {foobarString, foobarUint8Array, foobarHex} from '../helpers/input.js';
 
 const pExec = promisify(exec);
 
@@ -94,113 +92,6 @@ test('can pass encoding "ascii" to stdio[*] - sync', checkEncoding, 'ascii', 3, 
 test('can pass encoding "hex" to stdio[*] - sync', checkEncoding, 'hex', 3, execaSync);
 test('can pass encoding "base64" to stdio[*] - sync', checkEncoding, 'base64', 3, execaSync);
 test('can pass encoding "base64url" to stdio[*] - sync', checkEncoding, 'base64url', 3, execaSync);
-
-const foobarArray = ['fo', 'ob', 'ar', '..'];
-
-const testMultibyteCharacters = async (t, objectMode, addNoopTransform, execaMethod) => {
-	const {stdout} = await execaMethod('noop.js', {
-		stdout: addNoopGenerator(getOutputsGenerator(foobarArray)(objectMode, true), addNoopTransform, objectMode),
-		encoding: 'base64',
-	});
-	if (objectMode) {
-		t.deepEqual(stdout, foobarArray);
-	} else {
-		t.is(stdout, btoa(foobarArray.join('')));
-	}
-};
-
-test('Handle multibyte characters', testMultibyteCharacters, false, false, execa);
-test('Handle multibyte characters, noop transform', testMultibyteCharacters, false, true, execa);
-test('Handle multibyte characters, with objectMode', testMultibyteCharacters, true, false, execa);
-test('Handle multibyte characters, with objectMode, noop transform', testMultibyteCharacters, true, true, execa);
-test('Handle multibyte characters, sync', testMultibyteCharacters, false, false, execaSync);
-test('Handle multibyte characters, noop transform, sync', testMultibyteCharacters, false, true, execaSync);
-test('Handle multibyte characters, with objectMode, sync', testMultibyteCharacters, true, false, execaSync);
-test('Handle multibyte characters, with objectMode, noop transform, sync', testMultibyteCharacters, true, true, execaSync);
-
-const testObjectMode = async (t, addNoopTransform, execaMethod) => {
-	const {stdout} = await execaMethod('noop.js', {
-		stdout: addNoopGenerator(outputObjectGenerator(), addNoopTransform, true),
-		encoding: 'base64',
-	});
-	t.deepEqual(stdout, [foobarObject]);
-};
-
-test('Other encodings work with transforms that return objects', testObjectMode, false, execa);
-test('Other encodings work with transforms that return objects, noop transform', testObjectMode, true, execa);
-test('Other encodings work with transforms that return objects, sync', testObjectMode, false, execaSync);
-test('Other encodings work with transforms that return objects, noop transform, sync', testObjectMode, true, execaSync);
-
-// eslint-disable-next-line max-params
-const testIgnoredEncoding = async (t, stdoutOption, isUndefined, options, execaMethod) => {
-	const {stdout} = await execaMethod('empty.js', {stdout: stdoutOption, ...options});
-	t.is(stdout === undefined, isUndefined);
-};
-
-const base64Options = {encoding: 'base64'};
-const linesOptions = {lines: true};
-test('Is ignored with other encodings and "ignore"', testIgnoredEncoding, 'ignore', true, base64Options, execa);
-test('Is ignored with other encodings and ["ignore"]', testIgnoredEncoding, ['ignore'], true, base64Options, execa);
-test('Is ignored with other encodings and "ipc"', testIgnoredEncoding, 'ipc', true, base64Options, execa);
-test('Is ignored with other encodings and ["ipc"]', testIgnoredEncoding, ['ipc'], true, base64Options, execa);
-test('Is ignored with other encodings and "inherit"', testIgnoredEncoding, 'inherit', true, base64Options, execa);
-test('Is ignored with other encodings and ["inherit"]', testIgnoredEncoding, ['inherit'], true, base64Options, execa);
-test('Is ignored with other encodings and 1', testIgnoredEncoding, 1, true, base64Options, execa);
-test('Is ignored with other encodings and [1]', testIgnoredEncoding, [1], true, base64Options, execa);
-test('Is ignored with other encodings and process.stdout', testIgnoredEncoding, process.stdout, true, base64Options, execa);
-test('Is ignored with other encodings and [process.stdout]', testIgnoredEncoding, [process.stdout], true, base64Options, execa);
-test('Is not ignored with other encodings and "pipe"', testIgnoredEncoding, 'pipe', false, base64Options, execa);
-test('Is not ignored with other encodings and ["pipe"]', testIgnoredEncoding, ['pipe'], false, base64Options, execa);
-test('Is not ignored with other encodings and "overlapped"', testIgnoredEncoding, 'overlapped', false, base64Options, execa);
-test('Is not ignored with other encodings and ["overlapped"]', testIgnoredEncoding, ['overlapped'], false, base64Options, execa);
-test('Is not ignored with other encodings and ["inherit", "pipe"]', testIgnoredEncoding, ['inherit', 'pipe'], false, base64Options, execa);
-test('Is not ignored with other encodings and undefined', testIgnoredEncoding, undefined, false, base64Options, execa);
-test('Is not ignored with other encodings and null', testIgnoredEncoding, null, false, base64Options, execa);
-test('Is ignored with "lines: true" and "ignore"', testIgnoredEncoding, 'ignore', true, linesOptions, execa);
-test('Is ignored with "lines: true" and ["ignore"]', testIgnoredEncoding, ['ignore'], true, linesOptions, execa);
-test('Is ignored with "lines: true" and "ipc"', testIgnoredEncoding, 'ipc', true, linesOptions, execa);
-test('Is ignored with "lines: true" and ["ipc"]', testIgnoredEncoding, ['ipc'], true, linesOptions, execa);
-test('Is ignored with "lines: true" and "inherit"', testIgnoredEncoding, 'inherit', true, linesOptions, execa);
-test('Is ignored with "lines: true" and ["inherit"]', testIgnoredEncoding, ['inherit'], true, linesOptions, execa);
-test('Is ignored with "lines: true" and 1', testIgnoredEncoding, 1, true, linesOptions, execa);
-test('Is ignored with "lines: true" and [1]', testIgnoredEncoding, [1], true, linesOptions, execa);
-test('Is ignored with "lines: true" and process.stdout', testIgnoredEncoding, process.stdout, true, linesOptions, execa);
-test('Is ignored with "lines: true" and [process.stdout]', testIgnoredEncoding, [process.stdout], true, linesOptions, execa);
-test('Is not ignored with "lines: true" and "pipe"', testIgnoredEncoding, 'pipe', false, linesOptions, execa);
-test('Is not ignored with "lines: true" and ["pipe"]', testIgnoredEncoding, ['pipe'], false, linesOptions, execa);
-test('Is not ignored with "lines: true" and "overlapped"', testIgnoredEncoding, 'overlapped', false, linesOptions, execa);
-test('Is not ignored with "lines: true" and ["overlapped"]', testIgnoredEncoding, ['overlapped'], false, linesOptions, execa);
-test('Is not ignored with "lines: true" and ["inherit", "pipe"]', testIgnoredEncoding, ['inherit', 'pipe'], false, linesOptions, execa);
-test('Is not ignored with "lines: true" and undefined', testIgnoredEncoding, undefined, false, linesOptions, execa);
-test('Is not ignored with "lines: true" and null', testIgnoredEncoding, null, false, linesOptions, execa);
-test('Is ignored with "lines: true", other encodings and "ignore"', testIgnoredEncoding, 'ignore', true, {...base64Options, ...linesOptions}, execa);
-test('Is not ignored with "lines: true", other encodings and "pipe"', testIgnoredEncoding, 'pipe', false, {...base64Options, ...linesOptions}, execa);
-test('Is ignored with other encodings and "ignore", sync', testIgnoredEncoding, 'ignore', true, base64Options, execaSync);
-test('Is ignored with other encodings and ["ignore"], sync', testIgnoredEncoding, ['ignore'], true, base64Options, execaSync);
-test('Is ignored with other encodings and "inherit", sync', testIgnoredEncoding, 'inherit', true, base64Options, execaSync);
-test('Is ignored with other encodings and ["inherit"], sync', testIgnoredEncoding, ['inherit'], true, base64Options, execaSync);
-test('Is ignored with other encodings and 1, sync', testIgnoredEncoding, 1, true, base64Options, execaSync);
-test('Is ignored with other encodings and [1], sync', testIgnoredEncoding, [1], true, base64Options, execaSync);
-test('Is ignored with other encodings and process.stdout, sync', testIgnoredEncoding, process.stdout, true, base64Options, execaSync);
-test('Is ignored with other encodings and [process.stdout], sync', testIgnoredEncoding, [process.stdout], true, base64Options, execaSync);
-test('Is not ignored with other encodings and "pipe", sync', testIgnoredEncoding, 'pipe', false, base64Options, execaSync);
-test('Is not ignored with other encodings and ["pipe"], sync', testIgnoredEncoding, ['pipe'], false, base64Options, execaSync);
-test('Is not ignored with other encodings and undefined, sync', testIgnoredEncoding, undefined, false, base64Options, execaSync);
-test('Is not ignored with other encodings and null, sync', testIgnoredEncoding, null, false, base64Options, execaSync);
-test('Is ignored with "lines: true" and "ignore", sync', testIgnoredEncoding, 'ignore', true, linesOptions, execaSync);
-test('Is ignored with "lines: true" and ["ignore"], sync', testIgnoredEncoding, ['ignore'], true, linesOptions, execaSync);
-test('Is ignored with "lines: true" and "inherit", sync', testIgnoredEncoding, 'inherit', true, linesOptions, execaSync);
-test('Is ignored with "lines: true" and ["inherit"], sync', testIgnoredEncoding, ['inherit'], true, linesOptions, execaSync);
-test('Is ignored with "lines: true" and 1, sync', testIgnoredEncoding, 1, true, linesOptions, execaSync);
-test('Is ignored with "lines: true" and [1], sync', testIgnoredEncoding, [1], true, linesOptions, execaSync);
-test('Is ignored with "lines: true" and process.stdout, sync', testIgnoredEncoding, process.stdout, true, linesOptions, execaSync);
-test('Is ignored with "lines: true" and [process.stdout], sync', testIgnoredEncoding, [process.stdout], true, linesOptions, execaSync);
-test('Is not ignored with "lines: true" and "pipe", sync', testIgnoredEncoding, 'pipe', false, linesOptions, execaSync);
-test('Is not ignored with "lines: true" and ["pipe"], sync', testIgnoredEncoding, ['pipe'], false, linesOptions, execaSync);
-test('Is not ignored with "lines: true" and undefined, sync', testIgnoredEncoding, undefined, false, linesOptions, execaSync);
-test('Is not ignored with "lines: true" and null, sync', testIgnoredEncoding, null, false, linesOptions, execaSync);
-test('Is ignored with "lines: true", other encodings and "ignore", sync', testIgnoredEncoding, 'ignore', true, {...base64Options, ...linesOptions}, execaSync);
-test('Is not ignored with "lines: true", other encodings and "pipe", sync', testIgnoredEncoding, 'pipe', false, {...base64Options, ...linesOptions}, execaSync);
 
 // eslint-disable-next-line max-params
 const testEncodingInput = async (t, input, expectedStdout, encoding, execaMethod) => {

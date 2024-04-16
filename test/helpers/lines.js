@@ -1,4 +1,5 @@
 import {Buffer} from 'node:buffer';
+import {execa} from '../../index.js';
 
 const textEncoder = new TextEncoder();
 
@@ -37,3 +38,8 @@ export const singleComplexUint8Array = textEncoder.encode(complexFull);
 export const singleComplexHex = complexFullBuffer.toString('hex');
 export const complexChunksEnd = ['\n', 'aaa\r\n', 'bbb\n', '\n', 'ccc'];
 export const complexChunks = ['', 'aaa', 'bbb', '', 'ccc'];
+export const singleFull = 'aaa';
+export const singleFullEnd = `${singleFull}\n`;
+
+export const getSimpleChunkSubprocessAsync = options => getSimpleChunkSubprocess(execa, options);
+export const getSimpleChunkSubprocess = (execaMethod, options) => execaMethod('noop-fd.js', ['1', simpleFull], {lines: true, ...options});

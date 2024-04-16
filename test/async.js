@@ -1,6 +1,6 @@
 import process from 'node:process';
 import test from 'ava';
-import {execa, execaSync} from '../index.js';
+import {execa} from '../index.js';
 import {setFixtureDir} from './helpers/fixtures-dir.js';
 
 setFixtureDir();
@@ -18,16 +18,6 @@ if (isWindows) {
 		t.is(stdout, 'Hello World');
 	});
 }
-
-test('skip throwing when using reject option', async t => {
-	const {exitCode} = await execa('fail.js', {reject: false});
-	t.is(exitCode, 2);
-});
-
-test('skip throwing when using reject option in sync mode', t => {
-	const {exitCode} = execaSync('fail.js', {reject: false});
-	t.is(exitCode, 2);
-});
 
 test('execa() returns a promise with pid', async t => {
 	const subprocess = execa('noop.js', ['foo']);

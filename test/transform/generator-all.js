@@ -1,7 +1,7 @@
 import {Buffer} from 'node:buffer';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarObject} from '../helpers/input.js';
 import {
 	outputObjectGenerator,
@@ -9,7 +9,7 @@ import {
 	uppercaseBufferGenerator,
 } from '../helpers/generator.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const textEncoder = new TextEncoder();
 
@@ -66,11 +66,29 @@ const testGeneratorAll = async (t, reject, encoding, objectMode, stdoutOption, s
 		stripFinalNewline: false,
 	});
 
-	const stdoutOutput = getStdoutStderrOutput({output: 'std\nout\n', stdioOption: stdoutOption, encoding, objectMode, lines});
+	const stdoutOutput = getStdoutStderrOutput({
+		output: 'std\nout\n',
+		stdioOption: stdoutOption,
+		encoding,
+		objectMode,
+		lines,
+	});
 	t.deepEqual(stdout, stdoutOutput);
-	const stderrOutput = getStdoutStderrOutput({output: 'std\nerr\n', stdioOption: stderrOption, encoding, objectMode, lines});
+	const stderrOutput = getStdoutStderrOutput({
+		output: 'std\nerr\n',
+		stdioOption: stderrOption,
+		encoding,
+		objectMode,
+		lines,
+	});
 	t.deepEqual(stderr, stderrOutput);
-	const allOutput = getAllOutput({stdoutOutput, stderrOutput, encoding, objectMode, lines});
+	const allOutput = getAllOutput({
+		stdoutOutput,
+		stderrOutput,
+		encoding,
+		objectMode,
+		lines,
+	});
 	if (Array.isArray(all) && Array.isArray(allOutput)) {
 		t.deepEqual([...all].sort(), [...allOutput].sort());
 	} else {

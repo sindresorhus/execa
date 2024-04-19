@@ -1,12 +1,12 @@
 import {inspect} from 'node:util';
 import test from 'ava';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarObject} from '../helpers/input.js';
 import {simpleFull, noNewlinesChunks} from '../helpers/lines.js';
 import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 import {getOutputLine, getOutputLines, testTimestamp} from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testLines = async (t, lines, stripFinalNewline, execaMethod) => {
 	const {stderr} = await execaMethod('noop-fd.js', ['1', simpleFull], {verbose: 'full', lines, stripFinalNewline});

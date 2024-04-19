@@ -2,12 +2,12 @@ import {once} from 'node:events';
 import {PassThrough} from 'node:stream';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {assertMaxListeners} from '../helpers/listeners.js';
 import {fullReadableStdio} from '../helpers/stdio.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('Can pipe two sources to same destination', async t => {
 	const source = execa('noop.js', [foobarString]);

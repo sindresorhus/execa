@@ -1,10 +1,10 @@
 import {stripVTControlCharacters} from 'node:util';
 import test from 'ava';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testNoStdout = async (t, verbose, execaMethod) => {
 	const {stdout} = await execaMethod('noop.js', [foobarString], {verbose, stdio: 'inherit'});

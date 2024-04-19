@@ -1,9 +1,14 @@
 import test from 'ava';
 import {red} from 'yoctocolors';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {nestedExecaAsync, parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
+import {
+	nestedExecaAsync,
+	parentExeca,
+	parentExecaAsync,
+	parentExecaSync,
+} from '../helpers/nested.js';
 import {
 	runErrorSubprocessAsync,
 	runErrorSubprocessSync,
@@ -21,7 +26,7 @@ import {
 	fd3FullOption,
 } from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testPrintOutput = async (t, verbose, fdNumber, execaMethod) => {
 	const {stderr} = await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], {verbose});

@@ -3,12 +3,12 @@ import process from 'node:process';
 import {PassThrough} from 'node:stream';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {noopGenerator} from '../helpers/generator.js';
 import {prematureClose} from '../helpers/stdio.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const isLinux = process.platform === 'linux';
 

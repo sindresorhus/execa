@@ -1,11 +1,16 @@
 import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync, $} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {earlyErrorOptions, getEarlyErrorSubprocess, getEarlyErrorSubprocessSync, expectedEarlyError} from '../helpers/early-error.js';
+import {
+	earlyErrorOptions,
+	getEarlyErrorSubprocess,
+	getEarlyErrorSubprocessSync,
+	expectedEarlyError,
+} from '../helpers/early-error.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const isWindows = process.platform === 'win32';
 const ENOENT_REGEXP = isWindows ? /failed with exit code 1/ : /spawn.* ENOENT/;

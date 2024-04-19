@@ -1,13 +1,13 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {appendGenerator, appendAsyncGenerator, casedSuffix} from '../helpers/generator.js';
 import {appendDuplex} from '../helpers/duplex.js';
 import {appendWebTransform} from '../helpers/web-transform.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testNoPipeOption = async (t, stdioOption, fdNumber) => {
 	const subprocess = execa('empty.js', getStdio(fdNumber, stdioOption));

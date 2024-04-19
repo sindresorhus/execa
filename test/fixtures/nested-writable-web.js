@@ -2,5 +2,5 @@
 import process from 'node:process';
 import {execa} from '../../index.js';
 
-const [options, file, arg] = process.argv.slice(2);
-await execa(file, [arg], {...JSON.parse(options), stdout: new WritableStream()});
+const [options, file, commandArgument] = process.argv.slice(2);
+await execa(file, [commandArgument], {...JSON.parse(options), stdout: new WritableStream()});

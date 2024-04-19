@@ -5,9 +5,9 @@ import {pathToFileURL, fileURLToPath} from 'node:url';
 import tempfile from 'tempfile';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {FIXTURES_DIR, setFixtureDir} from '../helpers/fixtures-dir.js';
+import {FIXTURES_DIRECTORY, setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const isWindows = process.platform === 'win32';
 
@@ -71,7 +71,7 @@ if (!isWindows) {
 
 const cwdNotExisting = {cwd: 'does_not_exist', expectedCode: 'ENOENT', expectedMessage: 'The "cwd" option is invalid'};
 const cwdTooLong = {cwd: '.'.repeat(1e5), expectedCode: 'ENAMETOOLONG', expectedMessage: 'The "cwd" option is invalid'};
-const cwdNotDir = {cwd: fileURLToPath(import.meta.url), expectedCode: isWindows ? 'ENOENT' : 'ENOTDIR', expectedMessage: 'The "cwd" option is not a directory'};
+const cwdNotDirectory = {cwd: fileURLToPath(import.meta.url), expectedCode: isWindows ? 'ENOENT' : 'ENOTDIR', expectedMessage: 'The "cwd" option is not a directory'};
 
 const testCwdPostSpawn = async (t, {cwd, expectedCode, expectedMessage}, execaMethod) => {
 	const {failed, code, message} = await execaMethod('empty.js', {cwd, reject: false});
@@ -85,16 +85,16 @@ test('The "cwd" option must be an existing file', testCwdPostSpawn, cwdNotExisti
 test('The "cwd" option must be an existing file - sync', testCwdPostSpawn, cwdNotExisting, execaSync);
 test('The "cwd" option must not be too long', testCwdPostSpawn, cwdTooLong, execa);
 test('The "cwd" option must not be too long - sync', testCwdPostSpawn, cwdTooLong, execaSync);
-test('The "cwd" option must be a directory', testCwdPostSpawn, cwdNotDir, execa);
-test('The "cwd" option must be a directory - sync', testCwdPostSpawn, cwdNotDir, execaSync);
+test('The "cwd" option must be a directory', testCwdPostSpawn, cwdNotDirectory, execa);
+test('The "cwd" option must be a directory - sync', testCwdPostSpawn, cwdNotDirectory, execaSync);
 
 const successProperties = {fixtureName: 'empty.js', expectedFailed: false};
 const errorProperties = {fixtureName: 'fail.js', expectedFailed: true};
 
 const testErrorCwd = async (t, execaMethod, {fixtureName, expectedFailed}) => {
-	const {failed, cwd} = await execaMethod(fixtureName, {cwd: relative('.', FIXTURES_DIR), reject: false});
+	const {failed, cwd} = await execaMethod(fixtureName, {cwd: relative('.', FIXTURES_DIRECTORY), reject: false});
 	t.is(failed, expectedFailed);
-	t.is(cwd, FIXTURES_DIR);
+	t.is(cwd, FIXTURES_DIRECTORY);
 };
 
 test('result.cwd is defined', testErrorCwd, execa, successProperties);

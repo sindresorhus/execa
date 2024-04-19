@@ -1,9 +1,9 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getEarlyErrorSubprocess, getEarlyErrorSubprocessSync} from '../helpers/early-error.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const assertDurationMs = (t, durationMs) => {
 	t.is(typeof durationMs, 'number');

@@ -2,7 +2,7 @@
 import process from 'node:process';
 import {execa} from '../../index.js';
 
-const [options, file, ...args] = process.argv.slice(2);
-const subprocess = execa(file, args, JSON.parse(options));
-subprocess.kill(new Error(args[0]));
+const [options, file, ...commandArguments] = process.argv.slice(2);
+const subprocess = execa(file, commandArguments, JSON.parse(options));
+subprocess.kill(new Error(commandArguments[0]));
 await subprocess;

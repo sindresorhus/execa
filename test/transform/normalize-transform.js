@@ -1,11 +1,11 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUppercase, foobarUint8Array} from '../helpers/input.js';
 import {casedSuffix} from '../helpers/generator.js';
 import {generatorsMap} from '../helpers/map.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testAppendInput = async (t, reversed, type, execaMethod) => {
 	const stdin = [foobarUint8Array, generatorsMap[type].uppercase(), generatorsMap[type].append()];

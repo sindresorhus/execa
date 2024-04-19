@@ -1,7 +1,7 @@
 import {Buffer} from 'node:buffer';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {
 	foobarString,
@@ -14,7 +14,7 @@ import {
 } from '../helpers/input.js';
 import {generatorsMap} from '../helpers/map.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getInputObjectMode = (objectMode, addNoopTransform, type) => objectMode
 	? {

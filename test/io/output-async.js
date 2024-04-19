@@ -5,10 +5,10 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {STANDARD_STREAMS} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {assertMaxListeners} from '../helpers/listeners.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getStandardStreamListeners = stream => Object.fromEntries(stream.eventNames().map(eventName => [eventName, stream.listeners(eventName)]));
 const getStandardStreamsListeners = () => STANDARD_STREAMS.map(stream => getStandardStreamListeners(stream));

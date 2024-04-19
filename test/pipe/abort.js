@@ -1,10 +1,10 @@
 import {once} from 'node:events';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const assertUnPipeError = async (t, pipePromise) => {
 	const error = await t.throwsAsync(pipePromise);

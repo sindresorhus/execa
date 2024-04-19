@@ -1,10 +1,16 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {noopGenerator, getOutputsGenerator, addNoopGenerator} from '../helpers/generator.js';
-import {multibyteChar, multibyteString, multibyteUint8Array, breakingLength, brokenSymbol} from '../helpers/encoding.js';
+import {
+	multibyteChar,
+	multibyteString,
+	multibyteUint8Array,
+	breakingLength,
+	brokenSymbol,
+} from '../helpers/encoding.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const foobarArray = ['fo', 'ob', 'ar', '..'];
 
@@ -16,7 +22,7 @@ const testMultibyteCharacters = async (t, objectMode, addNoopTransform, execaMet
 	if (objectMode) {
 		t.deepEqual(stdout, foobarArray);
 	} else {
-		t.is(stdout, btoa(foobarArray.join('')));
+		t.is(stdout, Buffer.from(foobarArray.join('')).toString('base64'));
 	}
 };
 

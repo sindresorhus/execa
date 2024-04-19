@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getOutputsGenerator, noopGenerator, noopAsyncGenerator} from '../helpers/generator.js';
 import {singleFull, singleFullEnd} from '../helpers/lines.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const singleFullEndWindows = `${singleFull}\r\n`;
 const mixedNewlines = '.\n.\r\n.\n.\r\n.\n';

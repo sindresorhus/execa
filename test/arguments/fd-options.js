@@ -3,12 +3,12 @@ import {spawn} from 'node:child_process';
 import process from 'node:process';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
 import {getEarlyErrorSubprocess} from '../helpers/early-error.js';
 import {assertPipeError} from '../helpers/pipe.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getMessage = message => Array.isArray(message)
 	? `"${message[0]}: ${message[1]}" option is incompatible`
@@ -37,8 +37,22 @@ const testNodeStream = async (t, {
 	to,
 	writable = to !== undefined,
 }) => {
-	assertNodeStream({t, message, getSource, from, to, methodName: writable ? 'writable' : 'readable'});
-	assertNodeStream({t, message, getSource, from, to, methodName: 'duplex'});
+	assertNodeStream({
+		t,
+		message,
+		getSource,
+		from,
+		to,
+		methodName: writable ? 'writable' : 'readable',
+	});
+	assertNodeStream({
+		t,
+		message,
+		getSource,
+		from,
+		to,
+		methodName: 'duplex',
+	});
 };
 
 const assertNodeStream = ({t, message, getSource, from, to, methodName}) => {

@@ -1,7 +1,7 @@
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {fullReadableStdio} from '../helpers/stdio.js';
 import {
@@ -14,7 +14,7 @@ import {
 	getReadWriteSubprocess,
 } from '../helpers/convert.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const endStream = async stream => {
 	stream.end(foobarString);

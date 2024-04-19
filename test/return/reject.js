@@ -1,8 +1,8 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('skip throwing when using reject option', async t => {
 	const {exitCode} = await execa('fail.js', {reject: false});

@@ -1,17 +1,17 @@
 import {platform} from 'node:process';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const isWindows = platform === 'win32';
 
-const testResultCommand = async (t, expected, ...args) => {
-	const {command: failCommand} = await t.throwsAsync(execa('fail.js', args));
+const testResultCommand = async (t, expected, ...commandArguments) => {
+	const {command: failCommand} = await t.throwsAsync(execa('fail.js', commandArguments));
 	t.is(failCommand, `fail.js${expected}`);
 
-	const {command} = await execa('noop.js', args);
+	const {command} = await execa('noop.js', commandArguments);
 	t.is(command, `noop.js${expected}`);
 };
 
@@ -21,25 +21,25 @@ test(testResultCommand, ' foo bar', 'foo', 'bar');
 test(testResultCommand, ' baz quz', 'baz', 'quz');
 test(testResultCommand, '');
 
-const testEscapedCommand = async (t, args, expectedUnix, expectedWindows) => {
+const testEscapedCommand = async (t, commandArguments, expectedUnix, expectedWindows) => {
 	const expected = isWindows ? expectedWindows : expectedUnix;
 
 	t.like(
-		await t.throwsAsync(execa('fail.js', args)),
+		await t.throwsAsync(execa('fail.js', commandArguments)),
 		{escapedCommand: `fail.js ${expected}`},
 	);
 
 	t.like(t.throws(() => {
-		execaSync('fail.js', args);
+		execaSync('fail.js', commandArguments);
 	}), {escapedCommand: `fail.js ${expected}`});
 
 	t.like(
-		await execa('noop.js', args),
+		await execa('noop.js', commandArguments),
 		{escapedCommand: `noop.js ${expected}`},
 	);
 
 	t.like(
-		execaSync('noop.js', args),
+		execaSync('noop.js', commandArguments),
 		{escapedCommand: `noop.js ${expected}`},
 	);
 };

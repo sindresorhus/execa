@@ -1,10 +1,15 @@
 import {Writable} from 'node:stream';
 import test from 'ava';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {assertStreamOutput, assertStreamDataEvents, assertIterableChunks} from '../helpers/convert.js';
-import {simpleFull, simpleLines, noNewlinesChunks, getSimpleChunkSubprocessAsync} from '../helpers/lines.js';
+import {
+	simpleFull,
+	simpleLines,
+	noNewlinesChunks,
+	getSimpleChunkSubprocessAsync,
+} from '../helpers/lines.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testAsyncIteration = async (t, expectedLines, stripFinalNewline) => {
 	const subprocess = getSimpleChunkSubprocessAsync({stripFinalNewline});

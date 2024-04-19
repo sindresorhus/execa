@@ -4,13 +4,13 @@ import {promisify} from 'node:util';
 import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUint8Array, foobarHex} from '../helpers/input.js';
 
 const pExec = promisify(exec);
 
-setFixtureDir();
+setFixtureDirectory();
 
 const checkEncoding = async (t, encoding, fdNumber, execaMethod) => {
 	const {stdio} = await execaMethod('noop-fd.js', [`${fdNumber}`, STRING_TO_ENCODE], {...fullStdio, encoding});
@@ -27,7 +27,7 @@ const checkEncoding = async (t, encoding, fdNumber, execaMethod) => {
 		return;
 	}
 
-	const {stdout, stderr} = await pExec(`node noop-fd.js ${fdNumber} ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIR});
+	const {stdout, stderr} = await pExec(`node noop-fd.js ${fdNumber} ${STRING_TO_ENCODE}`, {encoding, cwd: FIXTURES_DIRECTORY});
 	compareValues(t, fdNumber === 1 ? stdout : stderr, encoding);
 };
 

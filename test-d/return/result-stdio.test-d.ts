@@ -1,6 +1,11 @@
 import {Readable, Writable} from 'node:stream';
 import {expectType} from 'tsd';
-import {execa, execaSync, type ExecaError, type ExecaSyncError} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	type ExecaError,
+	type ExecaSyncError,
+} from '../../index.js';
 
 const unicornsResult = await execa('unicorns', {all: true});
 expectType<undefined>(unicornsResult.stdio[0]);

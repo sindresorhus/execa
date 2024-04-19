@@ -1,6 +1,6 @@
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {
 	finishedStream,
 	assertWritableAborted,
@@ -10,7 +10,7 @@ import {
 } from '../helpers/convert.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testSubprocessFail = async (t, methodName) => {
 	const subprocess = getReadWriteSubprocess();

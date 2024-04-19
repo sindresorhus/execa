@@ -1,10 +1,10 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testOutput = async (t, fdNumber, execaMethod) => {
 	const {stdout, stderr, stdio} = await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], fullStdio);

@@ -1,9 +1,14 @@
-import {compose, Readable, Writable, PassThrough} from 'node:stream';
+import {
+	compose,
+	Readable,
+	Writable,
+	PassThrough,
+} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import {text} from 'node:stream/consumers';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {
 	finishedStream,
 	assertReadableAborted,
@@ -21,7 +26,7 @@ import {foobarString} from '../helpers/input.js';
 import {prematureClose, fullStdio, fullReadableStdio} from '../helpers/stdio.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('.duplex() success', async t => {
 	const subprocess = getReadWriteSubprocess();

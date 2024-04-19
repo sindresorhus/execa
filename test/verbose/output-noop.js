@@ -1,12 +1,12 @@
 import {rm, readFile} from 'node:fs/promises';
 import test from 'ava';
 import tempfile from 'tempfile';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 import {getOutputLine, testTimestamp} from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testNoOutputOptions = async (t, fixtureName, options = {}) => {
 	const {stderr} = await parentExeca(fixtureName, 'noop.js', [foobarString], {verbose: 'full', ...options});

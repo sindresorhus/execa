@@ -1,12 +1,12 @@
 import test from 'ava';
 import getStream, {getStreamAsArray} from 'get-stream';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUppercase, foobarObject} from '../helpers/input.js';
 import {generatorsMap} from '../helpers/map.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getOutputObjectMode = (objectMode, addNoopTransform, type, binary) => objectMode
 	? {

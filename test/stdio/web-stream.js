@@ -2,10 +2,10 @@ import {Readable} from 'node:stream';
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testReadableStream = async (t, fdNumber) => {
 	const readableStream = Readable.toWeb(Readable.from('foobar'));

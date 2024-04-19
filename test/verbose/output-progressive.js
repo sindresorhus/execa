@@ -1,11 +1,11 @@
 import {on} from 'node:events';
 import test from 'ava';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 import {getOutputLine, getOutputLines, testTimestamp} from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('Prints stdout one line at a time', async t => {
 	const subprocess = parentExecaAsync('noop-progressive.js', [foobarString], {verbose: 'full'});

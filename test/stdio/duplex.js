@@ -3,11 +3,16 @@ import {promisify} from 'node:util';
 import {createGzip, gunzip} from 'node:zlib';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {foobarString, foobarObject, foobarUppercase, foobarUppercaseHex} from '../helpers/input.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {
+	foobarString,
+	foobarObject,
+	foobarUppercase,
+	foobarUppercaseHex,
+} from '../helpers/input.js';
 import {uppercaseEncodingDuplex, getOutputDuplex} from '../helpers/duplex.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('Can use crypto.createHash()', async t => {
 	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: {transform: createHash('sha1')}, encoding: 'hex'});

@@ -1,6 +1,6 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {getOutputsGenerator, resultGenerator} from '../helpers/generator.js';
 import {
@@ -16,7 +16,7 @@ import {
 	noNewlinesChunks,
 } from '../helpers/lines.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const windowsFull = 'aaa\r\nbbb\r\nccc';
 const windowsFullEnd = `${windowsFull}\r\n`;

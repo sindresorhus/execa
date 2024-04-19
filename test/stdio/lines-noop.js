@@ -1,6 +1,6 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getOutputsGenerator} from '../helpers/generator.js';
 import {foobarObject} from '../helpers/input.js';
 import {
@@ -13,7 +13,7 @@ import {
 	getSimpleChunkSubprocess,
 } from '../helpers/lines.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testStreamLinesNoop = async (t, lines, execaMethod) => {
 	const {stdout} = await execaMethod('noop-fd.js', ['1', simpleFull], {lines});
@@ -42,7 +42,12 @@ test('"lines: true" is a noop with objects generators, fd-specific, objectMode, 
 
 // eslint-disable-next-line max-params
 const testEncoding = async (t, input, expectedOutput, encoding, lines, stripFinalNewline, execaMethod) => {
-	const {stdout} = await execaMethod('stdin.js', {lines, stripFinalNewline, encoding, input});
+	const {stdout} = await execaMethod('stdin.js', {
+		lines,
+		stripFinalNewline,
+		encoding,
+		input,
+	});
 	t.deepEqual(stdout, expectedOutput);
 };
 

@@ -2,10 +2,10 @@ import {promisify} from 'node:util';
 import {gunzip} from 'node:zlib';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUtf16Uint8Array, foobarUint8Array} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('Can use CompressionStream()', async t => {
 	const {stdout} = await execa('noop-fd.js', ['1', foobarString], {stdout: new CompressionStream('gzip'), encoding: 'buffer'});

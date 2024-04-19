@@ -1,6 +1,6 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getOutputsGenerator, resultGenerator} from '../helpers/generator.js';
 import {
 	simpleFull,
@@ -16,7 +16,7 @@ import {
 	noNewlinesChunks,
 } from '../helpers/lines.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // eslint-disable-next-line max-params
 const testBinaryOption = async (t, binary, input, expectedLines, expectedOutput, objectMode, preserveNewlines, encoding, execaMethod) => {

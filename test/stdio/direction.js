@@ -4,9 +4,9 @@ import test from 'ava';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInputOutput = (t, stdioOption, execaMethod) => {
 	t.throws(() => {

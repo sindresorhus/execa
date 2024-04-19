@@ -1,11 +1,11 @@
 import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {outputObjectGenerator, addNoopGenerator} from '../helpers/generator.js';
 import {foobarObject} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testObjectMode = async (t, addNoopTransform, execaMethod) => {
 	const {stdout} = await execaMethod('noop.js', {

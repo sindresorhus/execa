@@ -1,6 +1,11 @@
 import type {CommonOptions} from '../arguments/options';
 import type {StdioOptionNormalizedArray} from './array';
-import type {StandardStreams, StdioOptionCommon, StdioOptionsArray, StdioOptionsProperty} from './type';
+import type {
+	StandardStreams,
+	StdioOptionCommon,
+	StdioOptionsArray,
+	StdioOptionsProperty,
+} from './type';
 
 // `options.stdin|stdout|stderr|stdio` for a given file descriptor
 export type FdStdioOption<

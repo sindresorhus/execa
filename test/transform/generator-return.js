@@ -1,11 +1,11 @@
 import {Buffer} from 'node:buffer';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUint8Array} from '../helpers/input.js';
 import {getOutputGenerator, convertTransformToFinal} from '../helpers/generator.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // eslint-disable-next-line max-params
 const testGeneratorReturnType = async (t, input, encoding, reject, objectMode, final, execaMethod) => {

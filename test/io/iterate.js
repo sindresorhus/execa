@@ -1,7 +1,7 @@
 import {once} from 'node:events';
 import {getDefaultHighWaterMark} from 'node:stream';
 import test from 'ava';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {
 	assertStreamOutput,
 	assertIterableChunks,
@@ -30,9 +30,14 @@ import {
 } from '../helpers/lines.js';
 import {outputObjectGenerator, getOutputGenerator} from '../helpers/generator.js';
 import {foobarString, foobarObject} from '../helpers/input.js';
-import {multibyteChar, multibyteUint8Array, breakingLength, brokenSymbol} from '../helpers/encoding.js';
+import {
+	multibyteChar,
+	multibyteUint8Array,
+	breakingLength,
+	brokenSymbol,
+} from '../helpers/encoding.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const foobarObjectChunks = [foobarObject, foobarObject, foobarObject];
 

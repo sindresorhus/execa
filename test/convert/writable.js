@@ -6,7 +6,7 @@ import {setTimeout, scheduler} from 'node:timers/promises';
 import {promisify} from 'node:util';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {
 	finishedStream,
 	assertWritableAborted,
@@ -20,7 +20,12 @@ import {
 	getReadableSubprocess,
 	getReadWriteSubprocess,
 } from '../helpers/convert.js';
-import {foobarString, foobarBuffer, foobarObject, foobarObjectString} from '../helpers/input.js';
+import {
+	foobarString,
+	foobarBuffer,
+	foobarObject,
+	foobarObjectString,
+} from '../helpers/input.js';
 import {prematureClose, fullReadableStdio} from '../helpers/stdio.js';
 import {
 	throwingGenerator,
@@ -29,7 +34,7 @@ import {
 } from '../helpers/generator.js';
 import {defaultHighWaterMark, defaultObjectHighWaterMark} from '../helpers/stream.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('.writable() success', async t => {
 	const subprocess = getWritableSubprocess();

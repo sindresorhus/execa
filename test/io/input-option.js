@@ -1,11 +1,22 @@
 import {Writable} from 'node:stream';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
-import {runExeca, runExecaSync, runScript, runScriptSync} from '../helpers/run.js';
-import {foobarUint8Array, foobarBuffer, foobarArrayBuffer, foobarUint16Array, foobarDataView} from '../helpers/input.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {
+	runExeca,
+	runExecaSync,
+	runScript,
+	runScriptSync,
+} from '../helpers/run.js';
+import {
+	foobarUint8Array,
+	foobarBuffer,
+	foobarArrayBuffer,
+	foobarUint16Array,
+	foobarDataView,
+} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInput = async (t, input, execaMethod) => {
 	const {stdout} = await execaMethod('stdin.js', {input});

@@ -1,8 +1,8 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testInvalidEncoding = (t, encoding, message, execaMethod) => {
 	const error = t.throws(() => {

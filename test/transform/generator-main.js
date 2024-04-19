@@ -13,10 +13,10 @@ import {
 } from '../helpers/generator.js';
 import {generatorsMap} from '../helpers/map.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {maxBuffer, assertErrorMessage} from '../helpers/max-buffer.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const repeatCount = defaultHighWaterMark * 3;
 

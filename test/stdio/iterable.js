@@ -2,10 +2,20 @@ import {once} from 'node:events';
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
-import {foobarString, foobarObject, foobarObjectString, foobarArray} from '../helpers/input.js';
-import {noopGenerator, serializeGenerator, infiniteGenerator, throwingGenerator} from '../helpers/generator.js';
+import {
+	foobarString,
+	foobarObject,
+	foobarObjectString,
+	foobarArray,
+} from '../helpers/input.js';
+import {
+	noopGenerator,
+	serializeGenerator,
+	infiniteGenerator,
+	throwingGenerator,
+} from '../helpers/generator.js';
 
 const stringGenerator = function * () {
 	yield * foobarArray;
@@ -31,7 +41,7 @@ const asyncGenerator = async function * () {
 	yield * foobarArray;
 };
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testIterable = async (t, stdioOption, fdNumber, execaMethod) => {
 	const {stdout} = await execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, stdioOption));
@@ -187,6 +197,6 @@ test('stdio[*] option can be sync/async mixed iterables', testMultipleIterable, 
 test('stdin option iterable is canceled on subprocess error', async t => {
 	const iterable = infiniteGenerator().transform();
 	await t.throwsAsync(execa('stdin.js', {stdin: iterable, timeout: 1}), {message: /timed out/});
-	// eslint-disable-next-line no-unused-vars, no-empty
+	// eslint-disable-next-line no-empty
 	for await (const _ of iterable) {}
 });

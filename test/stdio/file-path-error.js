@@ -4,13 +4,18 @@ import test from 'ava';
 import {pathExists} from 'path-exists';
 import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {identity, getStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUppercase} from '../helpers/input.js';
-import {outputObjectGenerator, uppercaseGenerator, serializeGenerator, throwingGenerator} from '../helpers/generator.js';
+import {
+	outputObjectGenerator,
+	uppercaseGenerator,
+	serializeGenerator,
+	throwingGenerator,
+} from '../helpers/generator.js';
 import {getAbsolutePath} from '../helpers/file-path.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const nonFileUrl = new URL('https://example.com');
 

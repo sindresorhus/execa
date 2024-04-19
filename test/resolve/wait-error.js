@@ -1,16 +1,21 @@
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {noopReadable, noopWritable, noopDuplex} from '../helpers/stream.js';
 import {destroyOptionStream, destroySubprocessStream, getStreamStdio} from '../helpers/wait.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 // eslint-disable-next-line max-params
 const testStreamError = async (t, streamMethod, stream, fdNumber, useTransform) => {
 	const subprocess = execa('empty.js', getStreamStdio(fdNumber, stream, useTransform));
 	const cause = new Error('test');
-	streamMethod({stream, subprocess, fdNumber, error: cause});
+	streamMethod({
+		stream,
+		subprocess,
+		fdNumber,
+		error: cause,
+	});
 
 	const error = await t.throwsAsync(subprocess);
 	t.is(error.cause, cause);

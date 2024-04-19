@@ -1,10 +1,15 @@
 import test from 'ava';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUppercase} from '../helpers/input.js';
 import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
-import {getOutputLine, testTimestamp, fdFullOption, fdStderrFullOption} from '../helpers/verbose.js';
+import {
+	getOutputLine,
+	testTimestamp,
+	fdFullOption,
+	fdStderrFullOption,
+} from '../helpers/verbose.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testPrintOutputNoBuffer = async (t, verbose, buffer, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose, buffer});
@@ -29,7 +34,12 @@ test('Does not print stdout, buffer: false, different fd, sync', testPrintOutput
 test('Does not print stdout, buffer: false, different fd, fd-specific buffer, sync', testPrintOutputNoBufferFalse, {stdout: false}, parentExecaSync);
 
 const testPrintOutputNoBufferTransform = async (t, buffer, isSync) => {
-	const {stderr} = await parentExeca('nested-transform.js', 'noop.js', [foobarString], {verbose: 'full', buffer, type: 'generator', isSync});
+	const {stderr} = await parentExeca('nested-transform.js', 'noop.js', [foobarString], {
+		verbose: 'full',
+		buffer,
+		type: 'generator',
+		isSync,
+	});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarUppercase}`);
 };
 

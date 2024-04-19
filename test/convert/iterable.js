@@ -1,6 +1,6 @@
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {fullStdio, assertEpipe} from '../helpers/stdio.js';
 import {
@@ -11,7 +11,7 @@ import {
 } from '../helpers/convert.js';
 import {simpleFull, noNewlinesChunks} from '../helpers/lines.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const partialArrayFromAsync = async (asyncIterable, lines = []) => {
 	// eslint-disable-next-line no-unreachable-loop

@@ -1,10 +1,15 @@
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getOutputsGenerator, resultGenerator} from '../helpers/generator.js';
-import {foobarString, foobarUint8Array, foobarObject, foobarObjectString} from '../helpers/input.js';
+import {
+	foobarString,
+	foobarUint8Array,
+	foobarObject,
+	foobarObjectString,
+} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const resultUint8ArrayGenerator = function * (lines, chunk) {
 	lines.push(chunk);

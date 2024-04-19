@@ -3,9 +3,9 @@ import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import isRunning from 'is-running';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('.kill(error) propagates error', async t => {
 	const subprocess = execa('forever.js');

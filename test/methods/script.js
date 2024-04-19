@@ -1,10 +1,10 @@
 import test from 'ava';
 import {isStream} from 'is-stream';
 import {$} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const testScriptStdoutSync = (t, getSubprocess, expectedStdout) => {
 	const {stdout} = getSubprocess();

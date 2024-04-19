@@ -1,57 +1,64 @@
 import {join} from 'node:path';
 import test from 'ava';
-import {execa, execaSync, execaCommand, execaCommandSync, execaNode, $} from '../../index.js';
-import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {
+	execa,
+	execaSync,
+	execaCommand,
+	execaCommandSync,
+	execaNode,
+	$,
+} from '../../index.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
-const NOOP_PATH = join(FIXTURES_DIR, 'noop.js');
+const NOOP_PATH = join(FIXTURES_DIRECTORY, 'noop.js');
 
-const testSerializeArg = async (t, arg, execaMethod) => {
-	const {stdout} = await execaMethod(NOOP_PATH, [arg]);
-	t.is(stdout, String(arg));
+const testSerializeArgument = async (t, commandArgument, execaMethod) => {
+	const {stdout} = await execaMethod(NOOP_PATH, [commandArgument]);
+	t.is(stdout, String(commandArgument));
 };
 
-test('execa()\'s arguments can be numbers', testSerializeArg, 1, execa);
-test('execa()\'s arguments can be booleans', testSerializeArg, true, execa);
-test('execa()\'s arguments can be NaN', testSerializeArg, Number.NaN, execa);
-test('execa()\'s arguments can be Infinity', testSerializeArg, Number.POSITIVE_INFINITY, execa);
-test('execa()\'s arguments can be null', testSerializeArg, null, execa);
-test('execa()\'s arguments can be undefined', testSerializeArg, undefined, execa);
-test('execa()\'s arguments can be bigints', testSerializeArg, 1n, execa);
-test('execa()\'s arguments can be symbols', testSerializeArg, Symbol('test'), execa);
-test('execaSync()\'s arguments can be numbers', testSerializeArg, 1, execaSync);
-test('execaSync()\'s arguments can be booleans', testSerializeArg, true, execaSync);
-test('execaSync()\'s arguments can be NaN', testSerializeArg, Number.NaN, execaSync);
-test('execaSync()\'s arguments can be Infinity', testSerializeArg, Number.POSITIVE_INFINITY, execaSync);
-test('execaSync()\'s arguments can be null', testSerializeArg, null, execaSync);
-test('execaSync()\'s arguments can be undefined', testSerializeArg, undefined, execaSync);
-test('execaSync()\'s arguments can be bigints', testSerializeArg, 1n, execaSync);
-test('execaSync()\'s arguments can be symbols', testSerializeArg, Symbol('test'), execaSync);
-test('execaNode()\'s arguments can be numbers', testSerializeArg, 1, execaNode);
-test('execaNode()\'s arguments can be booleans', testSerializeArg, true, execaNode);
-test('execaNode()\'s arguments can be NaN', testSerializeArg, Number.NaN, execaNode);
-test('execaNode()\'s arguments can be Infinity', testSerializeArg, Number.POSITIVE_INFINITY, execaNode);
-test('execaNode()\'s arguments can be null', testSerializeArg, null, execaNode);
-test('execaNode()\'s arguments can be undefined', testSerializeArg, undefined, execaNode);
-test('execaNode()\'s arguments can be bigints', testSerializeArg, 1n, execaNode);
-test('execaNode()\'s arguments can be symbols', testSerializeArg, Symbol('test'), execaNode);
-test('$\'s arguments can be numbers', testSerializeArg, 1, $);
-test('$\'s arguments can be booleans', testSerializeArg, true, $);
-test('$\'s arguments can be NaN', testSerializeArg, Number.NaN, $);
-test('$\'s arguments can be Infinity', testSerializeArg, Number.POSITIVE_INFINITY, $);
-test('$\'s arguments can be null', testSerializeArg, null, $);
-test('$\'s arguments can be undefined', testSerializeArg, undefined, $);
-test('$\'s arguments can be bigints', testSerializeArg, 1n, $);
-test('$\'s arguments can be symbols', testSerializeArg, Symbol('test'), $);
-test('$.sync\'s arguments can be numbers', testSerializeArg, 1, $.sync);
-test('$.sync\'s arguments can be booleans', testSerializeArg, true, $.sync);
-test('$.sync\'s arguments can be NaN', testSerializeArg, Number.NaN, $.sync);
-test('$.sync\'s arguments can be Infinity', testSerializeArg, Number.POSITIVE_INFINITY, $.sync);
-test('$.sync\'s arguments can be null', testSerializeArg, null, $.sync);
-test('$.sync\'s arguments can be undefined', testSerializeArg, undefined, $.sync);
-test('$.sync\'s arguments can be bigints', testSerializeArg, 1n, $.sync);
-test('$.sync\'s arguments can be symbols', testSerializeArg, Symbol('test'), $.sync);
+test('execa()\'s arguments can be numbers', testSerializeArgument, 1, execa);
+test('execa()\'s arguments can be booleans', testSerializeArgument, true, execa);
+test('execa()\'s arguments can be NaN', testSerializeArgument, Number.NaN, execa);
+test('execa()\'s arguments can be Infinity', testSerializeArgument, Number.POSITIVE_INFINITY, execa);
+test('execa()\'s arguments can be null', testSerializeArgument, null, execa);
+test('execa()\'s arguments can be undefined', testSerializeArgument, undefined, execa);
+test('execa()\'s arguments can be bigints', testSerializeArgument, 1n, execa);
+test('execa()\'s arguments can be symbols', testSerializeArgument, Symbol('test'), execa);
+test('execaSync()\'s arguments can be numbers', testSerializeArgument, 1, execaSync);
+test('execaSync()\'s arguments can be booleans', testSerializeArgument, true, execaSync);
+test('execaSync()\'s arguments can be NaN', testSerializeArgument, Number.NaN, execaSync);
+test('execaSync()\'s arguments can be Infinity', testSerializeArgument, Number.POSITIVE_INFINITY, execaSync);
+test('execaSync()\'s arguments can be null', testSerializeArgument, null, execaSync);
+test('execaSync()\'s arguments can be undefined', testSerializeArgument, undefined, execaSync);
+test('execaSync()\'s arguments can be bigints', testSerializeArgument, 1n, execaSync);
+test('execaSync()\'s arguments can be symbols', testSerializeArgument, Symbol('test'), execaSync);
+test('execaNode()\'s arguments can be numbers', testSerializeArgument, 1, execaNode);
+test('execaNode()\'s arguments can be booleans', testSerializeArgument, true, execaNode);
+test('execaNode()\'s arguments can be NaN', testSerializeArgument, Number.NaN, execaNode);
+test('execaNode()\'s arguments can be Infinity', testSerializeArgument, Number.POSITIVE_INFINITY, execaNode);
+test('execaNode()\'s arguments can be null', testSerializeArgument, null, execaNode);
+test('execaNode()\'s arguments can be undefined', testSerializeArgument, undefined, execaNode);
+test('execaNode()\'s arguments can be bigints', testSerializeArgument, 1n, execaNode);
+test('execaNode()\'s arguments can be symbols', testSerializeArgument, Symbol('test'), execaNode);
+test('$\'s arguments can be numbers', testSerializeArgument, 1, $);
+test('$\'s arguments can be booleans', testSerializeArgument, true, $);
+test('$\'s arguments can be NaN', testSerializeArgument, Number.NaN, $);
+test('$\'s arguments can be Infinity', testSerializeArgument, Number.POSITIVE_INFINITY, $);
+test('$\'s arguments can be null', testSerializeArgument, null, $);
+test('$\'s arguments can be undefined', testSerializeArgument, undefined, $);
+test('$\'s arguments can be bigints', testSerializeArgument, 1n, $);
+test('$\'s arguments can be symbols', testSerializeArgument, Symbol('test'), $);
+test('$.sync\'s arguments can be numbers', testSerializeArgument, 1, $.sync);
+test('$.sync\'s arguments can be booleans', testSerializeArgument, true, $.sync);
+test('$.sync\'s arguments can be NaN', testSerializeArgument, Number.NaN, $.sync);
+test('$.sync\'s arguments can be Infinity', testSerializeArgument, Number.POSITIVE_INFINITY, $.sync);
+test('$.sync\'s arguments can be null', testSerializeArgument, null, $.sync);
+test('$.sync\'s arguments can be undefined', testSerializeArgument, undefined, $.sync);
+test('$.sync\'s arguments can be bigints', testSerializeArgument, 1n, $.sync);
+test('$.sync\'s arguments can be symbols', testSerializeArgument, Symbol('test'), $.sync);
 
 const testInvalidOptions = async (t, execaMethod) => {
 	t.throws(() => {

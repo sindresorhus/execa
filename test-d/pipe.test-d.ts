@@ -1,6 +1,11 @@
 import {createWriteStream} from 'node:fs';
 import {expectType, expectNotType, expectError} from 'tsd';
-import {execa, execaSync, $, type ExecaResult} from '../index.js';
+import {
+	execa,
+	execaSync,
+	$,
+	type ExecaResult,
+} from '../index.js';
 
 const fileUrl = new URL('file:///test');
 const stringArray = ['foo', 'bar'] as const;

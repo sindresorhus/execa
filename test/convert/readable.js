@@ -1,12 +1,17 @@
 import {once} from 'node:events';
 import process from 'node:process';
-import {compose, Readable, Writable, PassThrough} from 'node:stream';
+import {
+	compose,
+	Readable,
+	Writable,
+	PassThrough,
+} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import {text} from 'node:stream/consumers';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {
 	finishedStream,
 	assertReadableAborted,
@@ -28,7 +33,7 @@ import {prematureClose, fullStdio} from '../helpers/stdio.js';
 import {outputObjectGenerator, getOutputsAsyncGenerator} from '../helpers/generator.js';
 import {defaultHighWaterMark, defaultObjectHighWaterMark} from '../helpers/stream.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('.readable() success', async t => {
 	const subprocess = getReadableSubprocess();

@@ -1,8 +1,8 @@
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('promise methods are not enumerable', t => {
 	const descriptors = Object.getOwnPropertyDescriptors(execa('noop.js'));

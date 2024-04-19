@@ -24,11 +24,11 @@ const getTransform = (type, transformName) => {
 	}
 };
 
-const [optionsString, file, ...args] = process.argv.slice(2);
+const [optionsString, file, ...commandArguments] = process.argv.slice(2);
 const {type, transformName, isSync, ...options} = JSON.parse(optionsString);
 const newOptions = {stdout: getTransform(type, transformName), ...options};
 if (isSync) {
-	execaSync(file, args, newOptions);
+	execaSync(file, commandArguments, newOptions);
 } else {
-	await execa(file, args, newOptions);
+	await execa(file, commandArguments, newOptions);
 }

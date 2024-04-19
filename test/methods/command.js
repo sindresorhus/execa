@@ -1,11 +1,11 @@
 import {join} from 'node:path';
 import test from 'ava';
 import {execaCommand, execaCommandSync} from '../../index.js';
-import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {QUOTE} from '../helpers/verbose.js';
 
-setFixtureDir();
-const STDIN_FIXTURE = join(FIXTURES_DIR, 'stdin.js');
+setFixtureDirectory();
+const STDIN_FIXTURE = join(FIXTURES_DIRECTORY, 'stdin.js');
 
 test('execaCommand()', async t => {
 	const {stdout} = await execaCommand('echo.js foo bar');
@@ -92,21 +92,21 @@ test('execaCommand() trims', async t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-const testInvalidArgsArray = (t, execaMethod) => {
+const testInvalidArgumentsArray = (t, execaMethod) => {
 	t.throws(() => {
 		execaMethod('echo', ['foo']);
 	}, {message: /The command and its arguments must be passed as a single string/});
 };
 
-test('execaCommand() must not pass an array of arguments', testInvalidArgsArray, execaCommand);
-test('execaCommandSync() must not pass an array of arguments', testInvalidArgsArray, execaCommandSync);
+test('execaCommand() must not pass an array of arguments', testInvalidArgumentsArray, execaCommand);
+test('execaCommandSync() must not pass an array of arguments', testInvalidArgumentsArray, execaCommandSync);
 
-const testInvalidArgsTemplate = (t, execaMethod) => {
+const testInvalidArgumentsTemplate = (t, execaMethod) => {
 	t.throws(() => {
 		// eslint-disable-next-line no-unused-expressions
 		execaMethod`echo foo`;
 	}, {message: /The command and its arguments must be passed as a single string/});
 };
 
-test('execaCommand() must not pass an array of arguments with a template string', testInvalidArgsTemplate, execaCommand);
-test('execaCommandSync() must not pass an array of arguments with a template string', testInvalidArgsTemplate, execaCommandSync);
+test('execaCommand() must not pass an array of arguments with a template string', testInvalidArgumentsTemplate, execaCommand);
+test('execaCommandSync() must not pass an array of arguments with a template string', testInvalidArgumentsTemplate, execaCommandSync);

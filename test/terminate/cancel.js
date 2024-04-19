@@ -1,9 +1,9 @@
 import {once} from 'node:events';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('result.isCanceled is false when abort isn\'t called (success)', async t => {
 	const {isCanceled} = await execa('noop.js');

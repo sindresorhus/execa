@@ -1,11 +1,11 @@
 import process from 'node:process';
 import test from 'ava';
 import {execa} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
 const isWindows = process.platform === 'win32';
 
-setFixtureDir();
+setFixtureDirectory();
 
 test('exitCode is 0 on success', async t => {
 	const {exitCode} = await execa('noop.js', ['foo']);

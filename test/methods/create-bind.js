@@ -1,14 +1,19 @@
 import {join} from 'node:path';
 import test from 'ava';
-import {execa, execaSync, execaNode, $} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	execaNode,
+	$,
+} from '../../index.js';
 import {foobarString, foobarUppercase} from '../helpers/input.js';
 import {uppercaseGenerator} from '../helpers/generator.js';
-import {setFixtureDir, FIXTURES_DIR} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
-const NOOP_PATH = join(FIXTURES_DIR, 'noop.js');
-const PRINT_ENV_PATH = join(FIXTURES_DIR, 'environment.js');
+const NOOP_PATH = join(FIXTURES_DIRECTORY, 'noop.js');
+const PRINT_ENV_PATH = join(FIXTURES_DIRECTORY, 'environment.js');
 
 const testBindOptions = async (t, execaMethod) => {
 	const {stdout} = await execaMethod({stripFinalNewline: false})(NOOP_PATH, [foobarString]);

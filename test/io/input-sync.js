@@ -1,9 +1,9 @@
 import test from 'ava';
 import {execaSync} from '../../index.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const getFd3InputMessage = type => `not \`stdio[3]\`, can be ${type}`;
 

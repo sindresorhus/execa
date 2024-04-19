@@ -1,4 +1,9 @@
-import {Readable, Writable, PassThrough, getDefaultHighWaterMark} from 'node:stream';
+import {
+	Readable,
+	Writable,
+	PassThrough,
+	getDefaultHighWaterMark,
+} from 'node:stream';
 import {foobarString} from './input.js';
 
 export const noopReadable = () => new Readable({read() {}});

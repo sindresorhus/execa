@@ -1,6 +1,11 @@
 import * as process from 'node:process';
 import {expectType} from 'tsd';
-import {execa, execaSync, type ExecaError, type ExecaSyncError} from '../../index.js';
+import {
+	execa,
+	execaSync,
+	type ExecaError,
+	type ExecaSyncError,
+} from '../../index.js';
 
 const inheritStdoutResult = await execa('unicorns', {stdout: 'inherit', all: true});
 expectType<undefined>(inheritStdoutResult.stdout);

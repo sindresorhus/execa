@@ -1,4 +1,9 @@
-import {setImmediate, setInterval, setTimeout, scheduler} from 'node:timers/promises';
+import {
+	setImmediate,
+	setInterval,
+	setTimeout,
+	scheduler,
+} from 'node:timers/promises';
 import {foobarObject, foobarString} from './input.js';
 
 const getGenerator = transform => (objectMode, binary, preserveNewlines) => ({

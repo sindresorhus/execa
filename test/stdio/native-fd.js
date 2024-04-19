@@ -2,11 +2,11 @@ import {platform} from 'node:process';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {getStdio, fullStdio} from '../helpers/stdio.js';
-import {setFixtureDir} from '../helpers/fixtures-dir.js';
+import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
 
-setFixtureDir();
+setFixtureDirectory();
 
 const isLinux = platform === 'linux';
 const isWindows = platform === 'win32';

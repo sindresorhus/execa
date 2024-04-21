@@ -860,5 +860,6 @@ const {pid} = $`echo example`;
 
 <hr>
 
+[**Next**: 📔 API reference](api.md)\
 [**Previous**: 📎 Windows](windows.md)\
 [**Top**: Table of contents](../readme.md#documentation)

@@ -52,13 +52,13 @@ console.log(process.env.NO_COLOR);
 
 Alternatively, input can be provided to [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)). Unlike [command arguments](#command-arguments) and [environment variables](#environment-variables) which have [size](https://unix.stackexchange.com/questions/120642/what-defines-the-maximum-size-for-a-command-single-argument) [limits](https://stackoverflow.com/questions/1078031/what-is-the-maximum-size-of-a-linux-environment-variable-value), `stdin` works when the input is big. Also, the input can be redirected from the [terminal](#terminal-input), a [file](#file-input), another [subprocess](pipe.md) or a [stream](streams.md#manual-streaming). Finally, this is required when the input might contain [null bytes](https://en.wikipedia.org/wiki/Null_character), for example when it might be [binary](binary.md#binary-input).
 
-If the input is already available as a string, it can be passed directly to the [`input`](../readme.md#optionsinput) option.
+If the input is already available as a string, it can be passed directly to the [`input`](api.md#optionsinput) option.
 
 ```js
 await execa({input: 'stdinInput'})`npm run scaffold`;
 ```
 
-The [`stdin`](../readme.md#optionsstdin) option can also be used, although the string must be wrapped in two arrays for [syntax reasons](output.md#multiple-targets).
+The [`stdin`](api.md#optionsstdin) option can also be used, although the string must be wrapped in two arrays for [syntax reasons](output.md#multiple-targets).
 
 ```js
 await execa({stdin: [['stdinInput']]})`npm run scaffold`;
@@ -92,7 +92,7 @@ await execa({stdin: 'inherit'})`npm run scaffold`;
 
 ## Additional file descriptors
 
-The [`stdio`](../readme.md#optionsstdio) option can be used to pass some input to any [file descriptor](https://en.wikipedia.org/wiki/File_descriptor), as opposed to only [`stdin`](../readme.md#optionsstdin).
+The [`stdio`](api.md#optionsstdio) option can be used to pass some input to any [file descriptor](https://en.wikipedia.org/wiki/File_descriptor), as opposed to only [`stdin`](api.md#optionsstdin).
 
 ```js
 // Pass input to the file descriptor number 3

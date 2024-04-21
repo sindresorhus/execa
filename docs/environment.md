@@ -8,7 +8,7 @@
 
 ## Current directory
 
-The [current directory](https://en.wikipedia.org/wiki/Working_directory) when running the command can be set with the [`cwd`](../readme.md#optionscwd) option.
+The [current directory](https://en.wikipedia.org/wiki/Working_directory) when running the command can be set with the [`cwd`](api.md#optionscwd) option.
 
 ```js
 import {execa} from 'execa';
@@ -16,7 +16,7 @@ import {execa} from 'execa';
 await execa({cwd: '/path/to/cwd'})`npm run build`;
 ```
 
-And be retrieved with the [`result.cwd`](../readme.md#resultcwd) property.
+And be retrieved with the [`result.cwd`](api.md#resultcwd) property.
 
 ```js
 const {cwd} = await execa`npm run build`;
@@ -34,13 +34,13 @@ $ npm install -D eslint
 await execa('./node_modules/.bin/eslint');
 ```
 
-The [`preferLocal`](../readme.md#optionspreferlocal) option can be used to execute those local binaries.
+The [`preferLocal`](api.md#optionspreferlocal) option can be used to execute those local binaries.
 
 ```js
 await execa('eslint', {preferLocal: true});
 ```
 
-Those are searched in the current or any parent directory. The [`localDir`](../readme.md#optionslocaldir) option can select a different directory.
+Those are searched in the current or any parent directory. The [`localDir`](api.md#optionslocaldir) option can select a different directory.
 
 ```js
 await execa('eslint', {preferLocal: true, localDir: '/path/to/dir'});
@@ -60,7 +60,7 @@ await execa(binPath);
 
 ## Background subprocess
 
-When the [`detached`](../readme.md#optionsdetached) option is `true`, the subprocess [runs independently](https://en.wikipedia.org/wiki/Background_process) from the current process.
+When the [`detached`](api.md#optionsdetached) option is `true`, the subprocess [runs independently](https://en.wikipedia.org/wiki/Background_process) from the current process.
 
 Specific behavior depends on the platform. [More info.](https://nodejs.org/api/child_process.html#child_process_options_detached)
 

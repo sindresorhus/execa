@@ -8,7 +8,7 @@
 
 ## Summary
 
-Transforms map or filter the input or output of a subprocess. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) or a [transform options object](../readme.md#transform-options) to the [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) or [`stdio`](../readme.md#optionsstdio) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
+Transforms map or filter the input or output of a subprocess. They are defined by passing a [generator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) or a [transform options object](api.md#transform-options) to the [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout), [`stderr`](api.md#optionsstderr) or [`stdio`](api.md#optionsstdio) option. It can be [`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function*).
 
 ```js
 import {execa} from 'execa';
@@ -25,7 +25,7 @@ console.log(stdout); // HELLO
 ## Difference with iteration
 
 Transforms operate one `line` at a time, just like [`subprocess.iterable()`](lines.md#progressive-splitting). However, unlike iteration, transforms:
-- Modify the subprocess' [output](../readme.md#resultstdout) and [streams](../readme.md#subprocessstdout).
+- Modify the subprocess' [output](api.md#resultstdout) and [streams](api.md#subprocessstdout).
 - Can apply to the subprocess' input.
 - Are defined using a [generator function](#summary), [`Duplex`](#duplextransform-streams) stream, Node.js [`Transform`](#duplextransform-streams) stream or web [`TransformStream`](#duplextransform-streams).
 
@@ -46,7 +46,7 @@ console.log(stdout); // ''
 
 ## Object mode
 
-By default, [`stdout`](../readme.md#optionsstdout) and [`stderr`](../readme.md#optionsstderr)'s transforms must return a string or an `Uint8Array`. However, if the [`objectMode`](../readme.md#transformoptionsobjectmode) transform option is `true`, any type can be returned instead, except `null` or `undefined`. The subprocess' [`result.stdout`](../readme.md#resultstdout)/[`result.stderr`](../readme.md#resultstderr) will be an array of values.
+By default, [`stdout`](api.md#optionsstdout) and [`stderr`](api.md#optionsstderr)'s transforms must return a string or an `Uint8Array`. However, if the [`objectMode`](api.md#transformoptionsobjectmode) transform option is `true`, any type can be returned instead, except `null` or `undefined`. The subprocess' [`result.stdout`](api.md#resultstdout)/[`result.stderr`](api.md#resultstderr) will be an array of values.
 
 ```js
 const transform = function * (line) {
@@ -59,7 +59,7 @@ for (const data of stdout) {
 }
 ```
 
-[`stdin`](../readme.md#optionsstdin) can also use `objectMode: true`.
+[`stdin`](api.md#optionsstdin) can also use `objectMode: true`.
 
 ```js
 const transform = function * (line) {
@@ -72,7 +72,7 @@ await execa({stdin: [input, {transform, objectMode: true}]})`node jsonlines-inpu
 
 ## Sharing state
 
-State can be shared between calls of the [`transform`](../readme.md#transformoptionstransform) and [`final`](../readme.md#transformoptionsfinal) functions.
+State can be shared between calls of the [`transform`](api.md#transformoptionstransform) and [`final`](api.md#transformoptionsfinal) functions.
 
 ```js
 let count = 0;
@@ -85,7 +85,7 @@ const transform = function * (line) {
 
 ## Finalizing
 
-To create additional lines after the last one, a [`final`](../readme.md#transformoptionsfinal) generator function can be used.
+To create additional lines after the last one, a [`final`](api.md#transformoptionsfinal) generator function can be used.
 
 ```js
 let count = 0;
@@ -107,9 +107,9 @@ console.log(stdout); // Ends with: 'Number of lines: 54'
 
 A [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) stream, Node.js [`Transform`](https://nodejs.org/api/stream.html#class-streamtransform) stream or web [`TransformStream`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) can be used instead of a generator function.
 
-Like generator functions, web `TransformStream` can be passed either directly or as a [`{transform}` plain object](../readme.md#transform-options). But `Duplex` and `Transform` must always be passed as a `{transform}` plain object.
+Like generator functions, web `TransformStream` can be passed either directly or as a [`{transform}` plain object](api.md#transform-options). But `Duplex` and `Transform` must always be passed as a `{transform}` plain object.
 
-The [`objectMode`](#object-mode) transform option can be used, but not the [`binary`](../readme.md#transformoptionsbinary) nor [`preserveNewlines`](../readme.md#transformoptionspreservenewlines) options.
+The [`objectMode`](#object-mode) transform option can be used, but not the [`binary`](api.md#transformoptionsbinary) nor [`preserveNewlines`](api.md#transformoptionspreservenewlines) options.
 
 ```js
 import {createGzip} from 'node:zlib';
@@ -132,7 +132,7 @@ console.log(stdout); // `stdout` is compressed with gzip
 
 ## Combining
 
-The [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) and [`stdio`](../readme.md#optionsstdio) options can accept [an array of values](output.md#multiple-targets). While this is not specific to transforms, this can be useful with them too. For example, the following transform impacts the value printed by `'inherit'`.
+The [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout), [`stderr`](api.md#optionsstderr) and [`stdio`](api.md#optionsstdio) options can accept [an array of values](output.md#multiple-targets). While this is not specific to transforms, this can be useful with them too. For example, the following transform impacts the value printed by `'inherit'`.
 
 ```js
 await execa({stdout: [transform, 'inherit']})`npm run build`;

@@ -34,14 +34,14 @@ await execa({stdout: writable})`npm run build`;
 
 ### File descriptors
 
-When passing a Node.js stream to the [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout) or [`stderr`](../readme.md#optionsstderr) option, that stream must have an underlying file or socket, such as the streams created by the [`fs`](https://nodejs.org/api/fs.html#filehandlecreatereadstreamoptions), [`net`](https://nodejs.org/api/net.html#new-netsocketoptions) or [`http`](https://nodejs.org/api/http.html#class-httpincomingmessage) core modules. Otherwise the following error is thrown.
+When passing a Node.js stream to the [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout) or [`stderr`](api.md#optionsstderr) option, that stream must have an underlying file or socket, such as the streams created by the [`fs`](https://nodejs.org/api/fs.html#filehandlecreatereadstreamoptions), [`net`](https://nodejs.org/api/net.html#new-netsocketoptions) or [`http`](https://nodejs.org/api/http.html#class-httpincomingmessage) core modules. Otherwise the following error is thrown.
 
 ```
 TypeError [ERR_INVALID_ARG_VALUE]: The argument 'stdio' is invalid.
 ```
 
 This limitation can be worked around by either:
-- Using the [`input`](../readme.md#optionsinput) option instead of the [`stdin`](../readme.md#optionsstdin) option.
+- Using the [`input`](api.md#optionsinput) option instead of the [`stdin`](api.md#optionsstdin) option.
 - Passing a [web stream](#web-streams).
 - Passing [`[nodeStream, 'pipe']`](output.md#multiple-targets) instead of `nodeStream`.
 
@@ -68,11 +68,11 @@ await execa({stdin: getReplInput()})`npm run scaffold`;
 
 ## Manual streaming
 
-[`subprocess.stdin`](../readme.md#subprocessstdin) is a Node.js [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable) stream and [`subprocess.stdout`](../readme.md#subprocessstdout)/[`subprocess.stderr`](../readme.md#subprocessstderr)/[`subprocess.all`](../readme.md#subprocessall) are Node.js [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) streams.
+[`subprocess.stdin`](api.md#subprocessstdin) is a Node.js [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable) stream and [`subprocess.stdout`](api.md#subprocessstdout)/[`subprocess.stderr`](api.md#subprocessstderr)/[`subprocess.all`](api.md#subprocessall) are Node.js [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) streams.
 
 They can be used to stream input/output manually. This is intended for advanced situations. In most cases, the following simpler solutions can be used instead:
 - [`result.stdout`](output.md#stdout-and-stderr), [`result.stderr`](output.md#stdout-and-stderr) or [`result.stdio`](output.md#additional-file-descriptors).
-- The [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) or [`stdio`](../readme.md#optionsstdio) options.
+- The [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout), [`stderr`](api.md#optionsstderr) or [`stdio`](api.md#optionsstdio) options.
 - [`subprocess.iterable()`](lines.md#progressive-splitting).
 - [`subprocess.pipe()`](pipe.md).
 
@@ -80,7 +80,7 @@ They can be used to stream input/output manually. This is intended for advanced 
 
 ### Convert
 
-The [`subprocess.readable()`](../readme.md#subprocessreadablereadableoptions), [`subprocess.writable()`](../readme.md#subprocesswritablewritableoptions) and [`subprocess.duplex()`](../readme.md#subprocessduplexduplexoptions) methods convert the subprocess to a Node.js [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable), [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) and [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) stream.
+The [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions) and [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions) methods convert the subprocess to a Node.js [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable), [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) and [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) stream.
 
 This is useful when using a library or API that expects Node.js streams as arguments. In every other situation, the simpler solutions described [above](#manual-streaming) can be used instead.
 
@@ -94,7 +94,7 @@ const duplex = execa`npm run scaffold`.duplex();
 
 ### Different file descriptor
 
-By default, [`subprocess.readable()`](../readme.md#subprocessreadablereadableoptions), [`subprocess.writable()`](../readme.md#subprocesswritablewritableoptions) and [`subprocess.duplex()`](../readme.md#subprocessduplexduplexoptions) methods use [`stdin`](../readme.md#subprocessstdin) and [`stdout`](../readme.md#subprocessstdout). This can be changed using the [`from`](../readme.md#readableoptionsfrom) and [`to`](../readme.md#writableoptionsto) options.
+By default, [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions) and [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions) methods use [`stdin`](api.md#subprocessstdin) and [`stdout`](api.md#subprocessstdout). This can be changed using the [`from`](api.md#readableoptionsfrom) and [`to`](api.md#writableoptionsto) options.
 
 ```js
 const readable = execa`npm run scaffold`.readable({from: 'stderr'});
@@ -106,7 +106,7 @@ const duplex = execa`npm run scaffold`.duplex({from: 'stderr', to: 'fd3'});
 
 ### Error handling
 
-When using [`subprocess.readable()`](../readme.md#subprocessreadablereadableoptions), [`subprocess.writable()`](../readme.md#subprocesswritablewritableoptions) or [`subprocess.duplex()`](../readme.md#subprocessduplexduplexoptions), the stream waits for the subprocess to end, and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](errors.md). This differs from [`subprocess.stdin`](../readme.md#subprocessstdin), [`subprocess.stdout`](../readme.md#subprocessstdout) and [`subprocess.stderr`](../readme.md#subprocessstderr)'s behavior.
+When using [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions) or [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions), the stream waits for the subprocess to end, and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](errors.md). This differs from [`subprocess.stdin`](api.md#subprocessstdin), [`subprocess.stdout`](api.md#subprocessstdout) and [`subprocess.stderr`](api.md#subprocessstderr)'s behavior.
 
 This means you do not need to `await` the subprocess' [promise](execution.md#result). On the other hand, you (or the library using the stream) do need to both consume the stream, and handle its `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
 

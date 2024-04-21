@@ -8,7 +8,7 @@
 
 ## Stdout and stderr
 
-The [`stdout`](../readme.md#optionsstdout) and [`stderr`](../readme.md#optionsstderr) options redirect the subprocess output. They default to `'pipe'`, which returns the output using [`result.stdout`](../readme.md#resultstdout) and [`result.stderr`](../readme.md#resultstderr).
+The [`stdout`](api.md#optionsstdout) and [`stderr`](api.md#optionsstderr) options redirect the subprocess output. They default to `'pipe'`, which returns the output using [`result.stdout`](api.md#resultstdout) and [`result.stderr`](api.md#resultstderr).
 
 ```js
 import {execa} from 'execa';
@@ -53,7 +53,7 @@ await execa({stdout: 1, stderr: 1})`npm run build`;
 
 ## Multiple targets
 
-The output can be redirected to multiple targets by setting the [`stdout`](../readme.md#optionsstdout) or [`stderr`](../readme.md#optionsstderr) option to an array of values. This also allows specifying multiple inputs with the [`stdin`](../readme.md#optionsstdin) option.
+The output can be redirected to multiple targets by setting the [`stdout`](api.md#optionsstdout) or [`stderr`](api.md#optionsstderr) option to an array of values. This also allows specifying multiple inputs with the [`stdin`](api.md#optionsstdin) option.
 
 The following example redirects `stdout` to both the [terminal](#terminal-output) and an `output.txt` [file](#file-output), while also retrieving its value [programmatically](#stdout-and-stderr).
 
@@ -66,9 +66,9 @@ When combining [`'inherit'`](#terminal-output) with other values, please note th
 
 ## Interleaved output
 
-If the [`all`](../readme.md#optionsall) option is `true`, [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) and [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)) are combined:
-- [`result.all`](../readme.md#resultall): [`result.stdout`](../readme.md#resultstdout) + [`result.stderr`](../readme.md#resultstderr)
-- [`subprocess.all`](../readme.md#subprocessall): [`subprocess.stdout`](../readme.md#subprocessstdout) + [`subprocess.stderr`](../readme.md#subprocessstderr)
+If the [`all`](api.md#optionsall) option is `true`, [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) and [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)) are combined:
+- [`result.all`](api.md#resultall): [`result.stdout`](api.md#resultstdout) + [`result.stderr`](api.md#resultstderr)
+- [`subprocess.all`](api.md#subprocessall): [`subprocess.stdout`](api.md#subprocessstdout) + [`subprocess.stderr`](api.md#subprocessstderr)
 
 `stdout` and `stderr` are guaranteed to interleave. However, for performance reasons, the subprocess might buffer and merge multiple simultaneous writes to `stdout` or `stderr`. This can prevent proper interleaving.
 
@@ -98,7 +98,7 @@ console.log('3');
 
 ## Stdout/stderr-specific options
 
-Some options are related to the subprocess output: [`verbose`](../readme.md#optionsverbose), [`lines`](../readme.md#optionslines), [`stripFinalNewline`](../readme.md#optionsstripfinalnewline), [`buffer`](../readme.md#optionsbuffer), [`maxBuffer`](../readme.md#optionsmaxbuffer). By default, those options apply to all [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) ([`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)), and [others](#additional-file-descriptors)). A plain object can be passed instead to apply them to only `stdout`, `stderr`, [`fd3`](#additional-file-descriptors), etc.
+Some options are related to the subprocess output: [`verbose`](api.md#optionsverbose), [`lines`](api.md#optionslines), [`stripFinalNewline`](api.md#optionsstripfinalnewline), [`buffer`](api.md#optionsbuffer), [`maxBuffer`](api.md#optionsmaxbuffer). By default, those options apply to all [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) ([`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)), and [others](#additional-file-descriptors)). A plain object can be passed instead to apply them to only `stdout`, `stderr`, [`fd3`](#additional-file-descriptors), etc.
 
 ```js
 // Same value for stdout and stderr
@@ -110,9 +110,9 @@ await execa({verbose: {stdout: 'none', stderr: 'full'}})`npm run build`;
 
 ## Additional file descriptors
 
-The [`stdio`](../readme.md#optionsstdio) option is an array combining [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) and any other file descriptor. It is useful when using additional [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) beyond the [standard ones](https://en.wikipedia.org/wiki/Standard_streams), either for [input](input.md#additional-file-descriptors) or output.
+The [`stdio`](api.md#optionsstdio) option is an array combining [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout), [`stderr`](api.md#optionsstderr) and any other file descriptor. It is useful when using additional [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) beyond the [standard ones](https://en.wikipedia.org/wiki/Standard_streams), either for [input](input.md#additional-file-descriptors) or output.
 
-[`result.stdio`](../readme.md#resultstdio) can be used to retrieve some output from any file descriptor, as opposed to only [`stdout`](../readme.md#optionsstdout) and [`stderr`](../readme.md#optionsstderr).
+[`result.stdio`](api.md#resultstdio) can be used to retrieve some output from any file descriptor, as opposed to only [`stdout`](api.md#optionsstdout) and [`stderr`](api.md#optionsstderr).
 
 ```js
 // Retrieve output from file descriptor number 3
@@ -124,7 +124,7 @@ console.log(stdio[3]);
 
 ## Shortcut
 
-The [`stdio`](../readme.md#optionsstdio) option can also be a single value [`'pipe'`](#stdout-and-stderr), [`'overlapped'`](windows.md#asynchronous-io), [`'ignore'`](#ignore-output) or [`'inherit'`](#terminal-output). This is a shortcut for setting that same value with the [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout) and [`stderr`](../readme.md#optionsstderr) options.
+The [`stdio`](api.md#optionsstdio) option can also be a single value [`'pipe'`](#stdout-and-stderr), [`'overlapped'`](windows.md#asynchronous-io), [`'ignore'`](#ignore-output) or [`'inherit'`](#terminal-output). This is a shortcut for setting that same value with the [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout) and [`stderr`](api.md#optionsstderr) options.
 
 ```js
 await execa({stdio: 'ignore'})`npm run build`;
@@ -134,9 +134,9 @@ await execa({stdin: 'ignore', stdout: 'ignore', stderr: 'ignore'})`npm run build
 
 ## Big output
 
-To prevent high memory consumption, a maximum output size can be set using the [`maxBuffer`](../readme.md#optionsmaxbuffer) option. It defaults to 100MB.
+To prevent high memory consumption, a maximum output size can be set using the [`maxBuffer`](api.md#optionsmaxbuffer) option. It defaults to 100MB.
 
-When this threshold is hit, the subprocess fails and [`error.isMaxBuffer`](../readme.md#resultismaxbuffer) becomes `true`. The truncated output is still available using [`error.stdout`](../readme.md#resultstdout) and [`error.stderr`](../readme.md#resultstderr).
+When this threshold is hit, the subprocess fails and [`error.isMaxBuffer`](api.md#resultismaxbuffer) becomes `true`. The truncated output is still available using [`error.stdout`](api.md#resultstdout) and [`error.stderr`](api.md#resultstderr).
 
 This is measured:
 - By default: in [characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).
@@ -160,7 +160,7 @@ try {
 
 ## Low memory
 
-When the [`buffer`](../readme.md#optionsbuffer) option is `false`, [`result.stdout`](../readme.md#resultstdout), [`result.stderr`](../readme.md#resultstderr), [`result.all`](../readme.md#resultall) and [`result.stdio[*]`](../readme.md#resultstdio) properties are not set.
+When the [`buffer`](api.md#optionsbuffer) option is `false`, [`result.stdout`](api.md#resultstdout), [`result.stderr`](api.md#resultstderr), [`result.all`](api.md#resultall) and [`result.stdio[*]`](api.md#resultstdio) properties are not set.
 
 This prevents high memory consumption when the output is big. However, the output must be either ignored, [redirected](#file-output) or [streamed](streams.md). If streamed, this should be done right away to avoid missing any data.
 

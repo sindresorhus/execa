@@ -36,7 +36,7 @@ await execa(command, commandArguments);
 await execa`${command} ${commandArguments}`;
 ```
 
-However, [`execaCommand()`](../readme.md#execacommandcommand-options) must be used instead if:
+However, [`execaCommand()`](api.md#execacommandcommand-options) must be used instead if:
 - _Both_ the file and its arguments are user-defined
 - _And_ those are supplied as a single string
 
@@ -56,7 +56,7 @@ await execaCommand('npm run task\\ with\\ space');
 
 ## Shells
 
-[Shells](shell.md) ([Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), [cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe), etc.) are not used unless the [`shell`](../readme.md#optionsshell) option is set. This means shell-specific characters and expressions (`$variable`, `&&`, `||`, `;`, `|`, etc.) have no special meaning and do not need to be escaped.
+[Shells](shell.md) ([Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), [cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe), etc.) are not used unless the [`shell`](api.md#optionsshell) option is set. This means shell-specific characters and expressions (`$variable`, `&&`, `||`, `;`, `|`, etc.) have no special meaning and do not need to be escaped.
 
 If you do set the `shell` option, arguments will not be automatically escaped anymore. Instead, they will be concatenated as a single string using spaces as delimiters.
 

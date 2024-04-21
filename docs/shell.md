@@ -23,7 +23,7 @@ await execa({shell: '/bin/bash'})`npm run "$TASK" && npm run test`;
 
 ## OS-specific shell
 
-When the [`shell`](../readme.md#optionsshell) option is `true`, `sh` is used on Unix and [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) is used on Windows.
+When the [`shell`](api.md#optionsshell) option is `true`, `sh` is used on Unix and [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) is used on Windows.
 
 `sh` and `cmd.exe` syntaxes are very different. Therefore, this is usually not useful.
 

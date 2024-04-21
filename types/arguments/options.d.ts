@@ -283,7 +283,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 5000
 	*/
-	forceKillAfterDelay?: Unless<IsSync, number | false>;
+	readonly forceKillAfterDelay?: Unless<IsSync, number | false>;
 
 	/**
 	If `true`, no quoting or escaping of arguments is done on Windows. Ignored on other platforms. This is set to `true` automatically when the `shell` option is `true`.

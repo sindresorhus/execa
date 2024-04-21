@@ -11,6 +11,11 @@ import type {
 export type FdStdioOption<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
+> = Extract<FdStdioOptionProperty<FdNumber, OptionsType>, StdioOptionCommon>;
+
+type FdStdioOptionProperty<
+	FdNumber extends string,
+	OptionsType extends CommonOptions = CommonOptions,
 > = string extends FdNumber ? StdioOptionCommon
 	: FdNumber extends keyof StandardStreams
 		? StandardStreams[FdNumber] extends keyof OptionsType
@@ -24,7 +29,7 @@ export type FdStdioOption<
 export type FdStdioArrayOption<
 	FdNumber extends string,
 	OptionsType extends CommonOptions = CommonOptions,
-> = FdStdioArrayOptionProperty<FdNumber, StdioOptionNormalizedArray<OptionsType>>;
+> = Extract<FdStdioArrayOptionProperty<FdNumber, StdioOptionNormalizedArray<OptionsType>>, StdioOptionCommon>;
 
 type FdStdioArrayOptionProperty<
 	FdNumber extends string,

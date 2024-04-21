@@ -27,7 +27,7 @@ type PipeOptions = {
 };
 
 // `subprocess.pipe()`
-type PipableSubprocess = {
+export type PipableSubprocess = {
 	/**
 	[Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the subprocess' `stdout` to a second Execa subprocess' `stdin`. This resolves with that second subprocess' result. If either subprocess is rejected, this is rejected with that subprocess' error instead.
 

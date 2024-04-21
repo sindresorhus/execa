@@ -297,33 +297,48 @@ test('$`\\t`', testEmptyScript, () => $`	`);
 test('$`\\n`', testEmptyScript, () => $`
 `);
 
-const testInvalidExpression = (t, invalidExpression, execaMethod) => {
-	const expression = typeof invalidExpression === 'function' ? invalidExpression() : invalidExpression;
+const testInvalidExpression = (t, invalidExpression) => {
 	t.throws(
-		() => execaMethod`echo.js ${expression}`,
+		() => $`echo.js ${invalidExpression}`,
 		{message: /in template expression/},
 	);
 };
 
-test('$ throws on invalid expression - undefined', testInvalidExpression, undefined, $);
-test('$ throws on invalid expression - null', testInvalidExpression, null, $);
-test('$ throws on invalid expression - true', testInvalidExpression, true, $);
-test('$ throws on invalid expression - {}', testInvalidExpression, {}, $);
-test('$ throws on invalid expression - {foo: "bar"}', testInvalidExpression, {foo: 'bar'}, $);
-test('$ throws on invalid expression - {stdout: undefined}', testInvalidExpression, {stdout: undefined}, $);
-test('$ throws on invalid expression - {stdout: 1}', testInvalidExpression, {stdout: 1}, $);
-test('$ throws on invalid expression - Promise.resolve()', testInvalidExpression, Promise.resolve(), $);
-test('$ throws on invalid expression - Promise.resolve({stdout: "foo"})', testInvalidExpression, Promise.resolve({foo: 'bar'}), $);
-test('$ throws on invalid expression - $', testInvalidExpression, () => $`noop.js`, $);
-test('$ throws on invalid expression - $(options).sync', testInvalidExpression, () => $({stdio: 'ignore'}).sync`noop.js`, $);
-test('$ throws on invalid expression - [undefined]', testInvalidExpression, [undefined], $);
-test('$ throws on invalid expression - [null]', testInvalidExpression, [null], $);
-test('$ throws on invalid expression - [true]', testInvalidExpression, [true], $);
-test('$ throws on invalid expression - [{}]', testInvalidExpression, [{}], $);
-test('$ throws on invalid expression - [{foo: "bar"}]', testInvalidExpression, [{foo: 'bar'}], $);
-test('$ throws on invalid expression - [{stdout: undefined}]', testInvalidExpression, [{stdout: undefined}], $);
-test('$ throws on invalid expression - [{stdout: 1}]', testInvalidExpression, [{stdout: 1}], $);
-test('$ throws on invalid expression - [Promise.resolve()]', testInvalidExpression, [Promise.resolve()], $);
-test('$ throws on invalid expression - [Promise.resolve({stdout: "foo"})]', testInvalidExpression, [Promise.resolve({stdout: 'foo'})], $);
-test('$ throws on invalid expression - [$]', testInvalidExpression, () => [$`noop.js`], $);
-test('$ throws on invalid expression - [$(options).sync]', testInvalidExpression, () => [$({stdio: 'ignore'}).sync`noop.js`], $);
+test('$ throws on invalid expression - undefined', testInvalidExpression, undefined);
+test('$ throws on invalid expression - null', testInvalidExpression, null);
+test('$ throws on invalid expression - true', testInvalidExpression, true);
+test('$ throws on invalid expression - {}', testInvalidExpression, {});
+test('$ throws on invalid expression - {foo: "bar"}', testInvalidExpression, {foo: 'bar'});
+test('$ throws on invalid expression - {stdout: 1}', testInvalidExpression, {stdout: 1});
+test('$ throws on invalid expression - [undefined]', testInvalidExpression, [undefined]);
+test('$ throws on invalid expression - [null]', testInvalidExpression, [null]);
+test('$ throws on invalid expression - [true]', testInvalidExpression, [true]);
+test('$ throws on invalid expression - [{}]', testInvalidExpression, [{}]);
+test('$ throws on invalid expression - [{foo: "bar"}]', testInvalidExpression, [{foo: 'bar'}]);
+test('$ throws on invalid expression - [{stdout: 1}]', testInvalidExpression, [{stdout: 1}]);
+
+const testMissingOutput = (t, invalidExpression) => {
+	t.throws(
+		() => $`echo.js ${invalidExpression()}`,
+		{message: /Missing result.stdout/},
+	);
+};
+
+test('$ throws on invalid expression - {stdout: undefined}', testMissingOutput, () => ({stdout: undefined}));
+test('$ throws on invalid expression - [{stdout: undefined}]', testMissingOutput, () => [{stdout: undefined}]);
+test('$ throws on invalid expression - $(options).sync', testMissingOutput, () => $({stdio: 'ignore'}).sync`noop.js`);
+test('$ throws on invalid expression - [$(options).sync]', testMissingOutput, () => [$({stdio: 'ignore'}).sync`noop.js`]);
+
+const testInvalidPromise = (t, invalidExpression) => {
+	t.throws(
+		() => $`echo.js ${invalidExpression()}`,
+		{message: /Please use \${await subprocess}/},
+	);
+};
+
+test('$ throws on invalid expression - Promise.resolve()', testInvalidPromise, async () => ({}));
+test('$ throws on invalid expression - Promise.resolve({stdout: "foo"})', testInvalidPromise, async () => ({foo: 'bar'}));
+test('$ throws on invalid expression - [Promise.resolve()]', testInvalidPromise, () => [Promise.resolve()]);
+test('$ throws on invalid expression - [Promise.resolve({stdout: "foo"})]', testInvalidPromise, () => [Promise.resolve({stdout: 'foo'})]);
+test('$ throws on invalid expression - $', testInvalidPromise, () => $`noop.js`);
+test('$ throws on invalid expression - [$]', testInvalidPromise, () => [$`noop.js`]);

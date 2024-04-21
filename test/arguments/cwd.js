@@ -71,6 +71,7 @@ if (!isWindows) {
 
 const cwdNotExisting = {cwd: 'does_not_exist', expectedCode: 'ENOENT', expectedMessage: 'The "cwd" option is invalid'};
 const cwdTooLong = {cwd: '.'.repeat(1e5), expectedCode: 'ENAMETOOLONG', expectedMessage: 'The "cwd" option is invalid'};
+// @todo: use import.meta.dirname after dropping support for Node <20.11.0
 const cwdNotDirectory = {cwd: fileURLToPath(import.meta.url), expectedCode: isWindows ? 'ENOENT' : 'ENOTDIR', expectedMessage: 'The "cwd" option is not a directory'};
 
 const testCwdPostSpawn = async (t, {cwd, expectedCode, expectedMessage}, execaMethod) => {

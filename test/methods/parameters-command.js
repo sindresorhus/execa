@@ -72,6 +72,7 @@ test('$\'s command argument must be a string or file URL', testInvalidCommand, [
 test('$.sync\'s command argument must be a string or file URL', testInvalidCommand, ['command', 'arg'], $.sync);
 
 const testRelativePath = async (t, execaMethod) => {
+	// @todo: use import.meta.dirname after dropping support for Node <20.11.0
 	const rootDirectory = basename(fileURLToPath(new URL('../..', import.meta.url)));
 	const pathViaParentDirectory = join('..', rootDirectory, 'test', 'fixtures', 'noop.js');
 	const {stdout} = await execaMethod(pathViaParentDirectory);

@@ -26,7 +26,7 @@ const assertUnPipeError = async (t, pipePromise) => {
 	t.deepEqual(error.stdio, Array.from({length: error.stdio.length}));
 	t.deepEqual(error.pipedFrom, []);
 
-	t.true(error.originalMessage.includes('Pipe cancelled'));
+	t.true(error.originalMessage.includes('Pipe canceled'));
 	t.true(error.shortMessage.includes(`Command failed: ${error.command}`));
 	t.true(error.shortMessage.includes(error.originalMessage));
 	t.true(error.message.includes(error.shortMessage));

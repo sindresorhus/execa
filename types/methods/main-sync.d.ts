@@ -24,17 +24,6 @@ Same as `execa()` but synchronous.
 
 Returns or throws a subprocess `result`. The `subprocess` is not returned: its methods and properties are not available.
 
-The following features cannot be used:
-- Streams: `subprocess.stdin`, `subprocess.stdout`, `subprocess.stderr`, `subprocess.readable()`, `subprocess.writable()`, `subprocess.duplex()`.
-- The `stdin`, `stdout`, `stderr` and `stdio` options cannot be `'overlapped'`, an async iterable, an async transform, a `Duplex`, nor a web stream. Node.js streams can be passed but only if either they [have a file descriptor](#redirect-a-nodejs-stream-fromto-stdinstdoutstderr), or the `input` option is used.
-- Signal termination: `subprocess.kill()`, `subprocess.pid`, `cleanup` option, `cancelSignal` option, `forceKillAfterDelay` option.
-- Piping multiple processes: `subprocess.pipe()`.
-- `subprocess.iterable()`.
-- `ipc` and `serialization` options.
-- `result.all` is not interleaved.
-- `detached` option.
-- The `maxBuffer` option is always measured in bytes, not in characters, lines nor objects. Also, it ignores transforms and the `encoding` option.
-
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
 @returns A subprocess `result` object

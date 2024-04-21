@@ -48,7 +48,7 @@ type ExecaScript<OptionsType extends CommonOptions> = {
 } & ExecaScriptCommon<OptionsType>;
 
 /**
-Same as `execa()` but using the `stdin: 'inherit'` and `preferLocal: true` options.
+Same as `execa()` but using script-friendly default options.
 
 Just like `execa()`, this can use the template string syntax or bind options. It can also be run synchronously using `$.sync()` or `$.s()`.
 

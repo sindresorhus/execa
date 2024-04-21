@@ -5,7 +5,7 @@ import type {FromOption, ToOption} from './arguments/fd-options';
 // `subprocess.readable|duplex|iterable()` options
 export type ReadableOptions = {
 	/**
-	Which stream to read from the subprocess. A file descriptor like `"fd3"` can also be passed.
+	Which stream to read from the subprocess. A [file descriptor](https://en.wikipedia.org/wiki/File_descriptor) like `"fd3"` can also be passed.
 
 	`"all"` reads both `stdout` and `stderr`. This requires the `all` option to be `true`.
 
@@ -14,9 +14,9 @@ export type ReadableOptions = {
 	readonly from?: FromOption;
 
 	/**
-	If `false`, the stream iterates over lines. Each line is a string. Also, the stream is in [object mode](https://nodejs.org/api/stream.html#object-mode).
+	If `false`, iterates over lines. Each line is a string.
 
-	If `true`, the stream iterates over arbitrary chunks of data. Each line is an `Uint8Array` (with `subprocess.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (otherwise).
+	If `true`, iterates over arbitrary chunks of data. Each line is an [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) (with `subprocess.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (with `subprocess.readable()`/`subprocess.duplex()`).
 
 	This is always `true` when the `encoding` option is binary.
 
@@ -25,7 +25,7 @@ export type ReadableOptions = {
 	readonly binary?: boolean;
 
 	/**
-	If both this option and the `binary` option is `false`, newlines are stripped from each line.
+	If both this option and the `binary` option is `false`, [newlines](https://en.wikipedia.org/wiki/Newline) are stripped from each line.
 
 	@default `false` with `subprocess.iterable()`, `true` otherwise
 	*/
@@ -35,7 +35,7 @@ export type ReadableOptions = {
 // `subprocess.writable|duplex()` options
 export type WritableOptions = {
 	/**
-	Which stream to write to the subprocess. A file descriptor like `"fd3"` can also be passed.
+	Which stream to write to the subprocess. A [file descriptor](https://en.wikipedia.org/wiki/File_descriptor) like `"fd3"` can also be passed.
 
 	@default 'stdin'
 	*/

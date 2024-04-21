@@ -41,49 +41,39 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	send: HasIpc<OptionsType> extends true ? ChildProcess['send'] : undefined;
 
 	/**
-	The subprocess `stdin` as a stream.
+	The subprocess [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) as a stream.
 
 	This is `null` if the `stdin` option is set to `'inherit'`, `'ignore'`, `Readable` or `integer`.
-
-	This is intended for advanced cases. Please consider using the `stdin` option, `input` option, `inputFile` option, or `subprocess.pipe()` instead.
 	*/
 	stdin: SubprocessStdioStream<'0', OptionsType>;
 
 	/**
-	The subprocess `stdout` as a stream.
+	The subprocess [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) as a stream.
 
-	This is `null` if the `stdout` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
-
-	This is intended for advanced cases. Please consider using `result.stdout`, the `stdout` option, `subprocess.iterable()`, or `subprocess.pipe()` instead.
+	This is `null` if the `stdout` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
 	*/
 	stdout: SubprocessStdioStream<'1', OptionsType>;
 
 	/**
-	The subprocess `stderr` as a stream.
+	The subprocess [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)) as a stream.
 
-	This is `null` if the `stderr` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
-
-	This is intended for advanced cases. Please consider using `result.stderr`, the `stderr` option, `subprocess.iterable()`, or `subprocess.pipe()` instead.
+	This is `null` if the `stderr` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
 	*/
 	stderr: SubprocessStdioStream<'2', OptionsType>;
 
 	/**
 	Stream combining/interleaving `subprocess.stdout` and `subprocess.stderr`.
 
-	This is `undefined` if either:
-	- the `all` option is `false` (the default value).
-	- both `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
+	This requires the `all` option to be `true`.
 
-	This is intended for advanced cases. Please consider using `result.all`, the `stdout`/`stderr` option, `subprocess.iterable()`, or `subprocess.pipe()` instead.
+	This is `undefined` if `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
 	*/
 	all: SubprocessAll<OptionsType>;
 
 	/**
 	The subprocess `stdin`, `stdout`, `stderr` and other files descriptors as an array of streams.
 
-	Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`.
-
-	This is intended for advanced cases. Please consider using `result.stdio`, the `stdio` option, `subprocess.iterable()` or `subprocess.pipe()` instead.
+	Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`, or if the `buffer` option is `false`.
 	*/
 	stdio: SubprocessStdioArray<OptionsType>;
 
@@ -101,8 +91,6 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	/**
 	Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
-
-	The iteration waits for the subprocess to end. It throws if the subprocess fails. This means you do not need to `await` the subprocess' promise.
 	*/
 	[Symbol.asyncIterator](): SubprocessAsyncIterable<undefined, OptionsType['encoding']>;
 
@@ -113,28 +101,16 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 
 	/**
 	Converts the subprocess to a readable stream.
-
-	Unlike `subprocess.stdout`, the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
-
-	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options, `subprocess.pipe()` or `subprocess.iterable()`.
 	*/
 	readable(readableOptions?: ReadableOptions): Readable;
 
 	/**
 	Converts the subprocess to a writable stream.
-
-	Unlike `subprocess.stdin`, the stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options) or [`await pipeline(stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) which throw an exception when the stream errors.
-
-	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options or `subprocess.pipe()`.
 	*/
 	writable(writableOptions?: WritableOptions): Writable;
 
 	/**
 	Converts the subprocess to a duplex stream.
-
-	The stream waits for the subprocess to end and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess fails. This means you do not need to `await` the subprocess' promise. On the other hand, you do need to handle to the stream `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
-
-	Before using this method, please first consider the `stdin`/`stdout`/`stderr`/`stdio` options, `subprocess.pipe()` or `subprocess.iterable()`.
 	*/
 	duplex(duplexOptions?: DuplexOptions): Duplex;
 } & PipableSubprocess;

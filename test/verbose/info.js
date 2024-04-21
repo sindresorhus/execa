@@ -42,3 +42,21 @@ const testDebugEnvPriority = async (t, execaMethod) => {
 
 test('NODE_DEBUG=execa has lower priority', testDebugEnvPriority, parentExecaAsync);
 test('NODE_DEBUG=execa has lower priority, sync', testDebugEnvPriority, parentExecaSync);
+
+const invalidFalseMessage = 'renamed to "verbose: \'none\'"';
+const invalidTrueMessage = 'renamed to "verbose: \'short\'"';
+const invalidUnknownMessage = 'Allowed values are: \'none\', \'short\', \'full\'';
+
+const testInvalidVerbose = (t, verbose, expectedMessage, execaMethod) => {
+	const {message} = t.throws(() => {
+		execaMethod('empty.js', {verbose});
+	});
+	t.true(message.includes(expectedMessage));
+};
+
+test('Does not allow "verbose: false"', testInvalidVerbose, false, invalidFalseMessage, execa);
+test('Does not allow "verbose: false", sync', testInvalidVerbose, false, invalidFalseMessage, execaSync);
+test('Does not allow "verbose: true"', testInvalidVerbose, true, invalidTrueMessage, execa);
+test('Does not allow "verbose: true", sync', testInvalidVerbose, true, invalidTrueMessage, execaSync);
+test('Does not allow "verbose: \'unknown\'"', testInvalidVerbose, 'unknown', invalidUnknownMessage, execa);
+test('Does not allow "verbose: \'unknown\'", sync', testInvalidVerbose, 'unknown', invalidUnknownMessage, execaSync);

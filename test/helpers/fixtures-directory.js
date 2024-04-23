@@ -5,6 +5,7 @@ import pathKey from 'path-key';
 
 export const PATH_KEY = pathKey();
 export const FIXTURES_DIRECTORY_URL = new URL('../fixtures/', import.meta.url);
+// @todo: use import.meta.dirname after dropping support for Node <20.11.0
 export const FIXTURES_DIRECTORY = resolve(fileURLToPath(FIXTURES_DIRECTORY_URL));
 
 // Add the fixtures directory to PATH so fixtures can be executed without adding

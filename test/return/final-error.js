@@ -15,7 +15,7 @@ const testUnusualError = async (t, error, expectedOriginalMessage = String(error
 	const subprocess = execa('empty.js');
 	subprocess.emit('error', error);
 	const {originalMessage, shortMessage, message} = await t.throwsAsync(subprocess);
-	t.is(originalMessage, expectedOriginalMessage);
+	t.is(originalMessage, expectedOriginalMessage === '' ? undefined : expectedOriginalMessage);
 	t.true(shortMessage.includes(expectedOriginalMessage));
 	t.is(message, shortMessage);
 };

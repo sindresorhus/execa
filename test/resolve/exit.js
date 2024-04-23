@@ -17,7 +17,7 @@ const testExitCode = async (t, expectedExitCode) => {
 		execa('exit.js', [`${expectedExitCode}`]),
 	);
 	t.is(exitCode, expectedExitCode);
-	t.is(originalMessage, '');
+	t.is(originalMessage, undefined);
 	t.is(shortMessage, `Command failed with exit code ${expectedExitCode}: exit.js ${expectedExitCode}`);
 	t.is(message, shortMessage);
 };

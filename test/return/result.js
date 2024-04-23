@@ -82,7 +82,7 @@ test('error.isTerminated is true if subprocess was killed directly', async t => 
 	const {isTerminated, signal, originalMessage, message, shortMessage} = await t.throwsAsync(subprocess, {message: /was killed with SIGINT/});
 	t.true(isTerminated);
 	t.is(signal, 'SIGINT');
-	t.is(originalMessage, '');
+	t.is(originalMessage, undefined);
 	t.is(shortMessage, 'Command was killed with SIGINT (User interruption with CTRL-C): forever.js');
 	t.is(message, shortMessage);
 });

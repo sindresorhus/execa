@@ -99,7 +99,7 @@ Just like `execa()`, this can [bind options](execution.md#globalshared-options).
 
 ## Return value
 
-_Type_: `ResultPromise`
+_Type:_ `ResultPromise`
 
 The return value of all [asynchronous methods](#methods) is both:
 - the [subprocess](#subprocess).
@@ -109,7 +109,7 @@ The return value of all [asynchronous methods](#methods) is both:
 
 ## Subprocess
 
-_Type_: `Subprocess`
+_Type:_ `Subprocess`
 
 [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following methods and properties.
 
@@ -166,12 +166,12 @@ Like [`subprocess.pipe(file, arguments?, options?)`](#subprocesspipefile-argumen
 
 #### pipeOptions
 
-Type: `object`
+_Type:_ `object`
 
 #### pipeOptions.from
 
-Type: `"stdout" | "stderr" | "all" | "fd3" | "fd4" | ...`\
-Default: `"stdout"`
+_Type:_ `"stdout" | "stderr" | "all" | "fd3" | "fd4" | ...`\
+_Default:_ `"stdout"`
 
 Which stream to pipe from the source subprocess. A [file descriptor](https://en.wikipedia.org/wiki/File_descriptor) like `"fd3"` can also be passed.
 
@@ -181,8 +181,8 @@ Which stream to pipe from the source subprocess. A [file descriptor](https://en.
 
 #### pipeOptions.to
 
-Type: `"stdin" | "fd3" | "fd4" | ...`\
-Default: `"stdin"`
+_Type:_ `"stdin" | "fd3" | "fd4" | ...`\
+_Default:_ `"stdin"`
 
 Which [stream](#subprocessstdin) to pipe to the destination subprocess. A [file descriptor](https://en.wikipedia.org/wiki/File_descriptor) like `"fd3"` can also be passed.
 
@@ -190,7 +190,7 @@ Which [stream](#subprocessstdin) to pipe to the destination subprocess. A [file 
 
 #### pipeOptions.unpipeSignal
 
-Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
+_Type:_ [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
 Unpipe the subprocess when the signal aborts.
 
@@ -213,7 +213,7 @@ When an error is passed as argument, it is set to the subprocess' [`error.cause`
 
 ### subprocess.pid
 
-_Type_: `number | undefined`
+_Type:_ `number | undefined`
 
 Process identifier ([PID](https://en.wikipedia.org/wiki/Process_identifier)).
 
@@ -248,7 +248,7 @@ This requires the [`ipc`](#optionsipc) option to be `true`.
 
 ### subprocess.stdin
 
-Type: [`Writable | null`](https://nodejs.org/api/stream.html#class-streamwritable)
+_Type:_ [`Writable | null`](https://nodejs.org/api/stream.html#class-streamwritable)
 
 The subprocess [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) as a stream.
 
@@ -258,7 +258,7 @@ This is `null` if the [`stdin`](#optionsstdin) option is set to [`'inherit'`](in
 
 ### subprocess.stdout
 
-Type: [`Readable | null`](https://nodejs.org/api/stream.html#class-streamreadable)
+_Type:_ [`Readable | null`](https://nodejs.org/api/stream.html#class-streamreadable)
 
 The subprocess [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) as a stream.
 
@@ -268,7 +268,7 @@ This is `null` if the [`stdout`](#optionsstdout) option is set to [`'inherit'`](
 
 ### subprocess.stderr
 
-Type: [`Readable | null`](https://nodejs.org/api/stream.html#class-streamreadable)
+_Type:_ [`Readable | null`](https://nodejs.org/api/stream.html#class-streamreadable)
 
 The subprocess [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)) as a stream.
 
@@ -278,7 +278,7 @@ This is `null` if the [`stderr`](#optionsstdout) option is set to [`'inherit'`](
 
 ### subprocess.all
 
-Type: [`Readable | undefined`](https://nodejs.org/api/stream.html#class-streamreadable)
+_Type:_ [`Readable | undefined`](https://nodejs.org/api/stream.html#class-streamreadable)
 
 Stream combining/interleaving [`subprocess.stdout`](#subprocessstdout) and [`subprocess.stderr`](#subprocessstderr).
 
@@ -290,7 +290,7 @@ More info on [interleaving](output.md#interleaved-output) and [streaming](stream
 
 ### subprocess.stdio
 
-Type: [`[Writable | null, Readable | null, Readable | null, ...Array<Writable | Readable | null>]`](https://nodejs.org/api/stream.html#class-streamreadable)
+_Type:_ [`[Writable | null, Readable | null, Readable | null, ...Array<Writable | Readable | null>]`](https://nodejs.org/api/stream.html#class-streamreadable)
 
 The subprocess [`stdin`](#subprocessstdin), [`stdout`](#subprocessstdout), [`stderr`](#subprocessstderr) and [other files descriptors](#optionsstdio) as an array of streams.
 
@@ -309,12 +309,12 @@ Converts the subprocess to a readable stream.
 
 #### readableOptions
 
-Type: `object`
+_Type:_ `object`
 
 #### readableOptions.from
 
-Type: `"stdout" | "stderr" | "all" | "fd3" | "fd4" | ...`\
-Default: `"stdout"`
+_Type:_ `"stdout" | "stderr" | "all" | "fd3" | "fd4" | ...`\
+_Default:_ `"stdout"`
 
 Which stream to read from the subprocess. A [file descriptor](https://en.wikipedia.org/wiki/File_descriptor) like `"fd3"` can also be passed.
 
@@ -324,8 +324,8 @@ Which stream to read from the subprocess. A [file descriptor](https://en.wikiped
 
 #### readableOptions.binary
 
-Type: `boolean`\
-Default: `false` with [`subprocess.iterable()`](#subprocessiterablereadableoptions), `true` with [`subprocess.readable()`](#subprocessreadablereadableoptions)/[`subprocess.duplex()`](#subprocessduplexduplexoptions)
+_Type:_ `boolean`\
+_Default:_ `false` with [`subprocess.iterable()`](#subprocessiterablereadableoptions), `true` with [`subprocess.readable()`](#subprocessreadablereadableoptions)/[`subprocess.duplex()`](#subprocessduplexduplexoptions)
 
 If `false`, iterates over lines. Each line is a string.
 
@@ -337,8 +337,8 @@ More info for [iterables](binary.md#iterable) and [streams](binary.md#streams).
 
 #### readableOptions.preserveNewlines
 
-Type: `boolean`\
-Default: `false` with [`subprocess.iterable()`](#subprocessiterablereadableoptions), `true` with [`subprocess.readable()`](#subprocessreadablereadableoptions)/[`subprocess.duplex()`](#subprocessduplexduplexoptions)
+_Type:_ `boolean`\
+_Default:_ `false` with [`subprocess.iterable()`](#subprocessiterablereadableoptions), `true` with [`subprocess.readable()`](#subprocessreadablereadableoptions)/[`subprocess.duplex()`](#subprocessduplexduplexoptions)
 
 If both this option and the [`binary`](#readableoptionsbinary) option is `false`, [newlines](https://en.wikipedia.org/wiki/Newline) are stripped from each line.
 
@@ -355,12 +355,12 @@ Converts the subprocess to a writable stream.
 
 #### writableOptions
 
-Type: `object`
+_Type:_ `object`
 
 #### writableOptions.to
 
-Type: `"stdin" | "fd3" | "fd4" | ...`\
-Default: `"stdin"`
+_Type:_ `"stdin" | "fd3" | "fd4" | ...`\
+_Default:_ `"stdin"`
 
 Which [stream](#subprocessstdin) to write to the subprocess. A [file descriptor](https://en.wikipedia.org/wiki/File_descriptor) like `"fd3"` can also be passed.
 
@@ -377,7 +377,7 @@ Converts the subprocess to a duplex stream.
 
 ## Result
 
-Type: `object`
+_Type:_ `object`
 
 [Result](execution.md#result) of a subprocess successful execution.
 
@@ -385,7 +385,7 @@ When the subprocess [fails](errors.md#subprocess-failure), it is rejected with a
 
 ### result.stdout
 
-Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
+_Type:_ `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the subprocess on [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)).
 
@@ -397,7 +397,7 @@ This is an array if the [`lines`](#optionslines) option is `true`, or if the `st
 
 ### result.stderr
 
-Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
+_Type:_ `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the subprocess on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)).
 
@@ -409,7 +409,7 @@ This is an array if the [`lines`](#optionslines) option is `true`, or if the `st
 
 ### result.all
 
-Type: `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
+_Type:_ `string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined`
 
 The output of the subprocess with [`result.stdout`](#resultstdout) and [`result.stderr`](#resultstderr) interleaved.
 
@@ -423,7 +423,7 @@ This is an array if the [`lines`](#optionslines) option is `true`, or if either 
 
 ### result.stdio
 
-Type: `Array<string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined>`
+_Type:_ `Array<string | Uint8Array | string[] | Uint8Array[] | unknown[] | undefined>`
 
 The output of the subprocess on [`stdin`](#optionsstdin), [`stdout`](#optionsstdout), [`stderr`](#optionsstderr) and [other file descriptors](#optionsstdio).
 
@@ -435,7 +435,7 @@ Items are arrays when their corresponding `stdio` option is a [transform in obje
 
 ### result.pipedFrom
 
-Type: [`Array<Result | ExecaError>`](#result)
+_Type:_ [`Array<Result | ExecaError>`](#result)
 
 [Results](#result) of the other subprocesses that were piped into this subprocess.
 
@@ -445,7 +445,7 @@ This array is initially empty and is populated each time the [`subprocess.pipe()
 
 ### result.command
 
-Type: `string`
+_Type:_ `string`
 
 The file and [arguments](input.md#command-arguments) that were run.
 
@@ -453,7 +453,7 @@ The file and [arguments](input.md#command-arguments) that were run.
 
 ### result.escapedCommand
 
-Type: `string`
+_Type:_ `string`
 
 Same as [`command`](#resultcommand) but escaped.
 
@@ -461,7 +461,7 @@ Same as [`command`](#resultcommand) but escaped.
 
 ### result.cwd
 
-Type: `string`
+_Type:_ `string`
 
 The [current directory](#optionscwd) in which the command was run.
 
@@ -469,7 +469,7 @@ The [current directory](#optionscwd) in which the command was run.
 
 ### result.durationMs
 
-Type: `number`
+_Type:_ `number`
 
 Duration of the subprocess, in milliseconds.
 
@@ -477,7 +477,7 @@ Duration of the subprocess, in milliseconds.
 
 ### result.failed
 
-Type: `boolean`
+_Type:_ `boolean`
 
 Whether the subprocess failed to run.
 
@@ -488,7 +488,7 @@ When this is `true`, the result is an [`ExecaError`](#execaerror) instance with 
 ## ExecaError
 ## ExecaSyncError
 
-Type: `Error`
+_Type:_ `Error`
 
 Result of a subprocess [failed execution](errors.md#subprocess-failure).
 
@@ -500,7 +500,7 @@ This has the same shape as [successful results](#result), with the following add
 
 ### error.message
 
-Type: `string`
+_Type:_ `string`
 
 Error message when the subprocess [failed](errors.md#subprocess-failure) to run.
 
@@ -508,7 +508,7 @@ Error message when the subprocess [failed](errors.md#subprocess-failure) to run.
 
 ### error.shortMessage
 
-Type: `string`
+_Type:_ `string`
 
 This is the same as [`error.message`](#errormessage) except it does not include the subprocess [output](output.md).
 
@@ -516,7 +516,7 @@ This is the same as [`error.message`](#errormessage) except it does not include 
 
 ### error.originalMessage
 
-Type: `string | undefined`
+_Type:_ `string | undefined`
 
 Original error message. This is the same as [`error.message`](#errormessage) excluding the subprocess [output](output.md) and some additional information added by Execa.
 
@@ -524,7 +524,7 @@ Original error message. This is the same as [`error.message`](#errormessage) exc
 
 ### error.cause
 
-Type: `unknown | undefined`
+_Type:_ `unknown | undefined`
 
 Underlying error, if there is one. For example, this is set by [`subprocess.kill(error)`](#subprocesskillerror).
 
@@ -534,13 +534,13 @@ This is usually an `Error` instance.
 
 ### error.code
 
-Type: `string | undefined`
+_Type:_ `string | undefined`
 
 Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), when available.
 
 ### error.timedOut
 
-Type: `boolean`
+_Type:_ `boolean`
 
 Whether the subprocess timed out due to the [`timeout`](#optionstimeout) option.
 
@@ -548,7 +548,7 @@ Whether the subprocess timed out due to the [`timeout`](#optionstimeout) option.
 
 ### error.isCanceled
 
-Type: `boolean`
+_Type:_ `boolean`
 
 Whether the subprocess was canceled using the [`cancelSignal`](#optionscancelsignal) option.
 
@@ -556,7 +556,7 @@ Whether the subprocess was canceled using the [`cancelSignal`](#optionscancelsig
 
 ### error.isMaxBuffer
 
-Type: `boolean`
+_Type:_ `boolean`
 
 Whether the subprocess failed because its output was larger than the [`maxBuffer`](#optionsmaxbuffer) option.
 
@@ -564,7 +564,7 @@ Whether the subprocess failed because its output was larger than the [`maxBuffer
 
 ### error.isTerminated
 
-Type: `boolean`
+_Type:_ `boolean`
 
 Whether the subprocess was terminated by a [signal](termination.md#signal-termination) (like [`SIGTERM`](termination.md#sigterm)) sent by either:
 - The current process.
@@ -574,7 +574,7 @@ Whether the subprocess was terminated by a [signal](termination.md#signal-termin
 
 ### error.exitCode
 
-Type: `number | undefined`
+_Type:_ `number | undefined`
 
 The numeric [exit code](https://en.wikipedia.org/wiki/Exit_status) of the subprocess that was run.
 
@@ -584,7 +584,7 @@ This is `undefined` when the subprocess could not be spawned or was terminated b
 
 ### error.signal
 
-Type: `string | undefined`
+_Type:_ `string | undefined`
 
 The name of the [signal](termination.md#signal-termination) (like [`SIGTERM`](termination.md#sigterm)) that terminated the subprocess, sent by either:
 - The current process.
@@ -596,7 +596,7 @@ If a signal terminated the subprocess, this property is defined and included in 
 
 ### error.signalDescription
 
-Type: `string | undefined`
+_Type:_ `string | undefined`
 
 A human-friendly description of the [signal](termination.md#signal-termination) that was used to terminate the subprocess.
 
@@ -606,7 +606,7 @@ If a signal terminated the subprocess, this property is defined and included in 
 
 ## Options
 
-Type: `object`
+_Type:_ `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
 
@@ -614,8 +614,8 @@ The following options [can specify different values](output.md#stdoutstderr-spec
 
 ### options.preferLocal
 
-Type: `boolean`\
-Default: `true` with [`$`](#file-arguments-options), `false` otherwise
+_Type:_ `boolean`\
+_Default:_ `true` with [`$`](#file-arguments-options), `false` otherwise
 
 Prefer locally installed binaries when looking for a binary to execute.
 
@@ -623,8 +623,8 @@ Prefer locally installed binaries when looking for a binary to execute.
 
 ### options.localDir
 
-Type: `string | URL`\
-Default: [`cwd`](#optionscwd) option
+_Type:_ `string | URL`\
+_Default:_ [`cwd`](#optionscwd) option
 
 Preferred path to find locally installed binaries, when using the [`preferLocal`](#optionspreferlocal) option.
 
@@ -632,8 +632,8 @@ Preferred path to find locally installed binaries, when using the [`preferLocal`
 
 ### options.node
 
-Type: `boolean`\
-Default: `true` with [`execaNode()`](#execanodescriptpath-arguments-options), `false` otherwise
+_Type:_ `boolean`\
+_Default:_ `true` with [`execaNode()`](#execanodescriptpath-arguments-options), `false` otherwise
 
 If `true`, runs with Node.js. The first argument must be a Node.js file.
 
@@ -641,8 +641,8 @@ If `true`, runs with Node.js. The first argument must be a Node.js file.
 
 ### options.nodeOptions
 
-Type: `string[]`\
-Default: [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
+_Type:_ `string[]`\
+_Default:_ [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
 
 List of [CLI flags](https://nodejs.org/api/cli.html#cli_options) passed to the [Node.js executable](#optionsnodepath).
 
@@ -652,8 +652,8 @@ Requires the [`node`](#optionsnode) option to be `true`.
 
 ### options.nodePath
 
-Type: `string | URL`\
-Default: [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
+_Type:_ `string | URL`\
+_Default:_ [`process.execPath`](https://nodejs.org/api/process.html#process_process_execpath) (current Node.js executable)
 
 Path to the Node.js executable.
 
@@ -663,8 +663,8 @@ Requires the [`node`](#optionsnode) option to be `true`.
 
 ### options.shell
 
-Type: `boolean | string | URL`\
-Default: `false`
+_Type:_ `boolean | string | URL`\
+_Default:_ `false`
 
 If `true`, runs the command inside of a [shell](https://en.wikipedia.org/wiki/Shell_(computing)).
 
@@ -676,8 +676,8 @@ We [recommend against](shell.md#avoiding-shells) using this option.
 
 ### options.cwd
 
-Type: `string | URL`\
-Default: `process.cwd()`
+_Type:_ `string | URL`\
+_Default:_ `process.cwd()`
 
 Current [working directory](https://en.wikipedia.org/wiki/Working_directory) of the subprocess.
 
@@ -687,8 +687,8 @@ This is also used to resolve the [`nodePath`](#optionsnodepath) option when it i
 
 ### options.env
 
-Type: `object`\
-Default: [`process.env`](https://nodejs.org/api/process.html#processenv)
+_Type:_ `object`\
+_Default:_ [`process.env`](https://nodejs.org/api/process.html#processenv)
 
 [Environment variables](https://en.wikipedia.org/wiki/Environment_variable).
 
@@ -698,8 +698,8 @@ Unless the [`extendEnv`](#optionsextendenv) option is `false`, the subprocess al
 
 ### options.extendEnv
 
-Type: `boolean`\
-Default: `true`
+_Type:_ `boolean`\
+_Default:_ `true`
 
 If `true`, the subprocess uses both the [`env`](#optionsenv) option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 If `false`, only the `env` option is used, not `process.env`.
@@ -708,7 +708,7 @@ If `false`, only the `env` option is used, not `process.env`.
 
 ### options.input
 
-Type: `string | Uint8Array | stream.Readable`
+_Type:_ `string | Uint8Array | stream.Readable`
 
 Write some input to the subprocess' [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)).
 
@@ -718,7 +718,7 @@ See also the [`inputFile`](#optionsinputfile) and [`stdin`](#optionsstdin) optio
 
 ### options.inputFile
 
-Type: `string | URL`
+_Type:_ `string | URL`
 
 Use a file as input to the subprocess' [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)).
 
@@ -728,8 +728,8 @@ See also the [`input`](#optionsinput) and [`stdin`](#optionsstdin) options.
 
 ### options.stdin
 
-Type: `string | number | stream.Readable | ReadableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string | Uint8Array | unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
-Default: `'inherit'` with [`$`](#file-arguments-options), `'pipe'` otherwise
+_Type:_ `string | number | stream.Readable | ReadableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string | Uint8Array | unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
+_Default:_ `'inherit'` with [`$`](#file-arguments-options), `'pipe'` otherwise
 
 How to setup the subprocess' [standard input](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)). This can be [`'pipe'`](streams.md#manual-streaming), [`'overlapped'`](windows.md#asynchronous-io), [`'ignore`](input.md#ignore-input), [`'inherit'`](input.md#terminal-input), a [file descriptor integer](input.md#terminal-input), a [Node.js `Readable` stream](streams.md#input), a web [`ReadableStream`](streams.md#web-streams), a [`{ file: 'path' }` object](input.md#file-input), a [file URL](input.md#file-input), an [`Iterable`](streams.md#iterables-as-input) (including an [array of strings](input.md#string-input)), an [`AsyncIterable`](streams.md#iterables-as-input), an [`Uint8Array`](binary.md#binary-input), a [generator function](transform.md), a [`Duplex`](transform.md#duplextransform-streams) or a web [`TransformStream`](transform.md#duplextransform-streams).
 
@@ -739,8 +739,8 @@ More info on [available values](input.md), [streaming](streams.md) and [transfor
 
 ### options.stdout
 
-Type: `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown>  | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
-Default: `pipe`
+_Type:_ `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown>  | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
+_Default:_ `pipe`
 
 How to setup the subprocess' [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)). This can be [`'pipe'`](output.md#stdout-and-stderr), [`'overlapped'`](windows.md#asynchronous-io), [`'ignore`](output.md#ignore-output), [`'inherit'`](output.md#terminal-output), a [file descriptor integer](output.md#terminal-output), a [Node.js `Writable` stream](streams.md#output), a web [`WritableStream`](streams.md#web-streams), a [`{ file: 'path' }` object](output.md#file-output), a [file URL](output.md#file-output), a [generator function](transform.md), a [`Duplex`](transform.md#duplextransform-streams) or a web [`TransformStream`](transform.md#duplextransform-streams).
 
@@ -750,8 +750,8 @@ More info on [available values](output.md), [streaming](streams.md) and [transfo
 
 ### options.stderr
 
-Type: `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
-Default: `pipe`
+_Type:_ `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
+_Default:_ `pipe`
 
 How to setup the subprocess' [standard error](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)). This can be [`'pipe'`](output.md#stdout-and-stderr), [`'overlapped'`](windows.md#asynchronous-io), [`'ignore`](output.md#ignore-output), [`'inherit'`](output.md#terminal-output), a [file descriptor integer](output.md#terminal-output), a [Node.js `Writable` stream](streams.md#output), a web [`WritableStream`](streams.md#web-streams), a [`{ file: 'path' }` object](output.md#file-output), a [file URL](output.md#file-output), a [generator function](transform.md), a [`Duplex`](transform.md#duplextransform-streams) or a web [`TransformStream`](transform.md#duplextransform-streams).
 
@@ -761,8 +761,8 @@ More info on [available values](output.md), [streaming](streams.md) and [transfo
 
 ### options.stdio
 
-Type: `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}>` (or a tuple of those types)\
-Default: `pipe`
+_Type:_ `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}>` (or a tuple of those types)\
+_Default:_ `pipe`
 
 Like the [`stdin`](#optionsstdin), [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr) options but for all [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.
 
@@ -774,8 +774,8 @@ More info on [available values](output.md), [streaming](streams.md) and [transfo
 
 ### options.all
 
-Type: `boolean`\
-Default: `false`
+_Type:_ `boolean`\
+_Default:_ `false`
 
 Add a [`subprocess.all`](#subprocessall) stream and a [`result.all`](#resultall) property.
 
@@ -783,8 +783,8 @@ Add a [`subprocess.all`](#subprocessall) stream and a [`result.all`](#resultall)
 
 ### options.encoding
 
-Type: `'utf8' | 'utf16le' | 'buffer' | 'hex' | 'base64' | 'base64url' | 'latin1' | 'ascii'`\
-Default: `'utf8'`
+_Type:_ `'utf8' | 'utf16le' | 'buffer' | 'hex' | 'base64' | 'base64url' | 'latin1' | 'ascii'`\
+_Default:_ `'utf8'`
 
 If the subprocess outputs text, specifies its character encoding, either [`'utf8'`](https://en.wikipedia.org/wiki/UTF-8) or [`'utf16le'`](https://en.wikipedia.org/wiki/UTF-16).
 
@@ -798,8 +798,8 @@ The output is available with [`result.stdout`](#resultstdout), [`result.stderr`]
 
 ### options.lines
 
-Type: `boolean`\
-Default: `false`
+_Type:_ `boolean`\
+_Default:_ `false`
 
 Set [`result.stdout`](#resultstdout), [`result.stderr`](#resultstdout), [`result.all`](#resultall) and [`result.stdio`](#resultstdio) as arrays of strings, splitting the subprocess' output into lines.
 
@@ -811,8 +811,8 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 
 ### options.stripFinalNewline
 
-Type: `boolean`\
-Default: `true`
+_Type:_ `boolean`\
+_Default:_ `true`
 
 Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
 
@@ -824,8 +824,8 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 
 ### options.maxBuffer
 
-Type: `number`\
-Default: `100_000_000`
+_Type:_ `number`\
+_Default:_ `100_000_000`
 
 Largest amount of data allowed on [`stdout`](#resultstdout), [`stderr`](#resultstderr) and [`stdio`](#resultstdio).
 
@@ -835,8 +835,8 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 
 ### options.buffer
 
-Type: `boolean`\
-Default: `true`
+_Type:_ `boolean`\
+_Default:_ `true`
 
 When `buffer` is `false`, the [`result.stdout`](#resultstdout), [`result.stderr`](#resultstderr), [`result.all`](#resultall) and [`result.stdio`](#resultstdio) properties are not set.
 
@@ -846,8 +846,8 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 
 ### options.ipc
 
-Type: `boolean`\
-Default: `true` if the [`node`](#optionsnode) option is enabled, `false` otherwise
+_Type:_ `boolean`\
+_Default:_ `true` if the [`node`](#optionsnode) option is enabled, `false` otherwise
 
 Enables exchanging messages with the subprocess using [`subprocess.send(message)`](#subprocesssendmessage) and [`subprocess.on('message', (message) => {})`](#subprocessonmessage-message--void).
 
@@ -855,8 +855,8 @@ Enables exchanging messages with the subprocess using [`subprocess.send(message)
 
 ### options.serialization
 
-Type: `'json' | 'advanced'`\
-Default: `'advanced'`
+_Type:_ `'json' | 'advanced'`\
+_Default:_ `'advanced'`
 
 Specify the kind of serialization used for sending messages between subprocesses when using the [`ipc`](#optionsipc) option.
 
@@ -864,8 +864,8 @@ Specify the kind of serialization used for sending messages between subprocesses
 
 ### options.verbose
 
-Type: `'none' | 'short' | 'full'`\
-Default: `'none'`
+_Type:_ `'none' | 'short' | 'full'`\
+_Default:_ `'none'`
 
 If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
 
@@ -877,8 +877,8 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 
 ### options.reject
 
-Type: `boolean`\
-Default: `true`
+_Type:_ `boolean`\
+_Default:_ `true`
 
 Setting this to `false` resolves the [result's promise](#return-value) with the [error](#execaerror) instead of rejecting it.
 
@@ -886,8 +886,8 @@ Setting this to `false` resolves the [result's promise](#return-value) with the 
 
 ### options.timeout
 
-Type: `number`\
-Default: `0`
+_Type:_ `number`\
+_Default:_ `0`
 
 If `timeout` is greater than `0`, the subprocess will be [terminated](#optionskillsignal) if it runs for longer than that amount of milliseconds.
 
@@ -897,7 +897,7 @@ On timeout, [`result.timedOut`](#errortimedout) becomes `true`.
 
 ### options.cancelSignal
 
-Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
+_Type:_ [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
 You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
@@ -907,8 +907,8 @@ When `AbortController.abort()` is called, [`result.isCanceled`](#erroriscanceled
 
 ### options.forceKillAfterDelay
 
-Type: `number | false`\
-Default: `5000`
+_Type:_ `number | false`\
+_Default:_ `5000`
 
 If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
 
@@ -916,8 +916,8 @@ If the subprocess is terminated but does not exit, forcefully exit it by sending
 
 ### options.killSignal
 
-Type: `string | number`\
-Default: `'SIGTERM'`
+_Type:_ `string | number`\
+_Default:_ `'SIGTERM'`
 
 Default [signal](https://en.wikipedia.org/wiki/Signal_(IPC)) used to terminate the subprocess.
 
@@ -927,8 +927,8 @@ This can be either a name (like [`'SIGTERM'`](termination.md#sigterm)) or a numb
 
 ### options.detached
 
-Type: `boolean`\
-Default: `false`
+_Type:_ `boolean`\
+_Default:_ `false`
 
 Run the subprocess independently from the current process.
 
@@ -936,8 +936,8 @@ Run the subprocess independently from the current process.
 
 ### options.cleanup
 
-Type: `boolean`\
-Default: `true`
+_Type:_ `boolean`\
+_Default:_ `true`
 
 Kill the subprocess when the current process exits.
 
@@ -945,8 +945,8 @@ Kill the subprocess when the current process exits.
 
 ### options.uid
 
-Type: `number`\
-Default: current user identifier
+_Type:_ `number`\
+_Default:_ current user identifier
 
 Sets the [user identifier](https://en.wikipedia.org/wiki/User_identifier) of the subprocess.
 
@@ -954,8 +954,8 @@ Sets the [user identifier](https://en.wikipedia.org/wiki/User_identifier) of the
 
 ### options.gid
 
-Type: `number`\
-Default: current group identifier
+_Type:_ `number`\
+_Default:_ current group identifier
 
 Sets the [group identifier](https://en.wikipedia.org/wiki/Group_identifier) of the subprocess.
 
@@ -963,15 +963,15 @@ Sets the [group identifier](https://en.wikipedia.org/wiki/Group_identifier) of t
 
 ### options.argv0
 
-Type: `string`\
-Default: file being executed
+_Type:_ `string`\
+_Default:_ file being executed
 
 Value of [`argv[0]`](https://nodejs.org/api/process.html#processargv0) sent to the subprocess.
 
 ### options.windowsHide
 
-Type: `boolean`\
-Default: `true`
+_Type:_ `boolean`\
+_Default:_ `true`
 
 On Windows, do not create a new console window.
 
@@ -979,8 +979,8 @@ On Windows, do not create a new console window.
 
 ### options.windowsVerbatimArguments
 
-Type: `boolean`\
-Default: `true` if the [`shell`](#optionsshell) option is `true`, `false` otherwise
+_Type:_ `boolean`\
+_Default:_ `true` if the [`shell`](#optionsshell) option is `true`, `false` otherwise
 
 If `false`, escapes the command arguments on Windows.
 
@@ -996,7 +996,7 @@ A transform is either a [generator function](#transformoptionstransform) or a pl
 
 ### transformOptions.transform
 
-Type: `GeneratorFunction<string | Uint8Array | unknown>` | `AsyncGeneratorFunction<string | Uint8Array | unknown>`
+_Type:_ `GeneratorFunction<string | Uint8Array | unknown>` | `AsyncGeneratorFunction<string | Uint8Array | unknown>`
 
 Map or [filter](transform.md#filtering) the [input](input.md) or [output](output.md) of the subprocess.
 
@@ -1004,7 +1004,7 @@ More info [here](transform.md#summary) and [there](transform.md#sharing-state).
 
 ### transformOptions.final
 
-Type: `GeneratorFunction<string | Uint8Array | unknown>` | `AsyncGeneratorFunction<string | Uint8Array | unknown>`
+_Type:_ `GeneratorFunction<string | Uint8Array | unknown>` | `AsyncGeneratorFunction<string | Uint8Array | unknown>`
 
 Create additional lines after the last one.
 
@@ -1012,8 +1012,8 @@ Create additional lines after the last one.
 
 ### transformOptions.binary
 
-Type: `boolean`\
-Default: `false`
+_Type:_ `boolean`\
+_Default:_ `false`
 
 If `true`, iterate over arbitrary chunks of `Uint8Array`s instead of line `string`s.
 
@@ -1021,8 +1021,8 @@ If `true`, iterate over arbitrary chunks of `Uint8Array`s instead of line `strin
 
 ### transformOptions.preserveNewlines
 
-Type: `boolean`\
-Default: `false`
+_Type:_ `boolean`\
+_Default:_ `false`
 
 If `true`, keep newlines in each `line` argument. Also, this allows multiple `yield`s to produces a single line.
 
@@ -1030,8 +1030,8 @@ If `true`, keep newlines in each `line` argument. Also, this allows multiple `yi
 
 ### transformOptions.objectMode
 
-Type: `boolean`\
-Default: `false`
+_Type:_ `boolean`\
+_Default:_ `false`
 
 If `true`, allow [`transformOptions.transform`](#transformoptionstransform) and [`transformOptions.final`](#transformoptionsfinal) to return any type, not just `string` or `Uint8Array`.
 

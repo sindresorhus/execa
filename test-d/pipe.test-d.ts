@@ -4,7 +4,7 @@ import {
 	execa,
 	execaSync,
 	$,
-	type ExecaResult,
+	type Result,
 } from '../index.js';
 
 const fileUrl = new URL('file:///test');
@@ -17,8 +17,8 @@ const scriptSubprocess = $`unicorns`;
 
 const bufferResult = await bufferSubprocess;
 type BufferExecaReturnValue = typeof bufferResult;
-type EmptyExecaReturnValue = ExecaResult<{}>;
-type ShortcutExecaReturnValue = ExecaResult<typeof pipeOptions>;
+type EmptyExecaReturnValue = Result<{}>;
+type ShortcutExecaReturnValue = Result<typeof pipeOptions>;
 
 expectNotType<BufferExecaReturnValue>(await subprocess.pipe(subprocess));
 expectNotType<BufferExecaReturnValue>(await scriptSubprocess.pipe(subprocess));

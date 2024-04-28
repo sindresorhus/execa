@@ -1,5 +1,5 @@
 import {expectType, expectError, expectAssignable} from 'tsd';
-import {$, type ExecaResult, type ExecaResultPromise} from '../../index.js';
+import {$, type Result, type ResultPromise} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
 const stringArray = ['foo', 'bar'] as const;
@@ -7,26 +7,26 @@ const stringArray = ['foo', 'bar'] as const;
 expectError($());
 expectError($(true));
 expectError($(['unicorns', 'arg']));
-expectAssignable<ExecaResultPromise>($('unicorns'));
-expectAssignable<ExecaResultPromise>($(fileUrl));
+expectAssignable<ResultPromise>($('unicorns'));
+expectAssignable<ResultPromise>($(fileUrl));
 
-expectAssignable<ExecaResultPromise>($('unicorns', []));
-expectAssignable<ExecaResultPromise>($('unicorns', ['foo']));
+expectAssignable<ResultPromise>($('unicorns', []));
+expectAssignable<ResultPromise>($('unicorns', ['foo']));
 expectError($('unicorns', 'foo'));
 expectError($('unicorns', [true]));
 
-expectAssignable<ExecaResultPromise>($('unicorns', {}));
-expectAssignable<ExecaResultPromise>($('unicorns', [], {}));
+expectAssignable<ResultPromise>($('unicorns', {}));
+expectAssignable<ResultPromise>($('unicorns', [], {}));
 expectError($('unicorns', [], []));
 expectError($('unicorns', {other: true}));
 
-expectAssignable<ExecaResultPromise>($`unicorns`);
-expectType<ExecaResult<{}>>(await $('unicorns'));
-expectType<ExecaResult<{}>>(await $`unicorns`);
+expectAssignable<ResultPromise>($`unicorns`);
+expectType<Result<{}>>(await $('unicorns'));
+expectType<Result<{}>>(await $`unicorns`);
 
 expectAssignable<typeof $>($({}));
-expectAssignable<ExecaResultPromise>($({})('unicorns'));
-expectAssignable<ExecaResultPromise>($({})`unicorns`);
+expectAssignable<ResultPromise>($({})('unicorns'));
+expectAssignable<ResultPromise>($({})`unicorns`);
 
 expectAssignable<{stdout: string}>(await $('unicorns'));
 expectAssignable<{stdout: Uint8Array}>(await $('unicorns', {encoding: 'buffer'}));
@@ -41,16 +41,16 @@ expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})`unicorns`);
 expectAssignable<{stdout: Uint8Array}>(await $({})({encoding: 'buffer'})`unicorns`);
 expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})({})`unicorns`);
 
-expectType<ExecaResult<{}>>(await $`${'unicorns'}`);
-expectType<ExecaResult<{}>>(await $`unicorns ${'foo'}`);
-expectType<ExecaResult<{}>>(await $`unicorns ${'foo'} ${'bar'}`);
-expectType<ExecaResult<{}>>(await $`unicorns ${1}`);
-expectType<ExecaResult<{}>>(await $`unicorns ${stringArray}`);
-expectType<ExecaResult<{}>>(await $`unicorns ${[1, 2]}`);
-expectType<ExecaResult<{}>>(await $`unicorns ${false.toString()}`);
+expectType<Result<{}>>(await $`${'unicorns'}`);
+expectType<Result<{}>>(await $`unicorns ${'foo'}`);
+expectType<Result<{}>>(await $`unicorns ${'foo'} ${'bar'}`);
+expectType<Result<{}>>(await $`unicorns ${1}`);
+expectType<Result<{}>>(await $`unicorns ${stringArray}`);
+expectType<Result<{}>>(await $`unicorns ${[1, 2]}`);
+expectType<Result<{}>>(await $`unicorns ${false.toString()}`);
 expectError(await $`unicorns ${false}`);
 
-expectType<ExecaResult<{}>>(await $`unicorns ${await $`echo foo`}`);
+expectType<Result<{}>>(await $`unicorns ${await $`echo foo`}`);
 expectError(await $`unicorns ${$`echo foo`}`);
-expectType<ExecaResult<{}>>(await $`unicorns ${[await $`echo foo`, 'bar']}`);
+expectType<Result<{}>>(await $`unicorns ${[await $`echo foo`, 'bar']}`);
 expectError(await $`unicorns ${[$`echo foo`, 'bar']}`);

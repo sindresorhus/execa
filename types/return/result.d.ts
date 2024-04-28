@@ -52,7 +52,7 @@ export declare abstract class CommonResult<
 
 	This array is initially empty and is populated each time the `subprocess.pipe()` method resolves.
 	*/
-	pipedFrom: Unless<IsSync, ExecaResult[], []>;
+	pipedFrom: Unless<IsSync, Result[], []>;
 
 	/**
 	The file and arguments that were run.
@@ -179,11 +179,11 @@ Result of a subprocess successful execution.
 
 When the subprocess fails, it is rejected with an `ExecaError` instead.
 */
-export type ExecaResult<OptionsType extends Options = Options> = SuccessResult<false, OptionsType>;
+export type Result<OptionsType extends Options = Options> = SuccessResult<false, OptionsType>;
 
 /**
 Result of a subprocess successful execution.
 
 When the subprocess fails, it is rejected with an `ExecaError` instead.
 */
-export type ExecaSyncResult<OptionsType extends SyncOptions = SyncOptions> = SuccessResult<true, OptionsType>;
+export type SyncResult<OptionsType extends SyncOptions = SyncOptions> = SuccessResult<true, OptionsType>;

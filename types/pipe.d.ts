@@ -1,7 +1,7 @@
 import type {Options} from './arguments/options';
-import type {ExecaResult} from './return/result';
+import type {Result} from './return/result';
 import type {FromOption, ToOption} from './arguments/fd-options';
-import type {ExecaResultPromise} from './subprocess/subprocess';
+import type {ResultPromise} from './subprocess/subprocess';
 import type {TemplateExpression} from './methods/template';
 
 // `subprocess.pipe()` options
@@ -35,24 +35,24 @@ export type PipableSubprocess = {
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: OptionsType,
-	): Promise<ExecaResult<OptionsType>> & PipableSubprocess;
+	): Promise<Result<OptionsType>> & PipableSubprocess;
 	pipe<OptionsType extends Options & PipeOptions = {}>(
 		file: string | URL,
 		options?: OptionsType,
-	): Promise<ExecaResult<OptionsType>> & PipableSubprocess;
+	): Promise<Result<OptionsType>> & PipableSubprocess;
 
 	/**
 	Like `subprocess.pipe(file, arguments?, options?)` but using a `command` template string instead. This follows the same syntax as `$`.
 	*/
 	pipe(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[]):
-	Promise<ExecaResult<{}>> & PipableSubprocess;
+	Promise<Result<{}>> & PipableSubprocess;
 	pipe<OptionsType extends Options & PipeOptions = {}>(options: OptionsType):
 	(templates: TemplateStringsArray, ...expressions: readonly TemplateExpression[])
-	=> Promise<ExecaResult<OptionsType>> & PipableSubprocess;
+	=> Promise<Result<OptionsType>> & PipableSubprocess;
 
 	/**
 	Like `subprocess.pipe(file, arguments?, options?)` but using the return value of another `execa()` call instead.
 	*/
-	pipe<Destination extends ExecaResultPromise>(destination: Destination, options?: PipeOptions):
+	pipe<Destination extends ResultPromise>(destination: Destination, options?: PipeOptions):
 	Promise<Awaited<Destination>> & PipableSubprocess;
 };

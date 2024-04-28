@@ -5,8 +5,8 @@ export type {
 	StdoutStderrOptionSync,
 } from './types/stdio/type';
 export type {Options, SyncOptions} from './types/arguments/options';
-export type {ExecaResult, ExecaSyncResult} from './types/return/result';
-export type {ExecaResultPromise, ExecaSubprocess} from './types/subprocess/subprocess';
+export type {Result, SyncResult} from './types/return/result';
+export type {ResultPromise, Subprocess} from './types/subprocess/subprocess';
 /* eslint-disable import/extensions */
 export {ExecaError, ExecaSyncError} from './types/return/final-error';
 export {execa} from './types/methods/main-async';

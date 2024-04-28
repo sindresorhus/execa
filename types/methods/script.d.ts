@@ -4,42 +4,42 @@ import type {
 	SyncOptions,
 	StricterOptions,
 } from '../arguments/options';
-import type {ExecaSyncResult} from '../return/result';
-import type {ExecaResultPromise} from '../subprocess/subprocess';
+import type {SyncResult} from '../return/result';
+import type {ResultPromise} from '../subprocess/subprocess';
 import type {TemplateString} from './template';
 
 type ExecaScriptCommon<OptionsType extends CommonOptions> = {
 	<NewOptionsType extends CommonOptions = {}>(options: NewOptionsType): ExecaScript<OptionsType & NewOptionsType>;
 
-	(...templateString: TemplateString): ExecaResultPromise<StricterOptions<OptionsType, Options>>;
+	(...templateString: TemplateString): ResultPromise<StricterOptions<OptionsType, Options>>;
 
 	<NewOptionsType extends Options = {}>(
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: NewOptionsType,
-	): ExecaResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
+	): ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
 
 	<NewOptionsType extends Options = {}>(
 		file: string | URL,
 		options?: NewOptionsType,
-	): ExecaResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
+	): ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
 };
 
 type ExecaScriptSync<OptionsType extends CommonOptions> = {
 	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType): ExecaScriptSync<OptionsType & NewOptionsType>;
 
-	(...templateString: TemplateString): ExecaSyncResult<StricterOptions<OptionsType, SyncOptions>>;
+	(...templateString: TemplateString): SyncResult<StricterOptions<OptionsType, SyncOptions>>;
 
 	<NewOptionsType extends SyncOptions = {}>(
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: NewOptionsType,
-	): ExecaSyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
+	): SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
 
 	<NewOptionsType extends SyncOptions = {}>(
 		file: string | URL,
 		options?: NewOptionsType,
-	): ExecaSyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
+	): SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
 };
 
 type ExecaScript<OptionsType extends CommonOptions> = {
@@ -54,7 +54,7 @@ Just like `execa()`, this can use the template string syntax or bind options. It
 
 This is the preferred method when executing multiple commands in a script file.
 
-@returns An `ExecaResultPromise` that is both:
+@returns A `ResultPromise` that is both:
 - the subprocess.
 - a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
 @throws `ExecaError`

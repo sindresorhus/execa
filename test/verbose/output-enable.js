@@ -122,7 +122,7 @@ test('Escapes control characters from stdout', async t => {
 });
 
 const testStdioSame = async (t, fdNumber) => {
-	const {stdio} = await nestedExecaAsync('noop-fd.js', [`${fdNumber}`, foobarString], {verbose: true});
+	const {stdio} = await nestedExecaAsync('noop-fd.js', [`${fdNumber}`, foobarString], {verbose: 'full'});
 	t.is(stdio[fdNumber], foobarString);
 };
 

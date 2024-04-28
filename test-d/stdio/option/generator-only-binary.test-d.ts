@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const binaryOnly = {binary: true} as const;
@@ -44,8 +42,3 @@ expectNotAssignable<StdoutStderrOption>(binaryOnly);
 expectNotAssignable<StdoutStderrOptionSync>(binaryOnly);
 expectNotAssignable<StdoutStderrOption>([binaryOnly]);
 expectNotAssignable<StdoutStderrOptionSync>([binaryOnly]);
-
-expectNotAssignable<StdioOption>(binaryOnly);
-expectNotAssignable<StdioOptionSync>(binaryOnly);
-expectNotAssignable<StdioOption>([binaryOnly]);
-expectNotAssignable<StdioOptionSync>([binaryOnly]);

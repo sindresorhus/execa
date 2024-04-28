@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 await execa('unicorns', {stdin: 'inherit'});
@@ -42,8 +40,3 @@ expectAssignable<StdoutStderrOption>('inherit');
 expectAssignable<StdoutStderrOptionSync>('inherit');
 expectAssignable<StdoutStderrOption>(['inherit']);
 expectAssignable<StdoutStderrOptionSync>(['inherit']);
-
-expectAssignable<StdioOption>('inherit');
-expectAssignable<StdioOptionSync>('inherit');
-expectAssignable<StdioOption>(['inherit']);
-expectAssignable<StdioOptionSync>(['inherit']);

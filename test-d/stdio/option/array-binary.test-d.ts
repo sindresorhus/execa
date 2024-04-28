@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const binaryArray = [new Uint8Array(), new Uint8Array()] as const;
@@ -31,6 +29,3 @@ expectAssignable<StdinOptionSync>([binaryArray]);
 
 expectNotAssignable<StdoutStderrOption>([binaryArray]);
 expectNotAssignable<StdoutStderrOptionSync>([binaryArray]);
-
-expectAssignable<StdioOption>([binaryArray]);
-expectAssignable<StdioOptionSync>([binaryArray]);

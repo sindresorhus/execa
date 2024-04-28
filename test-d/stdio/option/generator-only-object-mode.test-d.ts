@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const objectModeOnly = {objectMode: true} as const;
@@ -44,8 +42,3 @@ expectNotAssignable<StdoutStderrOption>(objectModeOnly);
 expectNotAssignable<StdoutStderrOptionSync>(objectModeOnly);
 expectNotAssignable<StdoutStderrOption>([objectModeOnly]);
 expectNotAssignable<StdoutStderrOptionSync>([objectModeOnly]);
-
-expectNotAssignable<StdioOption>(objectModeOnly);
-expectNotAssignable<StdioOptionSync>(objectModeOnly);
-expectNotAssignable<StdioOption>([objectModeOnly]);
-expectNotAssignable<StdioOptionSync>([objectModeOnly]);

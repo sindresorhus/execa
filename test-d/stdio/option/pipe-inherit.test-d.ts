@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const pipeInherit = ['pipe', 'inherit'] as const;
@@ -29,6 +27,3 @@ expectAssignable<StdinOptionSync>(pipeInherit);
 
 expectAssignable<StdoutStderrOption>(pipeInherit);
 expectAssignable<StdoutStderrOptionSync>(pipeInherit);
-
-expectAssignable<StdioOption>(pipeInherit);
-expectAssignable<StdioOptionSync>(pipeInherit);

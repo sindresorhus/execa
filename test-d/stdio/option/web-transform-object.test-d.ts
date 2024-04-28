@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const webTransformObject = {
@@ -47,8 +45,3 @@ expectAssignable<StdoutStderrOption>(webTransformObject);
 expectNotAssignable<StdoutStderrOptionSync>(webTransformObject);
 expectAssignable<StdoutStderrOption>([webTransformObject]);
 expectNotAssignable<StdoutStderrOptionSync>([webTransformObject]);
-
-expectAssignable<StdioOption>(webTransformObject);
-expectNotAssignable<StdioOptionSync>(webTransformObject);
-expectAssignable<StdioOption>([webTransformObject]);
-expectNotAssignable<StdioOptionSync>([webTransformObject]);

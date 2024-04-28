@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const webTransformInstance = new TransformStream();
@@ -44,8 +42,3 @@ expectAssignable<StdoutStderrOption>(webTransformInstance);
 expectNotAssignable<StdoutStderrOptionSync>(webTransformInstance);
 expectAssignable<StdoutStderrOption>([webTransformInstance]);
 expectNotAssignable<StdoutStderrOptionSync>([webTransformInstance]);
-
-expectAssignable<StdioOption>(webTransformInstance);
-expectNotAssignable<StdioOptionSync>(webTransformInstance);
-expectAssignable<StdioOption>([webTransformInstance]);
-expectNotAssignable<StdioOptionSync>([webTransformInstance]);

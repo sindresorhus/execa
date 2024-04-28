@@ -7,8 +7,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const duplexObjectProperty = {
@@ -48,8 +46,3 @@ expectAssignable<StdoutStderrOption>(duplexObjectProperty);
 expectNotAssignable<StdoutStderrOptionSync>(duplexObjectProperty);
 expectAssignable<StdoutStderrOption>([duplexObjectProperty]);
 expectNotAssignable<StdoutStderrOptionSync>([duplexObjectProperty]);
-
-expectAssignable<StdioOption>(duplexObjectProperty);
-expectNotAssignable<StdioOptionSync>(duplexObjectProperty);
-expectAssignable<StdioOption>([duplexObjectProperty]);
-expectNotAssignable<StdioOptionSync>([duplexObjectProperty]);

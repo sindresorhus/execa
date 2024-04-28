@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const transformWithObjectMode = {
@@ -49,8 +47,3 @@ expectAssignable<StdoutStderrOption>(transformWithObjectMode);
 expectAssignable<StdoutStderrOptionSync>(transformWithObjectMode);
 expectAssignable<StdoutStderrOption>([transformWithObjectMode]);
 expectAssignable<StdoutStderrOptionSync>([transformWithObjectMode]);
-
-expectAssignable<StdioOption>(transformWithObjectMode);
-expectAssignable<StdioOptionSync>(transformWithObjectMode);
-expectAssignable<StdioOption>([transformWithObjectMode]);
-expectAssignable<StdioOptionSync>([transformWithObjectMode]);

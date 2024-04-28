@@ -7,8 +7,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const duplexTransform = {transform: new Transform()} as const;
@@ -45,8 +43,3 @@ expectAssignable<StdoutStderrOption>(duplexTransform);
 expectNotAssignable<StdoutStderrOptionSync>(duplexTransform);
 expectAssignable<StdoutStderrOption>([duplexTransform]);
 expectNotAssignable<StdoutStderrOptionSync>([duplexTransform]);
-
-expectAssignable<StdioOption>(duplexTransform);
-expectNotAssignable<StdioOptionSync>(duplexTransform);
-expectAssignable<StdioOption>([duplexTransform]);
-expectNotAssignable<StdioOptionSync>([duplexTransform]);

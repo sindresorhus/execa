@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const fileUrl = new URL('file:///test');
@@ -44,8 +42,3 @@ expectAssignable<StdoutStderrOption>(fileUrl);
 expectAssignable<StdoutStderrOptionSync>(fileUrl);
 expectAssignable<StdoutStderrOption>([fileUrl]);
 expectAssignable<StdoutStderrOptionSync>([fileUrl]);
-
-expectAssignable<StdioOption>(fileUrl);
-expectAssignable<StdioOptionSync>(fileUrl);
-expectAssignable<StdioOption>([fileUrl]);
-expectAssignable<StdioOptionSync>([fileUrl]);

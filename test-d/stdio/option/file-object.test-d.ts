@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const fileObject = {file: './test'} as const;
@@ -44,8 +42,3 @@ expectAssignable<StdoutStderrOption>(fileObject);
 expectAssignable<StdoutStderrOptionSync>(fileObject);
 expectAssignable<StdoutStderrOption>([fileObject]);
 expectAssignable<StdoutStderrOptionSync>([fileObject]);
-
-expectAssignable<StdioOption>(fileObject);
-expectAssignable<StdioOptionSync>(fileObject);
-expectAssignable<StdioOption>([fileObject]);
-expectAssignable<StdioOptionSync>([fileObject]);

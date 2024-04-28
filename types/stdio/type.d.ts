@@ -150,11 +150,6 @@ export type StdioOptionCommon<IsSync extends boolean = boolean> =
 	| StdinOptionCommon<IsSync>
 	| StdoutStderrOptionCommon<IsSync>;
 
-// `options.stdin|stdout|stderr|stdio`, async
-export type StdioOption = StdioOptionCommon<false>;
-// `options.stdin|stdout|stderr|stdio`, sync
-export type StdioOptionSync = StdioOptionCommon<true>;
-
 // `options.stdio` when it is an array
 export type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 	StdinOptionCommon<IsSync, false>,

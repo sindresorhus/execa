@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 await execa('unicorns', {stdin: new ReadableStream()});
@@ -42,8 +40,3 @@ expectNotAssignable<StdoutStderrOption>(new ReadableStream());
 expectNotAssignable<StdoutStderrOptionSync>(new ReadableStream());
 expectNotAssignable<StdoutStderrOption>([new ReadableStream()]);
 expectNotAssignable<StdoutStderrOptionSync>([new ReadableStream()]);
-
-expectAssignable<StdioOption>(new ReadableStream());
-expectNotAssignable<StdioOptionSync>(new ReadableStream());
-expectAssignable<StdioOption>([new ReadableStream()]);
-expectNotAssignable<StdioOptionSync>([new ReadableStream()]);

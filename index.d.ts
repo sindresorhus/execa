@@ -3,8 +3,6 @@ export type {
 	StdinOptionSync,
 	StdoutStderrOption,
 	StdoutStderrOptionSync,
-	StdioOption,
-	StdioOptionSync,
 } from './types/stdio/type';
 export type {Options, SyncOptions} from './types/arguments/options';
 export type {ExecaResult, ExecaSyncResult} from './types/return/result';

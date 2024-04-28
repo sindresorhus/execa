@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const invalidFileObject = {file: new URL('file:///test')} as const;
@@ -44,8 +42,3 @@ expectNotAssignable<StdoutStderrOption>(invalidFileObject);
 expectNotAssignable<StdoutStderrOptionSync>(invalidFileObject);
 expectNotAssignable<StdoutStderrOption>([invalidFileObject]);
 expectNotAssignable<StdoutStderrOptionSync>([invalidFileObject]);
-
-expectNotAssignable<StdioOption>(invalidFileObject);
-expectNotAssignable<StdioOptionSync>(invalidFileObject);
-expectNotAssignable<StdioOption>([invalidFileObject]);
-expectNotAssignable<StdioOptionSync>([invalidFileObject]);

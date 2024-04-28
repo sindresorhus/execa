@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const asyncBinaryIterableFunction = async function * () {
@@ -48,8 +46,3 @@ expectNotAssignable<StdoutStderrOption>(asyncBinaryIterable);
 expectNotAssignable<StdoutStderrOptionSync>(asyncBinaryIterable);
 expectNotAssignable<StdoutStderrOption>([asyncBinaryIterable]);
 expectNotAssignable<StdoutStderrOptionSync>([asyncBinaryIterable]);
-
-expectAssignable<StdioOption>(asyncBinaryIterable);
-expectNotAssignable<StdioOptionSync>(asyncBinaryIterable);
-expectAssignable<StdioOption>([asyncBinaryIterable]);
-expectNotAssignable<StdioOptionSync>([asyncBinaryIterable]);

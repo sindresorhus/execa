@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const invalidReturnFinalFull = {
@@ -52,8 +50,3 @@ expectNotAssignable<StdoutStderrOption>(invalidReturnFinalFull);
 expectNotAssignable<StdoutStderrOptionSync>(invalidReturnFinalFull);
 expectNotAssignable<StdoutStderrOption>([invalidReturnFinalFull]);
 expectNotAssignable<StdoutStderrOptionSync>([invalidReturnFinalFull]);
-
-expectNotAssignable<StdioOption>(invalidReturnFinalFull);
-expectNotAssignable<StdioOptionSync>(invalidReturnFinalFull);
-expectNotAssignable<StdioOption>([invalidReturnFinalFull]);
-expectNotAssignable<StdioOptionSync>([invalidReturnFinalFull]);

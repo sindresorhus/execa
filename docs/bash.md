@@ -496,6 +496,34 @@ await $({stdout: {file: 'output.txt'}})`npm run build`;
 
 [More info.](output.md#file-output)
 
+### Piping interleaved stdout and stderr to a file
+
+```sh
+# Bash
+npm run build &> output.txt
+```
+
+```js
+// zx
+import {createWriteStream} from 'node:fs';
+
+const subprocess = $`npm run build`;
+const fileStream = createWriteStream('output.txt');
+subprocess.pipe(fileStream);
+subprocess.stderr.pipe(fileStream);
+await subprocess;
+```
+
+```js
+// Execa
+await $({
+	stdout: {file: 'output.txt'},
+	stderr: {file: 'output.txt'},
+})`npm run build`;
+```
+
+[More info.](output.md#file-output)
+
 ### Piping stdin from a file
 
 ```sh

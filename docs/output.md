@@ -32,6 +32,12 @@ console.log(stderr); // string with errors
 await execa({stdout: {file: 'output.txt'}})`npm run build`;
 // Or:
 await execa({stdout: new URL('file:///path/to/output.txt')})`npm run build`;
+
+// Redirect interleaved stdout and stderr to same file
+await execa({
+	stdout: {file: 'output.txt'},
+	stderr: {file: 'output.txt'},
+})`npm run build`;
 ```
 
 ## Terminal output

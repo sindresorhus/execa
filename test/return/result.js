@@ -39,7 +39,6 @@ const testErrorShape = async (t, execaMethod) => {
 		'stack',
 		'message',
 		'shortMessage',
-		'originalMessage',
 		'command',
 		'escapedCommand',
 		'cwd',

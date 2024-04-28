@@ -33,129 +33,157 @@ When `command` is a template string, it includes both the `file` and its `argume
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
 @throws A subprocess `result` error
 
-@example <caption>Promise interface</caption>
+@example <caption>Simple syntax</caption>
+
 ```
 import {execa} from 'execa';
 
-const {stdout} = await execa('echo', ['unicorns']);
+const {stdout} = await execa`npm run build`;
+// Print command's output
 console.log(stdout);
-//=> 'unicorns'
 ```
 
-@example <caption>Global/shared options</caption>
-```
-import {execa as execa_} from 'execa';
-
-const execa = execa_({verbose: 'full'});
-
-await execa('echo', ['unicorns']);
-//=> 'unicorns'
-```
-
-@example <caption>Template string interface</caption>
+@example <caption>Script</caption>
 
 ```
-import {execa} from 'execa';
+import {$} from 'execa';
 
-const arg = 'unicorns';
-const {stdout} = await execa`echo ${arg} & rainbows!`;
-console.log(stdout);
-//=> 'unicorns & rainbows!'
+const {stdout: name} = await $`cat package.json`.pipe`grep name`;
+console.log(name);
+
+const branch = await $`git branch --show-current`;
+await $`dep deploy --branch=${branch}`;
+
+await Promise.all([
+	$`sleep 1`,
+	$`sleep 2`,
+	$`sleep 3`,
+]);
+
+const directoryName = 'foo bar';
+await $`mkdir /tmp/${directoryName}`;
 ```
 
-@example <caption>Template string multiple arguments</caption>
+@example <caption>Local binaries</caption>
 
 ```
-import {execa} from 'execa';
-
-const args = ['unicorns', '&', 'rainbows!'];
-const {stdout} = await execa`echo ${args}`;
-console.log(stdout);
-//=> 'unicorns & rainbows!'
+$ npm install -D eslint
 ```
 
-@example <caption>Template string with options</caption>
-
 ```
-import {execa} from 'execa';
-
-await execa({verbose: 'full'})`echo unicorns`;
-//=> 'unicorns'
-```
-
-@example <caption>Redirect output to a file</caption>
-```
-import {execa} from 'execa';
-
-// Similar to `echo unicorns > stdout.txt` in Bash
-await execa('echo', ['unicorns'], {stdout: {file: 'stdout.txt'}});
-
-// Similar to `echo unicorns 2> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {stderr: {file: 'stderr.txt'}});
-
-// Similar to `echo unicorns &> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {stdout: {file: 'all.txt'}, stderr: {file: 'all.txt'}});
-```
-
-@example <caption>Redirect input from a file</caption>
-```
-import {execa} from 'execa';
-
-// Similar to `cat < stdin.txt` in Bash
-const {stdout} = await execa('cat', {inputFile: 'stdin.txt'});
-console.log(stdout);
-//=> 'unicorns'
-```
-
-@example <caption>Save and pipe output from a subprocess</caption>
-```
-import {execa} from 'execa';
-
-const {stdout} = await execa('echo', ['unicorns'], {stdout: ['pipe', 'inherit']});
-// Prints `unicorns`
-console.log(stdout);
-// Also returns 'unicorns'
+await execa({preferLocal: true})`eslint`;
 ```
 
 @example <caption>Pipe multiple subprocesses</caption>
-```
-import {execa} from 'execa';
 
-// Similar to `echo unicorns | cat` in Bash
-const {stdout} = await execa('echo', ['unicorns']).pipe(execa('cat'));
-console.log(stdout);
-//=> 'unicorns'
 ```
-
-@example <caption>Pipe with template strings</caption>
-```
-import {execa} from 'execa';
-
-await execa`npm run build`
+const {stdout, pipedFrom} = await execa`npm run build`
 	.pipe`sort`
-	.pipe`head -n2`;
+	.pipe`head -n 2`;
+
+// Output of `npm run build | sort | head -n 2`
+console.log(stdout);
+// Output of `npm run build | sort`
+console.log(pipedFrom[0].stdout);
+// Output of `npm run build`
+console.log(pipedFrom[0].pipedFrom[0].stdout);
 ```
 
-@example <caption>Iterate over output lines</caption>
-```
-import {execa} from 'execa';
+@example <caption>Interleaved output</caption>
 
-for await (const line of execa`npm run build`)) {
-	if (line.includes('ERROR')) {
-		console.log(line);
+```
+const {all} = await execa({all: true})`npm run build`;
+// stdout + stderr, interleaved
+console.log(all);
+```
+
+@example <caption>Programmatic + terminal output</caption>
+
+```
+const {stdout} = await execa({stdout: ['pipe', 'inherit']})`npm run build`;
+// stdout is also printed to the terminal
+console.log(stdout);
+```
+
+@example <caption>Files</caption>
+
+```
+// Similar to: npm run build > output.txt
+await execa({stdout: {file: './output.txt'}})`npm run build`;
+```
+
+@example <caption>Simple input</caption>
+
+```
+const {stdout} = await execa({input: getInputString()})`sort`;
+console.log(stdout);
+```
+
+@example <caption>Split into text lines</caption>
+
+```
+const {stdout} = await execa({lines: true})`npm run build`;
+// Print first 10 lines
+console.log(stdout.slice(0, 10).join('\n'));
+```
+
+@example <caption>Iterate over text lines</caption>
+
+```
+for await (const line of execa`npm run build`) {
+	if (line.includes('WARN')) {
+		console.warn(line);
 	}
 }
 ```
 
-@example <caption>Handling errors</caption>
+@example <caption>Transform/filter output</caption>
+
+```
+let count = 0;
+
+// Filter out secret lines, then prepend the line number
+const transform = function * (line) {
+	if (!line.includes('secret')) {
+		yield `[${count++}] ${line}`;
+	}
+};
+
+await execa({stdout: transform})`npm run build`;
+```
+
+@example <caption>Web streams</caption>
+
+```
+const response = await fetch('https://example.com');
+await execa({stdin: response.body})`sort`;
+```
+
+@example <caption>Convert to Duplex stream</caption>
+
 ```
 import {execa} from 'execa';
+import {pipeline} from 'node:stream/promises';
+import {createReadStream, createWriteStream} from 'node:fs';
 
-// Catching an error
+await pipeline(
+	createReadStream('./input.txt'),
+	execa`node ./transform.js`.duplex(),
+	createWriteStream('./output.txt'),
+);
+```
+
+@example <caption>Detailed error</caption>
+
+```
+import {execa, ExecaError} from 'execa';
+
 try {
-	await execa('unknown', ['command']);
+	await execa`unknown command`;
 } catch (error) {
-	console.log(error);
+	if (error instanceof ExecaError) {
+		console.log(error);
+	}
 	/*
 	ExecaError: Command failed with ENOENT: unknown command
 	spawn unknown ENOENT
@@ -187,8 +215,28 @@ try {
 			spawnargs: [ 'command' ]
 		}
 	}
-	\*\/
+	*\/
 }
+```
+
+@example <caption>Verbose mode</caption>
+
+```
+await execa`npm run build`;
+await execa`npm run test`;
+```
+
+```
+$ NODE_DEBUG=execa node build.js
+[00:57:44.581] [0] $ npm run build
+[00:57:44.653] [0]   Building application...
+[00:57:44.653] [0]   Done building.
+[00:57:44.658] [0] ✔ (done in 78ms)
+[00:57:44.658] [1] $ npm run test
+[00:57:44.740] [1]   Running tests...
+[00:57:44.740] [1]   Error: the entrypoint is invalid.
+[00:57:44.747] [1] ✘ Command failed with exit code 1: npm run test
+[00:57:44.747] [1] ✘ (done in 89ms)
 ```
 */
 export declare const execa: Execa<{}>;

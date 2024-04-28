@@ -31,9 +31,9 @@ Just like `execa()`, this can bind options. It can also be run synchronously usi
 ```
 import {execaCommand} from 'execa';
 
-const {stdout} = await execaCommand('echo unicorns');
-console.log(stdout);
-//=> 'unicorns'
+for await (const commandAndArguments of getReplLine()) {
+	await execaCommand(commandAndArguments);
+}
 ```
 */
 export declare const execaCommand: ExecaCommand<{}>;
@@ -62,9 +62,9 @@ Returns or throws a subprocess `result`. The `subprocess` is not returned: its m
 ```
 import {execaCommandSync} from 'execa';
 
-const {stdout} = execaCommandSync('echo unicorns');
-console.log(stdout);
-//=> 'unicorns'
+for (const commandAndArguments of getReplLine()) {
+	execaCommandSync(commandAndArguments);
+}
 ```
 */
 export declare const execaCommandSync: ExecaCommandSync<{}>;

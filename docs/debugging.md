@@ -49,7 +49,7 @@ When the [`verbose`](api.md#optionsverbose) option is `'short'`, the [command](#
 await execa({verbose: 'short'})`npm run build`;
 ```
 
-```sh
+```
 $ node build.js
 [20:36:11.043] [0] $ npm run build
 [20:36:11.885] [0] ✔ (done in 842ms)
@@ -67,14 +67,20 @@ The output is not logged if either:
 ```js
 // build.js
 await execa({verbose: 'full'})`npm run build`;
+await execa({verbose: 'full'})`npm run test`;
 ```
 
-```sh
+```
 $ node build.js
-[20:36:11.043] [0] $ npm run build
-Building application...
-Done building.
-[20:36:11.885] [0] ✔ (done in 842ms)
+[00:57:44.581] [0] $ npm run build
+[00:57:44.653] [0]   Building application...
+[00:57:44.653] [0]   Done building.
+[00:57:44.658] [0] ✔ (done in 78ms)
+[00:57:44.658] [1] $ npm run test
+[00:57:44.740] [1]   Running tests...
+[00:57:44.740] [1]   Error: the entrypoint is invalid.
+[00:57:44.747] [1] ✘ Command failed with exit code 1: npm run test
+[00:57:44.747] [1] ✘ (done in 89ms)
 ```
 
 ### Global mode
@@ -90,13 +96,15 @@ await execa`npm run build`;
 await execa({verbose: 'none'})`npm run test`;
 ```
 
-```sh
-$ NODE_DEBUG=execa node build.js
-[20:36:11.043] [0] $ npm run build
-Building application...
-Done building.
-[20:36:11.885] [0] ✔ (done in 842ms)
 ```
+$ NODE_DEBUG=execa node build.js
+```
+
+### Colors
+
+When printed to a terminal, the verbose mode uses colors.
+
+<img alt="execa verbose output" src="../media/verbose.png" width="603">
 
 <hr>
 

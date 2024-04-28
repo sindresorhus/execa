@@ -9,7 +9,7 @@ test('timeout kills the subprocess if it times out', async t => {
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');
 	t.true(timedOut);
-	t.is(originalMessage, '');
+	t.is(originalMessage, undefined);
 	t.is(shortMessage, 'Command timed out after 1 milliseconds: forever.js');
 	t.is(message, shortMessage);
 });

@@ -144,7 +144,7 @@ subprocess.kill();
 
 ## Inter-process termination
 
-[`subprocess.kill()`](api.md#subprocesskillsignal-error) only works when the current process terminates the subprocess. To terminate the subprocess from a different process (for example, a terminal), its [`subprocess.pid`](api.md#subprocesspid) can be used instead.
+[`subprocess.kill()`](api.md#subprocesskillsignal-error) only works when the current process terminates the subprocess. To terminate the subprocess from a different process, its [`subprocess.pid`](api.md#subprocesspid) can be used instead.
 
 ```js
 const subprocess = execa`npm run build`;
@@ -152,8 +152,18 @@ console.log('PID:', subprocess.pid); // PID: 6513
 await subprocess;
 ```
 
+For example, from a terminal:
+
 ```sh
 $ kill -SIGTERM 6513
+```
+
+Or from a different Node.js process:
+
+```js
+import process from 'node:process';
+
+process.kill(subprocessPid);
 ```
 
 ## Error message and stack trace

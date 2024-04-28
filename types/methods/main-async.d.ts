@@ -22,17 +22,9 @@ type Execa<OptionsType extends Options> = {
 /**
 Executes a command using `file ...arguments`.
 
-Arguments are automatically escaped. They can contain any character, including spaces, tabs and newlines.
-
 When `command` is a template string, it includes both the `file` and its `arguments`.
 
-The `command` template string can inject any `${value}` with the following types: string, number, `subprocess` or an array of those types. For example: `` execa`echo one ${'two'} ${3} ${['four', 'five']}` ``. For `${subprocess}`, the subprocess's `stdout` is used.
-
-When `command` is a template string, arguments can contain any character, but spaces, tabs and newlines must use `${}` like `` execa`echo ${'has space'}` ``.
-
-The `command` template string can use multiple lines and indentation.
-
-`execa(options)` can be used to return a new instance of Execa but with different default `options`. Consecutive calls are merged to previous ones. This allows setting global options or sharing options between multiple commands.
+`execa(options)` can be used to return a new instance of Execa but with different default `options`. Consecutive calls are merged to previous ones.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.

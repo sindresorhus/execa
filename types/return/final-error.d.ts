@@ -24,12 +24,7 @@ export type ErrorProperties =
   | 'code';
 
 /**
-Exception thrown when the subprocess fails, either:
-- its exit code is not `0`
-- it was terminated with a signal, including `subprocess.kill()`
-- timing out
-- being canceled
-- there's not enough memory or there are already too many subprocesses
+Exception thrown when the subprocess fails.
 
 This has the same shape as successful results, with a few additional properties.
 */
@@ -38,12 +33,7 @@ export class ExecaError<OptionsType extends Options = Options> extends CommonErr
 }
 
 /**
-Exception thrown when the subprocess fails, either:
-- its exit code is not `0`
-- it was terminated with a signal, including `.kill()`
-- timing out
-- being canceled
-- there's not enough memory or there are already too many subprocesses
+Exception thrown when the subprocess fails.
 
 This has the same shape as successful results, with a few additional properties.
 */

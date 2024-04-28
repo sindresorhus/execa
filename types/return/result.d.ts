@@ -10,47 +10,57 @@ export declare abstract class CommonResult<
 	OptionsType extends CommonOptions = CommonOptions,
 > {
 	/**
-	The file and arguments that were run, for logging purposes.
-
-	This is not escaped and should not be executed directly as a subprocess, including using `execa()` or `execaCommand()`.
+	The file and arguments that were run.
 	*/
 	command: string;
 
 	/**
 	Same as `command` but escaped.
-
-	Unlike `command`, control characters are escaped, which makes it safe to print in a terminal.
-
-	This can also be copied and pasted into a shell, for debugging purposes.
-	Since the escaping is fairly basic, this should not be executed directly as a subprocess, including using `execa()` or `execaCommand()`.
 	*/
 	escapedCommand: string;
 
 	/**
-	The numeric exit code of the subprocess that was run.
+	The numeric [exit code](https://en.wikipedia.org/wiki/Exit_status) of the subprocess that was run.
 
 	This is `undefined` when the subprocess could not be spawned or was terminated by a signal.
 	*/
 	exitCode?: number;
 
 	/**
-	The output of the subprocess on `stdout`.
+	The output of the subprocess on [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)).
 
-	This is `undefined` if the `stdout` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
+	This is `undefined` if the `stdout` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+
+	This is an array if the `lines` option is `true`, or if the `stdout` option is a transform in object mode.
 	*/
 	stdout: ResultStdioNotAll<'1', OptionsType>;
 
 	/**
-	The output of the subprocess on `stderr`.
+	The output of the subprocess on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)).
 
-	This is `undefined` if the `stderr` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
+	This is `undefined` if the `stderr` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+
+	This is an array if the `lines` option is `true`, or if the `stderr` option is a transform in object mode.
 	*/
 	stderr: ResultStdioNotAll<'2', OptionsType>;
 
 	/**
+	The output of the subprocess with `result.stdout` and `result.stderr` interleaved.
+
+	This requires the `all` option to be `true`.
+
+	This is `undefined` if both `stdout` and `stderr` options are set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+
+	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
+	*/
+	all: ResultAll<OptionsType>;
+
+	/**
 	The output of the subprocess on `stdin`, `stdout`, `stderr` and other file descriptors.
 
-	Items are `undefined` when their corresponding `stdio` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`. Items are arrays when their corresponding `stdio` option is a transform in object mode.
+	Items are `undefined` when their corresponding `stdio` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+
+	Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
 	stdio: ResultStdioArray<OptionsType>;
 
@@ -60,7 +70,7 @@ export declare abstract class CommonResult<
 	failed: boolean;
 
 	/**
-	Whether the subprocess timed out.
+	Whether the subprocess timed out due to the `timeout` option.
 	*/
 	timedOut: boolean;
 
@@ -81,7 +91,7 @@ export declare abstract class CommonResult<
 	signal?: string;
 
 	/**
-	A human-friendly description of the signal that was used to terminate the subprocess. For example, `Floating point arithmetic error`.
+	A human-friendly description of the signal that was used to terminate the subprocess.
 
 	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 	*/
@@ -108,39 +118,26 @@ export declare abstract class CommonResult<
 	isMaxBuffer: boolean;
 
 	/**
-	The output of the subprocess with `result.stdout` and `result.stderr` interleaved.
-
-	This is `undefined` if either:
-	- the `all` option is `false` (default value).
-	- both `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
-
-	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
-	*/
-	all: ResultAll<OptionsType>;
-
-	/**
-	Results of the other subprocesses that were piped into this subprocess. This is useful to inspect a series of subprocesses piped with each other.
+	Results of the other subprocesses that were piped into this subprocess.
 
 	This array is initially empty and is populated each time the `subprocess.pipe()` method resolves.
 	*/
 	pipedFrom: Unless<IsSync, ExecaResult[], []>;
 
 	/**
-	Error message when the subprocess failed to run. In addition to the underlying error message, it also contains some information related to why the subprocess errored.
-
-	The subprocess `stderr`, `stdout` and other file descriptors' output are appended to the end, separated with newlines and not interleaved.
+	Error message when the subprocess failed to run.
 	*/
 	message?: string;
 
 	/**
-	This is the same as the `message` property except it does not include the subprocess `stdout`/`stderr`/`stdio`.
+	This is the same as `error.message` except it does not include the subprocess output.
 	*/
 	shortMessage?: string;
 
 	/**
-	Original error message. This is the same as the `message` property excluding the subprocess `stdout`/`stderr`/`stdio` and some additional information added by Execa.
+	Original error message. This is the same as `error.message` excluding the subprocess output and some additional information added by Execa.
 
-	This exists only if the subprocess exited due to an `error` event or a timeout.
+	This exists only in specific instances, such as during a timeout.
 	*/
 	originalMessage?: string;
 

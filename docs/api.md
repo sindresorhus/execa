@@ -637,12 +637,14 @@ _Default:_ `true` with [`execaNode()`](#execanodescriptpath-arguments-options), 
 
 If `true`, runs with Node.js. The first argument must be a Node.js file.
 
+The subprocess inherits the current Node.js [CLI flags](https://nodejs.org/api/cli.html#options) and version. This can be overridden using the [`nodeOptions`](#optionsnodeoptions) and [`nodePath`](#optionsnodepath) options.
+
 [More info.](node.md)
 
 ### options.nodeOptions
 
 _Type:_ `string[]`\
-_Default:_ [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
+_Default:_ [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI flags)
 
 List of [CLI flags](https://nodejs.org/api/cli.html#cli_options) passed to the [Node.js executable](#optionsnodepath).
 

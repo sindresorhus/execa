@@ -19,7 +19,7 @@ test('stdio[*] is undefined if ignored - sync', testIgnore, 3, execaSync);
 
 const testSubprocessEventsCleanup = async (t, fixtureName) => {
 	const subprocess = execa(fixtureName, {reject: false});
-	t.deepEqual(subprocess.eventNames().map(String).sort(), ['Symbol(error)', 'error', 'exit', 'spawn']);
+	t.deepEqual(subprocess.eventNames().map(String).sort(), ['error', 'exit', 'spawn']);
 	await subprocess;
 	t.deepEqual(subprocess.eventNames(), []);
 };

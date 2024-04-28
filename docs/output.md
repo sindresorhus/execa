@@ -34,10 +34,8 @@ await execa({stdout: {file: 'output.txt'}})`npm run build`;
 await execa({stdout: new URL('file:///path/to/output.txt')})`npm run build`;
 
 // Redirect interleaved stdout and stderr to same file
-await execa({
-	stdout: {file: 'output.txt'},
-	stderr: {file: 'output.txt'},
-})`npm run build`;
+const output = {file: 'output.txt'};
+await execa({stdout: output, stderr: output})`npm run build`;
 ```
 
 ## Terminal output

@@ -10,23 +10,6 @@ export declare abstract class CommonResult<
 	OptionsType extends CommonOptions = CommonOptions,
 > {
 	/**
-	The file and arguments that were run.
-	*/
-	command: string;
-
-	/**
-	Same as `command` but escaped.
-	*/
-	escapedCommand: string;
-
-	/**
-	The numeric [exit code](https://en.wikipedia.org/wiki/Exit_status) of the subprocess that was run.
-
-	This is `undefined` when the subprocess could not be spawned or was terminated by a signal.
-	*/
-	exitCode?: number;
-
-	/**
 	The output of the subprocess on [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)).
 
 	This is `undefined` if the `stdout` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
@@ -65,6 +48,33 @@ export declare abstract class CommonResult<
 	stdio: ResultStdioArray<OptionsType>;
 
 	/**
+	Results of the other subprocesses that were piped into this subprocess.
+
+	This array is initially empty and is populated each time the `subprocess.pipe()` method resolves.
+	*/
+	pipedFrom: Unless<IsSync, ExecaResult[], []>;
+
+	/**
+	The file and arguments that were run.
+	*/
+	command: string;
+
+	/**
+	Same as `command` but escaped.
+	*/
+	escapedCommand: string;
+
+	/**
+	The current directory in which the command was run.
+	*/
+	cwd: string;
+
+	/**
+	Duration of the subprocess, in milliseconds.
+	*/
+	durationMs: number;
+
+	/**
 	Whether the subprocess failed to run.
 	*/
 	failed: boolean;
@@ -75,11 +85,28 @@ export declare abstract class CommonResult<
 	timedOut: boolean;
 
 	/**
+	Whether the subprocess was canceled using the `cancelSignal` option.
+	*/
+	isCanceled: boolean;
+
+	/**
+	Whether the subprocess failed because its output was larger than the `maxBuffer` option.
+	*/
+	isMaxBuffer: boolean;
+
+	/**
 	Whether the subprocess was terminated by a signal (like `SIGTERM`) sent by either:
 	- The current process.
 	- Another process. This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 	*/
 	isTerminated: boolean;
+
+	/**
+	The numeric [exit code](https://en.wikipedia.org/wiki/Exit_status) of the subprocess that was run.
+
+	This is `undefined` when the subprocess could not be spawned or was terminated by a signal.
+	*/
+	exitCode?: number;
 
 	/**
 	The name of the signal (like `SIGTERM`) that terminated the subprocess, sent by either:
@@ -96,33 +123,6 @@ export declare abstract class CommonResult<
 	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 	*/
 	signalDescription?: string;
-
-	/**
-	The current directory in which the command was run.
-	*/
-	cwd: string;
-
-	/**
-	Duration of the subprocess, in milliseconds.
-	*/
-	durationMs: number;
-
-	/**
-	Whether the subprocess was canceled using the `cancelSignal` option.
-	*/
-	isCanceled: boolean;
-
-	/**
-	Whether the subprocess failed because its output was larger than the `maxBuffer` option.
-	*/
-	isMaxBuffer: boolean;
-
-	/**
-	Results of the other subprocesses that were piped into this subprocess.
-
-	This array is initially empty and is populated each time the `subprocess.pipe()` method resolves.
-	*/
-	pipedFrom: Unless<IsSync, ExecaResult[], []>;
 
 	/**
 	Error message when the subprocess failed to run.

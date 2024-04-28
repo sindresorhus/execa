@@ -388,13 +388,30 @@ Just like `execa()`, this can [bind options](docs/execution.md#globalshared-opti
 
 [More info.](docs/escaping.md#user-defined-input)
 
-### subprocess
+### Subprocess
 
 The return value of all [asynchronous methods](#methods) is both:
 - a `Promise` resolving or rejecting with a subprocess [`result`](#result).
 - a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following methods and properties.
 
 [More info.](docs/execution.md#subprocess)
+
+#### subprocess\[Symbol.asyncIterator\]()
+
+_Returns_: [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+
+Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
+
+[More info.](docs/lines.md#progressive-splitting)
+
+#### subprocess.iterable(readableOptions?)
+
+`readableOptions`: [`ReadableOptions`](#readableoptions)\
+_Returns_: [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+
+Same as [`subprocess[Symbol.asyncIterator]`](#subprocesssymbolasynciterator) except [options](#readableoptions) can be provided.
+
+[More info.](docs/lines.md#progressive-splitting)
 
 #### subprocess.pipe(file, arguments?, options?)
 
@@ -564,47 +581,12 @@ Each array item is `null` if the corresponding [`stdin`](#optionsstdin), [`stdou
 
 [More info.](docs/streams.md#manual-streaming)
 
-#### subprocess\[Symbol.asyncIterator\]()
-
-_Returns_: [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
-
-Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
-
-[More info.](docs/lines.md#progressive-splitting)
-
-#### subprocess.iterable(readableOptions?)
-
-`readableOptions`: [`ReadableOptions`](#readableoptions)\
-_Returns_: [`AsyncIterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
-
-Same as [`subprocess[Symbol.asyncIterator]`](#subprocesssymbolasynciterator) except [options](#readableoptions) can be provided.
-
-[More info.](docs/lines.md#progressive-splitting)
-
 #### subprocess.readable(readableOptions?)
 
 `readableOptions`: [`ReadableOptions`](#readableoptions)\
 _Returns_: [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable) Node.js stream
 
 Converts the subprocess to a readable stream.
-
-[More info.](docs/streams.md#converting-a-subprocess-to-a-stream)
-
-#### subprocess.writable(writableOptions?)
-
-`writableOptions`: [`WritableOptions`](#writableoptions)\
-_Returns_: [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) Node.js stream
-
-Converts the subprocess to a writable stream.
-
-[More info.](docs/streams.md#converting-a-subprocess-to-a-stream)
-
-#### subprocess.duplex(duplexOptions?)
-
-`duplexOptions`: [`ReadableOptions | WritableOptions`](#readableoptions)\
-_Returns_: [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) Node.js stream
-
-Converts the subprocess to a duplex stream.
 
 [More info.](docs/streams.md#converting-a-subprocess-to-a-stream)
 
@@ -645,6 +627,15 @@ If both this option and the [`binary`](#readableoptionsbinary) option is `false`
 
 [More info.](docs/lines.md#iterable)
 
+#### subprocess.writable(writableOptions?)
+
+`writableOptions`: [`WritableOptions`](#writableoptions)\
+_Returns_: [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) Node.js stream
+
+Converts the subprocess to a writable stream.
+
+[More info.](docs/streams.md#converting-a-subprocess-to-a-stream)
+
 ##### writableOptions
 
 Type: `object`
@@ -658,6 +649,15 @@ Which [stream](#subprocessstdin) to write to the subprocess. A [file descriptor]
 
 [More info.](docs/streams.md#different-file-descriptor)
 
+#### subprocess.duplex(duplexOptions?)
+
+`duplexOptions`: [`ReadableOptions | WritableOptions`](#readableoptions)\
+_Returns_: [`Duplex`](https://nodejs.org/api/stream.html#class-streamduplex) Node.js stream
+
+Converts the subprocess to a duplex stream.
+
+[More info.](docs/streams.md#converting-a-subprocess-to-a-stream)
+
 ### Result
 
 Type: `object`
@@ -665,38 +665,6 @@ Type: `object`
 [Result](docs/execution.md#result) of a subprocess execution.
 
 When the subprocess [fails](docs/errors.md#subprocess-failure), it is rejected with an [`ExecaError`](#execaerror) instead.
-
-#### result.command
-
-Type: `string`
-
-The file and [arguments](docs/input.md#command-arguments) that were run.
-
-[More info.](docs/debugging.md#command)
-
-#### result.escapedCommand
-
-Type: `string`
-
-Same as [`command`](#resultcommand) but escaped.
-
-[More info.](docs/debugging.md#command)
-
-#### result.cwd
-
-Type: `string`
-
-The [current directory](#optionscwd) in which the command was run.
-
-[More info.](docs/environment.md#current-directory)
-
-#### result.durationMs
-
-Type: `number`
-
-Duration of the subprocess, in milliseconds.
-
-[More info.](docs/debugging.md#duration)
 
 #### result.stdout
 
@@ -748,6 +716,48 @@ Items are arrays when their corresponding `stdio` option is a [transform in obje
 
 [More info.](docs/output.md#additional-file-descriptors)
 
+#### result.pipedFrom
+
+Type: [`Array<Result | ExecaError>`](#result)
+
+[Results](#result) of the other subprocesses that were [piped](#pipe-multiple-subprocesses) into this subprocess.
+
+This array is initially empty and is populated each time the [`subprocess.pipe()`](#subprocesspipefile-arguments-options) method resolves.
+
+[More info.](docs/pipe.md#errors)
+
+#### result.command
+
+Type: `string`
+
+The file and [arguments](docs/input.md#command-arguments) that were run.
+
+[More info.](docs/debugging.md#command)
+
+#### result.escapedCommand
+
+Type: `string`
+
+Same as [`command`](#resultcommand) but escaped.
+
+[More info.](docs/debugging.md#command)
+
+#### result.cwd
+
+Type: `string`
+
+The [current directory](#optionscwd) in which the command was run.
+
+[More info.](docs/environment.md#current-directory)
+
+#### result.durationMs
+
+Type: `number`
+
+Duration of the subprocess, in milliseconds.
+
+[More info.](docs/debugging.md#duration)
+
 #### result.failed
 
 Type: `boolean`
@@ -772,6 +782,14 @@ Whether the subprocess was canceled using the [`cancelSignal`](#optionscancelsig
 
 [More info.](docs/termination.md#canceling)
 
+#### result.isMaxBuffer
+
+Type: `boolean`
+
+Whether the subprocess failed because its output was larger than the [`maxBuffer`](#optionsmaxbuffer) option.
+
+[More info.](docs/output.md#big-output)
+
 #### result.isTerminated
 
 Type: `boolean`
@@ -781,14 +799,6 @@ Whether the subprocess was terminated by a [signal](docs/termination.md#signal-t
 - [Another process](docs/termination.md#inter-process-termination). This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
 
 [More info.](docs/termination.md#signal-name-and-description)
-
-#### result.isMaxBuffer
-
-Type: `boolean`
-
-Whether the subprocess failed because its output was larger than the [`maxBuffer`](#optionsmaxbuffer) option.
-
-[More info.](docs/output.md#big-output)
 
 #### result.exitCode
 
@@ -821,16 +831,6 @@ A human-friendly description of the [signal](docs/termination.md#signal-terminat
 If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
 
 [More info.](docs/termination.md#signal-name-and-description)
-
-#### result.pipedFrom
-
-Type: [`Array<Result | ExecaError>`](#result)
-
-[Results](#result) of the other subprocesses that were [piped](#pipe-multiple-subprocesses) into this subprocess.
-
-This array is initially empty and is populated each time the [`subprocess.pipe()`](#subprocesspipefile-arguments-options) method resolves.
-
-[More info.](docs/pipe.md#errors)
 
 ### ExecaError
 ### ExecaSyncError
@@ -883,67 +883,13 @@ Type: `string | undefined`
 
 Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), when available.
 
-### options
+### Options
 
 Type: `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
 
 The following options [can specify different values](docs/output.md#stdoutstderr-specific-options) for [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr): [`verbose`](#optionsverbose), [`lines`](#optionslines), [`stripFinalNewline`](#optionsstripfinalnewline), [`buffer`](#optionsbuffer), [`maxBuffer`](#optionsmaxbuffer).
-
-#### options.reject
-
-Type: `boolean`\
-Default: `true`
-
-Setting this to `false` resolves the [result's promise](#subprocess) with the [error](#execaerror) instead of rejecting it.
-
-[More info.](docs/errors.md#preventing-exceptions)
-
-#### options.shell
-
-Type: `boolean | string | URL`\
-Default: `false`
-
-If `true`, runs the command inside of a [shell](https://en.wikipedia.org/wiki/Shell_(computing)).
-
-Uses [`/bin/sh`](https://en.wikipedia.org/wiki/Unix_shell) on UNIX and [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
-
-We [recommend against](docs/shell.md#avoiding-shells) using this option.
-
-[More info.](docs/shell.md)
-
-#### options.cwd
-
-Type: `string | URL`\
-Default: `process.cwd()`
-
-Current [working directory](https://en.wikipedia.org/wiki/Working_directory) of the subprocess.
-
-This is also used to resolve the [`nodePath`](#optionsnodepath) option when it is a relative path.
-
-[More info.](docs/environment.md#current-directory)
-
-#### options.env
-
-Type: `object`\
-Default: [`process.env`](https://nodejs.org/api/process.html#processenv)
-
-[Environment variables](https://en.wikipedia.org/wiki/Environment_variable).
-
-Unless the [`extendEnv`](#optionsextendenv) option is `false`, the subprocess also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-
-[More info.](docs/input.md#environment-variables)
-
-#### options.extendEnv
-
-Type: `boolean`\
-Default: `true`
-
-If `true`, the subprocess uses both the [`env`](#optionsenv) option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-If `false`, only the `env` option is used, not `process.env`.
-
-[More info.](docs/input.md#environment-variables)
 
 #### options.preferLocal
 
@@ -994,29 +940,50 @@ Requires the [`node`](#optionsnode) option to be `true`.
 
 [More info.](docs/node.md#nodejs-version)
 
-#### options.verbose
+#### options.shell
 
-Type: `'none' | 'short' | 'full'`\
-Default: `'none'`
+Type: `boolean | string | URL`\
+Default: `false`
 
-If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
+If `true`, runs the command inside of a [shell](https://en.wikipedia.org/wiki/Shell_(computing)).
 
-If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) and `stderr` are also printed.
+Uses [`/bin/sh`](https://en.wikipedia.org/wiki/Unix_shell) on UNIX and [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
-By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](docs/output.md#stdoutstderr-specific-options).
+We [recommend against](docs/shell.md#avoiding-shells) using this option.
 
-[More info.](docs/debugging.md#verbose-mode)
+[More info.](docs/shell.md)
 
-#### options.buffer
+#### options.cwd
+
+Type: `string | URL`\
+Default: `process.cwd()`
+
+Current [working directory](https://en.wikipedia.org/wiki/Working_directory) of the subprocess.
+
+This is also used to resolve the [`nodePath`](#optionsnodepath) option when it is a relative path.
+
+[More info.](docs/environment.md#current-directory)
+
+#### options.env
+
+Type: `object`\
+Default: [`process.env`](https://nodejs.org/api/process.html#processenv)
+
+[Environment variables](https://en.wikipedia.org/wiki/Environment_variable).
+
+Unless the [`extendEnv`](#optionsextendenv) option is `false`, the subprocess also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+
+[More info.](docs/input.md#environment-variables)
+
+#### options.extendEnv
 
 Type: `boolean`\
 Default: `true`
 
-When `buffer` is `false`, the [`result.stdout`](#resultstdout), [`result.stderr`](#resultstderr), [`result.all`](#resultall) and [`result.stdio`](#resultstdio) properties are not set.
+If `true`, the subprocess uses both the [`env`](#optionsenv) option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+If `false`, only the `env` option is used, not `process.env`.
 
-By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](docs/output.md#stdoutstderr-specific-options).
-
-[More info.](docs/output.md#low-memory)
+[More info.](docs/input.md#environment-variables)
 
 #### options.input
 
@@ -1093,19 +1060,6 @@ Add a [`subprocess.all`](#subprocessall) stream and a [`result.all`](#resultall)
 
 [More info.](docs/output.md#interleaved-output)
 
-#### options.lines
-
-Type: `boolean`\
-Default: `false`
-
-Set [`result.stdout`](#resultstdout), [`result.stderr`](#resultstdout), [`result.all`](#resultall) and [`result.stdio`](#resultstdio) as arrays of strings, splitting the subprocess' output into lines.
-
-This cannot be used if the [`encoding`](#optionsencoding) option is [binary](docs/binary.md#binary-output).
-
-By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](docs/output.md#stdoutstderr-specific-options).
-
-[More info.](docs/lines.md#simple-splitting)
-
 #### options.encoding
 
 Type: `'utf8' | 'utf16le' | 'buffer' | 'hex' | 'base64' | 'base64url' | 'latin1' | 'ascii'`\
@@ -1120,6 +1074,19 @@ If it outputs binary data instead, this should be either:
 The output is available with [`result.stdout`](#resultstdout), [`result.stderr`](#resultstderr) and [`result.stdio`](#resultstdio).
 
 [More info.](docs/binary.md)
+
+#### options.lines
+
+Type: `boolean`\
+Default: `false`
+
+Set [`result.stdout`](#resultstdout), [`result.stderr`](#resultstdout), [`result.all`](#resultall) and [`result.stdio`](#resultstdio) as arrays of strings, splitting the subprocess' output into lines.
+
+This cannot be used if the [`encoding`](#optionsencoding) option is [binary](docs/binary.md#binary-output).
+
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](docs/output.md#stdoutstderr-specific-options).
+
+[More info.](docs/lines.md#simple-splitting)
 
 #### options.stripFinalNewline
 
@@ -1145,6 +1112,17 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 
 [More info.](docs/output.md#big-output)
 
+#### options.buffer
+
+Type: `boolean`\
+Default: `true`
+
+When `buffer` is `false`, the [`result.stdout`](#resultstdout), [`result.stderr`](#resultstderr), [`result.all`](#resultall) and [`result.stdio`](#resultstdio) properties are not set.
+
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](docs/output.md#stdoutstderr-specific-options).
+
+[More info.](docs/output.md#low-memory)
+
 #### options.ipc
 
 Type: `boolean`\
@@ -1163,23 +1141,27 @@ Specify the kind of serialization used for sending messages between subprocesses
 
 [More info.](docs/ipc.md#message-type)
 
-#### options.detached
+#### options.verbose
 
-Type: `boolean`\
-Default: `false`
+Type: `'none' | 'short' | 'full'`\
+Default: `'none'`
 
-Run the subprocess independently from the current process.
+If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
 
-[More info.](docs/environment.md#background-subprocess)
+If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) and `stderr` are also printed.
 
-#### options.cleanup
+By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](docs/output.md#stdoutstderr-specific-options).
+
+[More info.](docs/debugging.md#verbose-mode)
+
+#### options.reject
 
 Type: `boolean`\
 Default: `true`
 
-Kill the subprocess when the current process exits.
+Setting this to `false` resolves the [result's promise](#subprocess) with the [error](#execaerror) instead of rejecting it.
 
-[More info.](docs/termination.md#current-process-exit)
+[More info.](docs/errors.md#preventing-exceptions)
 
 #### options.timeout
 
@@ -1222,12 +1204,23 @@ This can be either a name (like [`'SIGTERM'`](docs/termination.md#sigterm)) or a
 
 [More info.](docs/termination.md#default-signal)
 
-#### options.argv0
+#### options.detached
 
-Type: `string`\
-Default: file being executed
+Type: `boolean`\
+Default: `false`
 
-Value of [`argv[0]`](https://nodejs.org/api/process.html#processargv0) sent to the subprocess.
+Run the subprocess independently from the current process.
+
+[More info.](docs/environment.md#background-subprocess)
+
+#### options.cleanup
+
+Type: `boolean`\
+Default: `true`
+
+Kill the subprocess when the current process exits.
+
+[More info.](docs/termination.md#current-process-exit)
 
 #### options.uid
 
@@ -1247,14 +1240,12 @@ Sets the [group identifier](https://en.wikipedia.org/wiki/Group_identifier) of t
 
 [More info.](docs/windows.md#uid-and-gid)
 
-#### options.windowsVerbatimArguments
+#### options.argv0
 
-Type: `boolean`\
-Default: `true` if the [`shell`](#optionsshell) option is `true`, `false` otherwise
+Type: `string`\
+Default: file being executed
 
-If `false`, escapes the command arguments on Windows.
-
-[More info.](docs/windows.md#cmdexe-escaping)
+Value of [`argv[0]`](https://nodejs.org/api/process.html#processargv0) sent to the subprocess.
 
 #### options.windowsHide
 
@@ -1264,6 +1255,15 @@ Default: `true`
 On Windows, do not create a new console window.
 
 [More info.](docs/windows.md#console-window)
+
+#### options.windowsVerbatimArguments
+
+Type: `boolean`\
+Default: `true` if the [`shell`](#optionsshell) option is `true`, `false` otherwise
+
+If `false`, escapes the command arguments on Windows.
+
+[More info.](docs/windows.md#cmdexe-escaping)
 
 ### Transform options
 

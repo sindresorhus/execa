@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const transformWithInvalidObjectMode = {
@@ -39,11 +39,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformW
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithInvalidObjectMode]]}));
 
 expectNotAssignable<StdinOption>(transformWithInvalidObjectMode);
-expectNotAssignable<StdinOptionSync>(transformWithInvalidObjectMode);
+expectNotAssignable<StdinSyncOption>(transformWithInvalidObjectMode);
 expectNotAssignable<StdinOption>([transformWithInvalidObjectMode]);
-expectNotAssignable<StdinOptionSync>([transformWithInvalidObjectMode]);
+expectNotAssignable<StdinSyncOption>([transformWithInvalidObjectMode]);
 
 expectNotAssignable<StdoutStderrOption>(transformWithInvalidObjectMode);
-expectNotAssignable<StdoutStderrOptionSync>(transformWithInvalidObjectMode);
+expectNotAssignable<StdoutStderrSyncOption>(transformWithInvalidObjectMode);
 expectNotAssignable<StdoutStderrOption>([transformWithInvalidObjectMode]);
-expectNotAssignable<StdoutStderrOptionSync>([transformWithInvalidObjectMode]);
+expectNotAssignable<StdoutStderrSyncOption>([transformWithInvalidObjectMode]);

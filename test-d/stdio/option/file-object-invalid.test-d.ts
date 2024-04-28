@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const invalidFileObject = {file: new URL('file:///test')} as const;
@@ -34,11 +34,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidFil
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidFileObject]]}));
 
 expectNotAssignable<StdinOption>(invalidFileObject);
-expectNotAssignable<StdinOptionSync>(invalidFileObject);
+expectNotAssignable<StdinSyncOption>(invalidFileObject);
 expectNotAssignable<StdinOption>([invalidFileObject]);
-expectNotAssignable<StdinOptionSync>([invalidFileObject]);
+expectNotAssignable<StdinSyncOption>([invalidFileObject]);
 
 expectNotAssignable<StdoutStderrOption>(invalidFileObject);
-expectNotAssignable<StdoutStderrOptionSync>(invalidFileObject);
+expectNotAssignable<StdoutStderrSyncOption>(invalidFileObject);
 expectNotAssignable<StdoutStderrOption>([invalidFileObject]);
-expectNotAssignable<StdoutStderrOptionSync>([invalidFileObject]);
+expectNotAssignable<StdoutStderrSyncOption>([invalidFileObject]);

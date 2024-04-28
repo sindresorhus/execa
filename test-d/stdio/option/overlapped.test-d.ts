@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 await execa('unicorns', {stdin: 'overlapped'});
@@ -32,11 +32,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['overlapped']]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['overlapped']]}));
 
 expectAssignable<StdinOption>('overlapped');
-expectNotAssignable<StdinOptionSync>('overlapped');
+expectNotAssignable<StdinSyncOption>('overlapped');
 expectAssignable<StdinOption>(['overlapped']);
-expectNotAssignable<StdinOptionSync>(['overlapped']);
+expectNotAssignable<StdinSyncOption>(['overlapped']);
 
 expectAssignable<StdoutStderrOption>('overlapped');
-expectNotAssignable<StdoutStderrOptionSync>('overlapped');
+expectNotAssignable<StdoutStderrSyncOption>('overlapped');
 expectAssignable<StdoutStderrOption>(['overlapped']);
-expectNotAssignable<StdoutStderrOptionSync>(['overlapped']);
+expectNotAssignable<StdoutStderrSyncOption>(['overlapped']);

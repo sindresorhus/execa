@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const webTransformInstance = new TransformStream();
@@ -34,11 +34,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [webTransformInstance]]
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [webTransformInstance]]}));
 
 expectAssignable<StdinOption>(webTransformInstance);
-expectNotAssignable<StdinOptionSync>(webTransformInstance);
+expectNotAssignable<StdinSyncOption>(webTransformInstance);
 expectAssignable<StdinOption>([webTransformInstance]);
-expectNotAssignable<StdinOptionSync>([webTransformInstance]);
+expectNotAssignable<StdinSyncOption>([webTransformInstance]);
 
 expectAssignable<StdoutStderrOption>(webTransformInstance);
-expectNotAssignable<StdoutStderrOptionSync>(webTransformInstance);
+expectNotAssignable<StdoutStderrSyncOption>(webTransformInstance);
 expectAssignable<StdoutStderrOption>([webTransformInstance]);
-expectNotAssignable<StdoutStderrOptionSync>([webTransformInstance]);
+expectNotAssignable<StdoutStderrSyncOption>([webTransformInstance]);

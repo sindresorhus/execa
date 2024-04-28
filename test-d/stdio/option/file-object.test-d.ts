@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const fileObject = {file: './test'} as const;
@@ -34,11 +34,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [fileObject]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [fileObject]]});
 
 expectAssignable<StdinOption>(fileObject);
-expectAssignable<StdinOptionSync>(fileObject);
+expectAssignable<StdinSyncOption>(fileObject);
 expectAssignable<StdinOption>([fileObject]);
-expectAssignable<StdinOptionSync>([fileObject]);
+expectAssignable<StdinSyncOption>([fileObject]);
 
 expectAssignable<StdoutStderrOption>(fileObject);
-expectAssignable<StdoutStderrOptionSync>(fileObject);
+expectAssignable<StdoutStderrSyncOption>(fileObject);
 expectAssignable<StdoutStderrOption>([fileObject]);
-expectAssignable<StdoutStderrOptionSync>([fileObject]);
+expectAssignable<StdoutStderrSyncOption>([fileObject]);

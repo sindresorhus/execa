@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const transformWithPreserveNewlines = {
@@ -39,11 +39,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithPreserveN
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithPreserveNewlines]]});
 
 expectAssignable<StdinOption>(transformWithPreserveNewlines);
-expectAssignable<StdinOptionSync>(transformWithPreserveNewlines);
+expectAssignable<StdinSyncOption>(transformWithPreserveNewlines);
 expectAssignable<StdinOption>([transformWithPreserveNewlines]);
-expectAssignable<StdinOptionSync>([transformWithPreserveNewlines]);
+expectAssignable<StdinSyncOption>([transformWithPreserveNewlines]);
 
 expectAssignable<StdoutStderrOption>(transformWithPreserveNewlines);
-expectAssignable<StdoutStderrOptionSync>(transformWithPreserveNewlines);
+expectAssignable<StdoutStderrSyncOption>(transformWithPreserveNewlines);
 expectAssignable<StdoutStderrOption>([transformWithPreserveNewlines]);
-expectAssignable<StdoutStderrOptionSync>([transformWithPreserveNewlines]);
+expectAssignable<StdoutStderrSyncOption>([transformWithPreserveNewlines]);

@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const booleanGenerator = function * (line: boolean) {
@@ -36,11 +36,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [booleanGen
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [booleanGenerator]]}));
 
 expectNotAssignable<StdinOption>(booleanGenerator);
-expectNotAssignable<StdinOptionSync>(booleanGenerator);
+expectNotAssignable<StdinSyncOption>(booleanGenerator);
 expectNotAssignable<StdinOption>([booleanGenerator]);
-expectNotAssignable<StdinOptionSync>([booleanGenerator]);
+expectNotAssignable<StdinSyncOption>([booleanGenerator]);
 
 expectNotAssignable<StdoutStderrOption>(booleanGenerator);
-expectNotAssignable<StdoutStderrOptionSync>(booleanGenerator);
+expectNotAssignable<StdoutStderrSyncOption>(booleanGenerator);
 expectNotAssignable<StdoutStderrOption>([booleanGenerator]);
-expectNotAssignable<StdoutStderrOptionSync>([booleanGenerator]);
+expectNotAssignable<StdoutStderrSyncOption>([booleanGenerator]);

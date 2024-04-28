@@ -4,9 +4,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const duplexWithInvalidObjectMode = {
@@ -38,11 +38,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplexWith
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplexWithInvalidObjectMode]]}));
 
 expectNotAssignable<StdinOption>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdinOptionSync>(duplexWithInvalidObjectMode);
+expectNotAssignable<StdinSyncOption>(duplexWithInvalidObjectMode);
 expectNotAssignable<StdinOption>([duplexWithInvalidObjectMode]);
-expectNotAssignable<StdinOptionSync>([duplexWithInvalidObjectMode]);
+expectNotAssignable<StdinSyncOption>([duplexWithInvalidObjectMode]);
 
 expectNotAssignable<StdoutStderrOption>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdoutStderrOptionSync>(duplexWithInvalidObjectMode);
+expectNotAssignable<StdoutStderrSyncOption>(duplexWithInvalidObjectMode);
 expectNotAssignable<StdoutStderrOption>([duplexWithInvalidObjectMode]);
-expectNotAssignable<StdoutStderrOptionSync>([duplexWithInvalidObjectMode]);
+expectNotAssignable<StdoutStderrSyncOption>([duplexWithInvalidObjectMode]);

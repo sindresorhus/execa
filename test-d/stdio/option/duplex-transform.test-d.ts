@@ -4,9 +4,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const duplexTransform = {transform: new Transform()} as const;
@@ -35,11 +35,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplexTransform]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplexTransform]]}));
 
 expectAssignable<StdinOption>(duplexTransform);
-expectNotAssignable<StdinOptionSync>(duplexTransform);
+expectNotAssignable<StdinSyncOption>(duplexTransform);
 expectAssignable<StdinOption>([duplexTransform]);
-expectNotAssignable<StdinOptionSync>([duplexTransform]);
+expectNotAssignable<StdinSyncOption>([duplexTransform]);
 
 expectAssignable<StdoutStderrOption>(duplexTransform);
-expectNotAssignable<StdoutStderrOptionSync>(duplexTransform);
+expectNotAssignable<StdoutStderrSyncOption>(duplexTransform);
 expectAssignable<StdoutStderrOption>([duplexTransform]);
-expectNotAssignable<StdoutStderrOptionSync>([duplexTransform]);
+expectNotAssignable<StdoutStderrSyncOption>([duplexTransform]);

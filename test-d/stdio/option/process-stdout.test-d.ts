@@ -4,9 +4,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 expectError(await execa('unicorns', {stdin: process.stdout}));
@@ -33,11 +33,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [process.stdout]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [process.stdout]]}));
 
 expectNotAssignable<StdinOption>(process.stdout);
-expectNotAssignable<StdinOptionSync>(process.stdout);
+expectNotAssignable<StdinSyncOption>(process.stdout);
 expectNotAssignable<StdinOption>([process.stdout]);
-expectNotAssignable<StdinOptionSync>([process.stdout]);
+expectNotAssignable<StdinSyncOption>([process.stdout]);
 
 expectAssignable<StdoutStderrOption>(process.stdout);
-expectAssignable<StdoutStderrOptionSync>(process.stdout);
+expectAssignable<StdoutStderrSyncOption>(process.stdout);
 expectAssignable<StdoutStderrOption>([process.stdout]);
-expectNotAssignable<StdoutStderrOptionSync>([process.stdout]);
+expectNotAssignable<StdoutStderrSyncOption>([process.stdout]);

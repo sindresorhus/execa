@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const webTransformWithInvalidObjectMode = {
@@ -37,11 +37,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [webTransfo
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [webTransformWithInvalidObjectMode]]}));
 
 expectNotAssignable<StdinOption>(webTransformWithInvalidObjectMode);
-expectNotAssignable<StdinOptionSync>(webTransformWithInvalidObjectMode);
+expectNotAssignable<StdinSyncOption>(webTransformWithInvalidObjectMode);
 expectNotAssignable<StdinOption>([webTransformWithInvalidObjectMode]);
-expectNotAssignable<StdinOptionSync>([webTransformWithInvalidObjectMode]);
+expectNotAssignable<StdinSyncOption>([webTransformWithInvalidObjectMode]);
 
 expectNotAssignable<StdoutStderrOption>(webTransformWithInvalidObjectMode);
-expectNotAssignable<StdoutStderrOptionSync>(webTransformWithInvalidObjectMode);
+expectNotAssignable<StdoutStderrSyncOption>(webTransformWithInvalidObjectMode);
 expectNotAssignable<StdoutStderrOption>([webTransformWithInvalidObjectMode]);
-expectNotAssignable<StdoutStderrOptionSync>([webTransformWithInvalidObjectMode]);
+expectNotAssignable<StdoutStderrSyncOption>([webTransformWithInvalidObjectMode]);

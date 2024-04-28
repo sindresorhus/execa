@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const unknownFinalFull = {
@@ -42,11 +42,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [unknownFinalFull]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [unknownFinalFull]]});
 
 expectAssignable<StdinOption>(unknownFinalFull);
-expectAssignable<StdinOptionSync>(unknownFinalFull);
+expectAssignable<StdinSyncOption>(unknownFinalFull);
 expectAssignable<StdinOption>([unknownFinalFull]);
-expectAssignable<StdinOptionSync>([unknownFinalFull]);
+expectAssignable<StdinSyncOption>([unknownFinalFull]);
 
 expectAssignable<StdoutStderrOption>(unknownFinalFull);
-expectAssignable<StdoutStderrOptionSync>(unknownFinalFull);
+expectAssignable<StdoutStderrSyncOption>(unknownFinalFull);
 expectAssignable<StdoutStderrOption>([unknownFinalFull]);
-expectAssignable<StdoutStderrOptionSync>([unknownFinalFull]);
+expectAssignable<StdoutStderrSyncOption>([unknownFinalFull]);

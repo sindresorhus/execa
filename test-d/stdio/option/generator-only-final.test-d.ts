@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const finalOnly = {
@@ -38,11 +38,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [finalOnly]
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [finalOnly]]}));
 
 expectNotAssignable<StdinOption>(finalOnly);
-expectNotAssignable<StdinOptionSync>(finalOnly);
+expectNotAssignable<StdinSyncOption>(finalOnly);
 expectNotAssignable<StdinOption>([finalOnly]);
-expectNotAssignable<StdinOptionSync>([finalOnly]);
+expectNotAssignable<StdinSyncOption>([finalOnly]);
 
 expectNotAssignable<StdoutStderrOption>(finalOnly);
-expectNotAssignable<StdoutStderrOptionSync>(finalOnly);
+expectNotAssignable<StdoutStderrSyncOption>(finalOnly);
 expectNotAssignable<StdoutStderrOption>([finalOnly]);
-expectNotAssignable<StdoutStderrOptionSync>([finalOnly]);
+expectNotAssignable<StdoutStderrSyncOption>([finalOnly]);

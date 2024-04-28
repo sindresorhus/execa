@@ -82,14 +82,14 @@ node file.js
 
 ```js
 // zx
-await $`echo example`;
+await $`npm run build`;
 ```
 
 ```js
 // Execa
 import {$} from 'execa';
 
-await $`echo example`;
+await $`npm run build`;
 ```
 
 [More info.](execution.md)
@@ -98,17 +98,17 @@ await $`echo example`;
 
 ```sh
 # Bash
-echo example
+npm run build
 ```
 
 ```js
 // zx
-await $`echo example`;
+await $`npm run build`;
 ```
 
 ```js
 // Execa
-await $`echo example`;
+await $`npm run build`;
 ```
 
 ### Multiline commands
@@ -220,19 +220,19 @@ await $`echo ${['one two', '$']}`;
 
 ```sh
 # Bash
-echo "$(echo example)"
+echo "$(npm run build)"
 ```
 
 ```js
 // zx
-const example = await $`echo example`;
-await $`echo ${example}`;
+const result = await $`npm run build`;
+await $`echo ${result}`;
 ```
 
 ```js
 // Execa
-const example = await $`echo example`;
-await $`echo ${example}`;
+const result = await $`npm run build`;
+await $`echo ${result}`;
 ```
 
 [More info.](execution.md#subcommands)
@@ -241,36 +241,36 @@ await $`echo ${example}`;
 
 ```sh
 # Bash
-echo one && echo two
+npm run build && npm run test
 ```
 
 ```js
 // zx
-await $`echo one && echo two`;
+await $`npm run build && npm run test`;
 ```
 
 ```js
 // Execa
-await $`echo one`;
-await $`echo two`;
+await $`npm run build`;
+await $`npm run test`;
 ```
 
 ### Parallel commands
 
 ```sh
 # Bash
-echo one &
-echo two &
+npm run build &
+npm run test &
 ```
 
 ```js
 // zx
-await Promise.all([$`echo one`, $`echo two`]);
+await Promise.all([$`npm run build`, $`npm run test`]);
 ```
 
 ```js
 // Execa
-await Promise.all([$`echo one`, $`echo two`]);
+await Promise.all([$`npm run build`, $`npm run test`]);
 ```
 
 ### Global/shared options
@@ -278,17 +278,17 @@ await Promise.all([$`echo one`, $`echo two`]);
 ```sh
 # Bash
 options="timeout 5"
-$options echo one
-$options echo two
-$options echo three
+$options npm run init
+$options npm run build
+$options npm run test
 ```
 
 ```js
 // zx
 const timeout = '5s';
-await $`echo one`.timeout(timeout);
-await $`echo two`.timeout(timeout);
-await $`echo three`.timeout(timeout);
+await $`npm run init`.timeout(timeout);
+await $`npm run build`.timeout(timeout);
+await $`npm run test`.timeout(timeout);
 ```
 
 ```js
@@ -297,9 +297,9 @@ import {$ as $_} from 'execa';
 
 const $ = $_({timeout: 5000});
 
-await $`echo one`;
-await $`echo two`;
-await $`echo three`;
+await $`npm run init`;
+await $`npm run build`;
+await $`npm run test`;
 ```
 
 [More info.](execution.md#globalshared-options)
@@ -308,19 +308,19 @@ await $`echo three`;
 
 ```sh
 # Bash
-EXAMPLE=1 example_command
+EXAMPLE=1 npm run build
 ```
 
 ```js
 // zx
 $.env.EXAMPLE = '1';
-await $`example_command`;
+await $`npm run build`;
 delete $.env.EXAMPLE;
 ```
 
 ```js
 // Execa
-await $({env: {EXAMPLE: '1'}})`example_command`;
+await $({env: {EXAMPLE: '1'}})`npm run build`;
 ```
 
 [More info.](input.md#environment-variables)
@@ -379,17 +379,17 @@ console.log('example');
 
 ```sh
 # Bash
-echo example 2> /dev/null
+npm run build 2> /dev/null
 ```
 
 ```js
 // zx
-await $`echo example`.stdio('inherit', 'pipe', 'ignore');
+await $`npm run build`.stdio('inherit', 'pipe', 'ignore');
 ```
 
 ```js
 // Execa does not print stdout/stderr by default
-await $`echo example`;
+await $`npm run build`;
 ```
 
 ### Verbose mode
@@ -397,12 +397,12 @@ await $`echo example`;
 ```sh
 # Bash
 set -v
-echo example
+npm run build
 ```
 
 ```js
 // zx >=8
-await $`echo example`.verbose();
+await $`npm run build`.verbose();
 
 // or:
 $.verbose = true;
@@ -410,7 +410,7 @@ $.verbose = true;
 
 ```js
 // Execa
-await $({verbose: 'full'})`echo example`;
+await $({verbose: 'full'})`npm run build`;
 ```
 
 Or:
@@ -422,8 +422,9 @@ NODE_DEBUG=execa node file.js
 Which prints:
 
 ```
-[19:49:00.360] [0] $ echo example
-example
+[19:49:00.360] [0] $ npm run build
+Building...
+Done.
 [19:49:00.383] [0] √ (done in 23ms)
 ```
 
@@ -454,21 +455,21 @@ await $`npm run build`
 
 ```sh
 # Bash
-echo example |& cat
+npm run build |& cat
 ```
 
 ```js
 // zx
-const echo = $`echo example`;
+const subprocess = $`npm run build`;
 const cat = $`cat`;
-echo.pipe(cat)
-echo.stderr.pipe(cat.stdin);
-await Promise.all([echo, cat]);
+subprocess.pipe(cat);
+subprocess.stderr.pipe(cat.stdin);
+await Promise.all([subprocess, cat]);
 ```
 
 ```js
 // Execa
-await $({all: true})`echo example`
+await $({all: true})`npm run build`
 	.pipe({from: 'all'})`cat`;
 ```
 
@@ -478,17 +479,19 @@ await $({all: true})`echo example`
 
 ```sh
 # Bash
-echo example > output.txt
+npm run build > output.txt
 ```
 
 ```js
 // zx
-await $`echo example`.pipe(fs.createWriteStream('output.txt'));
+import {createWriteStream} from 'node:fs';
+
+await $`npm run build`.pipe(createWriteStream('output.txt'));
 ```
 
 ```js
 // Execa
-await $({stdout: {file: 'output.txt'}})`echo example`;
+await $({stdout: {file: 'output.txt'}})`npm run build`;
 ```
 
 [More info.](output.md#file-output)
@@ -497,7 +500,7 @@ await $({stdout: {file: 'output.txt'}})`echo example`;
 
 ```sh
 # Bash
-echo example < input.txt
+cat < input.txt
 ```
 
 ```js
@@ -629,19 +632,19 @@ const {
 
 ```sh
 # Bash
-false
+npm run build
 echo $?
 ```
 
 ```js
 // zx
-const {exitCode} = await $`false`.nothrow();
+const {exitCode} = await $`npm run build`.nothrow();
 echo`${exitCode}`;
 ```
 
 ```js
 // Execa
-const {exitCode} = await $({reject: false})`false`;
+const {exitCode} = await $({reject: false})`npm run build`;
 console.log(exitCode);
 ```
 
@@ -651,17 +654,17 @@ console.log(exitCode);
 
 ```sh
 # Bash
-timeout 5 echo example
+timeout 5 npm run build
 ```
 
 ```js
 // zx
-await $`echo example`.timeout('5s');
+await $`npm run build`.timeout('5s');
 ```
 
 ```js
 // Execa
-await $({timeout: 5000})`echo example`;
+await $({timeout: 5000})`npm run build`;
 ```
 
 [More info.](termination.md#timeout)
@@ -737,7 +740,7 @@ await $`pwd`;
 
 ```sh
 # Bash
-echo one &
+npm run build &
 ```
 
 ```js
@@ -746,7 +749,7 @@ echo one &
 
 ```js
 // Execa
-await $({detached: true})`echo one`;
+await $({detached: true})`npm run build`;
 ```
 
 [More info.](environment.md#background-subprocess)
@@ -843,7 +846,7 @@ const {all} = await $({all: true})`node example.js`;
 
 ```sh
 # Bash
-echo example &
+npm run build &
 echo $!
 ```
 
@@ -853,7 +856,7 @@ echo $!
 
 ```js
 // Execa
-const {pid} = $`echo example`;
+const {pid} = $`npm run build`;
 ```
 
 [More info.](termination.md#inter-process-termination)

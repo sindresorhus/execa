@@ -889,6 +889,6 @@ const {pid} = $`npm run build`;
 
 <hr>
 
-[**Next**: 📔 API reference](api.md)\
+[**Next**: 🤓 TypeScript](typescript.md)\
 [**Previous**: 📎 Windows](windows.md)\
 [**Top**: Table of contents](../readme.md#documentation)

@@ -99,7 +99,8 @@ Just like `execa()`, this can [bind options](execution.md#globalshared-options).
 
 ## Return value
 
-_Type:_ `ResultPromise`
+_TypeScript:_ [`ResultPromise`](typescript.md)\
+_Type:_ `Promise<object> | Subprocess`
 
 The return value of all [asynchronous methods](#methods) is both:
 - the [subprocess](#subprocess).
@@ -109,7 +110,7 @@ The return value of all [asynchronous methods](#methods) is both:
 
 ## Subprocess
 
-_Type:_ `Subprocess`
+_TypeScript:_ [`Subprocess`](typescript.md)
 
 [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following methods and properties.
 
@@ -377,6 +378,7 @@ Converts the subprocess to a duplex stream.
 
 ## Result
 
+_TypeScript:_ [`Result`](typescript.md) or [`SyncResult`](typescript.md\
 _Type:_ `object`
 
 [Result](execution.md#result) of a subprocess successful execution.
@@ -606,6 +608,7 @@ If a signal terminated the subprocess, this property is defined and included in 
 
 ## Options
 
+_TypeScript:_ [`Options`](typescript.md) or [`SyncOptions`](typescript.md\
 _Type:_ `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
@@ -730,6 +733,7 @@ See also the [`input`](#optionsinput) and [`stdin`](#optionsstdin) options.
 
 ### options.stdin
 
+_TypeScript:_ [`StdinOption`](typescript.md) or [`StdinSyncOption`](typescript.md)\
 _Type:_ `string | number | stream.Readable | ReadableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string | Uint8Array | unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
 _Default:_ `'inherit'` with [`$`](#file-arguments-options), `'pipe'` otherwise
 
@@ -741,6 +745,7 @@ More info on [available values](input.md), [streaming](streams.md) and [transfor
 
 ### options.stdout
 
+_TypeScript:_ [`StdoutStderrOption`](typescript.md) or [`StdoutStderrSyncOption`](typescript.md)\
 _Type:_ `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown>  | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
 _Default:_ `pipe`
 
@@ -752,6 +757,7 @@ More info on [available values](output.md), [streaming](streams.md) and [transfo
 
 ### options.stderr
 
+_TypeScript:_ [`StdoutStderrOption`](typescript.md) or [`StdoutStderrSyncOption`](typescript.md)\
 _Type:_ `string | number | stream.Writable | WritableStream | TransformStream | URL | {file: string} | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}` (or a tuple of those types)\
 _Default:_ `pipe`
 
@@ -763,6 +769,7 @@ More info on [available values](output.md), [streaming](streams.md) and [transfo
 
 ### options.stdio
 
+_TypeScript:_ [`Options['stdio']`](typescript.md) or [`SyncOptions['stdio']`](typescript.md)\
 _Type:_ `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}>` (or a tuple of those types)\
 _Default:_ `pipe`
 

@@ -6,11 +6,11 @@ declare abstract class CommonError<
 	IsSync extends boolean = boolean,
 	OptionsType extends CommonOptions = CommonOptions,
 > extends CommonResult<IsSync, OptionsType> {
-	readonly name: NonNullable<CommonResult['name']>;
 	message: NonNullable<CommonResult['message']>;
-	stack: NonNullable<CommonResult['stack']>;
 	shortMessage: NonNullable<CommonResult['shortMessage']>;
 	originalMessage: NonNullable<CommonResult['originalMessage']>;
+	readonly name: NonNullable<CommonResult['name']>;
+	stack: NonNullable<CommonResult['stack']>;
 }
 
 // `result.*` defined only on failure, i.e. on `error.*`

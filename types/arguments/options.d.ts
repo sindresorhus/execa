@@ -27,6 +27,15 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly node?: boolean;
 
 	/**
+	List of [CLI flags](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
+
+	Requires the `node` option to be `true`.
+
+	@default [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
+	*/
+	readonly nodeOptions?: readonly string[];
+
+	/**
 	Path to the Node.js executable.
 
 	Requires the `node` option to be `true`.
@@ -36,13 +45,41 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly nodePath?: string | URL;
 
 	/**
-	List of [CLI flags](https://nodejs.org/api/cli.html#cli_options) passed to the Node.js executable.
+	If `true`, runs the command inside of a [shell](https://en.wikipedia.org/wiki/Shell_(computing)).
 
-	Requires the `node` option to be `true`.
+	Uses [`/bin/sh`](https://en.wikipedia.org/wiki/Unix_shell) on UNIX and [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
 
-	@default [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
+	We recommend against using this option.
+
+	@default false
 	*/
-	readonly nodeOptions?: readonly string[];
+	readonly shell?: boolean | string | URL;
+
+	/**
+	Current [working directory](https://en.wikipedia.org/wiki/Working_directory) of the subprocess.
+
+	This is also used to resolve the `nodePath` option when it is a relative path.
+
+	@default process.cwd()
+	*/
+	readonly cwd?: string | URL;
+
+	/**
+	[Environment variables](https://en.wikipedia.org/wiki/Environment_variable).
+
+	Unless the `extendEnv` option is `false`, the subprocess also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+
+	@default [process.env](https://nodejs.org/api/process.html#processenv)
+	*/
+	readonly env?: NodeJS.ProcessEnv;
+
+	/**
+	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
+	If `false`, only the `env` option is used, not `process.env`.
+
+	@default true
+	*/
+	readonly extendEnv?: boolean;
 
 	/**
 	Write some input to the subprocess' [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)).
@@ -97,91 +134,11 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly stdio?: StdioOptionsProperty<IsSync>;
 
 	/**
-	Set `result.stdout`, `result.stderr`, `result.all` and `result.stdio` as arrays of strings, splitting the subprocess' output into lines.
-
-	This cannot be used if the `encoding` option is binary.
-
-	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+	Add a `subprocess.all` stream and a `result.all` property. They contain the combined/interleaved output of the subprocess' `stdout` and `stderr`.
 
 	@default false
 	*/
-	readonly lines?: FdGenericOption<boolean>;
-
-	/**
-	Setting this to `false` resolves the result's promise with the error instead of rejecting it.
-
-	@default true
-	*/
-	readonly reject?: boolean;
-
-	/**
-	Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
-
-	If the `lines` option is true, this applies to each output line instead.
-
-	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
-
-	@default true
-	*/
-	readonly stripFinalNewline?: FdGenericOption<boolean>;
-
-	/**
-	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-	If `false`, only the `env` option is used, not `process.env`.
-
-	@default true
-	*/
-	readonly extendEnv?: boolean;
-
-	/**
-	Current [working directory](https://en.wikipedia.org/wiki/Working_directory) of the subprocess.
-
-	This is also used to resolve the `nodePath` option when it is a relative path.
-
-	@default process.cwd()
-	*/
-	readonly cwd?: string | URL;
-
-	/**
-	[Environment variables](https://en.wikipedia.org/wiki/Environment_variable).
-
-	Unless the `extendEnv` option is `false`, the subprocess also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-
-	@default [process.env](https://nodejs.org/api/process.html#processenv)
-	*/
-	readonly env?: NodeJS.ProcessEnv;
-
-	/**
-	Value of [`argv[0]`](https://nodejs.org/api/process.html#processargv0) sent to the subprocess.
-
-	@default file being executed
-	*/
-	readonly argv0?: string;
-
-	/**
-	Sets the [user identifier](https://en.wikipedia.org/wiki/User_identifier) of the subprocess.
-
-	@default current user identifier
-	*/
-	readonly uid?: number;
-
-	/**
-	Sets the [group identifier](https://en.wikipedia.org/wiki/Group_identifier) of the subprocess.
-
-	@default current group identifier
-	*/
-	readonly gid?: number;
-
-	/**
-	If `true`, runs the command inside of a [shell](https://en.wikipedia.org/wiki/Shell_(computing)).
-
-	Uses [`/bin/sh`](https://en.wikipedia.org/wiki/Unix_shell) on UNIX and [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) on Windows. A different shell can be specified as a string. The shell should understand the `-c` switch on UNIX or `/d /s /c` on Windows.
-
-	We recommend against using this option.
-
-	@default false
-	*/
-	readonly shell?: boolean | string | URL;
+	readonly all?: boolean;
 
 	/**
 	If the subprocess outputs text, specifies its character encoding, either [`'utf8'`](https://en.wikipedia.org/wiki/UTF-8) or [`'utf16le'`](https://en.wikipedia.org/wiki/UTF-16).
@@ -197,13 +154,26 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly encoding?: EncodingOption;
 
 	/**
-	If `timeout` is greater than `0`, the subprocess will be terminated if it runs for longer than that amount of milliseconds.
+	Set `result.stdout`, `result.stderr`, `result.all` and `result.stdio` as arrays of strings, splitting the subprocess' output into lines.
 
-	On timeout, `result.timedOut` becomes `true`.
+	This cannot be used if the `encoding` option is binary.
 
-	@default 0
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
+	@default false
 	*/
-	readonly timeout?: number;
+	readonly lines?: FdGenericOption<boolean>;
+
+	/**
+	Strip the final [newline character](https://en.wikipedia.org/wiki/Newline) from the output.
+
+	If the `lines` option is true, this applies to each output line instead.
+
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
+	@default true
+	*/
+	readonly stripFinalNewline?: FdGenericOption<boolean>;
 
 	/**
 	Largest amount of data allowed on `stdout`, `stderr` and `stdio`.
@@ -215,54 +185,6 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly maxBuffer?: FdGenericOption<number>;
 
 	/**
-	Default [signal](https://en.wikipedia.org/wiki/Signal_(IPC)) used to terminate the subprocess.
-
-	This can be either a name (like `'SIGTERM'`) or a number (like `9`).
-
-	@default 'SIGTERM'
-	*/
-	readonly killSignal?: string | number;
-
-	/**
-	If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
-
-	@default 5000
-	*/
-	readonly forceKillAfterDelay?: Unless<IsSync, number | false>;
-
-	/**
-	If `false`, escapes the command arguments on Windows.
-
-	@default `true` if the `shell` option is `true`, `false` otherwise
-	*/
-	readonly windowsVerbatimArguments?: boolean;
-
-	/**
-	On Windows, do not create a new console window.
-
-	@default true
-	*/
-	readonly windowsHide?: boolean;
-
-	/**
-	If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
-
-	If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) and `stderr` are also printed.
-
-	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
-
-	@default 'none'
-	*/
-	readonly verbose?: FdGenericOption<'none' | 'short' | 'full'>;
-
-	/**
-	Kill the subprocess when the current process exits.
-
-	@default true
-	*/
-	readonly cleanup?: Unless<IsSync, boolean>;
-
-	/**
 	When `buffer` is `false`, the `result.stdout`, `result.stderr`, `result.all` and `result.stdio` properties are not set.
 
 	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
@@ -270,13 +192,6 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	@default true
 	*/
 	readonly buffer?: FdGenericOption<boolean>;
-
-	/**
-	Add a `subprocess.all` stream and a `result.all` property. They contain the combined/interleaved output of the subprocess' `stdout` and `stderr`.
-
-	@default false
-	*/
-	readonly all?: boolean;
 
 	/**
 	Enables exchanging messages with the subprocess using `subprocess.send(message)` and `subprocess.on('message', (message) => {})`.
@@ -293,11 +208,31 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly serialization?: Unless<IsSync, 'json' | 'advanced'>;
 
 	/**
-	Run the subprocess independently from the current process.
+	If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
 
-	@default false
+	If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) and `stderr` are also printed.
+
+	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
+
+	@default 'none'
 	*/
-	readonly detached?: Unless<IsSync, boolean>;
+	readonly verbose?: FdGenericOption<'none' | 'short' | 'full'>;
+
+	/**
+	Setting this to `false` resolves the result's promise with the error instead of rejecting it.
+
+	@default true
+	*/
+	readonly reject?: boolean;
+
+	/**
+	If `timeout` is greater than `0`, the subprocess will be terminated if it runs for longer than that amount of milliseconds.
+
+	On timeout, `result.timedOut` becomes `true`.
+
+	@default 0
+	*/
+	readonly timeout?: number;
 
 	/**
 	You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
@@ -324,6 +259,71 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	```
 	*/
 	readonly cancelSignal?: Unless<IsSync, AbortSignal>;
+
+	/**
+	If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+
+	@default 5000
+	*/
+	readonly forceKillAfterDelay?: Unless<IsSync, number | false>;
+
+	/**
+	Default [signal](https://en.wikipedia.org/wiki/Signal_(IPC)) used to terminate the subprocess.
+
+	This can be either a name (like `'SIGTERM'`) or a number (like `9`).
+
+	@default 'SIGTERM'
+	*/
+	readonly killSignal?: string | number;
+
+	/**
+	Run the subprocess independently from the current process.
+
+	@default false
+	*/
+	readonly detached?: Unless<IsSync, boolean>;
+
+	/**
+	Kill the subprocess when the current process exits.
+
+	@default true
+	*/
+	readonly cleanup?: Unless<IsSync, boolean>;
+
+	/**
+	Sets the [user identifier](https://en.wikipedia.org/wiki/User_identifier) of the subprocess.
+
+	@default current user identifier
+	*/
+	readonly uid?: number;
+
+	/**
+	Sets the [group identifier](https://en.wikipedia.org/wiki/Group_identifier) of the subprocess.
+
+	@default current group identifier
+	*/
+	readonly gid?: number;
+
+	/**
+	Value of [`argv[0]`](https://nodejs.org/api/process.html#processargv0) sent to the subprocess.
+
+	@default file being executed
+	*/
+	readonly argv0?: string;
+
+	/**
+	On Windows, do not create a new console window.
+
+	@default true
+	*/
+	readonly windowsHide?: boolean;
+
+	/**
+	If `false`, escapes the command arguments on Windows.
+
+	@default `true` if the `shell` option is `true`, `false` otherwise
+	*/
+	readonly windowsVerbatimArguments?: boolean;
 };
 
 /**

@@ -16,7 +16,7 @@ await execa('npm', ['run', 'build']);
 
 ## Template string syntax
 
-All [available methods](../readme.md#methods) can use either the [array syntax](#array-syntax) or the template string syntax, which are equivalent.
+All [available methods](api.md#methods) can use either the [array syntax](#array-syntax) or the template string syntax, which are equivalent.
 
 ```js
 await execa`npm run build`;
@@ -68,7 +68,7 @@ await execa`npm run build
 
 ## Options
 
-[Options](../readme.md#options) can be passed to influence the execution's behavior.
+[Options](api.md#options) can be passed to influence the execution's behavior.
 
 ### Array syntax
 
@@ -95,7 +95,7 @@ await timedExeca`npm run test`;
 
 ### Subprocess
 
-The subprocess is returned as soon as it is spawned. It is a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with [additional methods and properties](../readme.md#subprocess).
+The subprocess is returned as soon as it is spawned. It is a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with [additional methods and properties](api.md#subprocess).
 
 ```js
 const subprocess = execa`npm run build`;
@@ -104,7 +104,7 @@ console.log(subprocess.pid);
 
 ### Result
 
-The subprocess is also a `Promise` that resolves with the [`result`](../readme.md#result).
+The subprocess is also a `Promise` that resolves with the [`result`](api.md#result).
 
 ```js
 const {stdout} = await execa`npm run build`;
@@ -112,7 +112,7 @@ const {stdout} = await execa`npm run build`;
 
 ### Synchronous execution
 
-[Every method](../readme.md#methods) can be called synchronously by appending `Sync` to the method's name. The [`result`](../readme.md#result) is returned without needing to `await`. The [`subprocess`](#subprocess) is not returned: its methods and properties are not available.
+[Every method](api.md#methods) can be called synchronously by appending `Sync` to the method's name. The [`result`](api.md#result) is returned without needing to `await`. The [`subprocess`](#subprocess) is not returned: its methods and properties are not available.
 
 ```js
 import {execaSync} from 'execa';
@@ -121,15 +121,15 @@ const {stdout} = execaSync`npm run build`;
 ```
 
 Synchronous execution is generally discouraged as it holds the CPU and prevents parallelization. Also, the following features cannot be used:
-- Streams: [`subprocess.stdin`](../readme.md#subprocessstdin), [`subprocess.stdout`](../readme.md#subprocessstdout), [`subprocess.stderr`](../readme.md#subprocessstderr), [`subprocess.readable()`](../readme.md#subprocessreadablereadableoptions), [`subprocess.writable()`](../readme.md#subprocesswritablewritableoptions), [`subprocess.duplex()`](../readme.md#subprocessduplexduplexoptions).
-- The [`stdin`](../readme.md#optionsstdin), [`stdout`](../readme.md#optionsstdout), [`stderr`](../readme.md#optionsstderr) and [`stdio`](../readme.md#optionsstdio) options cannot be [`'overlapped'`](../readme.md#optionsstdout), an [async iterable](lines.md#progressive-splitting), an async [transform](transform.md), a [`Duplex`](transform.md#duplextransform-streams), nor a [web stream](streams.md#web-streams). Node.js streams can be passed but only if either they [have a file descriptor](streams.md#file-descriptors), or the [`input`](../readme.md#optionsinput) option is used.
-- Signal termination: [`subprocess.kill()`](../readme.md#subprocesskillerror), [`subprocess.pid`](../readme.md#subprocesspid), [`cleanup`](../readme.md#optionscleanup) option, [`cancelSignal`](../readme.md#optionscancelsignal) option, [`forceKillAfterDelay`](../readme.md#optionsforcekillafterdelay) option.
-- Piping multiple subprocesses: [`subprocess.pipe()`](../readme.md#subprocesspipefile-arguments-options).
+- Streams: [`subprocess.stdin`](api.md#subprocessstdin), [`subprocess.stdout`](api.md#subprocessstdout), [`subprocess.stderr`](api.md#subprocessstderr), [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions), [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions).
+- The [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout), [`stderr`](api.md#optionsstderr) and [`stdio`](api.md#optionsstdio) options cannot be [`'overlapped'`](api.md#optionsstdout), an [async iterable](lines.md#progressive-splitting), an async [transform](transform.md), a [`Duplex`](transform.md#duplextransform-streams), nor a [web stream](streams.md#web-streams). Node.js streams can be passed but only if either they [have a file descriptor](streams.md#file-descriptors), or the [`input`](api.md#optionsinput) option is used.
+- Signal termination: [`subprocess.kill()`](api.md#subprocesskillerror), [`subprocess.pid`](api.md#subprocesspid), [`cleanup`](api.md#optionscleanup) option, [`cancelSignal`](api.md#optionscancelsignal) option, [`forceKillAfterDelay`](api.md#optionsforcekillafterdelay) option.
+- Piping multiple subprocesses: [`subprocess.pipe()`](api.md#subprocesspipefile-arguments-options).
 - [`subprocess.iterable()`](lines.md#progressive-splitting).
-- [`ipc`](../readme.md#optionsipc) and [`serialization`](../readme.md#optionsserialization) options.
-- [`result.all`](../readme.md#resultall) is not interleaved.
-- [`detached`](../readme.md#optionsdetached) option.
-- The [`maxBuffer`](../readme.md#optionsmaxbuffer) option is always measured in bytes, not in characters, [lines](../readme.md#optionslines) nor [objects](transform.md#object-mode). Also, it ignores transforms and the [`encoding`](../readme.md#optionsencoding) option.
+- [`ipc`](api.md#optionsipc) and [`serialization`](api.md#optionsserialization) options.
+- [`result.all`](api.md#resultall) is not interleaved.
+- [`detached`](api.md#optionsdetached) option.
+- The [`maxBuffer`](api.md#optionsmaxbuffer) option is always measured in bytes, not in characters, [lines](api.md#optionslines) nor [objects](transform.md#object-mode). Also, it ignores transforms and the [`encoding`](api.md#optionsencoding) option.
 
 <hr>
 

@@ -26,7 +26,7 @@ await execaNode('file.js', {nodeOptions: ['--no-warnings']});
 
 ## Node.js version
 
-[`get-node`](https://github.com/ehmicky/get-node) and the [`nodePath`](../readme.md#optionsnodepath) option can be used to run a specific Node.js version. Alternatively, [`nvexeca`](https://github.com/ehmicky/nvexeca) or [`nve`](https://github.com/ehmicky/nve) can be used.
+[`get-node`](https://github.com/ehmicky/get-node) and the [`nodePath`](api.md#optionsnodepath) option can be used to run a specific Node.js version. Alternatively, [`nvexeca`](https://github.com/ehmicky/nvexeca) or [`nve`](https://github.com/ehmicky/nve) can be used.
 
 ```js
 import {execaNode} from 'execa';

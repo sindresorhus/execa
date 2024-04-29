@@ -35,7 +35,7 @@ const {stdout} = await execa`npm run build`
 
 ## Options
 
-[Options](../readme.md#options) can be passed to either the source or the destination subprocess. Some [pipe-specific options](../readme.md#pipeoptions) can also be set by the destination subprocess.
+[Options](api.md#options) can be passed to either the source or the destination subprocess. Some [pipe-specific options](api.md#pipeoptions) can also be set by the destination subprocess.
 
 ```js
 const {stdout} = await execa('npm', ['run', 'build'], subprocessOptions)
@@ -55,7 +55,7 @@ const {stdout} = await execa(subprocessOptions)`npm run build`
 
 ## Result
 
-When both subprocesses succeed, the [`result`](../readme.md#result) of the destination subprocess is returned. The [`result`](../readme.md#result) of the source subprocess is available in a [`result.pipedFrom`](../readme.md#resultpipedfrom) array.
+When both subprocesses succeed, the [`result`](api.md#result) of the destination subprocess is returned. The [`result`](api.md#result) of the source subprocess is available in a [`result.pipedFrom`](api.md#resultpipedfrom) array.
 
 ```js
 const destinationResult = await execa`npm run build`
@@ -68,7 +68,7 @@ console.log(sourceResult.stdout); // Full output of `npm run build`
 
 ## Errors
 
-When either subprocess fails, `subprocess.pipe()` is rejected with that subprocess' error. If the destination subprocess fails, [`error.pipedFrom`](../readme.md#resultpipedfrom) includes the source subprocess' result, which is useful for debugging.
+When either subprocess fails, `subprocess.pipe()` is rejected with that subprocess' error. If the destination subprocess fails, [`error.pipedFrom`](api.md#resultpipedfrom) includes the source subprocess' result, which is useful for debugging.
 
 ```js
 try {
@@ -119,7 +119,7 @@ await Promise.all([
 
 ## Source file descriptor
 
-By default, the source's [`stdout`](../readme.md#subprocessstdout) is used, but this can be changed using the [`from`](../readme.md#pipeoptionsfrom) piping option.
+By default, the source's [`stdout`](api.md#subprocessstdout) is used, but this can be changed using the [`from`](api.md#pipeoptionsfrom) piping option.
 
 ```js
 await execa`npm run build`
@@ -128,7 +128,7 @@ await execa`npm run build`
 
 ## Destination file descriptor
 
-By default, the destination's [`stdin`](../readme.md#subprocessstdin) is used, but this can be changed using the [`to`](../readme.md#pipeoptionsto) piping option.
+By default, the destination's [`stdin`](api.md#subprocessstdin) is used, but this can be changed using the [`to`](api.md#pipeoptionsto) piping option.
 
 ```js
 await execa`npm run build`
@@ -137,9 +137,9 @@ await execa`npm run build`
 
 ## Unpipe
 
-Piping can be stopped using the [`unpipeSignal`](../readme.md#pipeoptionsunpipesignal) piping option.
+Piping can be stopped using the [`unpipeSignal`](api.md#pipeoptionsunpipesignal) piping option.
 
-The [`subprocess.pipe()`](../readme.md#subprocesspipefile-arguments-options) method will be rejected with a cancelation error. However, each subprocess will keep running.
+The [`subprocess.pipe()`](api.md#subprocesspipefile-arguments-options) method will be rejected with a cancelation error. However, each subprocess will keep running.
 
 ```js
 const abortController = new AbortController();

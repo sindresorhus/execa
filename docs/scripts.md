@@ -10,7 +10,7 @@
 
 [Scripts](https://en.wikipedia.org/wiki/Shell_script) are Node.js files executing a series of commands. While those used to be written with a shell language like [Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), libraries like Execa provide with a better, modern experience.
 
-Scripts use [`$`](../readme.md#file-arguments-options) instead of [`execa`](../readme.md#execafile-arguments-options). The only difference is that `$` includes script-friendly default options: [`stdin: 'inherit'`](input.md#terminal-input) and [`preferLocal: true`](environment.md#local-binaries).
+Scripts use [`$`](api.md#file-arguments-options) instead of [`execa`](api.md#execafile-arguments-options). The only difference is that `$` includes script-friendly default options: [`stdin: 'inherit'`](input.md#terminal-input) and [`preferLocal: true`](environment.md#local-binaries).
 
 [More info about the difference between Execa, Bash and zx.](bash.md)
 
@@ -36,7 +36,7 @@ await $`mkdir /tmp/${directoryName}`;
 
 ## Template string syntax
 
-Just like [`execa`](../readme.md#execafile-arguments-options), [`$`](../readme.md#file-arguments-options) can use either the [template string syntax](execution.md#template-string-syntax) or the [array syntax](execution.md#array-syntax).
+Just like [`execa`](api.md#execafile-arguments-options), [`$`](api.md#file-arguments-options) can use either the [template string syntax](execution.md#template-string-syntax) or the [array syntax](execution.md#array-syntax).
 
 Conversely, the template string syntax can be used outside of script files: `$` is not required to use that syntax. For example, `execa` [can use it too](execution.md#template-string-syntax).
 

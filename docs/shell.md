@@ -13,6 +13,8 @@ In general, [shells](https://en.wikipedia.org/wiki/Shell_(computing)) should be 
 - Slower, because of the additional shell interpretation.
 - Unsafe, potentially allowing [command injection](https://en.wikipedia.org/wiki/Code_injection#Shell_injection) (see the [escaping section](escaping.md#shells)).
 
+In almost all cases, plain JavaScript is a better alternative to shells. The [following page](bash.md) shows how to convert Bash into JavaScript.
+
 ## Specific shell
 
 ```js

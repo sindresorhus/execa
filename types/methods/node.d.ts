@@ -36,9 +36,13 @@ This is the preferred method when executing Node.js files.
 
 @example
 ```
-import {execaNode} from 'execa';
+import {execaNode, execa} from 'execa';
 
-await execaNode('scriptPath', ['argument']);
+await execaNode`file.js argument`;
+// Is the same as:
+await execa({node: true})`file.js argument`;
+// Or:
+await execa`node file.js argument`;
 ```
 */
 export declare const execaNode: ExecaNode<{}>;

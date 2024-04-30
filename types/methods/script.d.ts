@@ -69,17 +69,22 @@ await $`dep deploy --branch=${branch}`;
 
 @example <caption>Verbose mode</caption>
 ```
-> node file.js
-unicorns
-rainbows
+$ node build.js
+Building application...
+Done building.
+Running tests...
+Error: the entrypoint is invalid.
 
-> NODE_DEBUG=execa node file.js
-[19:49:00.360] [0] $ echo unicorns
-unicorns
-[19:49:00.383] [0] √ (done in 23ms)
-[19:49:00.383] [1] $ echo rainbows
-rainbows
-[19:49:00.404] [1] √ (done in 21ms)
+$ NODE_DEBUG=execa node build.js
+[00:57:44.581] [0] $ npm run build
+[00:57:44.653] [0]   Building application...
+[00:57:44.653] [0]   Done building.
+[00:57:44.658] [0] ✔ (done in 78ms)
+[00:57:44.658] [1] $ npm run test
+[00:57:44.740] [1]   Running tests...
+[00:57:44.740] [1]   Error: the entrypoint is invalid.
+[00:57:44.747] [1] ✘ Command failed with exit code 1: npm run test
+[00:57:44.747] [1] ✘ (done in 89ms)
 ```
 */
 export const $: ExecaScript<{}>;

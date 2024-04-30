@@ -244,17 +244,19 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	import {execa} from 'execa';
 
 	const abortController = new AbortController();
-	const subprocess = execa('node', [], {cancelSignal: abortController.signal});
 
 	setTimeout(() => {
 		abortController.abort();
-	}, 1000);
+	}, 5000);
 
 	try {
-		await subprocess;
+		await execa({cancelSignal: abortController.signal})`npm run build`;
 	} catch (error) {
-		console.log(error.isTerminated); // true
-		console.log(error.isCanceled); // true
+		if (error.isCanceled) {
+			console.error('Aborted by cancelSignal.');
+		}
+
+		throw error;
 	}
 	```
 	*/
@@ -334,8 +336,11 @@ Some options are related to the subprocess output: `verbose`, `lines`, `stripFin
 @example
 
 ```
-await execa('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
-await execa('./run.js', {verbose: {stdout: 'none', stderr: 'full'}}) // Different values
+// Same value for stdout and stderr
+await execa({verbose: 'full'})`npm run build`;
+
+// Different values for stdout and stderr
+await execa({verbose: {stdout: 'none', stderr: 'full'}})`npm run build`;
 ```
 */
 export type Options = CommonOptions<false>;
@@ -348,8 +353,11 @@ Some options are related to the subprocess output: `verbose`, `lines`, `stripFin
 @example
 
 ```
-execaSync('./run.js', {verbose: 'full'}) // Same value for stdout and stderr
-execaSync('./run.js', {verbose: {stdout: 'none', stderr: 'full'}}) // Different values
+// Same value for stdout and stderr
+execaSync({verbose: 'full'})`npm run build`;
+
+// Different values for stdout and stderr
+execaSync({verbose: {stdout: 'none', stderr: 'full'}})`npm run build`;
 ```
 */
 export type SyncOptions = CommonOptions<true>;

@@ -26,7 +26,7 @@ const {cwd} = await execa`npm run build`;
 
 Package managers like `npm` install local binaries in `./node_modules/.bin`.
 
-```js
+```sh
 $ npm install -D eslint
 ```
 
@@ -37,13 +37,13 @@ await execa('./node_modules/.bin/eslint');
 The [`preferLocal`](api.md#optionspreferlocal) option can be used to execute those local binaries.
 
 ```js
-await execa('eslint', {preferLocal: true});
+await execa({preferLocal: true})`eslint`;
 ```
 
 Those are searched in the current or any parent directory. The [`localDir`](api.md#optionslocaldir) option can select a different directory.
 
 ```js
-await execa('eslint', {preferLocal: true, localDir: '/path/to/dir'});
+await execa({preferLocal: true, localDir: '/path/to/dir'})`eslint`;
 ```
 
 ## Current package's binary

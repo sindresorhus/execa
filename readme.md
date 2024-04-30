@@ -43,25 +43,25 @@
 
 <br>
 
-## Why
+Execa runs commands in your script, application or library. Unlike shells, it is [optimized](docs/bash.md) for programmatic usage. Built on top of the [`child_process`](https://nodejs.org/api/child_process.html) core module.
 
-This package improves [`child_process`](https://nodejs.org/api/child_process.html) methods with:
+## Features
 
-- [Promise interface](docs/execution.md).
-- [Script interface](docs/scripts.md) and [template strings](docs/execution.md#template-string-syntax), like `zx`.
-- Improved [Windows support](docs/windows.md), including [shebang](docs/windows.md#shebang) binaries.
-- Executes [locally installed binaries](docs/environment.md#local-binaries) without `npx`.
-- [Cleans up](docs/termination.md#current-process-exit) subprocesses when the current process ends.
-- Redirect [`stdin`](docs/input.md)/[`stdout`](docs/output.md)/[`stderr`](docs/output.md) from/to [files](docs/output.md#file-output), [streams](docs/streams.md), [iterables](docs/streams.md#iterables-as-input), [strings](docs/input.md#string-input), [`Uint8Array`](docs/binary.md#binary-input) or [objects](docs/transform.md#object-mode).
-- [Transform](docs/transform.md) `stdin`/`stdout`/`stderr` with simple functions.
-- Iterate over [each text line](docs/lines.md#progressive-splitting) output by the subprocess.
-- [Fail-safe subprocess termination](docs/termination.md#forceful-termination).
-- Get [interleaved output](docs/output.md#interleaved-output) from `stdout` and `stderr` similar to what is printed on the terminal.
-- [Strips the final newline](docs/lines.md#final-newline) from the output so you don't have to do `stdout.trim()`.
-- Convenience methods to [pipe multiple subprocesses](docs/pipe.md).
-- [Verbose mode](docs/debugging.md#verbose-mode) for debugging.
-- More descriptive [errors](docs/errors.md).
-- Higher [max buffer](docs/output.md#big-output): 100 MB instead of 1 MB.
+- [Simple syntax](#simple-syntax): promises and [template strings](docs/execution.md#template-string-syntax), like [`zx`](docs/bash.md).
+- [Script](#script) interface.
+- [No escaping](docs/escaping.md) nor quoting needed. No risk of shell injection.
+- Execute [locally installed binaries](#local-binaries) without `npx`.
+- Improved [Windows support](docs/windows.md): [shebangs](docs/windows.md#shebang), [`PATHEXT`](https://ss64.com/nt/path.html#pathext), [and more](https://github.com/moxystudio/node-cross-spawn?tab=readme-ov-file#why).
+- [Detailed errors](#detailed-error) and [verbose mode](#verbose-mode), for [debugging](docs/debugging.md).
+- [Pipe multiple subprocesses](#pipe-multiple-subprocesses) better than in shells: retrieve [intermediate results](docs/pipe.md#result), use multiple [sources](docs/pipe.md#multiple-sources-1-destination)/[destinations](docs/pipe.md#1-source-multiple-destinations), [unpipe](docs/pipe.md#unpipe).
+- [Split](#split-into-text-lines) the output into text lines, or [iterate](#iterate-over-text-lines) progressively over them.
+- Strip [unnecessary newlines](docs/lines.md#newlines).
+- Get [interleaved output](#interleaved-output) from `stdout` and `stderr` similar to what is printed on the terminal.
+- Retrieve the output [programmatically and print it](#programmatic--terminal-output) on the console at the same time.
+- [Transform or filter](#transformfilter-output) the input and output with [simple functions](docs/transform.md).
+- Redirect the [input](docs/input.md) and [output](docs/output.md) from/to [files](#files), [strings](#simple-input), [`Uint8Array`s](docs/binary.md#binary-input), [iterables](docs/streams.md#iterables-as-input) or [objects](docs/transform.md#object-mode).
+- Pass [Node.js streams](docs/streams.md#nodejs-streams) or [web streams](#web-streams) to subprocesses, or [convert](#convert-to-duplex-stream) subprocesses to [a stream](docs/streams.md#converting-a-subprocess-to-a-stream).
+- Ensure subprocesses exit even when they [intercept termination signals](docs/termination.md#forceful-termination), or when the current process [ends abruptly](docs/termination.md#current-process-exit).
 
 ## Install
 
@@ -97,174 +97,167 @@ Advanced usage:
 - 🔍 [Difference with Bash and zx](docs/bash.md)
 - 📔 [API reference](docs/api.md)
 
-## Usage
+## Examples
 
-### Promise interface
+### Execution
+
+#### Simple syntax
 
 ```js
 import {execa} from 'execa';
 
-const {stdout} = await execa('echo', ['unicorns']);
+const {stdout} = await execa`npm run build`;
+// Print command's output
 console.log(stdout);
-//=> 'unicorns'
 ```
 
-#### Global/shared options
-
-```js
-import {execa as execa_} from 'execa';
-
-const execa = execa_({verbose: 'full'});
-
-await execa('echo', ['unicorns']);
-//=> 'unicorns'
-```
-
-### Template string syntax
-
-#### Basic
-
-```js
-import {execa} from 'execa';
-
-const arg = 'unicorns';
-const {stdout} = await execa`echo ${arg} & rainbows!`;
-console.log(stdout);
-//=> 'unicorns & rainbows!'
-```
-
-#### Multiple arguments
-
-```js
-import {execa} from 'execa';
-
-const args = ['unicorns', '&', 'rainbows!'];
-const {stdout} = await execa`echo ${args}`;
-console.log(stdout);
-//=> 'unicorns & rainbows!'
-```
-
-#### With options
-
-```js
-import {execa} from 'execa';
-
-await execa({verbose: 'full'})`echo unicorns`;
-//=> 'unicorns'
-```
-
-### Scripts
-
-#### Basic
+#### Script
 
 ```js
 import {$} from 'execa';
 
+const {stdout: name} = await $`cat package.json`.pipe`grep name`;
+console.log(name);
+
 const branch = await $`git branch --show-current`;
 await $`dep deploy --branch=${branch}`;
+
+await Promise.all([
+	$`sleep 1`,
+	$`sleep 2`,
+	$`sleep 3`,
+]);
+
+const directoryName = 'foo bar';
+await $`mkdir /tmp/${directoryName}`;
 ```
 
-#### Verbose mode
+#### Local binaries
 
 ```sh
-> node file.js
-unicorns
-rainbows
-
-> NODE_DEBUG=execa node file.js
-[19:49:00.360] [0] $ echo unicorns
-unicorns
-[19:49:00.383] [0] √ (done in 23ms)
-[19:49:00.383] [1] $ echo rainbows
-rainbows
-[19:49:00.404] [1] √ (done in 21ms)
+$ npm install -D eslint
 ```
 
-### Input/output
-
-#### Redirect output to a file
-
 ```js
-import {execa} from 'execa';
-
-// Similar to `echo unicorns > stdout.txt` in Bash
-await execa('echo', ['unicorns'], {stdout: {file: 'stdout.txt'}});
-
-// Similar to `echo unicorns 2> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {stderr: {file: 'stderr.txt'}});
-
-// Similar to `echo unicorns &> stdout.txt` in Bash
-await execa('echo', ['unicorns'], {stdout: {file: 'all.txt'}, stderr: {file: 'all.txt'}});
-```
-
-#### Redirect input from a file
-
-```js
-import {execa} from 'execa';
-
-// Similar to `cat < stdin.txt` in Bash
-const {stdout} = await execa('cat', {inputFile: 'stdin.txt'});
-console.log(stdout);
-//=> 'unicorns'
-```
-
-#### Save and pipe output from a subprocess
-
-```js
-import {execa} from 'execa';
-
-const {stdout} = await execa('echo', ['unicorns'], {stdout: ['pipe', 'inherit']});
-// Prints `unicorns`
-console.log(stdout);
-// Also returns 'unicorns'
+await execa({preferLocal: true})`eslint`;
 ```
 
 #### Pipe multiple subprocesses
 
 ```js
-import {execa} from 'execa';
-
-// Similar to `npm run build | sort | head -n2` in Bash
-const {stdout, pipedFrom} = await execa('npm', ['run', 'build'])
-	.pipe('sort')
-	.pipe('head', ['-n2']);
-console.log(stdout); // Result of `head -n2`
-console.log(pipedFrom[0]); // Result of `sort`
-console.log(pipedFrom[0].pipedFrom[0]); // Result of `npm run build`
-```
-
-#### Pipe with template strings
-
-```js
-import {execa} from 'execa';
-
-await execa`npm run build`
+const {stdout, pipedFrom} = await execa`npm run build`
 	.pipe`sort`
-	.pipe`head -n2`;
+	.pipe`head -n 2`;
+
+// Output of `npm run build | sort | head -n 2`
+console.log(stdout);
+// Output of `npm run build | sort`
+console.log(pipedFrom[0].stdout);
+// Output of `npm run build`
+console.log(pipedFrom[0].pipedFrom[0].stdout);
 ```
 
-#### Iterate over output lines
+### Input/output
+
+#### Interleaved output
 
 ```js
-import {execa} from 'execa';
+const {all} = await execa({all: true})`npm run build`;
+// stdout + stderr, interleaved
+console.log(all);
+```
 
-for await (const line of execa`npm run build`)) {
-	if (line.includes('ERROR')) {
-		console.log(line);
+#### Programmatic + terminal output
+
+```js
+const {stdout} = await execa({stdout: ['pipe', 'inherit']})`npm run build`;
+// stdout is also printed to the terminal
+console.log(stdout);
+```
+
+#### Files
+
+```js
+// Similar to: npm run build > output.txt
+await execa({stdout: {file: './output.txt'}})`npm run build`;
+```
+
+#### Simple input
+
+```js
+const {stdout} = await execa({input: getInputString()})`sort`;
+console.log(stdout);
+```
+
+#### Split into text lines
+
+```js
+const {stdout} = await execa({lines: true})`npm run build`;
+// Print first 10 lines
+console.log(stdout.slice(0, 10).join('\n'));
+```
+
+### Streaming
+
+#### Iterate over text lines
+
+```js
+for await (const line of execa`npm run build`) {
+	if (line.includes('WARN')) {
+		console.warn(line);
 	}
 }
 ```
 
-### Handling Errors
+#### Transform/filter output
+
+```js
+let count = 0;
+
+// Filter out secret lines, then prepend the line number
+const transform = function * (line) {
+	if (!line.includes('secret')) {
+		yield `[${count++}] ${line}`;
+	}
+};
+
+await execa({stdout: transform})`npm run build`;
+```
+
+#### Web streams
+
+```js
+const response = await fetch('https://example.com');
+await execa({stdin: response.body})`sort`;
+```
+
+#### Convert to Duplex stream
 
 ```js
 import {execa} from 'execa';
+import {pipeline} from 'node:stream/promises';
+import {createReadStream, createWriteStream} from 'node:fs';
 
-// Catching an error
+await pipeline(
+	createReadStream('./input.txt'),
+	execa`node ./transform.js`.duplex(),
+	createWriteStream('./output.txt'),
+);
+```
+
+### Debugging
+
+#### Detailed error
+
+```js
+import {execa, ExecaError} from 'execa';
+
 try {
-	await execa('unknown', ['command']);
+	await execa`unknown command`;
 } catch (error) {
-	console.log(error);
+	if (error instanceof ExecaError) {
+		console.log(error);
+	}
 	/*
 	ExecaError: Command failed with ENOENT: unknown command
 	spawn unknown ENOENT
@@ -299,6 +292,15 @@ try {
 	*/
 }
 ```
+
+#### Verbose mode
+
+```js
+await execa`npm run build`;
+await execa`npm run test`;
+```
+
+<img alt="execa verbose output" src="media/verbose.png" width="603">
 
 ## Related
 

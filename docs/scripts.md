@@ -17,8 +17,7 @@ Scripts use [`$`](api.md#file-arguments-options) instead of [`execa`](api.md#exe
 ```js
 import {$} from 'execa';
 
-const {stdout: name} = await $`cat package.json`
-  .pipe`grep name`;
+const {stdout: name} = await $`cat package.json`.pipe`grep name`;
 console.log(name);
 
 const branch = await $`git branch --show-current`;

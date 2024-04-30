@@ -11,17 +11,17 @@
 ```js
 import {execaNode, execa} from 'execa';
 
-await execaNode('file.js');
+await execaNode`file.js argument`;
 // Is the same as:
-await execa('file.js', {node: true});
+await execa({node: true})`file.js argument`;
 // Or:
-await execa('node', ['file.js']);
+await execa`node file.js argument`;
 ```
 
 ## Node.js [CLI flags](https://nodejs.org/api/cli.html#options)
 
 ```js
-await execaNode('file.js', {nodeOptions: ['--no-warnings']});
+await execaNode({nodeOptions: ['--no-warnings']})`file.js argument`;
 ```
 
 ## Node.js version
@@ -33,7 +33,7 @@ import {execaNode} from 'execa';
 import getNode from 'get-node';
 
 const {path: nodePath} = await getNode('16.2.0');
-await execaNode('file.js', {nodePath});
+await execaNode({nodePath})`file.js argument`;
 ```
 
 <hr>

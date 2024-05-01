@@ -516,9 +516,10 @@ await subprocess;
 
 ```js
 // Execa
+const output = {file: 'output.txt'};
 await $({
-	stdout: {file: 'output.txt'},
-	stderr: {file: 'output.txt'},
+	stdout: output,
+	stderr: output,
 })`npm run build`;
 ```
 

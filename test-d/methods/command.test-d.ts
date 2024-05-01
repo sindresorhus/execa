@@ -3,7 +3,7 @@ import {
 	execaCommand,
 	execaCommandSync,
 	type ExecaResult,
-	type ExecaSubprocess,
+	type ExecaResultPromise,
 	type ExecaSyncResult,
 } from '../../index.js';
 
@@ -13,7 +13,7 @@ const stringArray = ['foo', 'bar'] as const;
 expectError(execaCommand());
 expectError(execaCommand(true));
 expectError(execaCommand(['unicorns', 'arg']));
-expectAssignable<ExecaSubprocess>(execaCommand('unicorns'));
+expectAssignable<ExecaResultPromise>(execaCommand('unicorns'));
 expectError(execaCommand(fileUrl));
 
 expectError(execaCommand('unicorns', []));
@@ -21,18 +21,18 @@ expectError(execaCommand('unicorns', ['foo']));
 expectError(execaCommand('unicorns', 'foo'));
 expectError(execaCommand('unicorns', [true]));
 
-expectAssignable<ExecaSubprocess>(execaCommand('unicorns', {}));
+expectAssignable<ExecaResultPromise>(execaCommand('unicorns', {}));
 expectError(execaCommand('unicorns', [], {}));
 expectError(execaCommand('unicorns', [], []));
 expectError(execaCommand('unicorns', {other: true}));
 
-expectAssignable<ExecaSubprocess>(execaCommand`unicorns`);
+expectAssignable<ExecaResultPromise>(execaCommand`unicorns`);
 expectType<ExecaResult<{}>>(await execaCommand('unicorns'));
 expectType<ExecaResult<{}>>(await execaCommand`unicorns`);
 
 expectAssignable<typeof execaCommand>(execaCommand({}));
-expectAssignable<ExecaSubprocess>(execaCommand({})('unicorns'));
-expectAssignable<ExecaSubprocess>(execaCommand({})`unicorns`);
+expectAssignable<ExecaResultPromise>(execaCommand({})('unicorns'));
+expectAssignable<ExecaResultPromise>(execaCommand({})`unicorns`);
 
 expectAssignable<{stdout: string}>(await execaCommand('unicorns'));
 expectAssignable<{stdout: Uint8Array}>(await execaCommand('unicorns', {encoding: 'buffer'}));

@@ -20,7 +20,7 @@ type HasIpc<OptionsType extends Options> = OptionsType['ipc'] extends true
 		? 'ipc' extends OptionsType['stdio'][number] ? true : false
 		: false;
 
-export type ExecaResultPromise<OptionsType extends Options = Options> = {
+type ExecaCustomSubprocess<OptionsType extends Options = Options> = {
 	/**
 	Process identifier ([PID](https://en.wikipedia.org/wiki/Process_identifier)).
 
@@ -115,6 +115,18 @@ export type ExecaResultPromise<OptionsType extends Options = Options> = {
 	duplex(duplexOptions?: DuplexOptions): Duplex;
 } & PipableSubprocess;
 
-export type ExecaSubprocess<OptionsType extends Options = Options> = Omit<ChildProcess, keyof ExecaResultPromise<OptionsType>> &
-ExecaResultPromise<OptionsType> &
-Promise<ExecaResult<OptionsType>>;
+/**
+[`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with additional methods and properties.
+*/
+export type ExecaSubprocess<OptionsType extends Options = Options> =
+	& Omit<ChildProcess, keyof ExecaCustomSubprocess<OptionsType>>
+	& ExecaCustomSubprocess<OptionsType>;
+
+/**
+The return value of all asynchronous methods is both:
+- the subprocess.
+- a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
+*/
+export type ExecaResultPromise<OptionsType extends Options = Options> =
+	& ExecaSubprocess<OptionsType>
+	& Promise<ExecaResult<OptionsType>>;

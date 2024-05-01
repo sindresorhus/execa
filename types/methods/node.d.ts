@@ -1,22 +1,22 @@
 import type {Options} from '../arguments/options';
-import type {ExecaSubprocess} from '../subprocess/subprocess';
+import type {ExecaResultPromise} from '../subprocess/subprocess';
 import type {TemplateString} from './template';
 
 type ExecaNode<OptionsType extends Options> = {
 	<NewOptionsType extends Options = {}>(options: NewOptionsType): ExecaNode<OptionsType & NewOptionsType>;
 
-	(...templateString: TemplateString): ExecaSubprocess<OptionsType>;
+	(...templateString: TemplateString): ExecaResultPromise<OptionsType>;
 
 	<NewOptionsType extends Options = {}>(
 		scriptPath: string | URL,
 		arguments?: readonly string[],
 		options?: NewOptionsType,
-	): ExecaSubprocess<OptionsType & NewOptionsType>;
+	): ExecaResultPromise<OptionsType & NewOptionsType>;
 
 	<NewOptionsType extends Options = {}>(
 		scriptPath: string | URL,
 		options?: NewOptionsType,
-	): ExecaSubprocess<OptionsType & NewOptionsType>;
+	): ExecaResultPromise<OptionsType & NewOptionsType>;
 };
 
 /**
@@ -29,10 +29,10 @@ This is the preferred method when executing Node.js files.
 
 @param scriptPath - Node.js script to execute, as a string or file URL
 @param arguments - Arguments to pass to `scriptPath` on execution.
-@returns An `ExecaSubprocess` that is both:
-- a `Promise` resolving or rejecting with a subprocess `result`.
-- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A subprocess `result` error
+@returns An `ExecaResultPromise` that is both:
+- the subprocess.
+- a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
+@throws `ExecaError`
 
 @example
 ```

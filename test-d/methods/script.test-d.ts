@@ -1,5 +1,5 @@
 import {expectType, expectError, expectAssignable} from 'tsd';
-import {$, type ExecaResult, type ExecaSubprocess} from '../../index.js';
+import {$, type ExecaResult, type ExecaResultPromise} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
 const stringArray = ['foo', 'bar'] as const;
@@ -7,26 +7,26 @@ const stringArray = ['foo', 'bar'] as const;
 expectError($());
 expectError($(true));
 expectError($(['unicorns', 'arg']));
-expectAssignable<ExecaSubprocess>($('unicorns'));
-expectAssignable<ExecaSubprocess>($(fileUrl));
+expectAssignable<ExecaResultPromise>($('unicorns'));
+expectAssignable<ExecaResultPromise>($(fileUrl));
 
-expectAssignable<ExecaSubprocess>($('unicorns', []));
-expectAssignable<ExecaSubprocess>($('unicorns', ['foo']));
+expectAssignable<ExecaResultPromise>($('unicorns', []));
+expectAssignable<ExecaResultPromise>($('unicorns', ['foo']));
 expectError($('unicorns', 'foo'));
 expectError($('unicorns', [true]));
 
-expectAssignable<ExecaSubprocess>($('unicorns', {}));
-expectAssignable<ExecaSubprocess>($('unicorns', [], {}));
+expectAssignable<ExecaResultPromise>($('unicorns', {}));
+expectAssignable<ExecaResultPromise>($('unicorns', [], {}));
 expectError($('unicorns', [], []));
 expectError($('unicorns', {other: true}));
 
-expectAssignable<ExecaSubprocess>($`unicorns`);
+expectAssignable<ExecaResultPromise>($`unicorns`);
 expectType<ExecaResult<{}>>(await $('unicorns'));
 expectType<ExecaResult<{}>>(await $`unicorns`);
 
 expectAssignable<typeof $>($({}));
-expectAssignable<ExecaSubprocess>($({})('unicorns'));
-expectAssignable<ExecaSubprocess>($({})`unicorns`);
+expectAssignable<ExecaResultPromise>($({})('unicorns'));
+expectAssignable<ExecaResultPromise>($({})`unicorns`);
 
 expectAssignable<{stdout: string}>(await $('unicorns'));
 expectAssignable<{stdout: Uint8Array}>(await $('unicorns', {encoding: 'buffer'}));

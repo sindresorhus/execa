@@ -7,108 +7,108 @@ import {
 	type ExecaSyncError,
 } from '../../index.js';
 
-const ignoreAnyPromise = execa('unicorns', {
+const ignoreAnySubprocess = execa('unicorns', {
 	stdin: 'ignore',
 	stdout: 'ignore',
 	stderr: 'ignore',
 	all: true,
 });
-expectType<null>(ignoreAnyPromise.stdin);
-expectType<null>(ignoreAnyPromise.stdio[0]);
-expectType<null>(ignoreAnyPromise.stdout);
-expectType<null>(ignoreAnyPromise.stdio[1]);
-expectType<null>(ignoreAnyPromise.stderr);
-expectType<null>(ignoreAnyPromise.stdio[2]);
-expectType<undefined>(ignoreAnyPromise.all);
-expectError(ignoreAnyPromise.stdio[3].destroy());
+expectType<null>(ignoreAnySubprocess.stdin);
+expectType<null>(ignoreAnySubprocess.stdio[0]);
+expectType<null>(ignoreAnySubprocess.stdout);
+expectType<null>(ignoreAnySubprocess.stdio[1]);
+expectType<null>(ignoreAnySubprocess.stderr);
+expectType<null>(ignoreAnySubprocess.stdio[2]);
+expectType<undefined>(ignoreAnySubprocess.all);
+expectError(ignoreAnySubprocess.stdio[3].destroy());
 
-const ignoreAnyResult = await ignoreAnyPromise;
+const ignoreAnyResult = await ignoreAnySubprocess;
 expectType<undefined>(ignoreAnyResult.stdout);
 expectType<undefined>(ignoreAnyResult.stdio[1]);
 expectType<undefined>(ignoreAnyResult.stderr);
 expectType<undefined>(ignoreAnyResult.stdio[2]);
 expectType<undefined>(ignoreAnyResult.all);
 
-const ignoreAllPromise = execa('unicorns', {stdio: 'ignore', all: true});
-expectType<null>(ignoreAllPromise.stdin);
-expectType<null>(ignoreAllPromise.stdio[0]);
-expectType<null>(ignoreAllPromise.stdout);
-expectType<null>(ignoreAllPromise.stdio[1]);
-expectType<null>(ignoreAllPromise.stderr);
-expectType<null>(ignoreAllPromise.stdio[2]);
-expectType<undefined>(ignoreAllPromise.all);
-expectError(ignoreAllPromise.stdio[3].destroy());
+const ignoreAllSubprocess = execa('unicorns', {stdio: 'ignore', all: true});
+expectType<null>(ignoreAllSubprocess.stdin);
+expectType<null>(ignoreAllSubprocess.stdio[0]);
+expectType<null>(ignoreAllSubprocess.stdout);
+expectType<null>(ignoreAllSubprocess.stdio[1]);
+expectType<null>(ignoreAllSubprocess.stderr);
+expectType<null>(ignoreAllSubprocess.stdio[2]);
+expectType<undefined>(ignoreAllSubprocess.all);
+expectError(ignoreAllSubprocess.stdio[3].destroy());
 
-const ignoreAllResult = await ignoreAllPromise;
+const ignoreAllResult = await ignoreAllSubprocess;
 expectType<undefined>(ignoreAllResult.stdout);
 expectType<undefined>(ignoreAllResult.stdio[1]);
 expectType<undefined>(ignoreAllResult.stderr);
 expectType<undefined>(ignoreAllResult.stdio[2]);
 expectType<undefined>(ignoreAllResult.all);
 
-const ignoreStdioArrayPromise = execa('unicorns', {stdio: ['ignore', 'ignore', 'pipe', 'pipe'], all: true});
-expectType<null>(ignoreStdioArrayPromise.stdin);
-expectType<null>(ignoreStdioArrayPromise.stdio[0]);
-expectType<null>(ignoreStdioArrayPromise.stdout);
-expectType<null>(ignoreStdioArrayPromise.stdio[1]);
-expectType<Readable>(ignoreStdioArrayPromise.stderr);
-expectType<Readable>(ignoreStdioArrayPromise.stdio[2]);
-expectType<Readable>(ignoreStdioArrayPromise.all);
-expectType<Readable>(ignoreStdioArrayPromise.stdio[3]);
-const ignoreStdioArrayResult = await ignoreStdioArrayPromise;
+const ignoreStdioArraySubprocess = execa('unicorns', {stdio: ['ignore', 'ignore', 'pipe', 'pipe'], all: true});
+expectType<null>(ignoreStdioArraySubprocess.stdin);
+expectType<null>(ignoreStdioArraySubprocess.stdio[0]);
+expectType<null>(ignoreStdioArraySubprocess.stdout);
+expectType<null>(ignoreStdioArraySubprocess.stdio[1]);
+expectType<Readable>(ignoreStdioArraySubprocess.stderr);
+expectType<Readable>(ignoreStdioArraySubprocess.stdio[2]);
+expectType<Readable>(ignoreStdioArraySubprocess.all);
+expectType<Readable>(ignoreStdioArraySubprocess.stdio[3]);
+const ignoreStdioArrayResult = await ignoreStdioArraySubprocess;
 expectType<undefined>(ignoreStdioArrayResult.stdout);
 expectType<undefined>(ignoreStdioArrayResult.stdio[1]);
 expectType<string>(ignoreStdioArrayResult.stderr);
 expectType<string>(ignoreStdioArrayResult.stdio[2]);
 expectType<string>(ignoreStdioArrayResult.all);
 
-const ignoreStdioArrayReadPromise = execa('unicorns', {stdio: ['ignore', 'ignore', 'pipe', new Uint8Array()], all: true});
-expectType<Writable>(ignoreStdioArrayReadPromise.stdio[3]);
+const ignoreStdioArrayReadSubprocess = execa('unicorns', {stdio: ['ignore', 'ignore', 'pipe', new Uint8Array()], all: true});
+expectType<Writable>(ignoreStdioArrayReadSubprocess.stdio[3]);
 
-const ignoreStdinPromise = execa('unicorns', {stdin: 'ignore'});
-expectType<null>(ignoreStdinPromise.stdin);
+const ignoreStdinSubprocess = execa('unicorns', {stdin: 'ignore'});
+expectType<null>(ignoreStdinSubprocess.stdin);
 
-const ignoreStdoutPromise = execa('unicorns', {stdout: 'ignore', all: true});
-expectType<Writable>(ignoreStdoutPromise.stdin);
-expectType<Writable>(ignoreStdoutPromise.stdio[0]);
-expectType<null>(ignoreStdoutPromise.stdout);
-expectType<null>(ignoreStdoutPromise.stdio[1]);
-expectType<Readable>(ignoreStdoutPromise.stderr);
-expectType<Readable>(ignoreStdoutPromise.stdio[2]);
-expectType<Readable>(ignoreStdoutPromise.all);
-expectError(ignoreStdoutPromise.stdio[3].destroy());
+const ignoreStdoutSubprocess = execa('unicorns', {stdout: 'ignore', all: true});
+expectType<Writable>(ignoreStdoutSubprocess.stdin);
+expectType<Writable>(ignoreStdoutSubprocess.stdio[0]);
+expectType<null>(ignoreStdoutSubprocess.stdout);
+expectType<null>(ignoreStdoutSubprocess.stdio[1]);
+expectType<Readable>(ignoreStdoutSubprocess.stderr);
+expectType<Readable>(ignoreStdoutSubprocess.stdio[2]);
+expectType<Readable>(ignoreStdoutSubprocess.all);
+expectError(ignoreStdoutSubprocess.stdio[3].destroy());
 
-const ignoreStdoutResult = await ignoreStdoutPromise;
+const ignoreStdoutResult = await ignoreStdoutSubprocess;
 expectType<undefined>(ignoreStdoutResult.stdout);
 expectType<string>(ignoreStdoutResult.stderr);
 expectType<string>(ignoreStdoutResult.all);
 
-const ignoreStderrPromise = execa('unicorns', {stderr: 'ignore', all: true});
-expectType<Writable>(ignoreStderrPromise.stdin);
-expectType<Writable>(ignoreStderrPromise.stdio[0]);
-expectType<Readable>(ignoreStderrPromise.stdout);
-expectType<Readable>(ignoreStderrPromise.stdio[1]);
-expectType<null>(ignoreStderrPromise.stderr);
-expectType<null>(ignoreStderrPromise.stdio[2]);
-expectType<Readable>(ignoreStderrPromise.all);
-expectError(ignoreStderrPromise.stdio[3].destroy());
+const ignoreStderrSubprocess = execa('unicorns', {stderr: 'ignore', all: true});
+expectType<Writable>(ignoreStderrSubprocess.stdin);
+expectType<Writable>(ignoreStderrSubprocess.stdio[0]);
+expectType<Readable>(ignoreStderrSubprocess.stdout);
+expectType<Readable>(ignoreStderrSubprocess.stdio[1]);
+expectType<null>(ignoreStderrSubprocess.stderr);
+expectType<null>(ignoreStderrSubprocess.stdio[2]);
+expectType<Readable>(ignoreStderrSubprocess.all);
+expectError(ignoreStderrSubprocess.stdio[3].destroy());
 
-const ignoreStderrResult = await ignoreStderrPromise;
+const ignoreStderrResult = await ignoreStderrSubprocess;
 expectType<string>(ignoreStderrResult.stdout);
 expectType<undefined>(ignoreStderrResult.stderr);
 expectType<string>(ignoreStderrResult.all);
 
-const ignoreStdioPromise = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore'], all: true});
-expectType<Writable>(ignoreStdioPromise.stdin);
-expectType<Writable>(ignoreStdioPromise.stdio[0]);
-expectType<Readable>(ignoreStdioPromise.stdout);
-expectType<Readable>(ignoreStdioPromise.stdio[1]);
-expectType<Readable>(ignoreStdioPromise.stderr);
-expectType<Readable>(ignoreStdioPromise.stdio[2]);
-expectType<Readable>(ignoreStdioPromise.all);
-expectType<null>(ignoreStdioPromise.stdio[3]);
+const ignoreStdioSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore'], all: true});
+expectType<Writable>(ignoreStdioSubprocess.stdin);
+expectType<Writable>(ignoreStdioSubprocess.stdio[0]);
+expectType<Readable>(ignoreStdioSubprocess.stdout);
+expectType<Readable>(ignoreStdioSubprocess.stdio[1]);
+expectType<Readable>(ignoreStdioSubprocess.stderr);
+expectType<Readable>(ignoreStdioSubprocess.stdio[2]);
+expectType<Readable>(ignoreStdioSubprocess.all);
+expectType<null>(ignoreStdioSubprocess.stdio[3]);
 
-const ignoreStdioResult = await ignoreStdioPromise;
+const ignoreStdioResult = await ignoreStdioSubprocess;
 expectType<string>(ignoreStdioResult.stdout);
 expectType<string>(ignoreStdioResult.stderr);
 expectType<string>(ignoreStdioResult.all);

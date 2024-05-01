@@ -2,24 +2,24 @@ import type {Readable} from 'node:stream';
 import {expectType, expectError} from 'tsd';
 import {execa} from '../../index.js';
 
-const execaPromise = execa('unicorns');
+const subprocess = execa('unicorns');
 
-expectType<Readable>(execaPromise.readable());
+expectType<Readable>(subprocess.readable());
 
-execaPromise.readable({from: 'stdout'});
-execaPromise.readable({from: 'stderr'});
-execaPromise.readable({from: 'all'});
-execaPromise.readable({from: 'fd3'});
-expectError(execaPromise.readable({from: 'stdin'}));
-expectError(execaPromise.readable({from: 'fd'}));
-expectError(execaPromise.readable({from: 'fdNotANumber'}));
-expectError(execaPromise.readable({to: 'stdin'}));
+subprocess.readable({from: 'stdout'});
+subprocess.readable({from: 'stderr'});
+subprocess.readable({from: 'all'});
+subprocess.readable({from: 'fd3'});
+expectError(subprocess.readable({from: 'stdin'}));
+expectError(subprocess.readable({from: 'fd'}));
+expectError(subprocess.readable({from: 'fdNotANumber'}));
+expectError(subprocess.readable({to: 'stdin'}));
 
-execaPromise.readable({binary: false});
-expectError(execaPromise.readable({binary: 'false'}));
+subprocess.readable({binary: false});
+expectError(subprocess.readable({binary: 'false'}));
 
-execaPromise.readable({preserveNewlines: false});
-expectError(execaPromise.readable({preserveNewlines: 'false'}));
+subprocess.readable({preserveNewlines: false});
+expectError(subprocess.readable({preserveNewlines: 'false'}));
 
-expectError(execaPromise.readable('stdout'));
-expectError(execaPromise.readable({other: 'stdout'}));
+expectError(subprocess.readable('stdout'));
+expectError(subprocess.readable({other: 'stdout'}));

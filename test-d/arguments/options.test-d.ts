@@ -9,9 +9,12 @@ import {
 
 const fileUrl = new URL('file:///test');
 
+expectAssignable<Options>({preferLocal: false});
 expectAssignable<Options>({cleanup: false});
-expectNotAssignable<SyncOptions>({cleanup: false});
+expectNotAssignable<Options>({other: false});
 expectAssignable<SyncOptions>({preferLocal: false});
+expectNotAssignable<SyncOptions>({cleanup: false});
+expectNotAssignable<SyncOptions>({other: false});
 
 await execa('unicorns', {preferLocal: false});
 execaSync('unicorns', {preferLocal: false});

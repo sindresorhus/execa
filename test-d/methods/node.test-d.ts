@@ -1,5 +1,5 @@
 import {expectType, expectError, expectAssignable} from 'tsd';
-import {execaNode, type ExecaResult, type ExecaSubprocess} from '../../index.js';
+import {execaNode, type ExecaResult, type ExecaResultPromise} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
 const stringArray = ['foo', 'bar'] as const;
@@ -7,26 +7,26 @@ const stringArray = ['foo', 'bar'] as const;
 expectError(execaNode());
 expectError(execaNode(true));
 expectError(execaNode(['unicorns', 'arg']));
-expectAssignable<ExecaSubprocess>(execaNode('unicorns'));
-expectAssignable<ExecaSubprocess>(execaNode(fileUrl));
+expectAssignable<ExecaResultPromise>(execaNode('unicorns'));
+expectAssignable<ExecaResultPromise>(execaNode(fileUrl));
 
-expectAssignable<ExecaSubprocess>(execaNode('unicorns', []));
-expectAssignable<ExecaSubprocess>(execaNode('unicorns', ['foo']));
+expectAssignable<ExecaResultPromise>(execaNode('unicorns', []));
+expectAssignable<ExecaResultPromise>(execaNode('unicorns', ['foo']));
 expectError(execaNode('unicorns', 'foo'));
 expectError(execaNode('unicorns', [true]));
 
-expectAssignable<ExecaSubprocess>(execaNode('unicorns', {}));
-expectAssignable<ExecaSubprocess>(execaNode('unicorns', [], {}));
+expectAssignable<ExecaResultPromise>(execaNode('unicorns', {}));
+expectAssignable<ExecaResultPromise>(execaNode('unicorns', [], {}));
 expectError(execaNode('unicorns', [], []));
 expectError(execaNode('unicorns', {other: true}));
 
-expectAssignable<ExecaSubprocess>(execaNode`unicorns`);
+expectAssignable<ExecaResultPromise>(execaNode`unicorns`);
 expectType<ExecaResult<{}>>(await execaNode('unicorns'));
 expectType<ExecaResult<{}>>(await execaNode`unicorns`);
 
 expectAssignable<typeof execaNode>(execaNode({}));
-expectAssignable<ExecaSubprocess>(execaNode({})('unicorns'));
-expectAssignable<ExecaSubprocess>(execaNode({})`unicorns`);
+expectAssignable<ExecaResultPromise>(execaNode({})('unicorns'));
+expectAssignable<ExecaResultPromise>(execaNode({})`unicorns`);
 
 expectAssignable<{stdout: string}>(await execaNode('unicorns'));
 expectAssignable<{stdout: Uint8Array}>(await execaNode('unicorns', {encoding: 'buffer'}));
@@ -55,8 +55,8 @@ expectError(await execaNode`unicorns ${execaNode`echo foo`}`);
 expectType<ExecaResult<{}>>(await execaNode`unicorns ${[await execaNode`echo foo`, 'bar']}`);
 expectError(await execaNode`unicorns ${[execaNode`echo foo`, 'bar']}`);
 
-expectAssignable<ExecaSubprocess>(execaNode('unicorns', {nodePath: './node'}));
-expectAssignable<ExecaSubprocess>(execaNode('unicorns', {nodePath: fileUrl}));
+expectAssignable<ExecaResultPromise>(execaNode('unicorns', {nodePath: './node'}));
+expectAssignable<ExecaResultPromise>(execaNode('unicorns', {nodePath: fileUrl}));
 expectAssignable<{stdout: string}>(await execaNode('unicorns', {nodeOptions: ['--async-stack-traces']}));
 expectAssignable<{stdout: Uint8Array}>(await execaNode('unicorns', {nodeOptions: ['--async-stack-traces'], encoding: 'buffer'}));
 expectAssignable<{stdout: string}>(await execaNode('unicorns', ['foo'], {nodeOptions: ['--async-stack-traces']}));

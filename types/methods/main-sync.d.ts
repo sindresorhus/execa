@@ -26,8 +26,8 @@ Returns or throws a subprocess `result`. The `subprocess` is not returned: its m
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
-@returns A subprocess `result` object
-@throws A subprocess `result` error
+@returns `ExecaSyncResult`
+@throws `ExecaSyncError`
 
 @example
 

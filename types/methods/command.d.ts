@@ -1,17 +1,17 @@
 import type {Options, SyncOptions} from '../arguments/options';
 import type {ExecaSyncResult} from '../return/result';
-import type {ExecaSubprocess} from '../subprocess/subprocess';
+import type {ExecaResultPromise} from '../subprocess/subprocess';
 import type {SimpleTemplateString} from './template';
 
 type ExecaCommand<OptionsType extends Options> = {
 	<NewOptionsType extends Options = {}>(options: NewOptionsType): ExecaCommand<OptionsType & NewOptionsType>;
 
-	(...templateString: SimpleTemplateString): ExecaSubprocess<OptionsType>;
+	(...templateString: SimpleTemplateString): ExecaResultPromise<OptionsType>;
 
 	<NewOptionsType extends Options = {}>(
 		command: string,
 		options?: NewOptionsType,
-	): ExecaSubprocess<OptionsType & NewOptionsType>;
+	): ExecaResultPromise<OptionsType & NewOptionsType>;
 };
 
 /**
@@ -22,10 +22,10 @@ This is only intended for very specific cases, such as a REPL. This should be av
 Just like `execa()`, this can bind options. It can also be run synchronously using `execaCommandSync()`.
 
 @param command - The program/script to execute and its arguments.
-@returns An `ExecaSubprocess` that is both:
-- a `Promise` resolving or rejecting with a subprocess `result`.
-- a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with some additional methods and properties.
-@throws A subprocess `result` error
+@returns An `ExecaResultPromise` that is both:
+- the subprocess.
+- a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
+@throws `ExecaError`
 
 @example
 ```
@@ -55,8 +55,8 @@ Same as `execaCommand()` but synchronous.
 Returns or throws a subprocess `result`. The `subprocess` is not returned: its methods and properties are not available.
 
 @param command - The program/script to execute and its arguments.
-@returns A subprocess `result` object
-@throws A subprocess `result` error
+@returns `ExecaSyncResult`
+@throws `ExecaSyncError`
 
 @example
 ```

@@ -15,7 +15,7 @@ import {createReadStream} from 'node:fs';
 import {once} from 'node:events';
 import {execa} from 'execa';
 
-const readable = createReadStream('./input.txt');
+const readable = createReadStream('input.txt');
 await once(readable, 'open');
 await execa({stdin: readable})`npm run scaffold`;
 ```
@@ -27,7 +27,7 @@ import {createWriteStream} from 'node:fs';
 import {once} from 'node:events';
 import {execa} from 'execa';
 
-const writable = createWriteStream('./output.txt');
+const writable = createWriteStream('output.txt');
 await once(writable, 'open');
 await execa({stdout: writable})`npm run build`;
 ```

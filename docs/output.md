@@ -29,7 +29,7 @@ console.log(stderr); // string with errors
 ## File output
 
 ```js
-await execa({stdout: {file: './output.txt'}})`npm run build`;
+await execa({stdout: {file: 'output.txt'}})`npm run build`;
 // Or:
 await execa({stdout: new URL('file:///path/to/output.txt')})`npm run build`;
 ```
@@ -58,7 +58,7 @@ The output can be redirected to multiple targets by setting the [`stdout`](api.m
 The following example redirects `stdout` to both the [terminal](#terminal-output) and an `output.txt` [file](#file-output), while also retrieving its value [programmatically](#stdout-and-stderr).
 
 ```js
-const {stdout} = await execa({stdout: ['inherit', {file: './output.txt'}, 'pipe']})`npm run build`;
+const {stdout} = await execa({stdout: ['inherit', {file: 'output.txt'}, 'pipe']})`npm run build`;
 console.log(stdout);
 ```
 

@@ -75,9 +75,9 @@ await subprocess;
 ## File input
 
 ```js
-await execa({inputFile: './input.txt'})`npm run scaffold`;
+await execa({inputFile: 'input.txt'})`npm run scaffold`;
 // Or:
-await execa({stdin: {file: './input.txt'}})`npm run scaffold`;
+await execa({stdin: {file: 'input.txt'}})`npm run scaffold`;
 // Or:
 await execa({stdin: new URL('file:///path/to/input.txt')})`npm run scaffold`;
 ```

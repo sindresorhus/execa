@@ -1,11 +1,7 @@
 import test from 'ava';
-import {execa, execaSync} from '../../index.js';
+import {execa} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {appendGenerator, appendAsyncGenerator, casedSuffix} from '../helpers/generator.js';
-import {appendDuplex} from '../helpers/duplex.js';
-import {appendWebTransform} from '../helpers/web-transform.js';
-import {foobarString} from '../helpers/input.js';
 
 setFixtureDirectory();
 
@@ -51,22 +47,3 @@ test('stdio[*] can be "inherit"', testNoPipeOption, 'inherit', 3);
 test('stdio[*] can be ["inherit"]', testNoPipeOption, ['inherit'], 3);
 test('stdio[*] can be 3', testNoPipeOption, 3, 3);
 test('stdio[*] can be [3]', testNoPipeOption, [3], 3);
-
-// eslint-disable-next-line max-params
-const testTwoGenerators = async (t, producesTwo, execaMethod, firstGenerator, secondGenerator = firstGenerator) => {
-	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {stdout: [firstGenerator, secondGenerator]});
-	const expectedSuffix = producesTwo ? `${casedSuffix}${casedSuffix}` : casedSuffix;
-	t.is(stdout, `${foobarString}${expectedSuffix}`);
-};
-
-test('Can use multiple identical generators', testTwoGenerators, true, execa, appendGenerator().transform);
-test('Can use multiple identical generators, options object', testTwoGenerators, true, execa, appendGenerator());
-test('Can use multiple identical generators, async', testTwoGenerators, true, execa, appendAsyncGenerator().transform);
-test('Can use multiple identical generators, options object, async', testTwoGenerators, true, execa, appendAsyncGenerator());
-test('Can use multiple identical generators, sync', testTwoGenerators, true, execaSync, appendGenerator().transform);
-test('Can use multiple identical generators, options object, sync', testTwoGenerators, true, execaSync, appendGenerator());
-test('Ignore duplicate identical duplexes', testTwoGenerators, false, execa, appendDuplex());
-test('Ignore duplicate identical webTransforms', testTwoGenerators, false, execa, appendWebTransform());
-test('Can use multiple generators with duplexes', testTwoGenerators, true, execa, appendGenerator(false, false, true), appendDuplex());
-test('Can use multiple generators with webTransforms', testTwoGenerators, true, execa, appendGenerator(false, false, true), appendWebTransform());
-test('Can use multiple duplexes with webTransforms', testTwoGenerators, true, execa, appendDuplex(), appendWebTransform());

@@ -5,6 +5,7 @@ import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {foobarString} from '../helpers/input.js';
 
 setFixtureDirectory();
 
@@ -27,10 +28,10 @@ test('Cannot pass both readable and writable values to stdio[*] - process.stderr
 
 const testAmbiguousDirection = async (t, execaMethod) => {
 	const [filePathOne, filePathTwo] = [tempfile(), tempfile()];
-	await execaMethod('noop-fd.js', ['3', 'foobar'], getStdio(3, [{file: filePathOne}, {file: filePathTwo}]));
+	await execaMethod('noop-fd.js', ['3', foobarString], getStdio(3, [{file: filePathOne}, {file: filePathTwo}]));
 	t.deepEqual(
 		await Promise.all([readFile(filePathOne, 'utf8'), readFile(filePathTwo, 'utf8')]),
-		['foobar', 'foobar'],
+		[foobarString, foobarString],
 	);
 	await Promise.all([rm(filePathOne), rm(filePathTwo)]);
 };
@@ -40,9 +41,9 @@ test('stdio[*] default direction is output - sync', testAmbiguousDirection, exec
 
 const testAmbiguousMultiple = async (t, fdNumber) => {
 	const filePath = tempfile();
-	await writeFile(filePath, 'foobar');
+	await writeFile(filePath, foobarString);
 	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [{file: filePath}, ['foo', 'bar']]));
-	t.is(stdout, 'foobarfoobar');
+	t.is(stdout, `${foobarString}${foobarString}`);
 	await rm(filePath);
 };
 

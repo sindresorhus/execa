@@ -24,7 +24,9 @@ export type ErrorProperties =
   | 'code';
 
 /**
-Exception thrown when the subprocess fails.
+Result of a subprocess failed execution.
+
+This error is thrown as an exception. If the `reject` option is false, it is returned instead.
 
 This has the same shape as successful results, with a few additional properties.
 */
@@ -33,7 +35,9 @@ export class ExecaError<OptionsType extends Options = Options> extends CommonErr
 }
 
 /**
-Exception thrown when the subprocess fails.
+Result of a subprocess failed execution.
+
+This error is thrown as an exception. If the `reject` option is false, it is returned instead.
 
 This has the same shape as successful results, with a few additional properties.
 */

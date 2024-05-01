@@ -102,9 +102,9 @@ subprocess.kill(); // Forceful termination
 
 ### Signal name and description
 
-When a subprocess was terminated by a signal, [`error.isTerminated`](api.md#resultisterminated) is `true`.
+When a subprocess was terminated by a signal, [`error.isTerminated`](api.md#erroristerminated) is `true`.
 
-Also, [`error.signal`](api.md#resultsignal) and [`error.signalDescription`](api.md#resultsignaldescription) indicate the signal's name and [human-friendly description](https://github.com/ehmicky/human-signals). On Windows, those are only set if the current process terminated the subprocess, as opposed to [another process](#inter-process-termination).
+Also, [`error.signal`](api.md#errorsignal) and [`error.signalDescription`](api.md#errorsignaldescription) indicate the signal's name and [human-friendly description](https://github.com/ehmicky/human-signals). On Windows, those are only set if the current process terminated the subprocess, as opposed to [another process](#inter-process-termination).
 
 ```js
 try {

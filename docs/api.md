@@ -193,7 +193,7 @@ Unpipe the subprocess when the signal aborts.
 `error`: `Error`\
 _Returns_: `boolean`
 
-Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the subprocess. The default signal is the [`killSignal`](#optionskillsignal) option. `killSignal` defaults to `SIGTERM`, which [terminates](#resultisterminated) the subprocess.
+Sends a [signal](https://nodejs.org/api/os.html#signal-constants) to the subprocess. The default signal is the [`killSignal`](#optionskillsignal) option. `killSignal` defaults to `SIGTERM`, which [terminates](#erroristerminated) the subprocess.
 
 This returns `false` when the signal could not be sent, for example when the subprocess has already exited.
 
@@ -369,7 +369,7 @@ Converts the subprocess to a duplex stream.
 
 Type: `object`
 
-[Result](execution.md#result) of a subprocess execution.
+[Result](execution.md#result) of a subprocess successful execution.
 
 When the subprocess [fails](errors.md#subprocess-failure), it is rejected with an [`ExecaError`](#execaerror) instead.
 
@@ -471,80 +471,18 @@ Type: `boolean`
 
 Whether the subprocess failed to run.
 
+When this is `true`, the result is an [`ExecaError`](#execaerror) instance with additional error-related properties.
+
 [More info.](errors.md#subprocess-failure)
-
-### result.timedOut
-
-Type: `boolean`
-
-Whether the subprocess timed out due to the [`timeout`](#optionstimeout) option.
-
-[More info.](termination.md#timeout)
-
-### result.isCanceled
-
-Type: `boolean`
-
-Whether the subprocess was canceled using the [`cancelSignal`](#optionscancelsignal) option.
-
-[More info.](termination.md#canceling)
-
-### result.isMaxBuffer
-
-Type: `boolean`
-
-Whether the subprocess failed because its output was larger than the [`maxBuffer`](#optionsmaxbuffer) option.
-
-[More info.](output.md#big-output)
-
-### result.isTerminated
-
-Type: `boolean`
-
-Whether the subprocess was terminated by a [signal](termination.md#signal-termination) (like [`SIGTERM`](termination.md#sigterm)) sent by either:
-- The current process.
-- [Another process](termination.md#inter-process-termination). This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
-
-[More info.](termination.md#signal-name-and-description)
-
-### result.exitCode
-
-Type: `number | undefined`
-
-The numeric [exit code](https://en.wikipedia.org/wiki/Exit_status) of the subprocess that was run.
-
-This is `undefined` when the subprocess could not be spawned or was terminated by a [signal](#resultsignal).
-
-[More info.](errors.md#exit-code)
-
-### result.signal
-
-Type: `string | undefined`
-
-The name of the [signal](termination.md#signal-termination) (like [`SIGTERM`](termination.md#sigterm)) that terminated the subprocess, sent by either:
-- The current process.
-- [Another process](termination.md#inter-process-termination). This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
-
-If a signal terminated the subprocess, this property is defined and included in the [error message](#errormessage). Otherwise it is `undefined`.
-
-[More info.](termination.md#signal-name-and-description)
-
-### result.signalDescription
-
-Type: `string | undefined`
-
-A human-friendly description of the [signal](termination.md#signal-termination) that was used to terminate the subprocess.
-
-If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
-
-[More info.](termination.md#signal-name-and-description)
 
 ## ExecaError
 ## ExecaSyncError
 
 Type: `Error`
 
-Exception thrown when the subprocess [fails](errors.md#subprocess-failure).
+Result of a subprocess [failed execution](errors.md#subprocess-failure).
+
+This error is thrown as an exception. If the [`reject`](#optionsreject) option is false, it is returned instead.
 
 This has the same shape as [successful results](#result), with the following additional properties.
 
@@ -589,6 +527,72 @@ This is usually an `Error` instance.
 Type: `string | undefined`
 
 Node.js-specific [error code](https://nodejs.org/api/errors.html#errorcode), when available.
+
+### error.timedOut
+
+Type: `boolean`
+
+Whether the subprocess timed out due to the [`timeout`](#optionstimeout) option.
+
+[More info.](termination.md#timeout)
+
+### error.isCanceled
+
+Type: `boolean`
+
+Whether the subprocess was canceled using the [`cancelSignal`](#optionscancelsignal) option.
+
+[More info.](termination.md#canceling)
+
+### error.isMaxBuffer
+
+Type: `boolean`
+
+Whether the subprocess failed because its output was larger than the [`maxBuffer`](#optionsmaxbuffer) option.
+
+[More info.](output.md#big-output)
+
+### error.isTerminated
+
+Type: `boolean`
+
+Whether the subprocess was terminated by a [signal](termination.md#signal-termination) (like [`SIGTERM`](termination.md#sigterm)) sent by either:
+- The current process.
+- [Another process](termination.md#inter-process-termination). This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+
+[More info.](termination.md#signal-name-and-description)
+
+### error.exitCode
+
+Type: `number | undefined`
+
+The numeric [exit code](https://en.wikipedia.org/wiki/Exit_status) of the subprocess that was run.
+
+This is `undefined` when the subprocess could not be spawned or was terminated by a [signal](#errorsignal).
+
+[More info.](errors.md#exit-code)
+
+### error.signal
+
+Type: `string | undefined`
+
+The name of the [signal](termination.md#signal-termination) (like [`SIGTERM`](termination.md#sigterm)) that terminated the subprocess, sent by either:
+- The current process.
+- [Another process](termination.md#inter-process-termination). This case is [not supported on Windows](https://nodejs.org/api/process.html#signal-events).
+
+If a signal terminated the subprocess, this property is defined and included in the [error message](#errormessage). Otherwise it is `undefined`.
+
+[More info.](termination.md#signal-name-and-description)
+
+### error.signalDescription
+
+Type: `string | undefined`
+
+A human-friendly description of the [signal](termination.md#signal-termination) that was used to terminate the subprocess.
+
+If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`. It is also `undefined` when the signal is very uncommon which should seldomly happen.
+
+[More info.](termination.md#signal-name-and-description)
 
 ## Options
 
@@ -877,7 +881,7 @@ Default: `0`
 
 If `timeout` is greater than `0`, the subprocess will be [terminated](#optionskillsignal) if it runs for longer than that amount of milliseconds.
 
-On timeout, [`result.timedOut`](#resulttimedout) becomes `true`.
+On timeout, [`result.timedOut`](#errortimedout) becomes `true`.
 
 [More info.](termination.md#timeout)
 
@@ -887,7 +891,7 @@ Type: [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSign
 
 You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
 
-When `AbortController.abort()` is called, [`result.isCanceled`](#resultiscanceled) becomes `true`.
+When `AbortController.abort()` is called, [`result.isCanceled`](#erroriscanceled) becomes `true`.
 
 [More info.](termination.md#canceling)
 

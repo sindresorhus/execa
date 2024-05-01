@@ -36,7 +36,7 @@ if (resultOrError.failed) {
 
 ## Exit code
 
-The subprocess fails when its [exit code](https://en.wikipedia.org/wiki/Exit_status) is not `0`. The exit code is available as [`error.exitCode`](api.md#resultexitcode). It is `undefined` when the subprocess fails to spawn or when it was [terminated by a signal](termination.md#signal-termination).
+The subprocess fails when its [exit code](https://en.wikipedia.org/wiki/Exit_status) is not `0`. The exit code is available as [`error.exitCode`](api.md#errorexitcode). It is `undefined` when the subprocess fails to spawn or when it was [terminated by a signal](termination.md#signal-termination).
 
 ```js
 try {
@@ -50,10 +50,10 @@ try {
 ## Failure reason
 
 The subprocess can fail for other reasons. Some of them can be detected using a specific boolean property:
-- [`error.timedOut`](api.md#resulttimedout): [`timeout`](termination.md#timeout) option.
-- [`error.isCanceled`](api.md#resultiscanceled): [`cancelSignal`](termination.md#canceling) option.
-- [`error.isMaxBuffer`](api.md#resultismaxbuffer): [`maxBuffer`](output.md#big-output) option.
-- [`error.isTerminated`](api.md#resultisterminated): [signal termination](termination.md#signal-termination). This includes the [`timeout`](termination.md#timeout) and [`cancelSignal`](termination.md#canceling) options since those terminate the subprocess with a [signal](termination.md#default-signal). However, this does not include the [`maxBuffer`](output.md#big-output) option.
+- [`error.timedOut`](api.md#errortimedout): [`timeout`](termination.md#timeout) option.
+- [`error.isCanceled`](api.md#erroriscanceled): [`cancelSignal`](termination.md#canceling) option.
+- [`error.isMaxBuffer`](api.md#errorismaxbuffer): [`maxBuffer`](output.md#big-output) option.
+- [`error.isTerminated`](api.md#erroristerminated): [signal termination](termination.md#signal-termination). This includes the [`timeout`](termination.md#timeout) and [`cancelSignal`](termination.md#canceling) options since those terminate the subprocess with a [signal](termination.md#default-signal). However, this does not include the [`maxBuffer`](output.md#big-output) option.
 
 Otherwise, the subprocess failed because either:
 - An exception was thrown in a [stream](streams.md) or [transform](transform.md).

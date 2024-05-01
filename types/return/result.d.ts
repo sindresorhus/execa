@@ -76,6 +76,8 @@ export declare abstract class CommonResult<
 
 	/**
 	Whether the subprocess failed to run.
+
+	When this is `true`, the result is an `ExecaError` instance with additional error-related properties.
 	*/
 	failed: boolean;
 
@@ -173,14 +175,14 @@ type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = RejectOpt
 	: {[ErrorProperty in ErrorProperties]: never};
 
 /**
-Result of a subprocess execution.
+Result of a subprocess successful execution.
 
 When the subprocess fails, it is rejected with an `ExecaError` instead.
 */
 export type ExecaResult<OptionsType extends Options = Options> = SuccessResult<false, OptionsType>;
 
 /**
-Result of a subprocess execution.
+Result of a subprocess successful execution.
 
 When the subprocess fails, it is rejected with an `ExecaError` instead.
 */

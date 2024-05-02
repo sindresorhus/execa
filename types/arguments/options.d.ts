@@ -22,6 +22,8 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	If `true`, runs with Node.js. The first argument must be a Node.js file.
 
+	The subprocess inherits the current Node.js [CLI flags](https://nodejs.org/api/cli.html#options) and version. This can be overridden using the `nodeOptions` and `nodePath` options.
+
 	@default `true` with `execaNode()`, `false` otherwise
 	*/
 	readonly node?: boolean;
@@ -31,7 +33,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	Requires the `node` option to be `true`.
 
-	@default [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI options)
+	@default [`process.execArgv`](https://nodejs.org/api/process.html#process_process_execargv) (current Node.js CLI flags)
 	*/
 	readonly nodeOptions?: readonly string[];
 

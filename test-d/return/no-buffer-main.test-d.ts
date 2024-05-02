@@ -7,17 +7,17 @@ import {
 	type ExecaSyncError,
 } from '../../index.js';
 
-const noBufferPromise = execa('unicorns', {buffer: false, all: true});
-expectType<Writable>(noBufferPromise.stdin);
-expectType<Writable>(noBufferPromise.stdio[0]);
-expectType<Readable>(noBufferPromise.stdout);
-expectType<Readable>(noBufferPromise.stdio[1]);
-expectType<Readable>(noBufferPromise.stderr);
-expectType<Readable>(noBufferPromise.stdio[2]);
-expectType<Readable>(noBufferPromise.all);
-expectError(noBufferPromise.stdio[3].destroy());
+const noBufferSubprocess = execa('unicorns', {buffer: false, all: true});
+expectType<Writable>(noBufferSubprocess.stdin);
+expectType<Writable>(noBufferSubprocess.stdio[0]);
+expectType<Readable>(noBufferSubprocess.stdout);
+expectType<Readable>(noBufferSubprocess.stdio[1]);
+expectType<Readable>(noBufferSubprocess.stderr);
+expectType<Readable>(noBufferSubprocess.stdio[2]);
+expectType<Readable>(noBufferSubprocess.all);
+expectError(noBufferSubprocess.stdio[3].destroy());
 
-const noBufferResult = await noBufferPromise;
+const noBufferResult = await noBufferSubprocess;
 expectType<undefined>(noBufferResult.stdout);
 expectType<undefined>(noBufferResult.stdio[1]);
 expectType<undefined>(noBufferResult.stderr);

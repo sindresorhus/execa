@@ -1,7 +1,7 @@
 import type {Options} from './arguments/options';
 import type {ExecaResult} from './return/result';
 import type {FromOption, ToOption} from './arguments/fd-options';
-import type {ExecaSubprocess} from './subprocess/subprocess';
+import type {ExecaResultPromise} from './subprocess/subprocess';
 import type {TemplateExpression} from './methods/template';
 
 // `subprocess.pipe()` options
@@ -53,6 +53,6 @@ export type PipableSubprocess = {
 	/**
 	Like `subprocess.pipe(file, arguments?, options?)` but using the return value of another `execa()` call instead.
 	*/
-	pipe<Destination extends ExecaSubprocess>(destination: Destination, options?: PipeOptions):
+	pipe<Destination extends ExecaResultPromise>(destination: Destination, options?: PipeOptions):
 	Promise<Awaited<Destination>> & PipableSubprocess;
 };

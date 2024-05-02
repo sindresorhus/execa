@@ -2,28 +2,28 @@ import type {Duplex} from 'node:stream';
 import {expectType, expectError} from 'tsd';
 import {execa} from '../../index.js';
 
-const execaPromise = execa('unicorns');
+const subprocess = execa('unicorns');
 
-expectType<Duplex>(execaPromise.duplex());
+expectType<Duplex>(subprocess.duplex());
 
-execaPromise.duplex({from: 'stdout'});
-execaPromise.duplex({from: 'stderr'});
-execaPromise.duplex({from: 'all'});
-execaPromise.duplex({from: 'fd3'});
-execaPromise.duplex({from: 'stdout', to: 'stdin'});
-execaPromise.duplex({from: 'stdout', to: 'fd3'});
-expectError(execaPromise.duplex({from: 'stdin'}));
-expectError(execaPromise.duplex({from: 'stderr', to: 'stdout'}));
-expectError(execaPromise.duplex({from: 'fd'}));
-expectError(execaPromise.duplex({from: 'fdNotANumber'}));
-expectError(execaPromise.duplex({to: 'fd'}));
-expectError(execaPromise.duplex({to: 'fdNotANumber'}));
+subprocess.duplex({from: 'stdout'});
+subprocess.duplex({from: 'stderr'});
+subprocess.duplex({from: 'all'});
+subprocess.duplex({from: 'fd3'});
+subprocess.duplex({from: 'stdout', to: 'stdin'});
+subprocess.duplex({from: 'stdout', to: 'fd3'});
+expectError(subprocess.duplex({from: 'stdin'}));
+expectError(subprocess.duplex({from: 'stderr', to: 'stdout'}));
+expectError(subprocess.duplex({from: 'fd'}));
+expectError(subprocess.duplex({from: 'fdNotANumber'}));
+expectError(subprocess.duplex({to: 'fd'}));
+expectError(subprocess.duplex({to: 'fdNotANumber'}));
 
-execaPromise.duplex({binary: false});
-expectError(execaPromise.duplex({binary: 'false'}));
+subprocess.duplex({binary: false});
+expectError(subprocess.duplex({binary: 'false'}));
 
-execaPromise.duplex({preserveNewlines: false});
-expectError(execaPromise.duplex({preserveNewlines: 'false'}));
+subprocess.duplex({preserveNewlines: false});
+expectError(subprocess.duplex({preserveNewlines: 'false'}));
 
-expectError(execaPromise.duplex('stdout'));
-expectError(execaPromise.duplex({other: 'stdout'}));
+expectError(subprocess.duplex('stdout'));
+expectError(subprocess.duplex({other: 'stdout'}));

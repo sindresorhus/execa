@@ -2,20 +2,20 @@ import type {Writable} from 'node:stream';
 import {expectType, expectError} from 'tsd';
 import {execa} from '../../index.js';
 
-const execaPromise = execa('unicorns');
+const subprocess = execa('unicorns');
 
-expectType<Writable>(execaPromise.writable());
+expectType<Writable>(subprocess.writable());
 
-execaPromise.writable({to: 'stdin'});
-execaPromise.writable({to: 'fd3'});
-expectError(execaPromise.writable({to: 'stdout'}));
-expectError(execaPromise.writable({to: 'fd'}));
-expectError(execaPromise.writable({to: 'fdNotANumber'}));
-expectError(execaPromise.writable({from: 'stdout'}));
+subprocess.writable({to: 'stdin'});
+subprocess.writable({to: 'fd3'});
+expectError(subprocess.writable({to: 'stdout'}));
+expectError(subprocess.writable({to: 'fd'}));
+expectError(subprocess.writable({to: 'fdNotANumber'}));
+expectError(subprocess.writable({from: 'stdout'}));
 
-expectError(execaPromise.writable({binary: false}));
+expectError(subprocess.writable({binary: false}));
 
-expectError(execaPromise.writable({preserveNewlines: false}));
+expectError(subprocess.writable({preserveNewlines: false}));
 
-expectError(execaPromise.writable('stdin'));
-expectError(execaPromise.writable({other: 'stdin'}));
+expectError(subprocess.writable('stdin'));
+expectError(subprocess.writable({other: 'stdin'}));

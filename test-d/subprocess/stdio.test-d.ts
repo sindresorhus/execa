@@ -1,11 +1,11 @@
 import type {Readable, Writable} from 'node:stream';
 import {expectType, expectError} from 'tsd';
-import {execa, type ExecaSubprocess} from '../../index.js';
+import {execa, type Subprocess} from '../../index.js';
 
-expectType<Writable | null>({} as ExecaSubprocess['stdin']);
-expectType<Readable | null>({} as ExecaSubprocess['stdout']);
-expectType<Readable | null>({} as ExecaSubprocess['stderr']);
-expectType<Readable | undefined>({} as ExecaSubprocess['all']);
+expectType<Writable | null>({} as Subprocess['stdin']);
+expectType<Readable | null>({} as Subprocess['stdout']);
+expectType<Readable | null>({} as Subprocess['stderr']);
+expectType<Readable | undefined>({} as Subprocess['all']);
 
 const bufferSubprocess = execa('unicorns', {encoding: 'buffer', all: true});
 expectType<Writable>(bufferSubprocess.stdin);

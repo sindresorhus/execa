@@ -4,22 +4,22 @@ import {
 	execaSync,
 	ExecaError,
 	ExecaSyncError,
-	type ExecaResult,
-	type ExecaSyncResult,
+	type Result,
+	type SyncResult,
 } from '../../index.js';
 
 type AnyChunk = string | Uint8Array | string[] | unknown[] | undefined;
-expectType<AnyChunk>({} as ExecaResult['stdout']);
-expectType<AnyChunk>({} as ExecaResult['stderr']);
-expectType<AnyChunk>({} as ExecaResult['all']);
-expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaResult['stdio']);
-expectType<AnyChunk>({} as ExecaSyncResult['stdout']);
-expectType<AnyChunk>({} as ExecaSyncResult['stderr']);
-expectType<AnyChunk>({} as ExecaSyncResult['all']);
-expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as ExecaSyncResult['stdio']);
+expectType<AnyChunk>({} as Result['stdout']);
+expectType<AnyChunk>({} as Result['stderr']);
+expectType<AnyChunk>({} as Result['all']);
+expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as Result['stdio']);
+expectType<AnyChunk>({} as SyncResult['stdout']);
+expectType<AnyChunk>({} as SyncResult['stderr']);
+expectType<AnyChunk>({} as SyncResult['all']);
+expectAssignable<[undefined, AnyChunk, AnyChunk, ...AnyChunk[]]>({} as SyncResult['stdio']);
 
 const unicornsResult = await execa('unicorns', {all: true});
-expectAssignable<ExecaResult>(unicornsResult);
+expectAssignable<Result>(unicornsResult);
 expectType<string>(unicornsResult.command);
 expectType<string>(unicornsResult.escapedCommand);
 expectType<number | undefined>(unicornsResult.exitCode);
@@ -32,10 +32,10 @@ expectType<string | undefined>(unicornsResult.signal);
 expectType<string | undefined>(unicornsResult.signalDescription);
 expectType<string>(unicornsResult.cwd);
 expectType<number>(unicornsResult.durationMs);
-expectType<ExecaResult[]>(unicornsResult.pipedFrom);
+expectType<Result[]>(unicornsResult.pipedFrom);
 
 const unicornsResultSync = execaSync('unicorns', {all: true});
-expectAssignable<ExecaSyncResult>(unicornsResultSync);
+expectAssignable<SyncResult>(unicornsResultSync);
 expectType<string>(unicornsResultSync.command);
 expectType<string>(unicornsResultSync.escapedCommand);
 expectType<number | undefined>(unicornsResultSync.exitCode);
@@ -69,7 +69,7 @@ if (error instanceof ExecaError) {
 	expectType<string>(error.originalMessage);
 	expectType<string | undefined>(error.code);
 	expectType<unknown>(error.cause);
-	expectType<ExecaResult[]>(error.pipedFrom);
+	expectType<Result[]>(error.pipedFrom);
 }
 
 const errorSync = new Error('.');

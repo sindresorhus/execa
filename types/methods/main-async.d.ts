@@ -1,22 +1,22 @@
 import type {Options} from '../arguments/options';
-import type {ExecaResultPromise} from '../subprocess/subprocess';
+import type {ResultPromise} from '../subprocess/subprocess';
 import type {TemplateString} from './template';
 
 type Execa<OptionsType extends Options> = {
 	<NewOptionsType extends Options = {}>(options: NewOptionsType): Execa<OptionsType & NewOptionsType>;
 
-	(...templateString: TemplateString): ExecaResultPromise<OptionsType>;
+	(...templateString: TemplateString): ResultPromise<OptionsType>;
 
 	<NewOptionsType extends Options = {}>(
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: NewOptionsType,
-	): ExecaResultPromise<OptionsType & NewOptionsType>;
+	): ResultPromise<OptionsType & NewOptionsType>;
 
 	<NewOptionsType extends Options = {}>(
 		file: string | URL,
 		options?: NewOptionsType,
-	): ExecaResultPromise<OptionsType & NewOptionsType>;
+	): ResultPromise<OptionsType & NewOptionsType>;
 };
 
 /**
@@ -28,7 +28,7 @@ When `command` is a template string, it includes both the `file` and its `argume
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
-@returns An `ExecaResultPromise` that is both:
+@returns A `ResultPromise` that is both:
 - the subprocess.
 - a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
 @throws `ExecaError`

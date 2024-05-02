@@ -2,7 +2,7 @@ import type {ChildProcess} from 'node:child_process';
 import type {Readable, Writable, Duplex} from 'node:stream';
 import type {StdioOptionsArray} from '../stdio/type';
 import type {Options} from '../arguments/options';
-import type {ExecaResult} from '../return/result';
+import type {Result} from '../return/result';
 import type {PipableSubprocess} from '../pipe';
 import type {
 	ReadableOptions,
@@ -118,7 +118,7 @@ type ExecaCustomSubprocess<OptionsType extends Options = Options> = {
 /**
 [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with additional methods and properties.
 */
-export type ExecaSubprocess<OptionsType extends Options = Options> =
+export type Subprocess<OptionsType extends Options = Options> =
 	& Omit<ChildProcess, keyof ExecaCustomSubprocess<OptionsType>>
 	& ExecaCustomSubprocess<OptionsType>;
 
@@ -127,6 +127,6 @@ The return value of all asynchronous methods is both:
 - the subprocess.
 - a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
 */
-export type ExecaResultPromise<OptionsType extends Options = Options> =
-	& ExecaSubprocess<OptionsType>
-	& Promise<ExecaResult<OptionsType>>;
+export type ResultPromise<OptionsType extends Options = Options> =
+	& Subprocess<OptionsType>
+	& Promise<Result<OptionsType>>;

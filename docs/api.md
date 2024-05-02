@@ -15,7 +15,7 @@ This lists all available [methods](#methods) and their [options](#options). This
 `file`: `string | URL`\
 `arguments`: `string[]`\
 `options`: [`Options`](#options)\
-_Returns_: [`ExecaResultPromise`](#return-value)
+_Returns_: [`ResultPromise`](#return-value)
 
 Executes a command using `file ...arguments`.
 
@@ -26,7 +26,7 @@ More info on the [syntax](execution.md#array-syntax) and [escaping](escaping.md#
 
 `command`: `string`\
 `options`: [`Options`](#options)\
-_Returns_: [`ExecaResultPromise`](#return-value)
+_Returns_: [`ResultPromise`](#return-value)
 
 Executes a command. `command` is a [template string](execution.md#template-string-syntax) that includes both the `file` and its `arguments`.
 
@@ -44,7 +44,7 @@ Returns a new instance of Execa but with different default [`options`](#options)
 ### execaSync(file, arguments?, options?)
 ### execaSync\`command\`
 
-_Returns_: [`ExecaSyncResult`](#return-value)
+_Returns_: [`SyncResult`](#return-value)
 
 Same as [`execa()`](#execafile-arguments-options) but synchronous.
 
@@ -57,7 +57,7 @@ Returns or throws a subprocess [`result`](#result). The [`subprocess`](#subproce
 `file`: `string | URL`\
 `arguments`: `string[]`\
 `options`: [`Options`](#options)\
-_Returns_: [`ExecaResultPromise`](#return-value)
+_Returns_: [`ResultPromise`](#return-value)
 
 Same as [`execa()`](#execafile-arguments-options) but using [script-friendly default options](scripts.md#script-files).
 
@@ -72,7 +72,7 @@ This is the preferred method when executing multiple commands in a script file.
 `scriptPath`: `string | URL`\
 `arguments`: `string[]`\
 `options`: [`Options`](#options)\
-_Returns_: [`ExecaResultPromise`](#return-value)
+_Returns_: [`ResultPromise`](#return-value)
 
 Same as [`execa()`](#execafile-arguments-options) but using the [`node: true`](#optionsnode) option.
 Executes a Node.js file using `node scriptPath ...arguments`.
@@ -87,7 +87,7 @@ This is the preferred method when executing Node.js files.
 
 `command`: `string`\
 `options`: [`Options`](#options)\
-_Returns_: [`ExecaResultPromise`](#return-value)
+_Returns_: [`ResultPromise`](#return-value)
 
 Executes a command. `command` is a string that includes both the `file` and its `arguments`.
 
@@ -99,7 +99,7 @@ Just like `execa()`, this can [bind options](execution.md#globalshared-options).
 
 ## Return value
 
-_Type_: `ExecaResultPromise`
+_Type_: `ResultPromise`
 
 The return value of all [asynchronous methods](#methods) is both:
 - the [subprocess](#subprocess).
@@ -109,7 +109,7 @@ The return value of all [asynchronous methods](#methods) is both:
 
 ## Subprocess
 
-_Type_: `ExecaSubprocess`
+_Type_: `Subprocess`
 
 [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following methods and properties.
 
@@ -156,7 +156,7 @@ Like [`subprocess.pipe(file, arguments?, options?)`](#subprocesspipefile-argumen
 
 ### subprocess.pipe(secondSubprocess, pipeOptions?)
 
-`secondSubprocess`: [`ExecaResultPromise`](#return-value)\
+`secondSubprocess`: [`ResultPromise`](#return-value)\
 `pipeOptions`: [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<Result>`](#result)
 

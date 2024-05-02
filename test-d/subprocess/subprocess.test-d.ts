@@ -1,8 +1,8 @@
 import {expectType, expectError, expectAssignable} from 'tsd';
-import {execa, type ExecaSubprocess} from '../../index.js';
+import {execa, type Subprocess} from '../../index.js';
 
 const subprocess = execa('unicorns');
-expectAssignable<ExecaSubprocess>(subprocess);
+expectAssignable<Subprocess>(subprocess);
 
 expectType<number | undefined>(subprocess.pid);
 
@@ -21,7 +21,7 @@ expectError(subprocess.kill('SIGKILL', {}));
 expectError(subprocess.kill(null, new Error('test')));
 
 const ipcSubprocess = execa('unicorns', {ipc: true});
-expectAssignable<ExecaSubprocess>(subprocess);
+expectAssignable<Subprocess>(subprocess);
 
 expectType<boolean>(ipcSubprocess.send({}));
 execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ipc']}).send({});

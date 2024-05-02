@@ -1,22 +1,22 @@
 import type {SyncOptions} from '../arguments/options';
-import type {ExecaSyncResult} from '../return/result';
+import type {SyncResult} from '../return/result';
 import type {TemplateString} from './template';
 
 type ExecaSync<OptionsType extends SyncOptions> = {
 	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType): ExecaSync<OptionsType & NewOptionsType>;
 
-	(...templateString: TemplateString): ExecaSyncResult<OptionsType>;
+	(...templateString: TemplateString): SyncResult<OptionsType>;
 
 	<NewOptionsType extends SyncOptions = {}>(
 		file: string | URL,
 		arguments?: readonly string[],
 		options?: NewOptionsType,
-	): ExecaSyncResult<OptionsType & NewOptionsType>;
+	): SyncResult<OptionsType & NewOptionsType>;
 
 	<NewOptionsType extends SyncOptions = {}>(
 		file: string | URL,
 		options?: NewOptionsType,
-	): ExecaSyncResult<OptionsType & NewOptionsType>;
+	): SyncResult<OptionsType & NewOptionsType>;
 };
 
 /**
@@ -26,7 +26,7 @@ Returns or throws a subprocess `result`. The `subprocess` is not returned: its m
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.
-@returns `ExecaSyncResult`
+@returns `SyncResult`
 @throws `ExecaSyncError`
 
 @example

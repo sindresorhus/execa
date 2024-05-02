@@ -7,8 +7,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const duplexWithInvalidObjectMode = {
@@ -48,8 +46,3 @@ expectNotAssignable<StdoutStderrOption>(duplexWithInvalidObjectMode);
 expectNotAssignable<StdoutStderrOptionSync>(duplexWithInvalidObjectMode);
 expectNotAssignable<StdoutStderrOption>([duplexWithInvalidObjectMode]);
 expectNotAssignable<StdoutStderrOptionSync>([duplexWithInvalidObjectMode]);
-
-expectNotAssignable<StdioOption>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdioOptionSync>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdioOption>([duplexWithInvalidObjectMode]);
-expectNotAssignable<StdioOptionSync>([duplexWithInvalidObjectMode]);

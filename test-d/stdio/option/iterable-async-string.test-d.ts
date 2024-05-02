@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const asyncStringIterableFunction = async function * () {
@@ -48,8 +46,3 @@ expectNotAssignable<StdoutStderrOption>(asyncStringIterable);
 expectNotAssignable<StdoutStderrOptionSync>(asyncStringIterable);
 expectNotAssignable<StdoutStderrOption>([asyncStringIterable]);
 expectNotAssignable<StdoutStderrOptionSync>([asyncStringIterable]);
-
-expectAssignable<StdioOption>(asyncStringIterable);
-expectNotAssignable<StdioOptionSync>(asyncStringIterable);
-expectAssignable<StdioOption>([asyncStringIterable]);
-expectNotAssignable<StdioOptionSync>([asyncStringIterable]);

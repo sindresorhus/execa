@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const transformWithBinary = {
@@ -49,8 +47,3 @@ expectAssignable<StdoutStderrOption>(transformWithBinary);
 expectAssignable<StdoutStderrOptionSync>(transformWithBinary);
 expectAssignable<StdoutStderrOption>([transformWithBinary]);
 expectAssignable<StdoutStderrOptionSync>([transformWithBinary]);
-
-expectAssignable<StdioOption>(transformWithBinary);
-expectAssignable<StdioOptionSync>(transformWithBinary);
-expectAssignable<StdioOption>([transformWithBinary]);
-expectAssignable<StdioOptionSync>([transformWithBinary]);

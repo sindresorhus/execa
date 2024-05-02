@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 expectError(await execa('unicorns', {stdin: 1}));
@@ -42,8 +40,3 @@ expectAssignable<StdoutStderrOption>(1);
 expectAssignable<StdoutStderrOptionSync>(1);
 expectAssignable<StdoutStderrOption>([1]);
 expectAssignable<StdoutStderrOptionSync>([1]);
-
-expectAssignable<StdioOption>(1);
-expectAssignable<StdioOptionSync>(1);
-expectAssignable<StdioOption>([1]);
-expectAssignable<StdioOptionSync>([1]);

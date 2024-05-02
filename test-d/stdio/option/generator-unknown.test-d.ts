@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const unknownGenerator = function * (line: unknown) {
@@ -46,8 +44,3 @@ expectAssignable<StdoutStderrOption>(unknownGenerator);
 expectAssignable<StdoutStderrOptionSync>(unknownGenerator);
 expectAssignable<StdoutStderrOption>([unknownGenerator]);
 expectAssignable<StdoutStderrOptionSync>([unknownGenerator]);
-
-expectAssignable<StdioOption>(unknownGenerator);
-expectAssignable<StdioOptionSync>(unknownGenerator);
-expectAssignable<StdioOption>([unknownGenerator]);
-expectAssignable<StdioOptionSync>([unknownGenerator]);

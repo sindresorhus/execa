@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 await execa('unicorns', {stdin: 'ipc'});
@@ -42,8 +40,3 @@ expectAssignable<StdoutStderrOption>('ipc');
 expectNotAssignable<StdoutStderrOptionSync>('ipc');
 expectNotAssignable<StdoutStderrOption>(['ipc']);
 expectNotAssignable<StdoutStderrOptionSync>(['ipc']);
-
-expectAssignable<StdioOption>('ipc');
-expectNotAssignable<StdioOptionSync>('ipc');
-expectNotAssignable<StdioOption>(['ipc']);
-expectNotAssignable<StdioOptionSync>(['ipc']);

@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const transformWithInvalidPreserveNewlines = {
@@ -49,8 +47,3 @@ expectNotAssignable<StdoutStderrOption>(transformWithInvalidPreserveNewlines);
 expectNotAssignable<StdoutStderrOptionSync>(transformWithInvalidPreserveNewlines);
 expectNotAssignable<StdoutStderrOption>([transformWithInvalidPreserveNewlines]);
 expectNotAssignable<StdoutStderrOptionSync>([transformWithInvalidPreserveNewlines]);
-
-expectNotAssignable<StdioOption>(transformWithInvalidPreserveNewlines);
-expectNotAssignable<StdioOptionSync>(transformWithInvalidPreserveNewlines);
-expectNotAssignable<StdioOption>([transformWithInvalidPreserveNewlines]);
-expectNotAssignable<StdioOptionSync>([transformWithInvalidPreserveNewlines]);

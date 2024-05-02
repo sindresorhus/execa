@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const objectArray = [{}, {}] as const;
@@ -31,6 +29,3 @@ expectAssignable<StdinOptionSync>([objectArray]);
 
 expectNotAssignable<StdoutStderrOption>([objectArray]);
 expectNotAssignable<StdoutStderrOptionSync>([objectArray]);
-
-expectAssignable<StdioOption>([objectArray]);
-expectAssignable<StdioOptionSync>([objectArray]);

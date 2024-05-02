@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const finalOnly = {
@@ -48,8 +46,3 @@ expectNotAssignable<StdoutStderrOption>(finalOnly);
 expectNotAssignable<StdoutStderrOptionSync>(finalOnly);
 expectNotAssignable<StdoutStderrOption>([finalOnly]);
 expectNotAssignable<StdoutStderrOptionSync>([finalOnly]);
-
-expectNotAssignable<StdioOption>(finalOnly);
-expectNotAssignable<StdioOptionSync>(finalOnly);
-expectNotAssignable<StdioOption>([finalOnly]);
-expectNotAssignable<StdioOptionSync>([finalOnly]);

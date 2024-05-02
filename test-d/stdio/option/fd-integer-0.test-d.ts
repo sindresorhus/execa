@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 await execa('unicorns', {stdin: 0});
@@ -38,17 +36,17 @@ expectAssignable<StdinOptionSync>(0);
 expectAssignable<StdinOption>([0]);
 expectAssignable<StdinOptionSync>([0]);
 
+expectNotAssignable<StdinOption>(0.5);
+expectNotAssignable<StdinOptionSync>(-1);
+expectNotAssignable<StdinOption>(Number.POSITIVE_INFINITY);
+expectNotAssignable<StdinOptionSync>(Number.NaN);
+
 expectNotAssignable<StdoutStderrOption>(0);
 expectNotAssignable<StdoutStderrOptionSync>(0);
 expectNotAssignable<StdoutStderrOption>([0]);
 expectNotAssignable<StdoutStderrOptionSync>([0]);
 
-expectAssignable<StdioOption>(0);
-expectAssignable<StdioOptionSync>(0);
-expectAssignable<StdioOption>([0]);
-expectAssignable<StdioOptionSync>([0]);
-
-expectNotAssignable<StdioOption>(0.5);
-expectNotAssignable<StdioOption>(-1);
-expectNotAssignable<StdioOption>(Number.POSITIVE_INFINITY);
-expectNotAssignable<StdioOption>(Number.NaN);
+expectNotAssignable<StdoutStderrOption>(0.5);
+expectNotAssignable<StdoutStderrOptionSync>(-1);
+expectNotAssignable<StdoutStderrOption>(Number.POSITIVE_INFINITY);
+expectNotAssignable<StdoutStderrOptionSync>(Number.NaN);

@@ -6,8 +6,6 @@ import {
 	type StdinOptionSync,
 	type StdoutStderrOption,
 	type StdoutStderrOptionSync,
-	type StdioOption,
-	type StdioOptionSync,
 } from '../../../index.js';
 
 const booleanGenerator = function * (line: boolean) {
@@ -46,8 +44,3 @@ expectNotAssignable<StdoutStderrOption>(booleanGenerator);
 expectNotAssignable<StdoutStderrOptionSync>(booleanGenerator);
 expectNotAssignable<StdoutStderrOption>([booleanGenerator]);
 expectNotAssignable<StdoutStderrOptionSync>([booleanGenerator]);
-
-expectNotAssignable<StdioOption>(booleanGenerator);
-expectNotAssignable<StdioOptionSync>(booleanGenerator);
-expectNotAssignable<StdioOption>([booleanGenerator]);
-expectNotAssignable<StdioOptionSync>([booleanGenerator]);

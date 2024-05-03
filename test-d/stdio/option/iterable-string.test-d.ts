@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const stringIterableFunction = function * () {
@@ -38,11 +38,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringIterable]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringIterable]]}));
 
 expectAssignable<StdinOption>(stringIterable);
-expectAssignable<StdinOptionSync>(stringIterable);
+expectAssignable<StdinSyncOption>(stringIterable);
 expectAssignable<StdinOption>([stringIterable]);
-expectAssignable<StdinOptionSync>([stringIterable]);
+expectAssignable<StdinSyncOption>([stringIterable]);
 
 expectNotAssignable<StdoutStderrOption>(stringIterable);
-expectNotAssignable<StdoutStderrOptionSync>(stringIterable);
+expectNotAssignable<StdoutStderrSyncOption>(stringIterable);
 expectNotAssignable<StdoutStderrOption>([stringIterable]);
-expectNotAssignable<StdoutStderrOptionSync>([stringIterable]);
+expectNotAssignable<StdoutStderrSyncOption>([stringIterable]);

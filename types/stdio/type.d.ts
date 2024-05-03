@@ -107,7 +107,7 @@ export type StdinOptionCommon<
 // `options.stdin`, async
 export type StdinOption = StdinOptionCommon<false, false>;
 // `options.stdin`, sync
-export type StdinOptionSync = StdinOptionCommon<true, false>;
+export type StdinSyncOption = StdinOptionCommon<true, false>;
 
 // `options.stdout|stderr` array items
 type StdoutStderrSingleOption<
@@ -129,7 +129,7 @@ export type StdoutStderrOptionCommon<
 // `options.stdout|stderr`, async
 export type StdoutStderrOption = StdoutStderrOptionCommon<false, false>;
 // `options.stdout|stderr`, sync
-export type StdoutStderrOptionSync = StdoutStderrOptionCommon<true, false>;
+export type StdoutStderrSyncOption = StdoutStderrOptionCommon<true, false>;
 
 // `options.stdio[3+]`
 type StdioExtraOptionCommon<IsSync extends boolean = boolean> =

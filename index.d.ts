@@ -1,8 +1,8 @@
 export type {
 	StdinOption,
-	StdinOptionSync,
+	StdinSyncOption,
 	StdoutStderrOption,
-	StdoutStderrOptionSync,
+	StdoutStderrSyncOption,
 } from './types/stdio/type';
 export type {Options, SyncOptions} from './types/arguments/options';
 export type {Result, SyncResult} from './types/return/result';

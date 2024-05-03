@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const asyncGenerator = async function * (line: unknown) {
@@ -36,11 +36,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncGenerator]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncGenerator]]}));
 
 expectAssignable<StdinOption>(asyncGenerator);
-expectNotAssignable<StdinOptionSync>(asyncGenerator);
+expectNotAssignable<StdinSyncOption>(asyncGenerator);
 expectAssignable<StdinOption>([asyncGenerator]);
-expectNotAssignable<StdinOptionSync>([asyncGenerator]);
+expectNotAssignable<StdinSyncOption>([asyncGenerator]);
 
 expectAssignable<StdoutStderrOption>(asyncGenerator);
-expectNotAssignable<StdoutStderrOptionSync>(asyncGenerator);
+expectNotAssignable<StdoutStderrSyncOption>(asyncGenerator);
 expectAssignable<StdoutStderrOption>([asyncGenerator]);
-expectNotAssignable<StdoutStderrOptionSync>([asyncGenerator]);
+expectNotAssignable<StdoutStderrSyncOption>([asyncGenerator]);

@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const transformWithBinary = {
@@ -39,11 +39,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithBinary]]}
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithBinary]]});
 
 expectAssignable<StdinOption>(transformWithBinary);
-expectAssignable<StdinOptionSync>(transformWithBinary);
+expectAssignable<StdinSyncOption>(transformWithBinary);
 expectAssignable<StdinOption>([transformWithBinary]);
-expectAssignable<StdinOptionSync>([transformWithBinary]);
+expectAssignable<StdinSyncOption>([transformWithBinary]);
 
 expectAssignable<StdoutStderrOption>(transformWithBinary);
-expectAssignable<StdoutStderrOptionSync>(transformWithBinary);
+expectAssignable<StdoutStderrSyncOption>(transformWithBinary);
 expectAssignable<StdoutStderrOption>([transformWithBinary]);
-expectAssignable<StdoutStderrOptionSync>([transformWithBinary]);
+expectAssignable<StdoutStderrSyncOption>([transformWithBinary]);

@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const binaryArray = [new Uint8Array(), new Uint8Array()] as const;
@@ -25,7 +25,7 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [[binaryArray]]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [[binaryArray]]]}));
 
 expectAssignable<StdinOption>([binaryArray]);
-expectAssignable<StdinOptionSync>([binaryArray]);
+expectAssignable<StdinSyncOption>([binaryArray]);
 
 expectNotAssignable<StdoutStderrOption>([binaryArray]);
-expectNotAssignable<StdoutStderrOptionSync>([binaryArray]);
+expectNotAssignable<StdoutStderrSyncOption>([binaryArray]);

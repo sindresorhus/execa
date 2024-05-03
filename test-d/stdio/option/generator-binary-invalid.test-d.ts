@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const transformWithInvalidBinary = {
@@ -39,11 +39,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformW
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithInvalidBinary]]}));
 
 expectNotAssignable<StdinOption>(transformWithInvalidBinary);
-expectNotAssignable<StdinOptionSync>(transformWithInvalidBinary);
+expectNotAssignable<StdinSyncOption>(transformWithInvalidBinary);
 expectNotAssignable<StdinOption>([transformWithInvalidBinary]);
-expectNotAssignable<StdinOptionSync>([transformWithInvalidBinary]);
+expectNotAssignable<StdinSyncOption>([transformWithInvalidBinary]);
 
 expectNotAssignable<StdoutStderrOption>(transformWithInvalidBinary);
-expectNotAssignable<StdoutStderrOptionSync>(transformWithInvalidBinary);
+expectNotAssignable<StdoutStderrSyncOption>(transformWithInvalidBinary);
 expectNotAssignable<StdoutStderrOption>([transformWithInvalidBinary]);
-expectNotAssignable<StdoutStderrOptionSync>([transformWithInvalidBinary]);
+expectNotAssignable<StdoutStderrSyncOption>([transformWithInvalidBinary]);

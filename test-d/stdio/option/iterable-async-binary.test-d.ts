@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const asyncBinaryIterableFunction = async function * () {
@@ -38,11 +38,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncBinaryIterable]]}
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncBinaryIterable]]}));
 
 expectAssignable<StdinOption>(asyncBinaryIterable);
-expectNotAssignable<StdinOptionSync>(asyncBinaryIterable);
+expectNotAssignable<StdinSyncOption>(asyncBinaryIterable);
 expectAssignable<StdinOption>([asyncBinaryIterable]);
-expectNotAssignable<StdinOptionSync>([asyncBinaryIterable]);
+expectNotAssignable<StdinSyncOption>([asyncBinaryIterable]);
 
 expectNotAssignable<StdoutStderrOption>(asyncBinaryIterable);
-expectNotAssignable<StdoutStderrOptionSync>(asyncBinaryIterable);
+expectNotAssignable<StdoutStderrSyncOption>(asyncBinaryIterable);
 expectNotAssignable<StdoutStderrOption>([asyncBinaryIterable]);
-expectNotAssignable<StdoutStderrOptionSync>([asyncBinaryIterable]);
+expectNotAssignable<StdoutStderrSyncOption>([asyncBinaryIterable]);

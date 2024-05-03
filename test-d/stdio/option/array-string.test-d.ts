@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const stringArray = ['foo', 'bar'] as const;
@@ -25,7 +25,7 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [[stringArray]]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [[stringArray]]]}));
 
 expectAssignable<StdinOption>([stringArray]);
-expectAssignable<StdinOptionSync>([stringArray]);
+expectAssignable<StdinSyncOption>([stringArray]);
 
 expectNotAssignable<StdoutStderrOption>([stringArray]);
-expectNotAssignable<StdoutStderrOptionSync>([stringArray]);
+expectNotAssignable<StdoutStderrSyncOption>([stringArray]);

@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 await execa('unicorns', {stdin: new Uint8Array()});
@@ -32,11 +32,11 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [new Uint8Array()]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [new Uint8Array()]]}));
 
 expectAssignable<StdinOption>(new Uint8Array());
-expectAssignable<StdinOptionSync>(new Uint8Array());
+expectAssignable<StdinSyncOption>(new Uint8Array());
 expectAssignable<StdinOption>([new Uint8Array()]);
-expectAssignable<StdinOptionSync>([new Uint8Array()]);
+expectAssignable<StdinSyncOption>([new Uint8Array()]);
 
 expectNotAssignable<StdoutStderrOption>(new Uint8Array());
-expectNotAssignable<StdoutStderrOptionSync>(new Uint8Array());
+expectNotAssignable<StdoutStderrSyncOption>(new Uint8Array());
 expectNotAssignable<StdoutStderrOption>([new Uint8Array()]);
-expectNotAssignable<StdoutStderrOptionSync>([new Uint8Array()]);
+expectNotAssignable<StdoutStderrSyncOption>([new Uint8Array()]);

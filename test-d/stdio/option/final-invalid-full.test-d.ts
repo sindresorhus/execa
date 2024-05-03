@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const invalidReturnFinalFull = {
@@ -42,11 +42,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidRet
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidReturnFinalFull]]}));
 
 expectNotAssignable<StdinOption>(invalidReturnFinalFull);
-expectNotAssignable<StdinOptionSync>(invalidReturnFinalFull);
+expectNotAssignable<StdinSyncOption>(invalidReturnFinalFull);
 expectNotAssignable<StdinOption>([invalidReturnFinalFull]);
-expectNotAssignable<StdinOptionSync>([invalidReturnFinalFull]);
+expectNotAssignable<StdinSyncOption>([invalidReturnFinalFull]);
 
 expectNotAssignable<StdoutStderrOption>(invalidReturnFinalFull);
-expectNotAssignable<StdoutStderrOptionSync>(invalidReturnFinalFull);
+expectNotAssignable<StdoutStderrSyncOption>(invalidReturnFinalFull);
 expectNotAssignable<StdoutStderrOption>([invalidReturnFinalFull]);
-expectNotAssignable<StdoutStderrOptionSync>([invalidReturnFinalFull]);
+expectNotAssignable<StdoutStderrSyncOption>([invalidReturnFinalFull]);

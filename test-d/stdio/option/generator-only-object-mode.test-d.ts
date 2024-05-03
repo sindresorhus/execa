@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const objectModeOnly = {objectMode: true} as const;
@@ -34,11 +34,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [objectMode
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [objectModeOnly]]}));
 
 expectNotAssignable<StdinOption>(objectModeOnly);
-expectNotAssignable<StdinOptionSync>(objectModeOnly);
+expectNotAssignable<StdinSyncOption>(objectModeOnly);
 expectNotAssignable<StdinOption>([objectModeOnly]);
-expectNotAssignable<StdinOptionSync>([objectModeOnly]);
+expectNotAssignable<StdinSyncOption>([objectModeOnly]);
 
 expectNotAssignable<StdoutStderrOption>(objectModeOnly);
-expectNotAssignable<StdoutStderrOptionSync>(objectModeOnly);
+expectNotAssignable<StdoutStderrSyncOption>(objectModeOnly);
 expectNotAssignable<StdoutStderrOption>([objectModeOnly]);
-expectNotAssignable<StdoutStderrOptionSync>([objectModeOnly]);
+expectNotAssignable<StdoutStderrSyncOption>([objectModeOnly]);

@@ -3,9 +3,9 @@ import {
 	execa,
 	execaSync,
 	type StdinOption,
-	type StdinOptionSync,
+	type StdinSyncOption,
 	type StdoutStderrOption,
-	type StdoutStderrOptionSync,
+	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
 const binaryOnly = {binary: true} as const;
@@ -34,11 +34,11 @@ expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [binaryOnly
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [binaryOnly]]}));
 
 expectNotAssignable<StdinOption>(binaryOnly);
-expectNotAssignable<StdinOptionSync>(binaryOnly);
+expectNotAssignable<StdinSyncOption>(binaryOnly);
 expectNotAssignable<StdinOption>([binaryOnly]);
-expectNotAssignable<StdinOptionSync>([binaryOnly]);
+expectNotAssignable<StdinSyncOption>([binaryOnly]);
 
 expectNotAssignable<StdoutStderrOption>(binaryOnly);
-expectNotAssignable<StdoutStderrOptionSync>(binaryOnly);
+expectNotAssignable<StdoutStderrSyncOption>(binaryOnly);
 expectNotAssignable<StdoutStderrOption>([binaryOnly]);
-expectNotAssignable<StdoutStderrOptionSync>([binaryOnly]);
+expectNotAssignable<StdoutStderrSyncOption>([binaryOnly]);

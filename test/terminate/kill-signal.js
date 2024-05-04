@@ -1,14 +1,59 @@
 import {once} from 'node:events';
 import {platform, version} from 'node:process';
+import {constants} from 'node:os';
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
-import {execa} from '../../index.js';
+import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
 setFixtureDirectory();
 
 const isWindows = platform === 'win32';
 const majorNodeVersion = Number(version.split('.')[0].slice(1));
+
+const testKillSignal = async (t, killSignal) => {
+	const {isTerminated, signal} = await t.throwsAsync(execa('forever.js', {killSignal, timeout: 1}));
+	t.true(isTerminated);
+	t.is(signal, 'SIGINT');
+};
+
+test('Can use killSignal: "SIGINT"', testKillSignal, 'SIGINT');
+test('Can use killSignal: 2', testKillSignal, constants.signals.SIGINT);
+
+const testKillSignalSync = (t, killSignal) => {
+	const {isTerminated, signal} = t.throws(() => {
+		execaSync('forever.js', {killSignal, timeout: 1});
+	});
+	t.true(isTerminated);
+	t.is(signal, 'SIGINT');
+};
+
+test('Can use killSignal: "SIGINT", sync', testKillSignalSync, 'SIGINT');
+test('Can use killSignal: 2, sync', testKillSignalSync, constants.signals.SIGINT);
+
+test('Can call .kill("SIGTERM")', async t => {
+	const subprocess = execa('forever.js');
+	subprocess.kill('SIGTERM');
+	const {isTerminated, signal} = await t.throwsAsync(subprocess);
+	t.true(isTerminated);
+	t.is(signal, 'SIGTERM');
+});
+
+test('Can call .kill(15)', async t => {
+	const subprocess = execa('forever.js');
+	subprocess.kill(constants.signals.SIGTERM);
+	const {isTerminated, signal} = await t.throwsAsync(subprocess);
+	t.true(isTerminated);
+	t.is(signal, 'SIGTERM');
+});
+
+test('Can call .kill(0)', async t => {
+	const subprocess = execa('forever.js');
+	t.true(subprocess.kill(0));
+	subprocess.kill();
+	await t.throwsAsync(subprocess);
+	t.false(subprocess.kill(0));
+});
 
 test('Can call `.kill()` multiple times', async t => {
 	const subprocess = execa('forever.js');
@@ -50,9 +95,6 @@ const testInvalidKillArgument = async (t, killArgument, secondKillArgument) => {
 	await subprocess;
 };
 
-test('Cannot call .kill(null)', testInvalidKillArgument, null);
-test('Cannot call .kill(0n)', testInvalidKillArgument, 0n);
-test('Cannot call .kill(true)', testInvalidKillArgument, true);
 test('Cannot call .kill(errorObject)', testInvalidKillArgument, {name: '', message: '', stack: ''});
 test('Cannot call .kill(errorArray)', testInvalidKillArgument, [new Error('test')]);
 test('Cannot call .kill(undefined, true)', testInvalidKillArgument, undefined, true);

@@ -135,6 +135,18 @@ await execa('unicorns', {killSignal: 9});
 execaSync('unicorns', {killSignal: 9});
 expectError(await execa('unicorns', {killSignal: false}));
 expectError(execaSync('unicorns', {killSignal: false}));
+expectError(await execa('unicorns', {killSignal: 'Sigterm'}));
+expectError(execaSync('unicorns', {killSignal: 'Sigterm'}));
+expectError(await execa('unicorns', {killSignal: 'sigterm'}));
+expectError(execaSync('unicorns', {killSignal: 'sigterm'}));
+expectError(await execa('unicorns', {killSignal: 'SIGOTHER'}));
+expectError(execaSync('unicorns', {killSignal: 'SIGOTHER'}));
+expectError(await execa('unicorns', {killSignal: 'SIGEMT'}));
+expectError(execaSync('unicorns', {killSignal: 'SIGEMT'}));
+expectError(await execa('unicorns', {killSignal: 'SIGCLD'}));
+expectError(execaSync('unicorns', {killSignal: 'SIGCLD'}));
+expectError(await execa('unicorns', {killSignal: 'SIGRT1'}));
+expectError(execaSync('unicorns', {killSignal: 'SIGRT1'}));
 
 await execa('unicorns', {forceKillAfterDelay: false});
 expectError(execaSync('unicorns', {forceKillAfterDelay: false}));

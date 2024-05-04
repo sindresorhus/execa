@@ -8,6 +8,7 @@ import {
 	getEarlyErrorSubprocess,
 	getEarlyErrorSubprocessSync,
 	expectedEarlyError,
+	expectedEarlyErrorSync,
 } from '../helpers/early-error.js';
 
 setFixtureDirectory();
@@ -43,7 +44,7 @@ test('child_process.spawn() early errors are returned', async t => {
 });
 
 test('child_process.spawnSync() early errors are propagated with a correct shape', t => {
-	t.throws(getEarlyErrorSubprocessSync, expectedEarlyError);
+	t.throws(getEarlyErrorSubprocessSync, expectedEarlyErrorSync);
 });
 
 test('child_process.spawnSync() early errors are propagated with a correct shape - reject false', t => {

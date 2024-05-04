@@ -90,7 +90,9 @@ if (isWindows) {
 	test('`forceKillAfterDelay: undefined` should kill after a timeout', testForceKill, undefined);
 	test('`forceKillAfterDelay` should kill after a timeout with SIGTERM', testForceKill, 50, 'SIGTERM');
 	test('`forceKillAfterDelay` should kill after a timeout with the killSignal string', testForceKill, 50, 'SIGINT', {killSignal: 'SIGINT'});
+	test('`forceKillAfterDelay` should kill after a timeout with the killSignal string, mixed', testForceKill, 50, 'SIGINT', {killSignal: constants.signals.SIGINT});
 	test('`forceKillAfterDelay` should kill after a timeout with the killSignal number', testForceKill, 50, constants.signals.SIGINT, {killSignal: constants.signals.SIGINT});
+	test('`forceKillAfterDelay` should kill after a timeout with the killSignal number, mixed', testForceKill, 50, constants.signals.SIGINT, {killSignal: 'SIGINT'});
 	test('`forceKillAfterDelay` should kill after a timeout with an error', testForceKill, 50, new Error('test'));
 	test('`forceKillAfterDelay` should kill after a timeout with an error and a killSignal', testForceKill, 50, new Error('test'), {killSignal: 'SIGINT'});
 

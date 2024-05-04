@@ -17,8 +17,8 @@ test('Generators "final" can be used, sync', testGeneratorFinal, 'noop.js', exec
 test('Generators "final" is used even on empty streams, sync', testGeneratorFinal, 'empty.js', execaSync);
 
 const testFinalAlone = async (t, final, execaMethod) => {
-	const {stdout} = await execaMethod('noop-fd.js', ['1', '.'], {stdout: {final: final(foobarString)().transform, binary: true}});
-	t.is(stdout, `.${foobarString}`);
+	const {stdout} = await execaMethod('noop-fd.js', ['1', '.'], {stdout: {final: final(foobarString)().transform}});
+	t.is(stdout, `.\n${foobarString}`);
 };
 
 test('Generators "final" can be used without "transform"', testFinalAlone, getOutputGenerator, execa);

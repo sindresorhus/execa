@@ -5,7 +5,7 @@ on:
 jobs:
   test:
     name: Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
@@ -13,9 +13,9 @@ jobs:
           - 20
           - 18
         os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+          - ubuntu
+          - macos
+          - windows
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,7 +23,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm test
-      - uses: codecov/codecov-action@v3
-        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 20
+      - uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: '${{ matrix.os }}, node-${{ matrix.node-version }}'
           fail_ci_if_error: false
+          verbose: true

@@ -95,6 +95,7 @@ Advanced usage:
 - 🐛 [Debugging](docs/debugging.md)
 - 📎 [Windows](docs/windows.md)
 - 🔍 [Difference with Bash and zx](docs/bash.md)
+- 🤓 [TypeScript](docs/typescript.md)
 - 📔 [API reference](docs/api.md)
 
 ## Examples

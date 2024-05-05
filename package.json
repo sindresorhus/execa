@@ -20,7 +20,7 @@
 		"node": ">=18"
 	},
 	"scripts": {
-		"test": "xo && c8 ava && tsd && tsc"
+		"test": "xo && c8 ava && tsd && tsc && npx --yes tsd@0.29.0 && npx --yes --package typescript@5.1 tsc"
 	},
 	"files": [
 		"index.js",

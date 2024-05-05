@@ -1,4 +1,4 @@
-import type {StdioSingleOption, StdioOptionCommon} from '../stdio/type.js';
+import type {StdioSingleOption, StdioOptionCommon, StdioSingleOptionItems} from '../stdio/type.js';
 import type {FdStdioOption} from '../stdio/option.js';
 import type {CommonOptions} from '../arguments/options.js';
 import type {DuplexTransform} from './normalize.js';
@@ -10,10 +10,7 @@ export type IsObjectFd<
 	OptionsType extends CommonOptions = CommonOptions,
 > = IsObjectStdioOption<FdStdioOption<FdNumber, OptionsType>>;
 
-type IsObjectStdioOption<StdioOptionType extends StdioOptionCommon> = IsObjectStdioSingleOption<StdioOptionType extends readonly StdioSingleOption[]
-	? StdioOptionType[number]
-	: StdioOptionType
->;
+type IsObjectStdioOption<StdioOptionType extends StdioOptionCommon> = IsObjectStdioSingleOption<StdioSingleOptionItems<StdioOptionType>>;
 
 type IsObjectStdioSingleOption<StdioSingleOptionType extends StdioSingleOption> = StdioSingleOptionType extends {objectMode?: boolean}
 	? BooleanObjectMode<StdioSingleOptionType['objectMode']>

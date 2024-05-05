@@ -67,10 +67,10 @@ type ProcessStdinFd = {readonly fd?: 0};
 type ProcessStdoutStderrFd = {readonly fd?: 1 | 2};
 
 // Values available only in `options.stdin|stdio`
-type InputStdioOption<
-	IsSync extends boolean,
-	IsExtra extends boolean,
-	IsArray extends boolean,
+export type InputStdioOption<
+	IsSync extends boolean = boolean,
+	IsExtra extends boolean = boolean,
+	IsArray extends boolean = boolean,
 > =
 	| 0
 	| Unless<And<IsSync, IsExtra>, Uint8Array | IterableObject<IsArray>>
@@ -144,6 +144,13 @@ export type StdioSingleOption<
 > =
 	| StdinSingleOption<IsSync, IsExtra, IsArray>
 	| StdoutStderrSingleOption<IsSync, IsExtra, IsArray>;
+
+// Get `options.stdin|stdout|stderr|stdio` items if it is an array, else keep as is
+export type StdioSingleOptionItems<
+	StdioOptionType extends StdioOptionCommon,
+> = StdioOptionType extends readonly StdioSingleOption[]
+	? StdioOptionType[number]
+	: StdioOptionType;
 
 // `options.stdin|stdout|stderr|stdio`
 export type StdioOptionCommon<IsSync extends boolean = boolean> =

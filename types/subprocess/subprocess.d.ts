@@ -1,4 +1,5 @@
 import type {ChildProcess} from 'node:child_process';
+import type {SignalConstants} from 'node:os';
 import type {Readable, Writable, Duplex} from 'node:stream';
 import type {StdioOptionsArray} from '../stdio/type';
 import type {Options} from '../arguments/options';
@@ -86,7 +87,7 @@ type ExecaCustomSubprocess<OptionsType extends Options = Options> = {
 
 	[More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 	*/
-	kill(signal?: NodeJS.Signals | number, error?: Error): boolean;
+	kill(signal?: keyof SignalConstants | number, error?: Error): boolean;
 	kill(error?: Error): boolean;
 
 	/**

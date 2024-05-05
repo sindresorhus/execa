@@ -1,3 +1,4 @@
+import type {SignalConstants} from 'node:os';
 import {expectType, expectAssignable} from 'tsd';
 import {
 	execa,
@@ -28,7 +29,7 @@ expectType<boolean>(unicornsResult.timedOut);
 expectType<boolean>(unicornsResult.isCanceled);
 expectType<boolean>(unicornsResult.isTerminated);
 expectType<boolean>(unicornsResult.isMaxBuffer);
-expectType<NodeJS.Signals | undefined>(unicornsResult.signal);
+expectType<keyof SignalConstants | undefined>(unicornsResult.signal);
 expectType<string | undefined>(unicornsResult.signalDescription);
 expectType<string>(unicornsResult.cwd);
 expectType<number>(unicornsResult.durationMs);
@@ -44,7 +45,7 @@ expectType<boolean>(unicornsResultSync.timedOut);
 expectType<boolean>(unicornsResultSync.isCanceled);
 expectType<boolean>(unicornsResultSync.isTerminated);
 expectType<boolean>(unicornsResultSync.isMaxBuffer);
-expectType<NodeJS.Signals | undefined>(unicornsResultSync.signal);
+expectType<keyof SignalConstants | undefined>(unicornsResultSync.signal);
 expectType<string | undefined>(unicornsResultSync.signalDescription);
 expectType<string>(unicornsResultSync.cwd);
 expectType<number>(unicornsResultSync.durationMs);
@@ -61,7 +62,7 @@ if (error instanceof ExecaError) {
 	expectType<boolean>(error.isCanceled);
 	expectType<boolean>(error.isTerminated);
 	expectType<boolean>(error.isMaxBuffer);
-	expectType<NodeJS.Signals | undefined>(error.signal);
+	expectType<keyof SignalConstants | undefined>(error.signal);
 	expectType<string | undefined>(error.signalDescription);
 	expectType<string>(error.cwd);
 	expectType<number>(error.durationMs);
@@ -83,7 +84,7 @@ if (errorSync instanceof ExecaSyncError) {
 	expectType<boolean>(errorSync.isCanceled);
 	expectType<boolean>(errorSync.isTerminated);
 	expectType<boolean>(errorSync.isMaxBuffer);
-	expectType<NodeJS.Signals | undefined>(errorSync.signal);
+	expectType<keyof SignalConstants | undefined>(errorSync.signal);
 	expectType<string | undefined>(errorSync.signalDescription);
 	expectType<string>(errorSync.cwd);
 	expectType<number>(errorSync.durationMs);

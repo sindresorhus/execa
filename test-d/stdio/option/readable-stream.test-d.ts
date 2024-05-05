@@ -1,3 +1,4 @@
+import {ReadableStream} from 'node:stream/web';
 import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
 import {
 	execa,

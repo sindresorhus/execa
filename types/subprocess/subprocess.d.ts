@@ -86,8 +86,8 @@ type ExecaCustomSubprocess<OptionsType extends Options = Options> = {
 
 	[More info.](https://nodejs.org/api/child_process.html#subprocesskillsignal)
 	*/
-	kill(signal: Parameters<ChildProcess['kill']>[0], error?: Error): ReturnType<ChildProcess['kill']>;
-	kill(error?: Error): ReturnType<ChildProcess['kill']>;
+	kill(signal?: NodeJS.Signals | number, error?: Error): boolean;
+	kill(error?: Error): boolean;
 
 	/**
 	Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.

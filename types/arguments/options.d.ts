@@ -278,7 +278,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'SIGTERM'
 	*/
-	readonly killSignal?: string | number;
+	readonly killSignal?: NodeJS.Signals | number;
 
 	/**
 	Run the subprocess independently from the current process.

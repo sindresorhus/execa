@@ -117,7 +117,7 @@ export declare abstract class CommonResult<
 
 	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`.
 	*/
-	signal?: string;
+	signal?: NodeJS.Signals;
 
 	/**
 	A human-friendly description of the signal that was used to terminate the subprocess.

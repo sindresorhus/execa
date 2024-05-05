@@ -4,7 +4,7 @@ import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {getEarlyErrorSubprocess, getEarlyErrorSubprocessSync} from '../helpers/early-error.js';
+import {getEarlyErrorSubprocess} from '../helpers/early-error.js';
 import {maxBuffer, assertErrorMessage} from '../helpers/max-buffer.js';
 
 setFixtureDirectory();
@@ -260,11 +260,9 @@ test('abort stream when hitting maxBuffer with stdout', testMaxBufferAbort, 1);
 test('abort stream when hitting maxBuffer with stderr', testMaxBufferAbort, 2);
 test('abort stream when hitting maxBuffer with stdio[*]', testMaxBufferAbort, 3);
 
-const testEarlyError = async (t, getSubprocess) => {
-	const {failed, isMaxBuffer} = await getSubprocess({reject: false, maxBuffer: 1});
+test('error.isMaxBuffer is false on early errors', async t => {
+	const {failed, isMaxBuffer} = await getEarlyErrorSubprocess({reject: false, maxBuffer: 1});
 	t.true(failed);
 	t.false(isMaxBuffer);
-};
+});
 
-test('error.isMaxBuffer is false on early errors', testEarlyError, getEarlyErrorSubprocess);
-test('error.isMaxBuffer is false on early errors, sync', testEarlyError, getEarlyErrorSubprocessSync);

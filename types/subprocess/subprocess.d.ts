@@ -21,7 +21,7 @@ type HasIpc<OptionsType extends Options> = OptionsType['ipc'] extends true
 		? 'ipc' extends OptionsType['stdio'][number] ? true : false
 		: false;
 
-type ExecaCustomSubprocess<OptionsType extends Options = Options> = {
+type ExecaCustomSubprocess<OptionsType extends Options> = {
 	/**
 	Process identifier ([PID](https://en.wikipedia.org/wiki/Process_identifier)).
 

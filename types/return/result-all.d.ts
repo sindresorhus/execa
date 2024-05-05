@@ -5,12 +5,12 @@ import type {IgnoresResultOutput} from './ignore.js';
 import type {ResultStdio} from './result-stdout.js';
 
 // `result.all`
-export type ResultAll<OptionsType extends CommonOptions = CommonOptions> =
+export type ResultAll<OptionsType extends CommonOptions> =
 	ResultAllProperty<OptionsType['all'], OptionsType>;
 
 type ResultAllProperty<
-	AllOption extends CommonOptions['all'] = CommonOptions['all'],
-	OptionsType extends CommonOptions = CommonOptions,
+	AllOption extends CommonOptions['all'],
+	OptionsType extends CommonOptions,
 > = AllOption extends true
 	? ResultStdio<
 	AllMainFd<OptionsType>,
@@ -20,11 +20,11 @@ type ResultAllProperty<
 	>
 	: undefined;
 
-type AllMainFd<OptionsType extends CommonOptions = CommonOptions> =
+type AllMainFd<OptionsType extends CommonOptions> =
 	IgnoresResultOutput<'1', OptionsType> extends true ? '2' : '1';
 
-type AllObjectFd<OptionsType extends CommonOptions = CommonOptions> =
+type AllObjectFd<OptionsType extends CommonOptions> =
 	IsObjectFd<'1', OptionsType> extends true ? '1' : '2';
 
-type AllLinesFd<OptionsType extends CommonOptions = CommonOptions> =
+type AllLinesFd<OptionsType extends CommonOptions> =
 	FdSpecificOption<OptionsType['lines'], '1'> extends true ? '1' : '2';

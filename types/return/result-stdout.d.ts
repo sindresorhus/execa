@@ -7,7 +7,7 @@ import type {IgnoresResultOutput} from './ignore.js';
 // `result.stdout|stderr|stdio`
 export type ResultStdioNotAll<
 	FdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = ResultStdio<FdNumber, FdNumber, FdNumber, OptionsType>;
 
 // `result.stdout|stderr|stdio|all`
@@ -15,7 +15,7 @@ export type ResultStdio<
 	MainFdNumber extends string,
 	ObjectFdNumber extends string,
 	LinesFdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = ResultStdioProperty<
 ObjectFdNumber,
 LinesFdNumber,
@@ -27,7 +27,7 @@ type ResultStdioProperty<
 	ObjectFdNumber extends string,
 	LinesFdNumber extends string,
 	StreamOutputIgnored extends boolean,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = StreamOutputIgnored extends true
 	? undefined
 	: ResultStdioItem<

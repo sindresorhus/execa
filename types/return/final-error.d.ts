@@ -2,15 +2,21 @@ import type {CommonOptions, Options, SyncOptions} from '../arguments/options.js'
 import {CommonResult} from './result.js';
 
 declare abstract class CommonError<
-	IsSync extends boolean = boolean,
-	OptionsType extends CommonOptions = CommonOptions,
+	IsSync extends boolean,
+	OptionsType extends CommonOptions,
 > extends CommonResult<IsSync, OptionsType> {
-	message: NonNullable<CommonResult['message']>;
-	shortMessage: NonNullable<CommonResult['shortMessage']>;
-	originalMessage: NonNullable<CommonResult['originalMessage']>;
-	readonly name: NonNullable<CommonResult['name']>;
-	stack: NonNullable<CommonResult['stack']>;
+	message: CommonErrorProperty<IsSync, OptionsType, 'message'>;
+	shortMessage: CommonErrorProperty<IsSync, OptionsType, 'shortMessage'>;
+	originalMessage: CommonErrorProperty<IsSync, OptionsType, 'originalMessage'>;
+	readonly name: CommonErrorProperty<IsSync, OptionsType, 'name'>;
+	stack: CommonErrorProperty<IsSync, OptionsType, 'stack'>;
 }
+
+type CommonErrorProperty<
+	IsSync extends boolean,
+	OptionsType extends CommonOptions,
+	PropertyName extends keyof CommonResult<IsSync, OptionsType>,
+> = NonNullable<CommonResult<IsSync, OptionsType>[PropertyName]>;
 
 // `result.*` defined only on failure, i.e. on `error.*`
 export type ErrorProperties =

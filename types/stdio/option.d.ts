@@ -10,12 +10,12 @@ import type {
 // `options.stdin|stdout|stderr|stdio` for a given file descriptor
 export type FdStdioOption<
 	FdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = Extract<FdStdioOptionProperty<FdNumber, OptionsType>, StdioOptionCommon>;
 
 type FdStdioOptionProperty<
 	FdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = string extends FdNumber ? StdioOptionCommon
 	: FdNumber extends keyof StandardStreams
 		? StandardStreams[FdNumber] extends keyof OptionsType
@@ -28,7 +28,7 @@ type FdStdioOptionProperty<
 // `options.stdio[FdNumber]`, excluding `options.stdin|stdout|stderr`
 export type FdStdioArrayOption<
 	FdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = Extract<FdStdioArrayOptionProperty<FdNumber, StdioOptionNormalizedArray<OptionsType>>, StdioOptionCommon>;
 
 type FdStdioArrayOptionProperty<
@@ -39,7 +39,7 @@ type FdStdioArrayOptionProperty<
 	: StdioOptionsType extends StdioOptionsArray
 		? FdNumber extends keyof StdioOptionsType
 			? StdioOptionsType[FdNumber]
-			: StdioOptionNormalizedArray extends StdioOptionsType
+			: StdioOptionNormalizedArray<CommonOptions> extends StdioOptionsType
 				? StdioOptionsType[number]
 				: undefined
 		: undefined;

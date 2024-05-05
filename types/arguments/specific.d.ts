@@ -1,22 +1,22 @@
 import type {FromOption} from './fd-options.js';
 
 // Options which can be fd-specific like `{verbose: {stdout: 'none', stderr: 'full'}}`
-export type FdGenericOption<OptionType = unknown> = OptionType | GenericOptionObject<OptionType>;
+export type FdGenericOption<OptionType> = OptionType | GenericOptionObject<OptionType>;
 
-type GenericOptionObject<OptionType = unknown> = {
+type GenericOptionObject<OptionType> = {
 	readonly [FdName in FromOption]?: OptionType
 };
 
 // Retrieve fd-specific option's value
 export type FdSpecificOption<
-	GenericOption extends FdGenericOption,
+	GenericOption extends FdGenericOption<unknown>,
 	FdNumber extends string,
-> = GenericOption extends GenericOptionObject
+> = GenericOption extends GenericOptionObject<unknown>
 	? FdSpecificObjectOption<GenericOption, FdNumber>
 	: GenericOption;
 
 type FdSpecificObjectOption<
-	GenericOption extends GenericOptionObject,
+	GenericOption extends GenericOptionObject<unknown>,
 	FdNumber extends string,
 > = keyof GenericOption extends FromOption
 	? FdNumberToFromOption<FdNumber, keyof GenericOption> extends never

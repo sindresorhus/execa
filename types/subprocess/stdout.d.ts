@@ -6,13 +6,13 @@ import type {Options} from '../arguments/options.js';
 // `subprocess.stdin|stdout|stderr|stdio`
 export type SubprocessStdioStream<
 	FdNumber extends string,
-	OptionsType extends Options = Options,
+	OptionsType extends Options,
 > = SubprocessStream<FdNumber, IgnoresSubprocessOutput<FdNumber, OptionsType>, OptionsType>;
 
 type SubprocessStream<
 	FdNumber extends string,
 	StreamResultIgnored extends boolean,
-	OptionsType extends Options = Options,
+	OptionsType extends Options,
 > = StreamResultIgnored extends true
 	? null
 	: InputOutputStream<IsInputFd<FdNumber, OptionsType>>;

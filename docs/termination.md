@@ -6,6 +6,13 @@
 
 # 🏁 Termination
 
+## Alternatives
+
+Terminating a subprocess ends it abruptly. This prevents rolling back the subprocess' operations and leaves them incomplete. When possible, graceful exits should be preferred, such as:
+- Letting the subprocess end on its own.
+- [Performing cleanup](#sigterm) in termination [signal handlers](https://nodejs.org/api/process.html#process_signal_events).
+- [Sending a message](ipc.md) to the subprocess so it aborts its operations and cleans up.
+
 ## Canceling
 
 The [`cancelSignal`](api.md#optionscancelsignal) option can be used to cancel a subprocess. When [`abortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) is [aborted](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort), a [`SIGTERM` signal](#default-signal) is sent to the subprocess.

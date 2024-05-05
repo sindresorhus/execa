@@ -53,7 +53,7 @@ expectType<[]>(unicornsResultSync.pipedFrom);
 
 const error = new Error('.');
 if (error instanceof ExecaError) {
-	expectAssignable<ExecaError>(error);
+	expectType<ExecaError<any>>(error);
 	expectType<'ExecaError'>(error.name);
 	expectType<string>(error.message);
 	expectType<number | undefined>(error.exitCode);
@@ -75,7 +75,7 @@ if (error instanceof ExecaError) {
 
 const errorSync = new Error('.');
 if (errorSync instanceof ExecaSyncError) {
-	expectAssignable<ExecaSyncError>(errorSync);
+	expectType<ExecaSyncError<any>>(errorSync);
 	expectType<'ExecaSyncError'>(errorSync.name);
 	expectType<string>(errorSync.message);
 	expectType<number | undefined>(errorSync.exitCode);

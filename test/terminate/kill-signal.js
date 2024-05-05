@@ -1,4 +1,5 @@
 import {once} from 'node:events';
+import {platform, version} from 'node:process';
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
@@ -6,14 +7,30 @@ import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
 setFixtureDirectory();
 
+const isWindows = platform === 'win32';
+const majorNodeVersion = Number(version.split('.')[0].slice(1));
+
 test('Can call `.kill()` multiple times', async t => {
 	const subprocess = execa('forever.js');
 	subprocess.kill();
 	subprocess.kill();
 
-	const {isTerminated, signal} = await t.throwsAsync(subprocess);
-	t.true(isTerminated);
-	t.is(signal, 'SIGTERM');
+	const {exitCode, isTerminated, signal, code} = await t.throwsAsync(subprocess);
+
+	// On Windows, calling `subprocess.kill()` twice emits an `error` event on the subprocess.
+	// This does not happen when passing an `error` argument, nor when passing a non-terminating signal.
+	// There is no easy way to make this cross-platform, so we document the difference here.
+	if (isWindows && majorNodeVersion >= 22) {
+		t.is(exitCode, undefined);
+		t.false(isTerminated);
+		t.is(signal, undefined);
+		t.is(code, 'EPERM');
+	} else {
+		t.is(exitCode, undefined);
+		t.true(isTerminated);
+		t.is(signal, 'SIGTERM');
+		t.is(code, undefined);
+	}
 });
 
 test('execa() returns a promise with kill()', async t => {

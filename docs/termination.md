@@ -87,6 +87,14 @@ process.on('SIGTERM', () => {
 subprocess.kill('SIGKILL');
 ```
 
+### SIGQUIT
+
+[`SIGQUIT`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGQUIT) is like [`SIGTERM`](#sigterm) except it creates a [core dump](https://en.wikipedia.org/wiki/Core_dump).
+
+```js
+subprocess.kill('SIGQUIT');
+```
+
 ### Other signals
 
 Other signals can be passed as argument. However, most other signals do not fully [work on Windows](https://github.com/ehmicky/cross-platform-node-guide/blob/main/docs/6_networking_ipc/signals.md#cross-platform-signals).

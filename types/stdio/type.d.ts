@@ -1,5 +1,5 @@
 import type {Readable, Writable} from 'node:stream';
-import type {ReadableStream, WritableStream} from 'node:stream/web';
+import type {ReadableStream, WritableStream, TransformStream} from 'node:stream/web';
 import type {
 	Not,
 	And,

@@ -110,6 +110,10 @@ try {
 
 ## Troubleshooting
 
+### Supported version
+
+The minimum supported TypeScript version is [`5.1.6`](https://github.com/microsoft/TypeScript/releases/tag/v5.1.6).
+
 ### ES modules
 
 This package uses pure ES modules. Therefore the TypeScript's `--module` compiler option must be set to [`nodenext`](https://www.typescriptlang.org/docs/handbook/modules/reference.html#node16-nodenext) or [`preserve`](https://www.typescriptlang.org/docs/handbook/modules/reference.html#preserve). [More info.](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)

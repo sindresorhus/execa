@@ -1,6 +1,6 @@
 import type {Readable} from 'node:stream';
-import type {IgnoresSubprocessOutput} from '../return/ignore';
-import type {Options} from '../arguments/options';
+import type {IgnoresSubprocessOutput} from '../return/ignore.js';
+import type {Options} from '../arguments/options.js';
 
 // `subprocess.all`
 export type SubprocessAll<OptionsType extends Options = Options> = AllStream<OptionsType['all'], OptionsType>;

@@ -3,10 +3,10 @@ import type {
 	Options,
 	SyncOptions,
 	StricterOptions,
-} from '../arguments/options';
-import type {SyncResult} from '../return/result';
-import type {ResultPromise} from '../subprocess/subprocess';
-import type {TemplateString} from './template';
+} from '../arguments/options.js';
+import type {SyncResult} from '../return/result.js';
+import type {ResultPromise} from '../subprocess/subprocess.js';
+import type {TemplateString} from './template.js';
 
 type ExecaScriptCommon<OptionsType extends CommonOptions> = {
 	<NewOptionsType extends CommonOptions = {}>(options: NewOptionsType): ExecaScript<OptionsType & NewOptionsType>;

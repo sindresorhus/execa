@@ -1,8 +1,8 @@
-import type {NoStreamStdioOption, StdioOptionCommon} from '../stdio/type';
-import type {IsInputFd} from '../stdio/direction';
-import type {FdStdioOption} from '../stdio/option';
-import type {FdSpecificOption} from '../arguments/specific';
-import type {CommonOptions} from '../arguments/options';
+import type {NoStreamStdioOption, StdioOptionCommon} from '../stdio/type.js';
+import type {IsInputFd} from '../stdio/direction.js';
+import type {FdStdioOption} from '../stdio/option.js';
+import type {FdSpecificOption} from '../arguments/specific.js';
+import type {CommonOptions} from '../arguments/options.js';
 
 // Whether `result.stdin|stdout|stderr|all|stdio[*]` is `undefined`
 export type IgnoresResultOutput<

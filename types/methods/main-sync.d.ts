@@ -1,6 +1,6 @@
-import type {SyncOptions} from '../arguments/options';
-import type {SyncResult} from '../return/result';
-import type {TemplateString} from './template';
+import type {SyncOptions} from '../arguments/options.js';
+import type {SyncResult} from '../return/result.js';
+import type {TemplateString} from './template.js';
 
 type ExecaSync<OptionsType extends SyncOptions> = {
 	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType): ExecaSync<OptionsType & NewOptionsType>;

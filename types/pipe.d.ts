@@ -1,8 +1,8 @@
-import type {Options} from './arguments/options';
-import type {Result} from './return/result';
-import type {FromOption, ToOption} from './arguments/fd-options';
-import type {ResultPromise} from './subprocess/subprocess';
-import type {TemplateExpression} from './methods/template';
+import type {Options} from './arguments/options.js';
+import type {Result} from './return/result.js';
+import type {FromOption, ToOption} from './arguments/fd-options.js';
+import type {ResultPromise} from './subprocess/subprocess.js';
+import type {TemplateExpression} from './methods/template.js';
 
 // `subprocess.pipe()` options
 type PipeOptions = {

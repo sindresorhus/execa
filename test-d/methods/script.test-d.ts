@@ -51,6 +51,7 @@ expectType<Result<{}>>(await $`unicorns ${false.toString()}`);
 expectError(await $`unicorns ${false}`);
 
 expectType<Result<{}>>(await $`unicorns ${await $`echo foo`}`);
+expectType<Result<{}>>(await $`unicorns ${await $({reject: false})`echo foo`}`);
 expectError(await $`unicorns ${$`echo foo`}`);
 expectType<Result<{}>>(await $`unicorns ${[await $`echo foo`, 'bar']}`);
 expectError(await $`unicorns ${[$`echo foo`, 'bar']}`);

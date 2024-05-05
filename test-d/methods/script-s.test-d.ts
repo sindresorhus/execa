@@ -61,4 +61,5 @@ expectType<SyncResult<{}>>($.s`unicorns ${false.toString()}`);
 expectError($.s`unicorns ${false}`);
 
 expectType<SyncResult<{}>>($.s`unicorns ${$.s`echo foo`}`);
+expectType<SyncResult<{}>>($.s`unicorns ${$.s({reject: false})`echo foo`}`);
 expectType<SyncResult<{}>>($.s`unicorns ${[$.s`echo foo`, 'bar']}`);

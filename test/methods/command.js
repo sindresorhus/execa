@@ -67,30 +67,27 @@ test('execaCommandSync() bound options have lower priority', t => {
 	t.is(stdout, 'foo\nbar');
 });
 
-test('execaCommand() ignores consecutive spaces', async t => {
-	const {stdout} = await execaCommand('echo.js foo    bar');
-	t.is(stdout, 'foo\nbar');
-});
-
 test('execaCommand() allows escaping spaces in commands', async t => {
 	const {stdout} = await execaCommand('command\\ with\\ space.js foo bar');
 	t.is(stdout, 'foo\nbar');
-});
-
-test('execaCommand() allows escaping spaces in arguments', async t => {
-	const {stdout} = await execaCommand('echo.js foo\\ bar');
-	t.is(stdout, 'foo bar');
-});
-
-test('execaCommand() escapes other whitespaces', async t => {
-	const {stdout} = await execaCommand('echo.js foo\tbar');
-	t.is(stdout, 'foo\tbar');
 });
 
 test('execaCommand() trims', async t => {
 	const {stdout} = await execaCommand('  echo.js foo bar  ');
 	t.is(stdout, 'foo\nbar');
 });
+
+const testExecaCommandOutput = async (t, commandArguments, expectedOutput) => {
+	const {stdout} = await execaCommand(`echo.js ${commandArguments}`);
+	t.is(stdout, expectedOutput);
+};
+
+test('execaCommand() ignores consecutive spaces', testExecaCommandOutput, 'foo    bar', 'foo\nbar');
+test('execaCommand() escapes other whitespaces', testExecaCommandOutput, 'foo\tbar', 'foo\tbar');
+test('execaCommand() allows escaping spaces', testExecaCommandOutput, 'foo\\ bar', 'foo bar');
+test('execaCommand() allows escaping backslashes before spaces', testExecaCommandOutput, 'foo\\\\ bar', 'foo\\ bar');
+test('execaCommand() allows escaping multiple backslashes before spaces', testExecaCommandOutput, 'foo\\\\\\\\ bar', 'foo\\\\\\ bar');
+test('execaCommand() allows escaping backslashes not before spaces', testExecaCommandOutput, 'foo\\bar baz', 'foo\\bar\nbaz');
 
 const testInvalidArgumentsArray = (t, execaMethod) => {
 	t.throws(() => {

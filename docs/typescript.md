@@ -8,7 +8,7 @@
 
 ## Available types
 
-The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options), [`StdinOption`](api.md#optionsstdin) and [`StdoutStderrOption`](api.md#optionsstdout).
+The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout) and [`TemplateExpression`](api.md#execacommand).
 
 ```ts
 import {
@@ -19,6 +19,7 @@ import {
 	type Options,
 	type StdinOption,
 	type StdoutStderrOption,
+	type TemplateExpression,
 } from 'execa';
 
 const options: Options = {
@@ -27,9 +28,10 @@ const options: Options = {
 	stderr: 'pipe' satisfies StdoutStderrOption,
 	timeout: 1000,
 };
+const task: TemplateExpression = 'build';
 
 try {
-	const subprocess: ResultPromise = execa(options)`npm run build`;
+	const subprocess: ResultPromise = execa(options)`npm run ${task}`;
 	const result: Result = await subprocess;
 	console.log(result.stdout);
 } catch (error) {
@@ -41,7 +43,7 @@ try {
 
 ## Synchronous execution
 
-Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options), [`StdinSyncOption`](api.md#optionsstdin) and [`StdoutStderrSyncOption`](api.md#optionsstdout).
+Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options), [`StdinSyncOption`](api.md#optionsstdin), [`StdoutStderrSyncOption`](api.md#optionsstdout) and [`TemplateExpression`](api.md#execacommand).
 
 ```ts
 import {
@@ -51,6 +53,7 @@ import {
 	type SyncOptions,
 	type StdinSyncOption,
 	type StdoutStderrSyncOption,
+	type TemplateExpression,
 } from 'execa';
 
 const options: SyncOptions = {
@@ -59,9 +62,10 @@ const options: SyncOptions = {
 	stderr: 'pipe' satisfies StdoutStderrSyncOption,
 	timeout: 1000,
 };
+const task: TemplateExpression = 'build';
 
 try {
-	const result: SyncResult = execaSync(options)`npm run build`;
+	const result: SyncResult = execaSync(options)`npm run ${task}`;
 	console.log(result.stdout);
 } catch (error) {
 	if (error instanceof ExecaSyncError) {
@@ -91,9 +95,10 @@ const options = {
 	stderr: 'pipe',
 	timeout: 1000,
 } as const;
+const task = 'build';
 
 try {
-	const subprocess = execa(options)`npm run build`;
+	const subprocess = execa(options)`npm run ${task}`;
 	const result = await subprocess;
 	printResultStdout(result);
 } catch (error) {

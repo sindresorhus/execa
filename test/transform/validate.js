@@ -1,24 +1,15 @@
-import {Buffer} from 'node:buffer';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
-import {foobarUint8Array, foobarBuffer, foobarObject} from '../helpers/input.js';
+import {foobarUint8Array, foobarObject} from '../helpers/input.js';
 import {serializeGenerator, getOutputGenerator, convertTransformToFinal} from '../helpers/generator.js';
 
 setFixtureDirectory();
 
-const getMessage = input => {
-	if (input === null || input === undefined) {
-		return 'not be called at all';
-	}
-
-	if (Buffer.isBuffer(input)) {
-		return 'not a buffer';
-	}
-
-	return 'a string or an Uint8Array';
-};
+const getMessage = input => input === null || input === undefined
+	? 'not be called at all'
+	: 'a string or an Uint8Array';
 
 const lastInputGenerator = input => objectMode => [foobarUint8Array, getOutputGenerator(input)(objectMode)];
 const inputGenerator = input => objectMode => [...lastInputGenerator(input)(objectMode), serializeGenerator(true)];
@@ -37,13 +28,6 @@ test('The last generator with result.stdio[*] as input cannot return an object e
 test('Generators with result.stdout cannot return an object if not in objectMode', testGeneratorReturn, 1, getOutputGenerator, foobarObject, false, false);
 test('Generators with result.stderr cannot return an object if not in objectMode', testGeneratorReturn, 2, getOutputGenerator, foobarObject, false, false);
 test('Generators with result.stdio[*] as output cannot return an object if not in objectMode', testGeneratorReturn, 3, getOutputGenerator, foobarObject, false, false);
-test('Generators with result.stdin cannot return a Buffer if not in objectMode', testGeneratorReturn, 0, inputGenerator, foobarBuffer, false, true);
-test('Generators with result.stdio[*] as input cannot return a Buffer if not in objectMode', testGeneratorReturn, 3, inputGenerator, foobarBuffer, false, true);
-test('The last generator with result.stdin cannot return a Buffer even in objectMode', testGeneratorReturn, 0, lastInputGenerator, foobarBuffer, true, true);
-test('The last generator with result.stdio[*] as input cannot return a Buffer even in objectMode', testGeneratorReturn, 3, lastInputGenerator, foobarBuffer, true, true);
-test('Generators with result.stdout cannot return a Buffer if not in objectMode', testGeneratorReturn, 1, getOutputGenerator, foobarBuffer, false, false);
-test('Generators with result.stderr cannot return a Buffer if not in objectMode', testGeneratorReturn, 2, getOutputGenerator, foobarBuffer, false, false);
-test('Generators with result.stdio[*] as output cannot return a Buffer if not in objectMode', testGeneratorReturn, 3, getOutputGenerator, foobarBuffer, false, false);
 test('Generators with result.stdin cannot return null if not in objectMode', testGeneratorReturn, 0, inputGenerator, null, false, true);
 test('Generators with result.stdin cannot return null if in objectMode', testGeneratorReturn, 0, inputGenerator, null, true, true);
 test('Generators with result.stdout cannot return null if not in objectMode', testGeneratorReturn, 1, getOutputGenerator, null, false, false);
@@ -67,11 +51,6 @@ test('The last generator with result.stdin cannot return an object even in objec
 test('Generators with result.stdout cannot return an object if not in objectMode, sync', testGeneratorReturnSync, 1, getOutputGenerator, foobarObject, false, false);
 test('Generators with result.stderr cannot return an object if not in objectMode, sync', testGeneratorReturnSync, 2, getOutputGenerator, foobarObject, false, false);
 test('Generators with result.stdio[*] as output cannot return an object if not in objectMode, sync', testGeneratorReturnSync, 3, getOutputGenerator, foobarObject, false, false);
-test('Generators with result.stdin cannot return a Buffer if not in objectMode, sync', testGeneratorReturnSync, 0, inputGenerator, foobarBuffer, false, true);
-test('The last generator with result.stdin cannot return a Buffer even in objectMode, sync', testGeneratorReturnSync, 0, lastInputGenerator, foobarBuffer, true, true);
-test('Generators with result.stdout cannot return a Buffer if not in objectMode, sync', testGeneratorReturnSync, 1, getOutputGenerator, foobarBuffer, false, false);
-test('Generators with result.stderr cannot return a Buffer if not in objectMode, sync', testGeneratorReturnSync, 2, getOutputGenerator, foobarBuffer, false, false);
-test('Generators with result.stdio[*] as output cannot return a Buffer if not in objectMode, sync', testGeneratorReturnSync, 3, getOutputGenerator, foobarBuffer, false, false);
 test('Generators with result.stdin cannot return null if not in objectMode, sync', testGeneratorReturnSync, 0, inputGenerator, null, false, true);
 test('Generators with result.stdin cannot return null if in objectMode, sync', testGeneratorReturnSync, 0, inputGenerator, null, true, true);
 test('Generators with result.stdout cannot return null if not in objectMode, sync', testGeneratorReturnSync, 1, getOutputGenerator, null, false, false);

@@ -2,7 +2,7 @@ import {Buffer} from 'node:buffer';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString, foobarUint8Array} from '../helpers/input.js';
+import {foobarString, foobarUint8Array, foobarBuffer} from '../helpers/input.js';
 import {getOutputGenerator, convertTransformToFinal} from '../helpers/generator.js';
 
 setFixtureDirectory();
@@ -22,12 +22,16 @@ const testGeneratorReturnType = async (t, input, encoding, reject, objectMode, f
 
 test('Generator can return string with default encoding', testGeneratorReturnType, foobarString, 'utf8', true, false, false, execa);
 test('Generator can return Uint8Array with default encoding', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, false, execa);
+test('Generator can return Buffer with default encoding', testGeneratorReturnType, foobarBuffer, 'utf8', true, false, false, execa);
 test('Generator can return string with encoding "utf16le"', testGeneratorReturnType, foobarString, 'utf16le', true, false, false, execa);
 test('Generator can return Uint8Array with encoding "utf16le"', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, false, false, execa);
+test('Generator can return Buffer with encoding "utf16le"', testGeneratorReturnType, foobarBuffer, 'utf16le', true, false, false, execa);
 test('Generator can return string with encoding "buffer"', testGeneratorReturnType, foobarString, 'buffer', true, false, false, execa);
 test('Generator can return Uint8Array with encoding "buffer"', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, false, execa);
+test('Generator can return Buffer with encoding "buffer"', testGeneratorReturnType, foobarBuffer, 'buffer', true, false, false, execa);
 test('Generator can return string with encoding "hex"', testGeneratorReturnType, foobarString, 'hex', true, false, false, execa);
 test('Generator can return Uint8Array with encoding "hex"', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, false, execa);
+test('Generator can return Buffer with encoding "hex"', testGeneratorReturnType, foobarBuffer, 'hex', true, false, false, execa);
 test('Generator can return string with default encoding, failure', testGeneratorReturnType, foobarString, 'utf8', false, false, false, execa);
 test('Generator can return Uint8Array with default encoding, failure', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, false, execa);
 test('Generator can return string with encoding "utf16le", failure', testGeneratorReturnType, foobarString, 'utf16le', false, false, false, execa);
@@ -86,12 +90,16 @@ test('Generator can return final string with encoding "hex", objectMode, failure
 test('Generator can return final Uint8Array with encoding "hex", objectMode, failure', testGeneratorReturnType, foobarUint8Array, 'hex', false, true, true, execa);
 test('Generator can return string with default encoding, sync', testGeneratorReturnType, foobarString, 'utf8', true, false, false, execaSync);
 test('Generator can return Uint8Array with default encoding, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', true, false, false, execaSync);
+test('Generator can return Buffer with default encoding, sync', testGeneratorReturnType, foobarBuffer, 'utf8', true, false, false, execaSync);
 test('Generator can return string with encoding "utf16le", sync', testGeneratorReturnType, foobarString, 'utf16le', true, false, false, execaSync);
 test('Generator can return Uint8Array with encoding "utf16le", sync', testGeneratorReturnType, foobarUint8Array, 'utf16le', true, false, false, execaSync);
+test('Generator can return Buffer with encoding "utf16le", sync', testGeneratorReturnType, foobarBuffer, 'utf16le', true, false, false, execaSync);
 test('Generator can return string with encoding "buffer", sync', testGeneratorReturnType, foobarString, 'buffer', true, false, false, execaSync);
 test('Generator can return Uint8Array with encoding "buffer", sync', testGeneratorReturnType, foobarUint8Array, 'buffer', true, false, false, execaSync);
+test('Generator can return Buffer with encoding "buffer", sync', testGeneratorReturnType, foobarBuffer, 'buffer', true, false, false, execaSync);
 test('Generator can return string with encoding "hex", sync', testGeneratorReturnType, foobarString, 'hex', true, false, false, execaSync);
 test('Generator can return Uint8Array with encoding "hex", sync', testGeneratorReturnType, foobarUint8Array, 'hex', true, false, false, execaSync);
+test('Generator can return Buffer with encoding "hex", sync', testGeneratorReturnType, foobarBuffer, 'hex', true, false, false, execaSync);
 test('Generator can return string with default encoding, failure, sync', testGeneratorReturnType, foobarString, 'utf8', false, false, false, execaSync);
 test('Generator can return Uint8Array with default encoding, failure, sync', testGeneratorReturnType, foobarUint8Array, 'utf8', false, false, false, execaSync);
 test('Generator can return string with encoding "utf16le", failure, sync', testGeneratorReturnType, foobarString, 'utf16le', false, false, false, execaSync);

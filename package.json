@@ -20,7 +20,7 @@
 		"node": ">=18"
 	},
 	"scripts": {
-		"test": "xo && c8 ava && tsd"
+		"test": "xo && c8 ava && tsd && tsc"
 	},
 	"files": [
 		"index.js",
@@ -72,6 +72,7 @@
 		"path-key": "^4.0.0",
 		"tempfile": "^5.0.0",
 		"tsd": "^0.31.0",
+		"typescript": "^5.4.5",
 		"which": "^4.0.0",
 		"xo": "^0.58.0"
 	},

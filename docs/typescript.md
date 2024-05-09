@@ -109,7 +109,7 @@ try {
 
 This package uses pure ES modules. Therefore the TypeScript's `--module` compiler option must be set to [`nodenext`](https://www.typescriptlang.org/docs/handbook/modules/reference.html#node16-nodenext) or [`preserve`](https://www.typescriptlang.org/docs/handbook/modules/reference.html#preserve). [More info.](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)
 
-Otherwise, transpilation will work but running the transpiled file will throw the following runtime error:
+Otherwise, transpilation will work, but running the transpiled file will throw the following runtime error:
 
 ```
 Error [ERR_REQUIRE_ESM]: require() of ES Module ... not supported.

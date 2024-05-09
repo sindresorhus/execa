@@ -1,9 +1,9 @@
-import type {Unless} from '../utils';
-import type {CommonOptions, Options, SyncOptions} from '../arguments/options';
-import type {ErrorProperties} from './final-error';
-import type {ResultAll} from './result-all';
-import type {ResultStdioArray} from './result-stdio';
-import type {ResultStdioNotAll} from './result-stdout';
+import type {Unless} from '../utils.js';
+import type {CommonOptions, Options, SyncOptions} from '../arguments/options.js';
+import type {ErrorProperties} from './final-error.js';
+import type {ResultAll} from './result-all.js';
+import type {ResultStdioArray} from './result-stdio.js';
+import type {ResultStdioNotAll} from './result-stdout.js';
 
 export declare abstract class CommonResult<
 	IsSync extends boolean = boolean,

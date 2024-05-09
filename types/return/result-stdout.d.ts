@@ -1,8 +1,8 @@
-import type {BufferEncodingOption, BinaryEncodingOption} from '../arguments/encoding-option';
-import type {IsObjectFd} from '../transform/object-mode';
-import type {FdSpecificOption} from '../arguments/specific';
-import type {CommonOptions} from '../arguments/options';
-import type {IgnoresResultOutput} from './ignore';
+import type {BufferEncodingOption, BinaryEncodingOption} from '../arguments/encoding-option.js';
+import type {IsObjectFd} from '../transform/object-mode.js';
+import type {FdSpecificOption} from '../arguments/specific.js';
+import type {CommonOptions} from '../arguments/options.js';
+import type {IgnoresResultOutput} from './ignore.js';
 
 // `result.stdout|stderr|stdio`
 export type ResultStdioNotAll<

@@ -1,7 +1,7 @@
-import type {Options, SyncOptions} from '../arguments/options';
-import type {SyncResult} from '../return/result';
-import type {ResultPromise} from '../subprocess/subprocess';
-import type {SimpleTemplateString} from './template';
+import type {Options, SyncOptions} from '../arguments/options.js';
+import type {SyncResult} from '../return/result.js';
+import type {ResultPromise} from '../subprocess/subprocess.js';
+import type {SimpleTemplateString} from './template.js';
 
 type ExecaCommand<OptionsType extends Options> = {
 	<NewOptionsType extends Options = {}>(options: NewOptionsType): ExecaCommand<OptionsType & NewOptionsType>;

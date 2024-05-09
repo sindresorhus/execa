@@ -1,8 +1,8 @@
-import type {IsObjectFd} from '../transform/object-mode';
-import type {CommonOptions} from '../arguments/options';
-import type {FdSpecificOption} from '../arguments/specific';
-import type {IgnoresResultOutput} from './ignore';
-import type {ResultStdio} from './result-stdout';
+import type {IsObjectFd} from '../transform/object-mode.js';
+import type {CommonOptions} from '../arguments/options.js';
+import type {FdSpecificOption} from '../arguments/specific.js';
+import type {IgnoresResultOutput} from './ignore.js';
+import type {ResultStdio} from './result-stdout.js';
 
 // `result.all`
 export type ResultAll<OptionsType extends CommonOptions = CommonOptions> =

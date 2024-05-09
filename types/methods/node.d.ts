@@ -1,6 +1,6 @@
-import type {Options} from '../arguments/options';
-import type {ResultPromise} from '../subprocess/subprocess';
-import type {TemplateString} from './template';
+import type {Options} from '../arguments/options.js';
+import type {ResultPromise} from '../subprocess/subprocess.js';
+import type {TemplateString} from './template.js';
 
 type ExecaNode<OptionsType extends Options> = {
 	<NewOptionsType extends Options = {}>(options: NewOptionsType): ExecaNode<OptionsType & NewOptionsType>;

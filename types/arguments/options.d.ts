@@ -1,3 +1,5 @@
+import type {SignalConstants} from 'node:os';
+import type {env} from 'node:process';
 import type {Readable} from 'node:stream';
 import type {Unless} from '../utils.js';
 import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsProperty} from '../stdio/type.js';
@@ -73,7 +75,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default [process.env](https://nodejs.org/api/process.html#processenv)
 	*/
-	readonly env?: NodeJS.ProcessEnv;
+	readonly env?: typeof env;
 
 	/**
 	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
@@ -278,7 +280,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'SIGTERM'
 	*/
-	readonly killSignal?: NodeJS.Signals | number;
+	readonly killSignal?: keyof SignalConstants | number;
 
 	/**
 	Run the subprocess independently from the current process.

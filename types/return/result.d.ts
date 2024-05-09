@@ -1,3 +1,4 @@
+import type {SignalConstants} from 'node:os';
 import type {Unless} from '../utils.js';
 import type {CommonOptions, Options, SyncOptions} from '../arguments/options.js';
 import type {ErrorProperties} from './final-error.js';
@@ -117,7 +118,7 @@ export declare abstract class CommonResult<
 
 	If a signal terminated the subprocess, this property is defined and included in the error message. Otherwise it is `undefined`.
 	*/
-	signal?: NodeJS.Signals;
+	signal?: keyof SignalConstants;
 
 	/**
 	A human-friendly description of the signal that was used to terminate the subprocess.

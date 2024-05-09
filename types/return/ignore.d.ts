@@ -7,7 +7,7 @@ import type {CommonOptions} from '../arguments/options.js';
 // Whether `result.stdin|stdout|stderr|all|stdio[*]` is `undefined`
 export type IgnoresResultOutput<
 	FdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = FdSpecificOption<OptionsType['buffer'], FdNumber> extends false
 	? true
 	: IsInputFd<FdNumber, OptionsType> extends true
@@ -17,7 +17,7 @@ export type IgnoresResultOutput<
 // Whether `subprocess.stdout|stderr|all` is `undefined|null`
 export type IgnoresSubprocessOutput<
 	FdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = IgnoresOutput<FdNumber, FdStdioOption<FdNumber, OptionsType>>;
 
 type IgnoresOutput<

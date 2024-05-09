@@ -6,7 +6,7 @@ import type {FdStdioArrayOption} from './option.js';
 // Whether `result.stdio[FdNumber]` is an input stream
 export type IsInputFd<
 	FdNumber extends string,
-	OptionsType extends CommonOptions = CommonOptions,
+	OptionsType extends CommonOptions,
 > = FdNumber extends '0'
 	? true
 	: Intersects<StdioSingleOptionItems<FdStdioArrayOption<FdNumber, OptionsType>>, InputStdioOption>;

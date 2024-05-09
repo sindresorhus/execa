@@ -7,8 +7,8 @@ import type {ResultStdioArray} from './result-stdio.js';
 import type {ResultStdioNotAll} from './result-stdout.js';
 
 export declare abstract class CommonResult<
-	IsSync extends boolean = boolean,
-	OptionsType extends CommonOptions = CommonOptions,
+	IsSync extends boolean,
+	OptionsType extends CommonOptions,
 > {
 	/**
 	The output of the subprocess on [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)).
@@ -162,13 +162,13 @@ export declare abstract class CommonResult<
 }
 
 export type CommonResultInstance<
-	IsSync extends boolean = boolean,
-	OptionsType extends CommonOptions = CommonOptions,
+	IsSync extends boolean,
+	OptionsType extends CommonOptions,
 > = InstanceType<typeof CommonResult<IsSync, OptionsType>>;
 
 type SuccessResult<
-	IsSync extends boolean = boolean,
-	OptionsType extends CommonOptions = CommonOptions,
+	IsSync extends boolean,
+	OptionsType extends CommonOptions,
 > = CommonResultInstance<IsSync, OptionsType> & OmitErrorIfReject<OptionsType['reject']>;
 
 type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false

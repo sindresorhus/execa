@@ -22,7 +22,7 @@ const objectFinal = function * () {
 	yield {};
 };
 
-const objectTransformLinesStdoutResult = await execa('unicorns', {lines: true, stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}});
+const objectTransformLinesStdoutResult = await execa('unicorns', {lines: true, stdout: {transform: objectGenerator, final: objectFinal, objectMode: true} as const});
 expectType<unknown[]>(objectTransformLinesStdoutResult.stdout);
 expectType<[undefined, unknown[], string[]]>(objectTransformLinesStdoutResult.stdio);
 
@@ -38,7 +38,7 @@ const objectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: duplex
 expectType<unknown[]>(objectDuplexPropertyStdoutResult.stdout);
 expectType<[undefined, unknown[], string]>(objectDuplexPropertyStdoutResult.stdio);
 
-const objectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}});
+const objectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true} as const});
 expectType<unknown[]>(objectTransformStdoutResult.stdout);
 expectType<[undefined, unknown[], string]>(objectTransformStdoutResult.stdio);
 
@@ -54,7 +54,7 @@ const objectDuplexPropertyStderrResult = await execa('unicorns', {stderr: duplex
 expectType<unknown[]>(objectDuplexPropertyStderrResult.stderr);
 expectType<[undefined, string, unknown[]]>(objectDuplexPropertyStderrResult.stdio);
 
-const objectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, final: objectFinal, objectMode: true}});
+const objectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, final: objectFinal, objectMode: true} as const});
 expectType<unknown[]>(objectTransformStderrResult.stderr);
 expectType<[undefined, string, unknown[]]>(objectTransformStderrResult.stdio);
 
@@ -70,7 +70,7 @@ const objectDuplexPropertyStdioResult = await execa('unicorns', {stdio: ['pipe',
 expectType<unknown[]>(objectDuplexPropertyStdioResult.stderr);
 expectType<[undefined, string, unknown[]]>(objectDuplexPropertyStdioResult.stdio);
 
-const objectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, final: objectFinal, objectMode: true}]});
+const objectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, final: objectFinal, objectMode: true} as const]});
 expectType<unknown[]>(objectTransformStdioResult.stderr);
 expectType<[undefined, string, unknown[]]>(objectTransformStdioResult.stdio);
 
@@ -86,7 +86,7 @@ const singleObjectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: 
 expectType<unknown[]>(singleObjectDuplexPropertyStdoutResult.stdout);
 expectType<[undefined, unknown[], string]>(singleObjectDuplexPropertyStdoutResult.stdio);
 
-const singleObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, final: objectFinal, objectMode: true}]});
+const singleObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, final: objectFinal, objectMode: true} as const]});
 expectType<unknown[]>(singleObjectTransformStdoutResult.stdout);
 expectType<[undefined, unknown[], string]>(singleObjectTransformStdoutResult.stdio);
 
@@ -102,7 +102,7 @@ const manyObjectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: [d
 expectType<unknown[]>(manyObjectDuplexPropertyStdoutResult.stdout);
 expectType<[undefined, unknown[], string]>(manyObjectDuplexPropertyStdoutResult.stdio);
 
-const manyObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, final: objectFinal, objectMode: true}, {transform: objectGenerator, final: objectFinal, objectMode: true}]});
+const manyObjectTransformStdoutResult = await execa('unicorns', {stdout: [{transform: objectGenerator, final: objectFinal, objectMode: true} as const, {transform: objectGenerator, final: objectFinal, objectMode: true} as const]});
 expectType<unknown[]>(manyObjectTransformStdoutResult.stdout);
 expectType<[undefined, unknown[], string]>(manyObjectTransformStdoutResult.stdio);
 
@@ -118,7 +118,7 @@ const falseObjectDuplexPropertyStdoutResult = await execa('unicorns', {stdout: d
 expectType<string>(falseObjectDuplexPropertyStdoutResult.stdout);
 expectType<[undefined, string, string]>(falseObjectDuplexPropertyStdoutResult.stdio);
 
-const falseObjectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: false}});
+const falseObjectTransformStdoutResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: false} as const});
 expectType<string>(falseObjectTransformStdoutResult.stdout);
 expectType<[undefined, string, string]>(falseObjectTransformStdoutResult.stdio);
 
@@ -134,7 +134,7 @@ const falseObjectDuplexPropertyStderrResult = await execa('unicorns', {stderr: d
 expectType<string>(falseObjectDuplexPropertyStderrResult.stderr);
 expectType<[undefined, string, string]>(falseObjectDuplexPropertyStderrResult.stdio);
 
-const falseObjectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, final: objectFinal, objectMode: false}});
+const falseObjectTransformStderrResult = await execa('unicorns', {stderr: {transform: objectGenerator, final: objectFinal, objectMode: false} as const});
 expectType<string>(falseObjectTransformStderrResult.stderr);
 expectType<[undefined, string, string]>(falseObjectTransformStderrResult.stdio);
 
@@ -150,7 +150,7 @@ const falseObjectDuplexPropertyStdioResult = await execa('unicorns', {stdio: ['p
 expectType<string>(falseObjectDuplexPropertyStdioResult.stderr);
 expectType<[undefined, string, string]>(falseObjectDuplexPropertyStdioResult.stdio);
 
-const falseObjectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, final: objectFinal, objectMode: false}]});
+const falseObjectTransformStdioResult = await execa('unicorns', {stdio: ['pipe', 'pipe', {transform: objectGenerator, final: objectFinal, objectMode: false} as const]});
 expectType<string>(falseObjectTransformStdioResult.stderr);
 expectType<[undefined, string, string]>(falseObjectTransformStdioResult.stdio);
 
@@ -174,50 +174,50 @@ const noObjectTransformStdoutResult = await execa('unicorns', {stdout: objectGen
 expectType<string>(noObjectTransformStdoutResult.stdout);
 expectType<[undefined, string, string]>(noObjectTransformStdoutResult.stdio);
 
-const trueTrueObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}, stderr: {transform: objectGenerator, final: objectFinal, objectMode: true}, all: true});
+const trueTrueObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true} as const, stderr: {transform: objectGenerator, final: objectFinal, objectMode: true} as const, all: true});
 expectType<unknown[]>(trueTrueObjectTransformResult.stdout);
 expectType<unknown[]>(trueTrueObjectTransformResult.stderr);
 expectType<unknown[]>(trueTrueObjectTransformResult.all);
 expectType<[undefined, unknown[], unknown[]]>(trueTrueObjectTransformResult.stdio);
 
-const trueFalseObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true}, stderr: {transform: objectGenerator, final: objectFinal, objectMode: false}, all: true});
+const trueFalseObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: true} as const, stderr: {transform: objectGenerator, final: objectFinal, objectMode: false} as const, all: true});
 expectType<unknown[]>(trueFalseObjectTransformResult.stdout);
 expectType<string>(trueFalseObjectTransformResult.stderr);
 expectType<unknown[]>(trueFalseObjectTransformResult.all);
 expectType<[undefined, unknown[], string]>(trueFalseObjectTransformResult.stdio);
 
-const falseTrueObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: false}, stderr: {transform: objectGenerator, final: objectFinal, objectMode: true}, all: true});
+const falseTrueObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: false} as const, stderr: {transform: objectGenerator, final: objectFinal, objectMode: true} as const, all: true});
 expectType<string>(falseTrueObjectTransformResult.stdout);
 expectType<unknown[]>(falseTrueObjectTransformResult.stderr);
 expectType<unknown[]>(falseTrueObjectTransformResult.all);
 expectType<[undefined, string, unknown[]]>(falseTrueObjectTransformResult.stdio);
 
-const falseFalseObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: false}, stderr: {transform: objectGenerator, final: objectFinal, objectMode: false}, all: true});
+const falseFalseObjectTransformResult = await execa('unicorns', {stdout: {transform: objectGenerator, final: objectFinal, objectMode: false} as const, stderr: {transform: objectGenerator, final: objectFinal, objectMode: false} as const, all: true});
 expectType<string>(falseFalseObjectTransformResult.stdout);
 expectType<string>(falseFalseObjectTransformResult.stderr);
 expectType<string>(falseFalseObjectTransformResult.all);
 expectType<[undefined, string, string]>(falseFalseObjectTransformResult.stdio);
 
-const objectTransformStdoutError = new Error('.') as ExecaError<{stdout: {transform: typeof objectGenerator; final: typeof objectFinal; objectMode: true}}>;
+const objectTransformStdoutError = new Error('.') as ExecaError<{stdout: {transform: typeof objectGenerator; final: typeof objectFinal; readonly objectMode: true}}>;
 expectType<unknown[]>(objectTransformStdoutError.stdout);
 expectType<[undefined, unknown[], string]>(objectTransformStdoutError.stdio);
 
-const objectTransformStderrError = new Error('.') as ExecaError<{stderr: {transform: typeof objectGenerator; final: typeof objectFinal; objectMode: true}}>;
+const objectTransformStderrError = new Error('.') as ExecaError<{stderr: {transform: typeof objectGenerator; final: typeof objectFinal; readonly objectMode: true}}>;
 expectType<unknown[]>(objectTransformStderrError.stderr);
 expectType<[undefined, string, unknown[]]>(objectTransformStderrError.stdio);
 
-const objectTransformStdioError = new Error('.') as ExecaError<{stdio: ['pipe', 'pipe', {transform: typeof objectGenerator; final: typeof objectFinal; objectMode: true}]}>;
+const objectTransformStdioError = new Error('.') as ExecaError<{stdio: ['pipe', 'pipe', {transform: typeof objectGenerator; final: typeof objectFinal; readonly objectMode: true}]}>;
 expectType<unknown[]>(objectTransformStdioError.stderr);
 expectType<[undefined, string, unknown[]]>(objectTransformStdioError.stdio);
 
-const falseObjectTransformStdoutError = new Error('.') as ExecaError<{stdout: {transform: typeof objectGenerator; final: typeof objectFinal; objectMode: false}}>;
+const falseObjectTransformStdoutError = new Error('.') as ExecaError<{stdout: {transform: typeof objectGenerator; final: typeof objectFinal; readonly objectMode: false}}>;
 expectType<string>(falseObjectTransformStdoutError.stdout);
 expectType<[undefined, string, string]>(falseObjectTransformStdoutError.stdio);
 
-const falseObjectTransformStderrError = new Error('.') as ExecaError<{stderr: {transform: typeof objectGenerator; final: typeof objectFinal; objectMode: false}}>;
+const falseObjectTransformStderrError = new Error('.') as ExecaError<{stderr: {transform: typeof objectGenerator; final: typeof objectFinal; readonly objectMode: false}}>;
 expectType<string>(falseObjectTransformStderrError.stderr);
 expectType<[undefined, string, string]>(falseObjectTransformStderrError.stdio);
 
-const falseObjectTransformStdioError = new Error('.') as ExecaError<{stdio: ['pipe', 'pipe', {transform: typeof objectGenerator; final: typeof objectFinal; objectMode: false}]}>;
+const falseObjectTransformStdioError = new Error('.') as ExecaError<{stdio: ['pipe', 'pipe', {transform: typeof objectGenerator; final: typeof objectFinal; readonly objectMode: false}]}>;
 expectType<string>(falseObjectTransformStdioError.stderr);
 expectType<[undefined, string, string]>(falseObjectTransformStdioError.stdio);

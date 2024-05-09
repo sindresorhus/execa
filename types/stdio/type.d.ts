@@ -89,9 +89,9 @@ type OutputStdioOption<
 
 // `options.stdin` array items
 type StdinSingleOption<
-	IsSync extends boolean = boolean,
-	IsExtra extends boolean = boolean,
-	IsArray extends boolean = boolean,
+	IsSync extends boolean,
+	IsExtra extends boolean,
+	IsArray extends boolean,
 > =
 	| CommonStdioOption<IsSync, IsExtra, IsArray>
 	| InputStdioOption<IsSync, IsExtra, IsArray>;
@@ -111,9 +111,9 @@ export type StdinSyncOption = StdinOptionCommon<true, false>;
 
 // `options.stdout|stderr` array items
 type StdoutStderrSingleOption<
-	IsSync extends boolean = boolean,
-	IsExtra extends boolean = boolean,
-	IsArray extends boolean = boolean,
+	IsSync extends boolean,
+	IsExtra extends boolean,
+	IsArray extends boolean,
 > =
   | CommonStdioOption<IsSync, IsExtra, IsArray>
   | OutputStdioOption<IsSync, IsArray>;
@@ -132,7 +132,7 @@ export type StdoutStderrOption = StdoutStderrOptionCommon<false, false>;
 export type StdoutStderrSyncOption = StdoutStderrOptionCommon<true, false>;
 
 // `options.stdio[3+]`
-type StdioExtraOptionCommon<IsSync extends boolean = boolean> =
+type StdioExtraOptionCommon<IsSync extends boolean> =
 	| StdinOptionCommon<IsSync, true>
 	| StdoutStderrOptionCommon<IsSync, true>;
 

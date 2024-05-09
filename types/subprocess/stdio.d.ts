@@ -4,12 +4,12 @@ import type {Options} from '../arguments/options.js';
 import type {SubprocessStdioStream} from './stdout.js';
 
 // `subprocess.stdio`
-export type SubprocessStdioArray<OptionsType extends Options = Options> = MapStdioStreams<StdioOptionNormalizedArray<OptionsType>, OptionsType>;
+export type SubprocessStdioArray<OptionsType extends Options> = MapStdioStreams<StdioOptionNormalizedArray<OptionsType>, OptionsType>;
 
 // We cannot use mapped types because it must be compatible with Node.js `ChildProcess["stdio"]` which uses a tuple with exactly 5 items
 type MapStdioStreams<
 	StdioOptionsArrayType extends StdioOptionsArray,
-	OptionsType extends Options = Options,
+	OptionsType extends Options,
 > = [
 	SubprocessStdioStream<'0', OptionsType>,
 	SubprocessStdioStream<'1', OptionsType>,

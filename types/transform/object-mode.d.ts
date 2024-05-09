@@ -1,7 +1,7 @@
-import type {StdioSingleOption, StdioOptionCommon} from '../stdio/type';
-import type {FdStdioOption} from '../stdio/option';
-import type {CommonOptions} from '../arguments/options';
-import type {DuplexTransform} from './normalize';
+import type {StdioSingleOption, StdioOptionCommon} from '../stdio/type.js';
+import type {FdStdioOption} from '../stdio/option.js';
+import type {CommonOptions} from '../arguments/options.js';
+import type {DuplexTransform} from './normalize.js';
 
 // Whether a file descriptor is in object mode
 // I.e. whether `result.stdout|stderr|stdio|all` is an array of `unknown` due to `objectMode: true`

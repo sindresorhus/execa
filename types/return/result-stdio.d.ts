@@ -1,7 +1,7 @@
-import type {StdioOptionsArray} from '../stdio/type';
-import type {StdioOptionNormalizedArray} from '../stdio/array';
-import type {CommonOptions} from '../arguments/options';
-import type {ResultStdioNotAll} from './result-stdout';
+import type {StdioOptionsArray} from '../stdio/type.js';
+import type {StdioOptionNormalizedArray} from '../stdio/array.js';
+import type {CommonOptions} from '../arguments/options.js';
+import type {ResultStdioNotAll} from './result-stdout.js';
 
 // `result.stdio`
 export type ResultStdioArray<OptionsType extends CommonOptions = CommonOptions> =

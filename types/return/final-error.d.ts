@@ -1,6 +1,5 @@
-import type {CommonOptions, Options, SyncOptions} from '../arguments/options';
-// eslint-disable-next-line import/extensions
-import {CommonResult} from './result';
+import type {CommonOptions, Options, SyncOptions} from '../arguments/options.js';
+import {CommonResult} from './result.js';
 
 declare abstract class CommonError<
 	IsSync extends boolean = boolean,

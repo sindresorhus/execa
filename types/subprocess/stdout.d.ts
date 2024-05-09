@@ -1,7 +1,7 @@
 import type {Readable, Writable} from 'node:stream';
-import type {IsInputFd} from '../stdio/direction';
-import type {IgnoresSubprocessOutput} from '../return/ignore';
-import type {Options} from '../arguments/options';
+import type {IsInputFd} from '../stdio/direction.js';
+import type {IgnoresSubprocessOutput} from '../return/ignore.js';
+import type {Options} from '../arguments/options.js';
 
 // `subprocess.stdin|stdout|stderr|stdio`
 export type SubprocessStdioStream<

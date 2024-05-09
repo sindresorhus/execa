@@ -1,4 +1,4 @@
-import type {CommonResultInstance} from '../return/result';
+import type {CommonResultInstance} from '../return/result.js';
 
 // Values allowed inside `...${...}...` template syntax
 export type TemplateExpression =

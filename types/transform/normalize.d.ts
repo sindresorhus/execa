@@ -1,5 +1,5 @@
 import type {Duplex} from 'node:stream';
-import type {Unless} from '../utils';
+import type {Unless} from '../utils.js';
 
 // `options.std*: Generator`
 // @todo Use `string`, `Uint8Array` or `unknown` for both the argument and the return type, based on whether `encoding: 'buffer'` and `objectMode: true` are used.

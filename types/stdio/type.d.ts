@@ -5,13 +5,13 @@ import type {
 	Or,
 	Unless,
 	AndUnless,
-} from '../utils';
+} from '../utils.js';
 import type {
 	GeneratorTransform,
 	GeneratorTransformFull,
 	DuplexTransform,
 	WebTransform,
-} from '../transform/normalize';
+} from '../transform/normalize.js';
 
 type IsStandardStream<FdNumber extends string> = FdNumber extends keyof StandardStreams ? true : false;
 

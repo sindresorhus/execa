@@ -1,5 +1,5 @@
-import type {CommonOptions} from '../arguments/options';
-import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsArray} from './type';
+import type {CommonOptions} from '../arguments/options.js';
+import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsArray} from './type.js';
 
 // `options.stdio`, normalized as an array
 export type StdioOptionNormalizedArray<OptionsType extends CommonOptions = CommonOptions> = StdioOptionNormalized<OptionsType['stdio']>;

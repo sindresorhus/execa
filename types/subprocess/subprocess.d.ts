@@ -1,19 +1,19 @@
 import type {ChildProcess} from 'node:child_process';
 import type {SignalConstants} from 'node:os';
 import type {Readable, Writable, Duplex} from 'node:stream';
-import type {StdioOptionsArray} from '../stdio/type';
-import type {Options} from '../arguments/options';
-import type {Result} from '../return/result';
-import type {PipableSubprocess} from '../pipe';
+import type {StdioOptionsArray} from '../stdio/type.js';
+import type {Options} from '../arguments/options.js';
+import type {Result} from '../return/result.js';
+import type {PipableSubprocess} from '../pipe.js';
 import type {
 	ReadableOptions,
 	WritableOptions,
 	DuplexOptions,
 	SubprocessAsyncIterable,
-} from '../convert';
-import type {SubprocessStdioStream} from './stdout';
-import type {SubprocessStdioArray} from './stdio';
-import type {SubprocessAll} from './all';
+} from '../convert.js';
+import type {SubprocessStdioStream} from './stdout.js';
+import type {SubprocessStdioArray} from './stdio.js';
+import type {SubprocessAll} from './all.js';
 
 type HasIpc<OptionsType extends Options> = OptionsType['ipc'] extends true
 	? true

@@ -1,10 +1,10 @@
 import type {SignalConstants} from 'node:os';
 import type {env} from 'node:process';
 import type {Readable} from 'node:stream';
-import type {Unless} from '../utils';
-import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsProperty} from '../stdio/type';
-import type {FdGenericOption} from './specific';
-import type {EncodingOption} from './encoding-option';
+import type {Unless} from '../utils.js';
+import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsProperty} from '../stdio/type.js';
+import type {FdGenericOption} from './specific.js';
+import type {EncodingOption} from './encoding-option.js';
 
 export type CommonOptions<IsSync extends boolean = boolean> = {
 	/**

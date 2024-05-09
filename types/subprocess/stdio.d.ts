@@ -1,7 +1,7 @@
-import type {StdioOptionNormalizedArray} from '../stdio/array';
-import type {StdioOptionsArray} from '../stdio/type';
-import type {Options} from '../arguments/options';
-import type {SubprocessStdioStream} from './stdout';
+import type {StdioOptionNormalizedArray} from '../stdio/array.js';
+import type {StdioOptionsArray} from '../stdio/type.js';
+import type {Options} from '../arguments/options.js';
+import type {SubprocessStdioStream} from './stdout.js';
 
 // `subprocess.stdio`
 export type SubprocessStdioArray<OptionsType extends Options = Options> = MapStdioStreams<StdioOptionNormalizedArray<OptionsType>, OptionsType>;

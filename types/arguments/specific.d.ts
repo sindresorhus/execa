@@ -1,4 +1,4 @@
-import type {FromOption} from './fd-options';
+import type {FromOption} from './fd-options.js';
 
 // Options which can be fd-specific like `{verbose: {stdout: 'none', stderr: 'full'}}`
 export type FdGenericOption<OptionType = unknown> = OptionType | GenericOptionObject<OptionType>;

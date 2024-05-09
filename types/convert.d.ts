@@ -1,6 +1,6 @@
-import type {BinaryEncodingOption} from './arguments/encoding-option';
-import type {Options} from './arguments/options';
-import type {FromOption, ToOption} from './arguments/fd-options';
+import type {BinaryEncodingOption} from './arguments/encoding-option.js';
+import type {Options} from './arguments/options.js';
+import type {FromOption, ToOption} from './arguments/fd-options.js';
 
 // `subprocess.readable|duplex|iterable()` options
 export type ReadableOptions = {

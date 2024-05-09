@@ -1,6 +1,6 @@
-import type {CommonOptions} from '../arguments/options';
-import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionCommon} from './type';
-import type {FdStdioArrayOption} from './option';
+import type {CommonOptions} from '../arguments/options.js';
+import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionCommon} from './type.js';
+import type {FdStdioArrayOption} from './option.js';
 
 // Whether `result.stdio[FdNumber]` is an input stream
 export type IsInputFd<

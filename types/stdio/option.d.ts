@@ -1,11 +1,11 @@
-import type {CommonOptions} from '../arguments/options';
-import type {StdioOptionNormalizedArray} from './array';
+import type {CommonOptions} from '../arguments/options.js';
+import type {StdioOptionNormalizedArray} from './array.js';
 import type {
 	StandardStreams,
 	StdioOptionCommon,
 	StdioOptionsArray,
 	StdioOptionsProperty,
-} from './type';
+} from './type.js';
 
 // `options.stdin|stdout|stderr|stdio` for a given file descriptor
 export type FdStdioOption<

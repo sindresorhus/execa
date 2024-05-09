@@ -105,6 +105,22 @@ try {
 
 ## Troubleshooting
 
+### ES modules
+
+This package uses pure ES modules. Therefore the TypeScript's `--module` compiler option must be set to [`nodenext`](https://www.typescriptlang.org/docs/handbook/modules/reference.html#node16-nodenext) or [`preserve`](https://www.typescriptlang.org/docs/handbook/modules/reference.html#preserve). [More info.](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)
+
+Otherwise, transpilation will work, but running the transpiled file will throw the following runtime error:
+
+```
+Error [ERR_REQUIRE_ESM]: require() of ES Module ... not supported.
+```
+
+Or:
+
+```
+ReferenceError: exports is not defined in ES module scope
+```
+
 ### Strict unions
 
 Several options are typed as unions. For example, the [`serialization`](api.md#optionsserialization) option's type is `'advanced' | 'json'`, not `string`. Therefore the following example fails:

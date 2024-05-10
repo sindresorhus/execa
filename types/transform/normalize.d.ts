@@ -1,3 +1,4 @@
+import type {TransformStream} from 'node:stream/web';
 import type {Duplex} from 'node:stream';
 import type {Unless} from '../utils.js';
 

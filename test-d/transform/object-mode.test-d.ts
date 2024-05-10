@@ -1,4 +1,5 @@
 import {Duplex} from 'node:stream';
+import {TransformStream} from 'node:stream/web';
 import {expectType} from 'tsd';
 import {execa, type ExecaError} from '../../index.js';
 

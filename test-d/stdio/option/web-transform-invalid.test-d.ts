@@ -1,3 +1,4 @@
+import {TransformStream} from 'node:stream/web';
 import {expectError, expectNotAssignable} from 'tsd';
 import {
 	execa,

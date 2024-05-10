@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"target": "ES2022",
+		"strict": true
+	},
+	"files": [
+		"index.d.ts"
+	]
+}

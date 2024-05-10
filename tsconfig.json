@@ -2,7 +2,6 @@
 	"compilerOptions": {
 		"module": "nodenext",
 		"moduleResolution": "nodenext",
-		"moduleDetection": "force",
 		"target": "ES2022",
 		"strict": true
 	},

@@ -51,6 +51,7 @@ expectType<Result<{}>>(await execaNode`unicorns ${false.toString()}`);
 expectError(await execaNode`unicorns ${false}`);
 
 expectType<Result<{}>>(await execaNode`unicorns ${await execaNode`echo foo`}`);
+expectType<Result<{}>>(await execaNode`unicorns ${await execaNode({reject: false})`echo foo`}`);
 expectError(await execaNode`unicorns ${execaNode`echo foo`}`);
 expectType<Result<{}>>(await execaNode`unicorns ${[await execaNode`echo foo`, 'bar']}`);
 expectError(await execaNode`unicorns ${[execaNode`echo foo`, 'bar']}`);

@@ -161,19 +161,14 @@ export declare abstract class CommonResult<
 	stack?: Error['stack'];
 }
 
-export type CommonResultInstance<
-	IsSync extends boolean,
-	OptionsType extends CommonOptions,
-> = InstanceType<typeof CommonResult<IsSync, OptionsType>>;
-
 type SuccessResult<
 	IsSync extends boolean,
 	OptionsType extends CommonOptions,
-> = CommonResultInstance<IsSync, OptionsType> & OmitErrorIfReject<OptionsType['reject']>;
+> = InstanceType<typeof CommonResult<IsSync, OptionsType>> & OmitErrorIfReject<OptionsType['reject']>;
 
-type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = RejectOption extends false
-	? {}
-	: {[ErrorProperty in ErrorProperties]: never};
+type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = {
+	[ErrorProperty in ErrorProperties]: RejectOption extends false ? unknown : never
+};
 
 /**
 Result of a subprocess successful execution.

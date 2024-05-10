@@ -1,11 +1,11 @@
-import type {CommonOptions} from '../arguments/options.js';
-import type {CommonResultInstance} from '../return/result.js';
+import type {Result, SyncResult} from '../return/result.js';
 
 // Values allowed inside `...${...}...` template syntax
 type TemplateExpressionItem =
 	| string
 	| number
-	| CommonResultInstance<boolean, CommonOptions>;
+	| Result
+	| SyncResult;
 
 export type TemplateExpression = TemplateExpressionItem | readonly TemplateExpressionItem[];
 

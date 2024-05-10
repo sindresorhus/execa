@@ -51,4 +51,5 @@ expectType<SyncResult<{}>>(execaSync`unicorns ${false.toString()}`);
 expectError(execaSync`unicorns ${false}`);
 
 expectType<SyncResult<{}>>(execaSync`unicorns ${execaSync`echo foo`}`);
+expectType<SyncResult<{}>>(execaSync`unicorns ${execaSync({reject: false})`echo foo`}`);
 expectType<SyncResult<{}>>(execaSync`unicorns ${[execaSync`echo foo`, 'bar']}`);

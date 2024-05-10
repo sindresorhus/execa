@@ -1,12 +1,14 @@
 import type {Result, SyncResult} from '../return/result.js';
 
-// Values allowed inside `...${...}...` template syntax
 type TemplateExpressionItem =
 	| string
 	| number
 	| Result
 	| SyncResult;
 
+/**
+Value allowed inside `${...}` when using the template string syntax.
+*/
 export type TemplateExpression = TemplateExpressionItem | readonly TemplateExpressionItem[];
 
 // `...${...}...` template syntax

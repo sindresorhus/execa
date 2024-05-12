@@ -28,8 +28,8 @@
 	"files": [
 		"index.js",
 		"index.d.ts",
-		"lib",
-		"types"
+		"lib/**/*.js",
+		"types/**/*.ts"
 	],
 	"keywords": [
 		"exec",

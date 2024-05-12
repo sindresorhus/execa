@@ -29,31 +29,32 @@ await execa`npm run ${'task with space'}`;
 The above syntaxes allow the file and its arguments to be user-defined by passing a variable.
 
 ```js
-const command = 'npm';
+import {execa} from 'execa';
+
+const file = 'npm';
 const commandArguments = ['run', 'task with space'];
+await execa`${file} ${commandArguments}`;
 
-await execa(command, commandArguments);
-await execa`${command} ${commandArguments}`;
+await execa(file, commandArguments);
 ```
 
-However, [`execaCommand()`](api.md#execacommandcommand-options) must be used instead if:
-- _Both_ the file and its arguments are user-defined
-- _And_ those are supplied as a single string
-
-This is only intended for very specific cases, such as a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop). This should be avoided otherwise.
+If the file and/or multiple arguments are supplied as a single string, [`parseCommandString()`](api.md#parsecommandstringcommand) can split it into an array.
 
 ```js
-import {execaCommand} from 'execa';
+import {execa, parseCommandString} from 'execa';
 
-for await (const commandAndArguments of getReplLine()) {
-	await execaCommand(commandAndArguments);
-}
+const commandString = 'npm run task';
+const commandArray = parseCommandString(commandString);
+await execa`${commandArray}`;
+
+const [file, ...commandArguments] = commandArray;
+await execa(file, commandArguments);
 ```
 
-Arguments passed to `execaCommand()` are automatically escaped. They can contain any character (except [null bytes](https://en.wikipedia.org/wiki/Null_character)), but spaces must be escaped with a backslash.
+Spaces are used as delimiters. They can be escaped with a backslash.
 
 ```js
-await execaCommand('npm run task\\ with\\ space');
+await execa`${parseCommandString('npm run task\\ with\\ space')}`;
 ```
 
 ## Shells

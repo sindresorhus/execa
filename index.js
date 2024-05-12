@@ -3,6 +3,7 @@ import {mapCommandAsync, mapCommandSync} from './lib/methods/command.js';
 import {mapNode} from './lib/methods/node.js';
 import {mapScriptAsync, setScriptSync, deepScriptOptions} from './lib/methods/script.js';
 
+export {parseCommandString} from './lib/methods/command.js';
 export {ExecaError, ExecaSyncError} from './lib/return/final-error.js';
 
 export const execa = createExeca(() => ({}));

@@ -1,7 +1,12 @@
 import {expectType, expectError, expectAssignable} from 'tsd';
 import {
+	execa,
+	execaSync,
+	$,
+	execaNode,
 	execaCommand,
 	execaCommandSync,
+	parseCommandString,
 	type Result,
 	type ResultPromise,
 	type SyncResult,
@@ -9,6 +14,23 @@ import {
 
 const fileUrl = new URL('file:///test');
 const stringArray = ['foo', 'bar'] as const;
+
+expectError(parseCommandString());
+expectError(parseCommandString(true));
+expectError(parseCommandString(['unicorns', 'arg']));
+
+expectType<string[]>(parseCommandString(''));
+expectType<string[]>(parseCommandString('unicorns foo bar'));
+
+expectType<Result<{}>>(await execa`${parseCommandString('unicorns foo bar')}`);
+expectType<SyncResult<{}>>(execaSync`${parseCommandString('unicorns foo bar')}`);
+expectType<Result<{}>>(await $`${parseCommandString('unicorns foo bar')}`);
+expectType<SyncResult<{}>>($.sync`${parseCommandString('unicorns foo bar')}`);
+expectType<Result<{}>>(await execaNode`${parseCommandString('foo bar')}`);
+
+expectType<Result<{}>>(await execa`unicorns ${parseCommandString('foo bar')}`);
+expectType<Result<{}>>(await execa('unicorns', parseCommandString('foo bar')));
+expectType<Result<{}>>(await execa('unicorns', ['foo', ...parseCommandString('bar')]));
 
 expectError(execaCommand());
 expectError(execaCommand(true));

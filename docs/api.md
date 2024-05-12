@@ -83,17 +83,12 @@ This is the preferred method when executing Node.js files.
 
 [More info.](node.md)
 
-### execaCommand(command, options?)
+### parseCommandString(command)
 
 `command`: `string`\
-`options`: [`Options`](#options)\
-_Returns_: [`ResultPromise`](#return-value)
+_Returns_: `string[]`
 
-Executes a command. `command` is a string that includes both the `file` and its `arguments`.
-
-This is only intended for very specific cases, such as a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop). This should be avoided otherwise.
-
-Just like `execa()`, this can [bind options](execution.md#globalshared-options). It can also be [run synchronously](#execasyncfile-arguments-options) using `execaCommandSync()`.
+Split a `command` string into an array. For example, `'npm run build'` returns `['npm', 'run', 'build']` and `'argument otherArgument'` returns `['argument', 'otherArgument']`.
 
 [More info.](escaping.md#user-defined-input)
 

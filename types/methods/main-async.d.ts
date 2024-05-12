@@ -226,9 +226,9 @@ const ipcInput = await getOneMessage();
 // main.js
 import {execaNode} from 'execa';
 
-const {ipc} = await execaNode`build.js`;
-console.log(ipc[0]); // {kind: 'start', timestamp: date}
-console.log(ipc[1]); // {kind: 'stop', timestamp: date}
+const {ipcOutput} = await execaNode`build.js`;
+console.log(ipcOutput[0]); // {kind: 'start', timestamp: date}
+console.log(ipcOutput[1]); // {kind: 'stop', timestamp: date}
 ```
 
 ```

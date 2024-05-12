@@ -267,27 +267,27 @@ test('error.isMaxBuffer is false on early errors', async t => {
 	t.false(isMaxBuffer);
 });
 
-test('maxBuffer works with result.ipc', async t => {
+test('maxBuffer works with result.ipcOutput', async t => {
 	const {
 		isMaxBuffer,
 		shortMessage,
 		message,
 		stderr,
-		ipc,
+		ipcOutput,
 	} = await t.throwsAsync(execa('ipc-send-twice-wait.js', {ipc: true, maxBuffer: {ipc: 1}}));
 	t.true(isMaxBuffer);
 	t.is(shortMessage, 'Command\'s IPC output was larger than 1 messages: ipc-send-twice-wait.js\nmaxBuffer exceeded');
 	t.true(message.endsWith(`\n\n${foobarString}`));
 	t.true(stderr.includes('Error: getOneMessage() could not complete'));
-	t.deepEqual(ipc, [foobarString]);
+	t.deepEqual(ipcOutput, [foobarString]);
 });
 
-test('maxBuffer is ignored with result.ipc if buffer is false', async t => {
+test('maxBuffer is ignored with result.ipcOutput if buffer is false', async t => {
 	const subprocess = execa('ipc-send-twice-wait.js', {ipc: true, maxBuffer: {ipc: 1}, buffer: false});
 	t.is(await subprocess.getOneMessage(), foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);
 	await subprocess.sendMessage(foobarString);
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, []);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, []);
 });

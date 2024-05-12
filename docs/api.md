@@ -467,7 +467,7 @@ Items are arrays when their corresponding `stdio` option is a [transform in obje
 
 [More info.](output.md#additional-file-descriptors)
 
-### result.ipc
+### result.ipcOutput
 
 _Type_: [`Message[]`](ipc.md#message-type)
 

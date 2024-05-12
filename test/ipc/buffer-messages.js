@@ -6,53 +6,53 @@ import {foobarString, foobarArray} from '../helpers/input.js';
 setFixtureDirectory();
 
 const testResultIpc = async (t, options) => {
-	const {ipc} = await execa('ipc-send-twice.js', {...options, ipc: true});
-	t.deepEqual(ipc, foobarArray);
+	const {ipcOutput} = await execa('ipc-send-twice.js', {...options, ipc: true});
+	t.deepEqual(ipcOutput, foobarArray);
 };
 
-test('Sets result.ipc', testResultIpc, {});
-test('Sets result.ipc, fd-specific buffer', testResultIpc, {buffer: {stdout: false}});
+test('Sets result.ipcOutput', testResultIpc, {});
+test('Sets result.ipcOutput, fd-specific buffer', testResultIpc, {buffer: {stdout: false}});
 
 const testResultNoBuffer = async (t, options) => {
-	const {ipc} = await execa('ipc-send.js', {...options, ipc: true});
-	t.deepEqual(ipc, []);
+	const {ipcOutput} = await execa('ipc-send.js', {...options, ipc: true});
+	t.deepEqual(ipcOutput, []);
 };
 
-test('Sets empty result.ipc if buffer is false', testResultNoBuffer, {buffer: false});
-test('Sets empty result.ipc if buffer is false, fd-specific buffer', testResultNoBuffer, {buffer: {ipc: false}});
+test('Sets empty result.ipcOutput if buffer is false', testResultNoBuffer, {buffer: false});
+test('Sets empty result.ipcOutput if buffer is false, fd-specific buffer', testResultNoBuffer, {buffer: {ipc: false}});
 
-test('Sets empty result.ipc if ipc is false', async t => {
-	const {ipc} = await execa('empty.js');
-	t.deepEqual(ipc, []);
+test('Sets empty result.ipcOutput if ipc is false', async t => {
+	const {ipcOutput} = await execa('empty.js');
+	t.deepEqual(ipcOutput, []);
 });
 
-test('Sets empty result.ipc, sync', t => {
-	const {ipc} = execaSync('empty.js');
-	t.deepEqual(ipc, []);
+test('Sets empty result.ipcOutput, sync', t => {
+	const {ipcOutput} = execaSync('empty.js');
+	t.deepEqual(ipcOutput, []);
 });
 
 const testErrorIpc = async (t, options) => {
-	const {ipc} = await t.throwsAsync(execa('ipc-send-fail.js', {...options, ipc: true}));
-	t.deepEqual(ipc, [foobarString]);
+	const {ipcOutput} = await t.throwsAsync(execa('ipc-send-fail.js', {...options, ipc: true}));
+	t.deepEqual(ipcOutput, [foobarString]);
 };
 
-test('Sets error.ipc', testErrorIpc, {});
-test('Sets error.ipc, fd-specific buffer', testErrorIpc, {buffer: {stdout: false}});
+test('Sets error.ipcOutput', testErrorIpc, {});
+test('Sets error.ipcOutput, fd-specific buffer', testErrorIpc, {buffer: {stdout: false}});
 
 const testErrorNoBuffer = async (t, options) => {
-	const {ipc} = await t.throwsAsync(execa('ipc-send-fail.js', {...options, ipc: true}));
-	t.deepEqual(ipc, []);
+	const {ipcOutput} = await t.throwsAsync(execa('ipc-send-fail.js', {...options, ipc: true}));
+	t.deepEqual(ipcOutput, []);
 };
 
-test('Sets empty error.ipc if buffer is false', testErrorNoBuffer, {buffer: false});
-test('Sets empty error.ipc if buffer is false, fd-specific buffer', testErrorNoBuffer, {buffer: {ipc: false}});
+test('Sets empty error.ipcOutput if buffer is false', testErrorNoBuffer, {buffer: false});
+test('Sets empty error.ipcOutput if buffer is false, fd-specific buffer', testErrorNoBuffer, {buffer: {ipc: false}});
 
-test('Sets empty error.ipc if ipc is false', async t => {
-	const {ipc} = await t.throwsAsync(execa('fail.js'));
-	t.deepEqual(ipc, []);
+test('Sets empty error.ipcOutput if ipc is false', async t => {
+	const {ipcOutput} = await t.throwsAsync(execa('fail.js'));
+	t.deepEqual(ipcOutput, []);
 });
 
-test('Sets empty error.ipc, sync', t => {
-	const {ipc} = t.throws(() => execaSync('fail.js'));
-	t.deepEqual(ipc, []);
+test('Sets empty error.ipcOutput, sync', t => {
+	const {ipcOutput} = t.throws(() => execaSync('fail.js'));
+	t.deepEqual(ipcOutput, []);
 });

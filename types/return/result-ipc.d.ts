@@ -2,10 +2,10 @@ import type {FdSpecificOption} from '../arguments/specific.js';
 import type {CommonOptions, Options, StricterOptions} from '../arguments/options.js';
 import type {Message, HasIpc} from '../ipc.js';
 
-// `result.ipc`
+// `result.ipcOutput`
 // This is empty unless the `ipc` option is `true`.
 // Also, this is empty if the `buffer` option is `false`.
-export type ResultIpc<
+export type ResultIpcOutput<
 	IsSync extends boolean,
 	OptionsType extends CommonOptions,
 > = IsSync extends true

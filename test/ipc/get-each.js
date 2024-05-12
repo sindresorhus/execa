@@ -13,8 +13,8 @@ test('Can iterate over IPC messages', async t => {
 		t.is(message, foobarArray[count++]);
 	}
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, foobarArray);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, foobarArray);
 });
 
 test('Can iterate over IPC messages in subprocess', async t => {
@@ -24,8 +24,8 @@ test('Can iterate over IPC messages in subprocess', async t => {
 	await subprocess.sendMessage('.');
 	await subprocess.sendMessage(foobarString);
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, ['.', '.']);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, ['.', '.']);
 });
 
 test('Can iterate multiple times over IPC messages in subprocess', async t => {
@@ -40,8 +40,8 @@ test('Can iterate multiple times over IPC messages in subprocess', async t => {
 	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, ['.', foobarString, '.', foobarString]);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, ['.', foobarString, '.', foobarString]);
 });
 
 test('subprocess.getEachMessage() can be called twice at the same time', async t => {
@@ -51,8 +51,8 @@ test('subprocess.getEachMessage() can be called twice at the same time', async t
 		[foobarArray, foobarArray],
 	);
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, foobarArray);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, foobarArray);
 });
 
 const HIGH_CONCURRENCY_COUNT = 100;
@@ -62,8 +62,8 @@ test('Can send many messages at once with exports.getEachMessage()', async t => 
 	await Promise.all(Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => subprocess.sendMessage(index)));
 	await subprocess.sendMessage(foobarString);
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => index));
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => index));
 });
 
 test('Disconnecting in the current process stops exports.getEachMessage()', async t => {
@@ -82,8 +82,8 @@ test('Disconnecting in the subprocess stops subprocess.getEachMessage()', async 
 		t.is(message, foobarString);
 	}
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, [foobarString]);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
 });
 
 test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
@@ -92,8 +92,8 @@ test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
 		t.is(message, foobarString);
 	}
 
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, [foobarString]);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
 });
 
 const loopAndBreak = async (t, subprocess) => {
@@ -106,9 +106,9 @@ const loopAndBreak = async (t, subprocess) => {
 
 test('Breaking from subprocess.getEachMessage() awaits the subprocess', async t => {
 	const subprocess = execa('ipc-send-fail.js', {ipc: true});
-	const {exitCode, ipc} = await t.throwsAsync(loopAndBreak(t, subprocess));
+	const {exitCode, ipcOutput} = await t.throwsAsync(loopAndBreak(t, subprocess));
 	t.is(exitCode, 1);
-	t.deepEqual(ipc, [foobarString]);
+	t.deepEqual(ipcOutput, [foobarString]);
 });
 
 const testCleanupListeners = async (t, buffer) => {

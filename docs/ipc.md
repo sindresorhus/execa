@@ -69,15 +69,15 @@ for await (const message of getEachMessage()) {
 
 ## Retrieve all messages
 
-The [`result.ipc`](api.md#resultipc) array contains all the messages sent by the subprocess. In many situations, this is simpler than using [`subprocess.getOneMessage()`](api.md#subprocessgetonemessage) and [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage).
+The [`result.ipcOutput`](api.md#resultipcoutput) array contains all the messages sent by the subprocess. In many situations, this is simpler than using [`subprocess.getOneMessage()`](api.md#subprocessgetonemessage) and [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage).
 
 ```js
 // main.js
 import {execaNode} from 'execa';
 
-const {ipc} = await execaNode`build.js`;
-console.log(ipc[0]); // {kind: 'start', timestamp: date}
-console.log(ipc[1]); // {kind: 'stop', timestamp: date}
+const {ipcOutput} = await execaNode`build.js`;
+console.log(ipcOutput[0]); // {kind: 'start', timestamp: date}
+console.log(ipcOutput[1]); // {kind: 'stop', timestamp: date}
 ```
 
 ```js
@@ -125,7 +125,7 @@ const subprocess = execaNode({serialization: 'json'})`child.js`;
 
 When the [`verbose`](api.md#optionsverbose) option is `'full'`, the IPC messages sent by the subprocess to the current process are [printed on the console](debugging.md#full-mode).
 
-Also, when the subprocess [failed](errors.md#subprocess-failure), [`error.ipc`](api.md) contains all the messages sent by the subprocess. Those are also shown at the end of the [error message](errors.md#error-message).
+Also, when the subprocess [failed](errors.md#subprocess-failure), [`error.ipcOutput`](api.md) contains all the messages sent by the subprocess. Those are also shown at the end of the [error message](errors.md#error-message).
 
 <hr>
 

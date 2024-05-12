@@ -57,15 +57,15 @@ await execa({stdout: 1, stderr: 1})`npm run build`;
 
 ## Any output type
 
-If the subprocess uses Node.js, [IPC](ipc.md) can be used to return [almost any type](ipc.md#message-type) from the subprocess. The [`result.ipc`](api.md#resultipc) array contains all the messages sent by the subprocess.
+If the subprocess uses Node.js, [IPC](ipc.md) can be used to return [almost any type](ipc.md#message-type) from the subprocess. The [`result.ipcOutput`](api.md#resultipcoutput) array contains all the messages sent by the subprocess.
 
 ```js
 // main.js
 import {execaNode} from 'execa';
 
-const {ipc} = await execaNode`build.js`;
-console.log(ipc[0]); // {kind: 'start', timestamp: date}
-console.log(ipc[1]); // {kind: 'stop', timestamp: date}
+const {ipcOutput} = await execaNode`build.js`;
+console.log(ipcOutput[0]); // {kind: 'start', timestamp: date}
+console.log(ipcOutput[1]); // {kind: 'stop', timestamp: date}
 ```
 
 ```js
@@ -162,14 +162,14 @@ await execa({stdin: 'ignore', stdout: 'ignore', stderr: 'ignore'})`npm run build
 
 To prevent high memory consumption, a maximum output size can be set using the [`maxBuffer`](api.md#optionsmaxbuffer) option. It defaults to 100MB.
 
-When this threshold is hit, the subprocess fails and [`error.isMaxBuffer`](api.md#errorismaxbuffer) becomes `true`. The truncated output is still available using [`error.stdout`](api.md#resultstdout), [`error.stderr`](api.md#resultstderr) and [`error.ipc`](api.md#resultipc).
+When this threshold is hit, the subprocess fails and [`error.isMaxBuffer`](api.md#errorismaxbuffer) becomes `true`. The truncated output is still available using [`error.stdout`](api.md#resultstdout), [`error.stderr`](api.md#resultstderr) and [`error.ipcOutput`](api.md#resultipcoutput).
 
 This is measured:
 - By default: in [characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).
 - If the [`encoding`](binary.md#encoding) option is `'buffer'`: in bytes.
 - If the [`lines`](lines.md#simple-splitting) option is `true`: in lines.
 - If a [transform in object mode](transform.md#object-mode) is used: in objects.
-- With [`error.ipc`](ipc.md#retrieve-all-messages): in messages.
+- With [`error.ipcOutput`](ipc.md#retrieve-all-messages): in messages.
 
 ```js
 try {
@@ -187,7 +187,7 @@ try {
 
 ## Low memory
 
-When the [`buffer`](api.md#optionsbuffer) option is `false`, [`result.stdout`](api.md#resultstdout), [`result.stderr`](api.md#resultstderr), [`result.all`](api.md#resultall), [`result.stdio[*]`](api.md#resultstdio) and [`result.ipc`](api.md#resultipc) properties are empty.
+When the [`buffer`](api.md#optionsbuffer) option is `false`, [`result.stdout`](api.md#resultstdout), [`result.stderr`](api.md#resultstderr), [`result.all`](api.md#resultall), [`result.stdio[*]`](api.md#resultstdio) and [`result.ipcOutput`](api.md#resultipcoutput) properties are empty.
 
 This prevents high memory consumption when the output is big. However, the output must be either ignored, [redirected](#file-output), [streamed](streams.md) or [listened to](ipc.md#listening-to-messages). If streamed, this should be done right away to avoid missing any data.
 

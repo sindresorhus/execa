@@ -67,6 +67,28 @@ for await (const message of getEachMessage()) {
 }
 ```
 
+## Retrieve all messages
+
+The [`result.ipc`](api.md#resultipc) array contains all the messages sent by the subprocess. In many situations, this is simpler than using [`subprocess.getOneMessage()`](api.md#subprocessgetonemessage) and [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage).
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const {ipc} = await execaNode`build.js`;
+console.log(ipc[0]); // {kind: 'start', timestamp: date}
+console.log(ipc[1]); // {kind: 'stop', timestamp: date}
+```
+
+```js
+// build.js
+import {sendMessage} from 'execa';
+
+await sendMessage({kind: 'start', timestamp: new Date()});
+await runBuild();
+await sendMessage({kind: 'stop', timestamp: new Date()});
+```
+
 ## Message type
 
 By default, messages are serialized using [`structuredClone()`](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm). This supports most types including objects, arrays, `Error`, `Date`, `RegExp`, `Map`, `Set`, `bigint`, `Uint8Array`, and circular references. This throws when passing functions, symbols or promises (including inside an object or array).
@@ -76,6 +98,12 @@ To limit messages to JSON instead, the [`serialization`](api.md#optionsserializa
 ```js
 const subprocess = execaNode({serialization: 'json'})`child.js`;
 ```
+
+## Debugging
+
+When the [`verbose`](api.md#optionsverbose) option is `'full'`, the IPC messages sent by the subprocess to the current process are [printed on the console](debugging.md#full-mode).
+
+Also, when the subprocess [failed](errors.md#subprocess-failure), [`error.ipc`](api.md) contains all the messages sent by the subprocess. Those are also shown at the end of the [error message](errors.md#error-message).
 
 <hr>
 

@@ -3,6 +3,12 @@ import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
+import {
+	getEarlyErrorSubprocess,
+	getEarlyErrorSubprocessSync,
+	expectedEarlyError,
+	expectedEarlyErrorSync,
+} from '../helpers/early-error.js';
 
 setFixtureDirectory();
 
@@ -83,20 +89,24 @@ test('empty error.stdio[0] even with input', async t => {
 	t.is(stdio[0], undefined);
 });
 
-// `error.code` is OS-specific here
-const SPAWN_ERROR_CODES = new Set(['EINVAL', 'ENOTSUP', 'EPERM']);
-
-const testSpawnError = async (t, execaMethod) => {
-	const {code, stdout, stderr, stdio, all} = await execaMethod('empty.js', {uid: -1, all: true, reject: false});
-	t.true(SPAWN_ERROR_CODES.has(code));
+const validateSpawnErrorStdio = (t, {stdout, stderr, stdio, all}) => {
 	t.is(stdout, undefined);
 	t.is(stderr, undefined);
 	t.is(all, undefined);
 	t.deepEqual(stdio, [undefined, undefined, undefined]);
 };
 
-test('stdout/stderr/all/stdio on subprocess spawning errors', testSpawnError, execa);
-test('stdout/stderr/all/stdio on subprocess spawning errors, sync', testSpawnError, execaSync);
+test('stdout/stderr/all/stdio on subprocess spawning errors', async t => {
+	const error = await t.throwsAsync(getEarlyErrorSubprocess({all: true}));
+	t.like(error, expectedEarlyError);
+	validateSpawnErrorStdio(t, error);
+});
+
+test('stdout/stderr/all/stdio on subprocess spawning errors, sync', t => {
+	const error = t.throws(() => getEarlyErrorSubprocessSync({all: true}));
+	t.like(error, expectedEarlyErrorSync);
+	validateSpawnErrorStdio(t, error);
+});
 
 const testErrorOutput = async (t, execaMethod) => {
 	const {failed, stdout, stderr, stdio} = await execaMethod('echo-fail.js', {...fullStdio, reject: false});
@@ -108,3 +118,18 @@ const testErrorOutput = async (t, execaMethod) => {
 
 test('error.stdout/stderr/stdio is defined', testErrorOutput, execa);
 test('error.stdout/stderr/stdio is defined, sync', testErrorOutput, execaSync);
+
+test('ipc on subprocess spawning errors', async t => {
+	const error = await t.throwsAsync(getEarlyErrorSubprocess({ipc: true}));
+	t.like(error, expectedEarlyError);
+	t.deepEqual(error.ipc, []);
+});
+
+const testEarlyErrorNoIpc = async (t, options) => {
+	const error = await t.throwsAsync(getEarlyErrorSubprocess(options));
+	t.like(error, expectedEarlyError);
+	t.deepEqual(error.ipc, []);
+};
+
+test('ipc on subprocess spawning errors, ipc false', testEarlyErrorNoIpc, {ipc: false});
+test('ipc on subprocess spawning errors, buffer false', testEarlyErrorNoIpc, {buffer: false});

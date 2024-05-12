@@ -1,4 +1,5 @@
 import {Buffer} from 'node:buffer';
+import {inspect} from 'node:util';
 
 const textEncoder = new TextEncoder();
 
@@ -17,3 +18,4 @@ export const foobarUppercaseUint8Array = textEncoder.encode(foobarUppercase);
 export const foobarUppercaseHex = Buffer.from(foobarUppercase).toString('hex');
 export const foobarObject = {foo: 'bar'};
 export const foobarObjectString = JSON.stringify(foobarObject);
+export const foobarObjectInspect = inspect(foobarObject);

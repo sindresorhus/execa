@@ -25,6 +25,7 @@ const testSuccessShape = async (t, execaMethod) => {
 		'stderr',
 		'all',
 		'stdio',
+		'ipc',
 		'pipedFrom',
 	]);
 };
@@ -53,6 +54,7 @@ const testErrorShape = async (t, execaMethod) => {
 		'stderr',
 		'all',
 		'stdio',
+		'ipc',
 		'pipedFrom',
 	]);
 };

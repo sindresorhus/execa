@@ -2,18 +2,9 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
+import {iterateAllMessages} from '../helpers/ipc.js';
 
 setFixtureDirectory();
-
-// @todo: replace with Array.fromAsync(subprocess.getEachMessage()) after dropping support for Node <22.0.0
-const iterateAllMessages = async subprocess => {
-	const messages = [];
-	for await (const message of subprocess.getEachMessage()) {
-		messages.push(message);
-	}
-
-	return messages;
-};
 
 test('Can iterate over IPC messages', async t => {
 	let count = 0;
@@ -21,6 +12,9 @@ test('Can iterate over IPC messages', async t => {
 	for await (const message of subprocess.getEachMessage()) {
 		t.is(message, foobarArray[count++]);
 	}
+
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, foobarArray);
 });
 
 test('Can iterate over IPC messages in subprocess', async t => {
@@ -30,22 +24,24 @@ test('Can iterate over IPC messages in subprocess', async t => {
 	await subprocess.sendMessage('.');
 	await subprocess.sendMessage(foobarString);
 
-	const {stdout} = await subprocess;
-	t.is(stdout, '..');
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, ['.', '.']);
 });
 
 test('Can iterate multiple times over IPC messages in subprocess', async t => {
 	const subprocess = execa('ipc-iterate-twice.js', {ipc: true});
 
 	await subprocess.sendMessage('.');
-	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), '.');
+	await subprocess.sendMessage(foobarString);
+	t.is(await subprocess.getOneMessage(), foobarString);
 	await subprocess.sendMessage('.');
-	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), '.');
+	await subprocess.sendMessage(foobarString);
+	t.is(await subprocess.getOneMessage(), foobarString);
 
-	const {stdout} = await subprocess;
-	t.is(stdout, '..');
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, ['.', foobarString, '.', foobarString]);
 });
 
 test('subprocess.getEachMessage() can be called twice at the same time', async t => {
@@ -54,7 +50,9 @@ test('subprocess.getEachMessage() can be called twice at the same time', async t
 		await Promise.all([iterateAllMessages(subprocess), iterateAllMessages(subprocess)]),
 		[foobarArray, foobarArray],
 	);
-	await subprocess;
+
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, foobarArray);
 });
 
 const HIGH_CONCURRENCY_COUNT = 100;
@@ -63,16 +61,17 @@ test('Can send many messages at once with exports.getEachMessage()', async t => 
 	const subprocess = execa('ipc-iterate.js', {ipc: true});
 	await Promise.all(Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => subprocess.sendMessage(index)));
 	await subprocess.sendMessage(foobarString);
-	const {stdout} = await subprocess;
-	const expectedStdout = Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => `${index}`).join('');
-	t.is(stdout, expectedStdout);
+
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => index));
 });
 
 test('Disconnecting in the current process stops exports.getEachMessage()', async t => {
-	const subprocess = execa('ipc-send-iterate.js', {ipc: true});
+	const subprocess = execa('ipc-iterate-print.js', {ipc: true});
 	t.is(await subprocess.getOneMessage(), foobarString);
 	await subprocess.sendMessage('.');
 	subprocess.disconnect();
+
 	const {stdout} = await subprocess;
 	t.is(stdout, '.');
 });
@@ -82,6 +81,9 @@ test('Disconnecting in the subprocess stops subprocess.getEachMessage()', async 
 	for await (const message of subprocess.getEachMessage()) {
 		t.is(message, foobarString);
 	}
+
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, [foobarString]);
 });
 
 test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
@@ -89,6 +91,9 @@ test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
 	for await (const message of subprocess.getEachMessage()) {
 		t.is(message, foobarString);
 	}
+
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, [foobarString]);
 });
 
 const loopAndBreak = async (t, subprocess) => {
@@ -101,29 +106,26 @@ const loopAndBreak = async (t, subprocess) => {
 
 test('Breaking from subprocess.getEachMessage() awaits the subprocess', async t => {
 	const subprocess = execa('ipc-send-fail.js', {ipc: true});
-	const {exitCode} = await t.throwsAsync(loopAndBreak(t, subprocess));
+	const {exitCode, ipc} = await t.throwsAsync(loopAndBreak(t, subprocess));
 	t.is(exitCode, 1);
+	t.deepEqual(ipc, [foobarString]);
 });
 
-test('Cleans up subprocess.getEachMessage() listeners', async t => {
-	const subprocess = execa('ipc-send.js', {ipc: true});
+const testCleanupListeners = async (t, buffer) => {
+	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
+	const bufferCount = buffer ? 1 : 0;
 
-	t.is(subprocess.listenerCount('message'), 0);
-	t.is(subprocess.listenerCount('disconnect'), 0);
+	t.is(subprocess.listenerCount('message'), bufferCount);
+	t.is(subprocess.listenerCount('disconnect'), bufferCount);
 
 	const promise = iterateAllMessages(subprocess);
-	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), 1);
+	t.is(subprocess.listenerCount('message'), bufferCount + 1);
+	t.is(subprocess.listenerCount('disconnect'), bufferCount + 1);
 	t.deepEqual(await promise, [foobarString]);
 
 	t.is(subprocess.listenerCount('message'), 0);
 	t.is(subprocess.listenerCount('disconnect'), 0);
-});
+};
 
-test('"error" event interrupts subprocess.getEachMessage()', async t => {
-	const subprocess = execa('ipc-echo.js', {ipc: true});
-	await subprocess.sendMessage(foobarString);
-	const cause = new Error(foobarString);
-	t.like(await t.throwsAsync(Promise.all([iterateAllMessages(subprocess), subprocess.emit('error', cause)])), {cause});
-	t.like(await t.throwsAsync(subprocess), {cause});
-});
+test('Cleans up subprocess.getEachMessage() listeners, buffer false', testCleanupListeners, false);
+test('Cleans up subprocess.getEachMessage() listeners, buffer true', testCleanupListeners, true);

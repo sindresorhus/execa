@@ -2,7 +2,7 @@ import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio, getStdio} from '../helpers/stdio.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString, foobarObject, foobarObjectInspect} from '../helpers/input.js';
 import {QUOTE} from '../helpers/verbose.js';
 import {noopGenerator, outputObjectGenerator} from '../helpers/generator.js';
 
@@ -93,4 +93,30 @@ test('error.message newlines are consistent - newline', testErrorMessageConsiste
 test('Original error.message is kept', async t => {
 	const {originalMessage} = await t.throwsAsync(execa('noop.js', {uid: true}));
 	t.is(originalMessage, 'The "options.uid" property must be int32. Received type boolean (true)');
+});
+
+const testIpcMessage = async (t, doubles, input, returnedMessage) => {
+	const fixtureName = doubles ? 'ipc-echo-twice-fail.js' : 'ipc-echo-fail.js';
+	const subprocess = execa(fixtureName, {ipc: true});
+	await subprocess.sendMessage(input);
+	const {exitCode, message, ipc} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.true(message.endsWith(`\n\n${doubles ? `${returnedMessage}\n${returnedMessage}` : returnedMessage}`));
+	t.deepEqual(ipc, doubles ? [input, input] : [input]);
+};
+
+test('error.message contains IPC messages, single string', testIpcMessage, false, foobarString, foobarString);
+test('error.message contains IPC messages, two strings', testIpcMessage, true, foobarString, foobarString);
+test('error.message contains IPC messages, single object', testIpcMessage, false, foobarObject, foobarObjectInspect);
+test('error.message contains IPC messages, two objects', testIpcMessage, true, foobarObject, foobarObjectInspect);
+test('error.message contains IPC messages, multiline string', testIpcMessage, false, `${foobarString}\n${foobarString}`, `${foobarString}\n${foobarString}`);
+test('error.message contains IPC messages, control characters', testIpcMessage, false, '\0', '\\u0000');
+
+test('error.message does not contain IPC messages, buffer false', async t => {
+	const subprocess = execa('ipc-echo-fail.js', {ipc: true, buffer: false});
+	await subprocess.sendMessage(foobarString);
+	const {exitCode, message, ipc} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.true(message.endsWith('ipc-echo-fail.js'));
+	t.deepEqual(ipc, []);
 });

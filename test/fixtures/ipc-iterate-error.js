@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {sendMessage, getEachMessage} from '../../index.js';
+import {getEachMessage} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 
 // @todo: replace with Array.fromAsync(subprocess.getEachMessage()) after dropping support for Node <22.0.0
@@ -14,11 +14,7 @@ const iterateAllMessages = async () => {
 };
 
 const cause = new Error(foobarString);
-try {
-	await Promise.all([
-		iterateAllMessages(),
-		process.emit('error', cause),
-	]);
-} catch (error) {
-	await sendMessage(error);
-}
+await Promise.all([
+	iterateAllMessages(),
+	process.emit('error', cause),
+]);

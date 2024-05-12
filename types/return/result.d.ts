@@ -5,6 +5,7 @@ import type {ErrorProperties} from './final-error.js';
 import type {ResultAll} from './result-all.js';
 import type {ResultStdioArray} from './result-stdio.js';
 import type {ResultStdioNotAll} from './result-stdout.js';
+import type {ResultIpc} from './result-ipc.js';
 
 export declare abstract class CommonResult<
 	IsSync extends boolean,
@@ -47,6 +48,13 @@ export declare abstract class CommonResult<
 	Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
 	stdio: ResultStdioArray<OptionsType>;
+
+	/**
+	All the messages sent by the subprocess to the current process.
+
+	This is empty unless the `ipc` option is `true`. Also, this is empty if the `buffer` option is `false`.
+	*/
+	ipc: ResultIpc<IsSync, OptionsType>;
 
 	/**
 	Results of the other subprocesses that were piped into this subprocess.

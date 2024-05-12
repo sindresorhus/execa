@@ -2,6 +2,7 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {getStdio, STANDARD_STREAMS} from '../helpers/stdio.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {getEarlyErrorSubprocess, expectedEarlyError} from '../helpers/early-error.js';
 
 setFixtureDirectory();
 
@@ -16,7 +17,8 @@ test('Does not destroy process.stdout on subprocess errors', testDestroyStandard
 test('Does not destroy process.stderr on subprocess errors', testDestroyStandard, 2);
 
 const testDestroyStandardSpawn = async (t, fdNumber) => {
-	await t.throwsAsync(execa('forever.js', {...getStdio(fdNumber, [STANDARD_STREAMS[fdNumber], 'pipe']), uid: -1}));
+	const error = await t.throwsAsync(getEarlyErrorSubprocess(getStdio(fdNumber, [STANDARD_STREAMS[fdNumber], 'pipe'])));
+	t.like(error, expectedEarlyError);
 	t.false(STANDARD_STREAMS[fdNumber].destroyed);
 };
 

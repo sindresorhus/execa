@@ -467,6 +467,16 @@ Items are arrays when their corresponding `stdio` option is a [transform in obje
 
 [More info.](output.md#additional-file-descriptors)
 
+### result.ipc
+
+_Type_: `unknown[]`
+
+All the messages [sent by the subprocess](#sendmessagemessage) to the current process.
+
+This is empty unless the [`ipc`](#optionsipc) option is `true`. Also, this is empty if the [`buffer`](#optionsbuffer) option is `false`.
+
+[More info.](ipc.md#retrieve-all-messages)
+
 ### result.pipedFrom
 
 _Type:_ [`Array<Result | ExecaError>`](#result)

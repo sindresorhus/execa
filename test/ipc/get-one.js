@@ -109,8 +109,7 @@ test('Cleans up subprocess.getOneMessage() listeners, buffer false', testCleanup
 test('Cleans up subprocess.getOneMessage() listeners, buffer true', testCleanupListeners, true);
 
 test('"error" event interrupts result.ipc', async t => {
-	const subprocess = execa('ipc-echo-twice.js', {ipc: true});
-	await subprocess.sendMessage(foobarString);
+	const subprocess = execa('ipc-echo-twice.js', {ipcInput: foobarString});
 	t.is(await subprocess.getOneMessage(), foobarString);
 
 	const cause = new Error(foobarString);

@@ -1,5 +1,10 @@
 import {expectType, expectError} from 'tsd';
-import {getEachMessage, execa, type Message} from '../../index.js';
+import {
+	getEachMessage,
+	execa,
+	type Message,
+	type Options,
+} from '../../index.js';
 
 for await (const message of getEachMessage()) {
 	expectType<Message>(message);
@@ -18,6 +23,16 @@ for await (const message of execa('test', {ipc: true, serialization: 'json'}).ge
 }
 
 expectError(subprocess.getEachMessage(''));
-expectError(await execa('test').getEachMessage());
-expectError(await execa('test', {ipc: false}).getEachMessage());
+
+execa('test', {ipcInput: ''}).getEachMessage();
+execa('test', {ipcInput: '' as Message}).getEachMessage();
+execa('test', {} as Options).getEachMessage?.();
+execa('test', {ipc: true as boolean}).getEachMessage?.();
+execa('test', {ipcInput: '' as '' | undefined}).getEachMessage?.();
+
+expectType<undefined>(execa('test').getEachMessage);
+expectType<undefined>(execa('test', {}).getEachMessage);
+expectType<undefined>(execa('test', {ipc: false}).getEachMessage);
+expectType<undefined>(execa('test', {ipcInput: undefined}).getEachMessage);
+expectType<undefined>(execa('test', {ipc: false, ipcInput: ''}).getEachMessage);
 

@@ -8,7 +8,7 @@
 
 ## Exchanging messages
 
-When the [`ipc`](api.md#optionsipc) option is `true`, the current process and subprocess can exchange messages. This only works if the subprocess is a Node.js file.
+When the [`ipc`](api.md#optionsipc) option is `true`, the current process and subprocess can exchange messages. This only works if the subprocess is a [Node.js file](node.md).
 
 The `ipc` option defaults to `true` when using [`execaNode()`](node.md#run-nodejs-files) or the [`node`](node.md#run-nodejs-files) option.
 
@@ -87,6 +87,28 @@ import {sendMessage} from 'execa';
 await sendMessage({kind: 'start', timestamp: new Date()});
 await runBuild();
 await sendMessage({kind: 'stop', timestamp: new Date()});
+```
+
+## Send an initial message
+
+The [`ipcInput`](api.md#optionsipcinput) option sends a message to the [Node.js subprocess](node.md) when it starts.
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const ipcInput = [
+	{task: 'lint', ignore: /test\.js/},
+	{task: 'copy', files: new Set(['main.js', 'index.js']),
+}];
+await execaNode({ipcInput})`build.js`;
+```
+
+```js
+// build.js
+import {getOneMessage} from 'execa';
+
+const ipcInput = await getOneMessage();
 ```
 
 ## Message type

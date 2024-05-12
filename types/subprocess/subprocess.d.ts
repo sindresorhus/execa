@@ -1,7 +1,6 @@
 import type {ChildProcess} from 'node:child_process';
 import type {SignalConstants} from 'node:os';
 import type {Readable, Writable, Duplex} from 'node:stream';
-import type {StdioOptionsArray} from '../stdio/type.js';
 import type {Options} from '../arguments/options.js';
 import type {Result} from '../return/result.js';
 import type {PipableSubprocess} from '../pipe.js';
@@ -11,16 +10,10 @@ import type {
 	DuplexOptions,
 	SubprocessAsyncIterable,
 } from '../convert.js';
-import type {IpcMethods} from '../ipc.js';
+import type {IpcMethods, HasIpc} from '../ipc.js';
 import type {SubprocessStdioStream} from './stdout.js';
 import type {SubprocessStdioArray} from './stdio.js';
 import type {SubprocessAll} from './all.js';
-
-type HasIpc<OptionsType extends Options> = OptionsType['ipc'] extends true
-	? true
-	: OptionsType['stdio'] extends StdioOptionsArray
-		? 'ipc' extends OptionsType['stdio'][number] ? true : false
-		: false;
 
 type ExecaCustomSubprocess<OptionsType extends Options> = {
 	/**
@@ -104,7 +97,7 @@ type ExecaCustomSubprocess<OptionsType extends Options> = {
 	*/
 	duplex(duplexOptions?: DuplexOptions): Duplex;
 }
-& IpcMethods<OptionsType['ipc'], OptionsType['serialization']>
+& IpcMethods<HasIpc<OptionsType>, OptionsType['serialization']>
 & PipableSubprocess;
 
 /**

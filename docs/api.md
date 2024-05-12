@@ -898,9 +898,11 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 ### options.ipc
 
 _Type:_ `boolean`\
-_Default:_ `true` if the [`node`](#optionsnode) option is enabled, `false` otherwise
+_Default:_ `true` if either the [`node`](#optionsnode) option or the [`ipcInput`](#optionsipcinput) is set, `false` otherwise
 
 Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage), [`subprocess.getOneMessage()`](#subprocessgetonemessage) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
+
+The subprocess must be a Node.js file.
 
 [More info.](ipc.md)
 
@@ -912,6 +914,16 @@ _Default:_ `'advanced'`
 Specify the kind of serialization used for sending messages between subprocesses when using the [`ipc`](#optionsipc) option.
 
 [More info.](ipc.md#message-type)
+
+### options.ipcInput
+
+_Type_: [`Message`](ipc.md#message-type)
+
+Sends an IPC message when the subprocess starts.
+
+The subprocess must be a [Node.js file](#optionsnode). The value's [type](ipc.md#message-type) depends on the [`serialization`](#optionsserialization) option.
+
+More info [here](ipc.md#send-an-initial-message) and [there](input.md#any-input-type).
 
 ### options.verbose
 

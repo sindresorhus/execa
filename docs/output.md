@@ -102,7 +102,7 @@ console.log('3');
 
 ## Stdout/stderr-specific options
 
-Some options are related to the subprocess output: [`verbose`](api.md#optionsverbose), [`lines`](api.md#optionslines), [`stripFinalNewline`](api.md#optionsstripfinalnewline), [`buffer`](api.md#optionsbuffer), [`maxBuffer`](api.md#optionsmaxbuffer). By default, those options apply to all [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) ([`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)), and [others](#additional-file-descriptors)). A plain object can be passed instead to apply them to only `stdout`, `stderr`, [`fd3`](#additional-file-descriptors), etc.
+Some options are related to the subprocess output: [`verbose`](api.md#optionsverbose), [`lines`](api.md#optionslines), [`stripFinalNewline`](api.md#optionsstripfinalnewline), [`buffer`](api.md#optionsbuffer), [`maxBuffer`](api.md#optionsmaxbuffer). By default, those options apply to all [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) ([`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)), and [others](#additional-file-descriptors)) and [IPC messages](ipc.md). A plain object can be passed instead to apply them to only `stdout`, `stderr`, `all` (both stdout and stderr), [`ipc`](ipc.md), [`fd3`](#additional-file-descriptors), etc.
 
 ```js
 // Same value for stdout and stderr

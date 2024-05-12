@@ -57,7 +57,7 @@ $ node build.js
 
 ### Full mode
 
-When the [`verbose`](api.md#optionsverbose) option is `'full'`, the subprocess' [`stdout` and `stderr`](output.md) are also logged. Both are printed on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)).
+When the [`verbose`](api.md#optionsverbose) option is `'full'`, the subprocess' [`stdout`, `stderr`](output.md) and [IPC messages](ipc.md) are also logged. They are all printed on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)).
 
 The output is not logged if either:
 - The [`stdout`](api.md#optionsstdout)/[`stderr`](api.md#optionsstderr) option is [`'ignore'`](output.md#ignore-output) or [`'inherit'`](output.md#terminal-output).

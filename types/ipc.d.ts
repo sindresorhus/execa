@@ -18,7 +18,7 @@ type JsonMessage =
 	| {readonly [key: string | number]: JsonMessage};
 
 /**
-Type of messages exchanged between a process and its subprocess using `sendMessage()`, `getOneMessage()` and `getEachMessage()`.
+Type of messages exchanged between a process and its subprocess using `sendMessage()`, `getOneMessage()`, `exchangeMessage()` and `getEachMessage()`.
 
 This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
 */
@@ -27,7 +27,7 @@ export type Message<
 > = Serialization extends 'json' ? JsonMessage : AdvancedMessage;
 
 /**
-Options to `getOneMessage()` and `subprocess.getOneMessage()`
+Options to `getOneMessage()`, `exchangeMessage()`, `subprocess.getOneMessage()` and `subprocess.exchangeMessage()`
 */
 type GetOneMessageOptions<
 	Serialization extends Options['serialization'],
@@ -52,6 +52,13 @@ Receive a single `message` from the parent process.
 This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
 */
 export function getOneMessage(getOneMessageOptions?: GetOneMessageOptions<Options['serialization']>): Promise<Message>;
+
+/**
+Send a `message` to the parent process, then receive a response from it.
+
+This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
+*/
+export function exchangeMessage(message: Message, getOneMessageOptions?: GetOneMessageOptions<Options['serialization']>): Promise<Message>;
 
 /**
 Iterate over each `message` from the parent process.
@@ -81,6 +88,13 @@ export type IpcMethods<
 		getOneMessage(getOneMessageOptions?: GetOneMessageOptions<Serialization>): Promise<Message<Serialization>>;
 
 		/**
+		Send a `message` to the subprocess, then receive a response from it.
+
+		This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
+		*/
+		exchangeMessage(message: Message<Serialization>, getOneMessageOptions?: GetOneMessageOptions<Serialization>): Promise<Message<Serialization>>;
+
+		/**
 		Iterate over each `message` from the subprocess.
 
 		This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
@@ -93,6 +107,7 @@ export type IpcMethods<
 	: {
 		sendMessage: undefined;
 		getOneMessage: undefined;
+		exchangeMessage: undefined;
 		getEachMessage: undefined;
 	};
 

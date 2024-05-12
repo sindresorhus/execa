@@ -270,17 +270,17 @@ await pipeline(
 import {execaNode} from 'execa';
 
 const subprocess = execaNode`child.js`;
-console.log(await subprocess.getOneMessage()); // 'Hello from child'
-await subprocess.sendMessage('Hello from parent');
-const result = await subprocess;
+const message = await subprocess.exchangeMessage('Hello from parent');
+console.log(message); // 'Hello from child'
 ```
 
 ```js
 // child.js
-import {sendMessage, getOneMessage} from 'execa';
+import {getOneMessage, sendMessage} from 'execa';
 
-await sendMessage('Hello from child');
-console.log(await getOneMessage()); // 'Hello from parent'
+const message = await getOneMessage(); // 'Hello from parent'
+const newMessage = message.replace('parent', 'child'); // 'Hello from child'
+await sendMessage(newMessage);
 ```
 
 #### Any input type

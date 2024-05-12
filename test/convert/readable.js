@@ -118,11 +118,10 @@ const testStdoutAbort = async (t, methodName) => {
 	const stream = subprocess[methodName]();
 
 	subprocess.stdout.destroy();
-	await subprocess.sendMessage(foobarString);
 
 	const [error, message] = await Promise.all([
 		t.throwsAsync(finishedStream(stream)),
-		subprocess.getOneMessage(),
+		subprocess.exchangeMessage(foobarString),
 	]);
 	t.like(error, prematureClose);
 	t.is(message, foobarString);
@@ -141,11 +140,10 @@ const testStdoutError = async (t, methodName) => {
 
 	const cause = new Error(foobarString);
 	subprocess.stdout.destroy(cause);
-	await subprocess.sendMessage(foobarString);
 
 	const [error, message] = await Promise.all([
 		t.throwsAsync(finishedStream(stream)),
-		subprocess.getOneMessage(),
+		subprocess.exchangeMessage(foobarString),
 	]);
 	t.is(message, foobarString);
 	t.is(error.cause, cause);

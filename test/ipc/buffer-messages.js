@@ -57,6 +57,17 @@ test('Sets empty error.ipcOutput, sync', t => {
 	t.deepEqual(ipcOutput, []);
 });
 
+const HIGH_CONCURRENCY_COUNT = 10;
+
+test.serial('Can retrieve initial IPC messages under heavy load', async t => {
+	await Promise.all(
+		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
+			const {ipcOutput} = await execa('ipc-send-argv.js', [`${index}`], {ipc: true});
+			t.deepEqual(ipcOutput, [`${index}`]);
+		}),
+	);
+});
+
 test('"error" event interrupts result.ipcOutput', async t => {
 	const subprocess = execa('ipc-echo-twice.js', {ipcInput: foobarString});
 	t.is(await subprocess.getOneMessage(), foobarString);

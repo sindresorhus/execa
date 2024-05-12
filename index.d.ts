@@ -20,6 +20,7 @@ export {execaNode} from './types/methods/node.js';
 export {
 	sendMessage,
 	getOneMessage,
+	exchangeMessage,
 	getEachMessage,
 	type Message,
 } from './types/ipc.js';

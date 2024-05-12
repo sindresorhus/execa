@@ -225,8 +225,7 @@ test.serial('The "nodeOptions" option forbids --inspect with the same port when 
 const testIpc = async (t, execaMethod, options) => {
 	const subprocess = execaMethod('ipc-echo.js', [], options);
 
-	await subprocess.sendMessage(foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
+	t.is(await subprocess.exchangeMessage(foobarString), foobarString);
 
 	const {stdio} = await subprocess;
 	t.is(stdio.length, 4);

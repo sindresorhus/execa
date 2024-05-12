@@ -14,5 +14,15 @@ export const execaCommandSync = createExeca(mapCommandSync);
 export const execaNode = createExeca(mapNode);
 export const $ = createExeca(mapScriptAsync, {}, deepScriptOptions, setScriptSync);
 
-const {sendMessage, getOneMessage, getEachMessage} = getIpcExport();
-export {sendMessage, getOneMessage, getEachMessage};
+const {
+	sendMessage,
+	getOneMessage,
+	exchangeMessage,
+	getEachMessage,
+} = getIpcExport();
+export {
+	sendMessage,
+	getOneMessage,
+	exchangeMessage,
+	getEachMessage,
+};

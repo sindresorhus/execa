@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-import {sendMessage, getOneMessage} from '../../index.js';
+import {sendMessage, getOneMessage, exchangeMessage} from '../../index.js';
 
 const message = await getOneMessage();
-const secondMessagePromise = getOneMessage();
-await sendMessage(message);
-await sendMessage(await secondMessagePromise);
+const secondMessage = await exchangeMessage(message);
+await sendMessage(await secondMessage);

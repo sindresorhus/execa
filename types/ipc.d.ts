@@ -26,6 +26,18 @@ export type Message<
 	Serialization extends Options['serialization'] = Options['serialization'],
 > = Serialization extends 'json' ? JsonMessage : AdvancedMessage;
 
+/**
+Options to `getOneMessage()` and `subprocess.getOneMessage()`
+*/
+type GetOneMessageOptions<
+	Serialization extends Options['serialization'],
+> = {
+	/**
+	Ignore any `message` that returns `false`.
+	*/
+	readonly filter?: (message: Message<Serialization>) => boolean;
+};
+
 // IPC methods in subprocess
 /**
 Send a `message` to the parent process.
@@ -39,7 +51,7 @@ Receive a single `message` from the parent process.
 
 This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
 */
-export function getOneMessage(): Promise<Message>;
+export function getOneMessage(getOneMessageOptions?: GetOneMessageOptions<Options['serialization']>): Promise<Message>;
 
 /**
 Iterate over each `message` from the parent process.
@@ -66,7 +78,7 @@ export type IpcMethods<
 
 		This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
 		*/
-		getOneMessage(): Promise<Message<Serialization>>;
+		getOneMessage(getOneMessageOptions?: GetOneMessageOptions<Serialization>): Promise<Message<Serialization>>;
 
 		/**
 		Iterate over each `message` from the subprocess.

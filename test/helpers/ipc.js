@@ -7,3 +7,5 @@ export const iterateAllMessages = async subprocess => {
 
 	return messages;
 };
+
+export const alwaysPass = () => true;

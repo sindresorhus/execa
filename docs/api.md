@@ -103,8 +103,9 @@ This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#me
 
 [More info.](ipc.md#exchanging-messages)
 
-### getOneMessage()
+### getOneMessage(getOneMessageOptions?)
 
+_getOneMessageOptions_: [`GetOneMessageOptions`](#getonemessageoptions)\
 _Returns_: [`Promise<Message>`](ipc.md#message-type)
 
 Receive a single `message` from the parent process.
@@ -112,6 +113,18 @@ Receive a single `message` from the parent process.
 This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
 
 [More info.](ipc.md#exchanging-messages)
+
+#### getOneMessageOptions
+
+_Type_: `object`
+
+#### getOneMessageOptions.filter
+
+_Type_: [`(Message) => boolean`](ipc.md#message-type)
+
+Ignore any `message` that returns `false`.
+
+[More info.](ipc.md#filter-messages)
 
 ### getEachMessage()
 
@@ -259,8 +272,9 @@ This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#me
 
 [More info.](ipc.md#exchanging-messages)
 
-### subprocess.getOneMessage()
+### subprocess.getOneMessage(getOneMessageOptions?)
 
+_getOneMessageOptions_: [`GetOneMessageOptions`](#getonemessageoptions)\
 _Returns_: [`Promise<Message>`](ipc.md#message-type)
 
 Receive a single `message` from the subprocess.
@@ -900,7 +914,7 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 _Type:_ `boolean`\
 _Default:_ `true` if either the [`node`](#optionsnode) option or the [`ipcInput`](#optionsipcinput) is set, `false` otherwise
 
-Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage), [`subprocess.getOneMessage()`](#subprocessgetonemessage) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
+Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
 
 The subprocess must be a Node.js file.
 

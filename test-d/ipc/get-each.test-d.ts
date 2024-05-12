@@ -6,12 +6,6 @@ import {
 	type Options,
 } from '../../index.js';
 
-for await (const message of getEachMessage()) {
-	expectType<Message>(message);
-}
-
-expectError(getEachMessage(''));
-
 const subprocess = execa('test', {ipc: true});
 
 for await (const message of subprocess.getEachMessage()) {
@@ -22,7 +16,12 @@ for await (const message of execa('test', {ipc: true, serialization: 'json'}).ge
 	expectType<Message<'json'>>(message);
 }
 
+for await (const message of getEachMessage()) {
+	expectType<Message>(message);
+}
+
 expectError(subprocess.getEachMessage(''));
+expectError(getEachMessage(''));
 
 execa('test', {ipcInput: ''}).getEachMessage();
 execa('test', {ipcInput: '' as Message}).getEachMessage();

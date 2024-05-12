@@ -198,7 +198,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	readonly buffer?: FdGenericOption<boolean>;
 
 	/**
-	Enables exchanging messages with the subprocess using `subprocess.send(message)` and `subprocess.on('message', (message) => {})`.
+	Enables exchanging messages with the subprocess using `subprocess.sendMessage(message)`, `subprocess.getOneMessage()` and `subprocess.getEachMessage()`.
 
 	@default `true` if the `node` option is enabled, `false` otherwise
 	*/

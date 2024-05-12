@@ -92,6 +92,37 @@ Split a `command` string into an array. For example, `'npm run build'` returns `
 
 [More info.](escaping.md#user-defined-input)
 
+### sendMessage(message)
+
+`message`: [`Message`](ipc.md#message-type)\
+_Returns_: `Promise<void>`
+
+Send a `message` to the parent process.
+
+This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
+
+[More info.](ipc.md#exchanging-messages)
+
+### getOneMessage()
+
+_Returns_: [`Promise<Message>`](ipc.md#message-type)
+
+Receive a single `message` from the parent process.
+
+This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
+
+[More info.](ipc.md#exchanging-messages)
+
+### getEachMessage()
+
+_Returns_: [`AsyncIterable<Message>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+
+Iterate over each `message` from the parent process.
+
+This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
+
+[More info.](ipc.md#listening-to-messages)
+
 ## Return value
 
 _TypeScript:_ [`ResultPromise`](typescript.md)\
@@ -217,30 +248,36 @@ This is `undefined` if the subprocess failed to spawn.
 
 [More info.](termination.md#inter-process-termination)
 
-### subprocess.send(message)
+### subprocess.sendMessage(message)
 
-`message`: `unknown`\
-_Returns_: `boolean`
+`message`: [`Message`](ipc.md#message-type)\
+_Returns_: `Promise<void>`
 
-Send a `message` to the subprocess. The type of `message` depends on the [`serialization`](#optionsserialization) option.
-The subprocess receives it as a [`message` event](https://nodejs.org/api/process.html#event-message).
+Send a `message` to the subprocess.
 
-This returns `true` on success.
-
-This requires the [`ipc`](#optionsipc) option to be `true`.
+This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
 
 [More info.](ipc.md#exchanging-messages)
 
-### subprocess.on('message', (message) => void)
+### subprocess.getOneMessage()
 
-`message`: `unknown`
+_Returns_: [`Promise<Message>`](ipc.md#message-type)
 
-Receives a `message` from the subprocess. The type of `message` depends on the [`serialization`](#optionsserialization) option.
-The subprocess sends it using [`process.send(message)`](https://nodejs.org/api/process.html#processsendmessage-sendhandle-options-callback).
+Receive a single `message` from the subprocess.
 
-This requires the [`ipc`](#optionsipc) option to be `true`.
+This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
 
 [More info.](ipc.md#exchanging-messages)
+
+### subprocess.getEachMessage()
+
+_Returns_: [`AsyncIterable<Message>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+
+Iterate over each `message` from the subprocess.
+
+This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
+
+[More info.](ipc.md#listening-to-messages)
 
 ### subprocess.stdin
 
@@ -853,7 +890,7 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 _Type:_ `boolean`\
 _Default:_ `true` if the [`node`](#optionsnode) option is enabled, `false` otherwise
 
-Enables exchanging messages with the subprocess using [`subprocess.send(message)`](#subprocesssendmessage) and [`subprocess.on('message', (message) => {})`](#subprocessonmessage-message--void).
+Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage), [`subprocess.getOneMessage()`](#subprocessgetonemessage) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
 
 [More info.](ipc.md)
 

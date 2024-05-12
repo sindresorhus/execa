@@ -1,7 +1,6 @@
 import process from 'node:process';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
-import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -29,9 +28,9 @@ test('spawnAndExit cleanup detached, worker', spawnAndExit, nestedWorker, true, 
 
 // When current process exits before subprocess
 const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {
-	const subprocess = execa('subprocess.js', [cleanup, detached], {stdio: 'ignore', ipc: true});
+	const subprocess = execa('ipc-send-pid.js', [cleanup, detached], {stdio: 'ignore', ipc: true});
 
-	const pid = await pEvent(subprocess, 'message');
+	const pid = await subprocess.getOneMessage();
 	t.true(Number.isInteger(pid));
 	t.true(isRunning(pid));
 

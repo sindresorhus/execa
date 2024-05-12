@@ -67,6 +67,7 @@ One of the maintainers [@ehmicky](https://github.com/ehmicky) is looking for a r
 - [Transform or filter](#transformfilter-output) the input and output with [simple functions](docs/transform.md).
 - Redirect the [input](docs/input.md) and [output](docs/output.md) from/to [files](#files), [strings](#simple-input), [`Uint8Array`s](docs/binary.md#binary-input), [iterables](docs/streams.md#iterables-as-input) or [objects](docs/transform.md#object-mode).
 - Pass [Node.js streams](docs/streams.md#nodejs-streams) or [web streams](#web-streams) to subprocesses, or [convert](#convert-to-duplex-stream) subprocesses to [a stream](docs/streams.md#converting-a-subprocess-to-a-stream).
+- [Exchange messages](#exchange-messages) with the subprocess.
 - Ensure subprocesses exit even when they [intercept termination signals](docs/termination.md#forceful-termination), or when the current process [ends abruptly](docs/termination.md#current-process-exit).
 
 ## Install
@@ -250,6 +251,25 @@ await pipeline(
 	execa`node ./transform.js`.duplex(),
 	createWriteStream('./output.txt'),
 );
+```
+
+#### Exchange messages
+
+```js
+// parent.js
+import {execaNode} from 'execa';
+
+const subprocess = execaNode`child.js`;
+console.log(await subprocess.getOneMessage()); // 'Hello from child'
+await subprocess.sendMessage('Hello from parent');
+```
+
+```js
+// child.js
+import {sendMessage, getOneMessage} from 'execa';
+
+await sendMessage('Hello from child');
+console.log(await getOneMessage()); // 'Hello from parent'
 ```
 
 ### Debugging

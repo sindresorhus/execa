@@ -1,3 +1,4 @@
+import {once} from 'node:events';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -18,6 +19,36 @@ test('Buffers initial message to subprocess', async t => {
 	const subprocess = execa('ipc-echo-wait.js', {ipc: true});
 	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);
+	await subprocess;
+});
+
+test('Buffers initial message to current process', async t => {
+	const subprocess = execa('ipc-send-print.js', {ipc: true});
+	const [chunk] = await once(subprocess.stdout, 'data');
+	t.is(chunk.toString(), '.');
+	t.is(await subprocess.getOneMessage(), foobarString);
+	await subprocess.sendMessage('.');
+	await subprocess;
+});
+
+const HIGH_CONCURRENCY_COUNT = 100;
+
+test.serial('Can retrieve initial IPC messages under heavy load', async t => {
+	await Promise.all(
+		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
+			const subprocess = execa('ipc-send-argv.js', [`${index}`], {ipc: true});
+			t.is(await subprocess.getOneMessage(), `${index}`);
+			await subprocess;
+		}),
+	);
+});
+
+test('subprocess.getOneMessage() can be called twice at the same time', async t => {
+	const subprocess = execa('ipc-send.js', {ipc: true});
+	t.deepEqual(
+		await Promise.all([subprocess.getOneMessage(), subprocess.getOneMessage()]),
+		[foobarString, foobarString],
+	);
 	await subprocess;
 });
 

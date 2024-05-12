@@ -176,6 +176,20 @@ test('Can re-use same file path on different output file descriptors, sync', tes
 test('Can re-use same file URL on different output file descriptors', testMultipleFileOutput, pathToFileURL, execa);
 test('Can re-use same file URL on different output file descriptors, sync', testMultipleFileOutput, pathToFileURL, execaSync);
 
+const testMultipleFileInputOutput = async (t, mapFile, execaMethod) => {
+	const inputFilePath = tempfile();
+	const outputFilePath = tempfile();
+	await writeFile(inputFilePath, foobarString);
+	await execaMethod('stdin.js', {stdin: mapFile(inputFilePath), stdout: mapFile(outputFilePath)});
+	t.is(await readFile(outputFilePath, 'utf8'), foobarString);
+	await Promise.all([rm(inputFilePath), rm(outputFilePath)]);
+};
+
+test('Can use different file paths on different input/output file descriptors', testMultipleFileInputOutput, getAbsolutePath, execa);
+test('Can use different file paths on different input/output file descriptors, sync', testMultipleFileInputOutput, getAbsolutePath, execaSync);
+test('Can use different file URL on different input/output file descriptors', testMultipleFileInputOutput, pathToFileURL, execa);
+test('Can use different file URL on different input/output file descriptors, sync', testMultipleFileInputOutput, pathToFileURL, execaSync);
+
 // eslint-disable-next-line max-params
 const testMultipleInvalid = async (t, getDummyStream, typeName, getStdio, fdName, execaMethod) => {
 	const stdioOption = await getDummyStream();

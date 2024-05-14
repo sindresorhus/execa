@@ -12,7 +12,7 @@
 
 [`error.escapedCommand`](api.md#resultescapedcommand) is the same, except control characters are escaped. This makes it safe to either print or copy and paste in a terminal, for debugging purposes.
 
-Since the escaping is fairly basic, neither `error.command` nor `error.escapedCommand` should be executed directly, including using [`execa()`](api.md#execafile-arguments-options) or [`execaCommand()`](api.md#execacommandcommand-options).
+Since the escaping is fairly basic, neither `error.command` nor `error.escapedCommand` should be executed directly, including using [`execa()`](api.md#execafile-arguments-options) or [`parseCommandString()`](api.md#parsecommandstringcommand).
 
 ```js
 import {execa} from 'execa';

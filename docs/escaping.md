@@ -59,7 +59,11 @@ await execa`${parseCommandString('npm run task\\ with\\ space')}`;
 
 ## Shells
 
-[Shells](shell.md) ([Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), [cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe), etc.) are not used unless the [`shell`](api.md#optionsshell) option is set. This means shell-specific characters and expressions (`$variable`, `&&`, `||`, `;`, `|`, etc.) have no special meaning and do not need to be escaped.
+[Shells](shell.md) ([Bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)), [cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe), etc.) are not used unless the [`shell`](api.md#optionsshell) option is set. This means shell-specific syntax has no special meaning and does not need to be escaped:
+- Quotes: `"value"`, `'value'`, `$'value'`
+- Characters: `$variable`, `&&`, `||`, `;`, `|`
+- Globbing: `*`, `**`
+- Expressions: `$?`, `~`
 
 If you do set the `shell` option, arguments will not be automatically escaped anymore. Instead, they will be concatenated as a single string using spaces as delimiters.
 
@@ -80,7 +84,8 @@ await execa({shell: true})`npm run "task with space"`;
 Sometimes a shell command is passed as argument to an executable that runs it indirectly. In that case, that shell command must quote its own arguments.
 
 ```js
-$`ssh host ${'npm run "task with space"'}`;
+const command = 'npm run "task with space"';
+await execa`ssh host ${command}`;
 ```
 
 <hr>

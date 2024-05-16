@@ -114,15 +114,15 @@ test('.readable() error -> subprocess fail', async t => {
 });
 
 const testStdoutAbort = async (t, methodName) => {
-	const subprocess = execa('ipc-exit.js', {ipc: true});
+	const subprocess = execa('ipc-echo.js', {ipc: true});
 	const stream = subprocess[methodName]();
 
 	subprocess.stdout.destroy();
-	subprocess.send(foobarString);
+	await subprocess.sendMessage(foobarString);
 
-	const [error, [message]] = await Promise.all([
+	const [error, message] = await Promise.all([
 		t.throwsAsync(finishedStream(stream)),
-		once(subprocess, 'message'),
+		subprocess.getOneMessage(),
 	]);
 	t.like(error, prematureClose);
 	t.is(message, foobarString);
@@ -136,16 +136,16 @@ test('subprocess.stdout abort + no more writes -> .readable() error + subprocess
 test('subprocess.stdout abort + no more writes -> .duplex() error + subprocess success', testStdoutAbort, 'duplex');
 
 const testStdoutError = async (t, methodName) => {
-	const subprocess = execa('ipc-exit.js', {ipc: true});
+	const subprocess = execa('ipc-echo.js', {ipc: true});
 	const stream = subprocess[methodName]();
 
 	const cause = new Error(foobarString);
 	subprocess.stdout.destroy(cause);
-	subprocess.send(foobarString);
+	await subprocess.sendMessage(foobarString);
 
-	const [error, [message]] = await Promise.all([
+	const [error, message] = await Promise.all([
 		t.throwsAsync(finishedStream(stream)),
-		once(subprocess, 'message'),
+		subprocess.getOneMessage(),
 	]);
 	t.is(message, foobarString);
 	t.is(error.cause, cause);

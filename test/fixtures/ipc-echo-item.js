@@ -1,4 +1,5 @@
 #!/usr/bin/env node
 import {sendMessage, getOneMessage} from '../../index.js';
 
-await sendMessage(await getOneMessage());
+const [message] = await getOneMessage();
+await sendMessage(message);

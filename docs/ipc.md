@@ -12,29 +12,59 @@ When the [`ipc`](api.md#optionsipc) option is `true`, the current process and su
 
 The `ipc` option defaults to `true` when using [`execaNode()`](node.md#run-nodejs-files) or the [`node`](node.md#run-nodejs-files) option.
 
-The current process sends messages with [`subprocess.send(message)`](api.md#subprocesssendmessage) and receives them with [`subprocess.on('message', (message) => {})`](api.md#subprocessonmessage-message--void). The subprocess sends messages with [`process.send(message)`](https://nodejs.org/api/process.html#processsendmessage-sendhandle-options-callback) and [`process.on('message', (message) => {})`](https://nodejs.org/api/process.html#event-message).
-
-More info on [sending](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback) and [receiving](https://nodejs.org/api/child_process.html#event-message) messages.
+The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessage). The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage) and [`getOneMessage()`](api.md#getonemessage) instead.
 
 ```js
 // parent.js
 import {execaNode} from 'execa';
 
 const subprocess = execaNode`child.js`;
-subprocess.on('message', messageFromChild => {
-	/* ... */
-});
-subprocess.send('Hello from parent');
+console.log(await subprocess.getOneMessage()); // 'Hello from child'
+await subprocess.sendMessage('Hello from parent');
 ```
 
 ```js
 // child.js
-import process from 'node:process';
+import {sendMessage, getOneMessage} from 'execa';
 
-process.on('message', messageFromParent => {
-	/* ... */
-});
-process.send('Hello from child');
+await sendMessage('Hello from child');
+console.log(await getOneMessage()); // 'Hello from parent'
+```
+
+## Listening to messages
+
+[`subprocess.getOneMessage()`](api.md#subprocessgetonemessage) and [`getOneMessage()`](api.md#getonemessage) read a single message. To listen to multiple messages in a row, [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) and [`getEachMessage()`](api.md#geteachmessage) should be used instead.
+
+[`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) waits for the subprocess to end (even when using [`break`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/break) or [`return`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return)). It throws if the subprocess [fails](api.md#result). This means you do not need to `await` the subprocess' [promise](execution.md#result).
+
+```js
+// parent.js
+import {execaNode} from 'execa';
+
+const subprocess = execaNode`child.js`;
+await subprocess.sendMessage(0);
+
+// This loop ends when the subprocess exits.
+// It throws if the subprocess fails.
+for await (const message of subprocess.getEachMessage()) {
+	console.log(message); // 1, 3, 5, 7, 9
+	await subprocess.sendMessage(message + 1);
+}
+```
+
+```js
+// child.js
+import {sendMessage, getEachMessage} from 'execa';
+
+// The subprocess exits when hitting `break`
+for await (const message of getEachMessage()) {
+	if (message === 10) {
+		break
+	}
+
+	console.log(message); // 0, 2, 4, 6, 8
+	await sendMessage(message + 1);
+}
 ```
 
 ## Message type

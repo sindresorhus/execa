@@ -3,7 +3,6 @@ import {once, defaultMaxListeners} from 'node:events';
 import {constants} from 'node:os';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
-import {pEvent} from 'p-event';
 import isRunning from 'is-running';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -19,7 +18,7 @@ const spawnNoKillable = async (forceKillAfterDelay, options) => {
 		forceKillAfterDelay,
 		...options,
 	});
-	await pEvent(subprocess, 'message');
+	await subprocess.getOneMessage();
 	return {subprocess};
 };
 

@@ -8,7 +8,7 @@
 
 ## Available types
 
-The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout) and [`TemplateExpression`](api.md#execacommand).
+The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand) and [`Message`](api.md#subprocesssendmessagemessage).
 
 ```ts
 import {
@@ -20,6 +20,7 @@ import {
 	type StdinOption,
 	type StdoutStderrOption,
 	type TemplateExpression,
+	type Message,
 } from 'execa';
 
 const options: Options = {
@@ -27,11 +28,14 @@ const options: Options = {
 	stdout: 'pipe' satisfies StdoutStderrOption,
 	stderr: 'pipe' satisfies StdoutStderrOption,
 	timeout: 1000,
+	ipc: true,
 };
 const task: TemplateExpression = 'build';
+const message: Message = 'hello world';
 
 try {
 	const subprocess: ResultPromise = execa(options)`npm run ${task}`;
+	await subprocess.sendMessage(message);
 	const result: Result = await subprocess;
 	console.log(result.stdout);
 } catch (error) {
@@ -94,11 +98,14 @@ const options = {
 	stdout: 'pipe',
 	stderr: 'pipe',
 	timeout: 1000,
+	ipc: true,
 } as const;
 const task = 'build';
+const message = 'hello world';
 
 try {
 	const subprocess = execa(options)`npm run ${task}`;
+	await subprocess.sendMessage(message);
 	const result = await subprocess;
 	printResultStdout(result);
 } catch (error) {

@@ -3,15 +3,20 @@ import test from 'ava';
 import getStream from 'get-stream';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {fullStdio, getStdio} from '../helpers/stdio.js';
+import {fullStdio} from '../helpers/stdio.js';
 import {foobarString, foobarUppercase, foobarUppercaseUint8Array} from '../helpers/input.js';
 import {resultGenerator, uppercaseGenerator, uppercaseBufferGenerator} from '../helpers/generator.js';
 
 setFixtureDirectory();
 
 const testLateStream = async (t, fdNumber, all) => {
-	const subprocess = execa('noop-fd-ipc.js', [`${fdNumber}`, foobarString], {...getStdio(4, 'ipc', 4), buffer: false, all});
-	await once(subprocess, 'message');
+	const subprocess = execa('noop-fd-ipc.js', [`${fdNumber}`, foobarString], {
+		...fullStdio,
+		ipc: true,
+		buffer: false,
+		all,
+	});
+	await subprocess.getOneMessage();
 	const [output, allOutput] = await Promise.all([
 		getStream(subprocess.stdio[fdNumber]),
 		all ? getStream(subprocess.all) : undefined,

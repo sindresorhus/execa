@@ -11,6 +11,7 @@ import type {
 	DuplexOptions,
 	SubprocessAsyncIterable,
 } from '../convert.js';
+import type {IpcMethods} from '../ipc.js';
 import type {SubprocessStdioStream} from './stdout.js';
 import type {SubprocessStdioArray} from './stdio.js';
 import type {SubprocessAll} from './all.js';
@@ -28,18 +29,6 @@ type ExecaCustomSubprocess<OptionsType extends Options> = {
 	This is `undefined` if the subprocess failed to spawn.
 	*/
 	pid?: number;
-
-	/**
-	Send a `message` to the subprocess. The type of `message` depends on the `serialization` option.
-	The subprocess receives it as a [`message` event](https://nodejs.org/api/process.html#event-message).
-
-	This returns `true` on success.
-
-	This requires the `ipc` option to be `true`.
-
-	[More info.](https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback)
-	*/
-	send: HasIpc<OptionsType> extends true ? ChildProcess['send'] : undefined;
 
 	/**
 	The subprocess [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) as a stream.
@@ -114,7 +103,9 @@ type ExecaCustomSubprocess<OptionsType extends Options> = {
 	Converts the subprocess to a duplex stream.
 	*/
 	duplex(duplexOptions?: DuplexOptions): Duplex;
-} & PipableSubprocess;
+}
+& IpcMethods<OptionsType['ipc'], OptionsType['serialization']>
+& PipableSubprocess;
 
 /**
 [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with additional methods and properties.

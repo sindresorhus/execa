@@ -792,11 +792,11 @@ await $({detached: true})`npm run build`;
 
 ```js
 // Execa
-const subprocess = $({ipc: true})`node script.js`;
+const subprocess = $({node: true})`script.js`;
 
-subprocess.on('message', message => {
+for await (const message of subprocess.getEachMessage()) {
 	if (message === 'ping') {
-		subprocess.send('pong');
+		await subprocess.sendMessage('pong');
 	}
 });
 ```

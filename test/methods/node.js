@@ -1,10 +1,8 @@
-import {once} from 'node:events';
 import {dirname, relative} from 'node:path';
 import process, {version} from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
 import getNode from 'get-node';
-import {pEvent} from 'p-event';
 import {execa, execaSync, execaNode} from '../../index.js';
 import {FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {identity, fullStdio} from '../helpers/stdio.js';
@@ -225,11 +223,12 @@ test.serial('The "nodeOptions" option forbids --inspect with the same port when 
 test.serial('The "nodeOptions" option forbids --inspect with the same port when defined by current process - "node" option', testInspectSamePort, 'nodeOption');
 
 const testIpc = async (t, execaMethod, options) => {
-	const subprocess = execaMethod('send.js', [], options);
-	await pEvent(subprocess, 'message');
-	subprocess.send(foobarString);
-	const {stdout, stdio} = await subprocess;
-	t.is(stdout, foobarString);
+	const subprocess = execaMethod('ipc-echo.js', [], options);
+
+	await subprocess.sendMessage(foobarString);
+	t.is(await subprocess.getOneMessage(), foobarString);
+
+	const {stdio} = await subprocess;
 	t.is(stdio.length, 4);
 	t.is(stdio[3], undefined);
 };
@@ -242,15 +241,18 @@ test('The "ipc" option works with "stdio: [\'pipe\', \'pipe\', \'pipe\']"', test
 test('The "ipc" option works with "stdio: [\'pipe\', \'pipe\', \'pipe\', \'ipc\']"', testIpc, runWithIpc, {stdio: ['pipe', 'pipe', 'pipe', 'ipc']});
 test('The "ipc" option works with "stdout: \'pipe\'"', testIpc, runWithIpc, {stdout: 'pipe'});
 
+const NO_SEND_MESSAGE = 'sendMessage() can only be used';
+
 test('No ipc channel is added by default', async t => {
-	const {stdio} = await t.throwsAsync(execa('node', ['send.js']), {message: /process.send is not a function/});
+	const {message, stdio} = await t.throwsAsync(execa('node', ['ipc-send.js']));
+	t.true(message.includes(NO_SEND_MESSAGE));
 	t.is(stdio.length, 3);
 });
 
 const testDisableIpc = async (t, execaMethod) => {
-	const {failed, message, stdio} = await execaMethod('send.js', [], {ipc: false, reject: false});
+	const {failed, message, stdio} = await execaMethod('ipc-send.js', [], {ipc: false, reject: false});
 	t.true(failed);
-	t.true(message.includes('process.send is not a function'));
+	t.true(message.includes(NO_SEND_MESSAGE));
 	t.is(stdio.length, 3);
 };
 
@@ -262,7 +264,7 @@ const NO_IPC_MESSAGE = /The "ipc: true" option cannot be used/;
 
 const testNoIpcSync = (t, node) => {
 	t.throws(() => {
-		execaSync('node', ['send.js'], {ipc: true, node});
+		execaSync('node', ['ipc-send.js'], {ipc: true, node});
 	}, {message: NO_IPC_MESSAGE});
 };
 
@@ -271,7 +273,7 @@ test('Cannot use "ipc: true" with execaSync() - "node: false"', testNoIpcSync, f
 
 test('Cannot use "ipc: true" with execaSync() - "node: true"', t => {
 	t.throws(() => {
-		execaSync('send.js', {ipc: true, node: true});
+		execaSync('ipc-send.js', {ipc: true, node: true});
 	}, {message: NO_IPC_MESSAGE});
 });
 
@@ -287,19 +289,16 @@ test('Cannot use "shell: true" - "node" option sync', testNoShell, runWithNodeOp
 
 test('The "serialization" option defaults to "advanced"', async t => {
 	const subprocess = execa('node', ['ipc-echo.js'], {ipc: true});
-	subprocess.send([0n]);
-	const [message] = await once(subprocess, 'message');
+	await subprocess.sendMessage([0n]);
+	const message = await subprocess.getOneMessage();
 	t.is(message[0], 0n);
 	await subprocess;
 });
 
 test('The "serialization" option can be set to "json"', async t => {
 	const subprocess = execa('node', ['ipc-echo.js'], {ipc: true, serialization: 'json'});
-	t.throws(() => {
-		subprocess.send([0n]);
-	}, {message: /serialize a BigInt/});
-	subprocess.send(0);
-	const [message] = await once(subprocess, 'message');
-	t.is(message, 0);
+	await t.throwsAsync(() => subprocess.sendMessage([0n]), {message: /serialize a BigInt/});
+	await subprocess.sendMessage(0);
+	t.is(await subprocess.getOneMessage(), 0);
 	await subprocess;
 });

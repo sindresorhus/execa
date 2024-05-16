@@ -48,6 +48,15 @@ test('Can iterate multiple times over IPC messages in subprocess', async t => {
 	t.is(stdout, '..');
 });
 
+test('subprocess.getEachMessage() can be called twice at the same time', async t => {
+	const subprocess = execa('ipc-send-twice.js', {ipc: true});
+	t.deepEqual(
+		await Promise.all([iterateAllMessages(subprocess), iterateAllMessages(subprocess)]),
+		[foobarArray, foobarArray],
+	);
+	await subprocess;
+});
+
 const HIGH_CONCURRENCY_COUNT = 100;
 
 test('Can send many messages at once with exports.getEachMessage()', async t => {

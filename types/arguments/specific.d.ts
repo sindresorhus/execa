@@ -4,8 +4,10 @@ import type {FromOption} from './fd-options.js';
 export type FdGenericOption<OptionType> = OptionType | GenericOptionObject<OptionType>;
 
 type GenericOptionObject<OptionType> = {
-	readonly [FdName in FromOption]?: OptionType
+	readonly [FdName in GenericFromOption]?: OptionType
 };
+
+type GenericFromOption = FromOption | 'ipc';
 
 // Retrieve fd-specific option's value
 export type FdSpecificOption<
@@ -18,7 +20,7 @@ export type FdSpecificOption<
 type FdSpecificObjectOption<
 	GenericOption extends GenericOptionObject<unknown>,
 	FdNumber extends string,
-> = keyof GenericOption extends FromOption
+> = keyof GenericOption extends GenericFromOption
 	? FdNumberToFromOption<FdNumber, keyof GenericOption> extends never
 		? undefined
 		: GenericOption[FdNumberToFromOption<FdNumber, keyof GenericOption>]
@@ -26,23 +28,25 @@ type FdSpecificObjectOption<
 
 type FdNumberToFromOption<
 	FdNumber extends string,
-	FromOptions extends FromOption,
+	GenericOptionKeys extends GenericFromOption,
 > = FdNumber extends '1'
-	? 'stdout' extends FromOptions
+	? 'stdout' extends GenericOptionKeys
 		? 'stdout'
-		: 'fd1' extends FromOptions
+		: 'fd1' extends GenericOptionKeys
 			? 'fd1'
-			: 'all' extends FromOptions
+			: 'all' extends GenericOptionKeys
 				? 'all'
 				: never
 	: FdNumber extends '2'
-		? 'stderr' extends FromOptions
+		? 'stderr' extends GenericOptionKeys
 			? 'stderr'
-			: 'fd2' extends FromOptions
+			: 'fd2' extends GenericOptionKeys
 				? 'fd2'
-				: 'all' extends FromOptions
+				: 'all' extends GenericOptionKeys
 					? 'all'
 					: never
-		: `fd${FdNumber}` extends FromOptions
+		: `fd${FdNumber}` extends GenericOptionKeys
 			? `fd${FdNumber}`
-			: never;
+			: 'ipc' extends GenericOptionKeys
+				? 'ipc'
+				: never;

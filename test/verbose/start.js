@@ -35,9 +35,9 @@ test('Prints command, verbose "full", sync', testPrintCommand, 'full', parentExe
 test('Prints command, verbose "short", fd-specific, sync', testPrintCommand, fdShortOption, parentExecaSync);
 test('Prints command, verbose "full", fd-specific, sync', testPrintCommand, fdFullOption, parentExecaSync);
 test('Prints command, verbose "short", worker', testPrintCommand, 'short', parentWorker);
-test('Prints command, verbose "full", work', testPrintCommand, 'full', parentWorker);
+test('Prints command, verbose "full", worker', testPrintCommand, 'full', parentWorker);
 test('Prints command, verbose "short", fd-specific, worker', testPrintCommand, fdShortOption, parentWorker);
-test('Prints command, verbose "full", fd-specific, work', testPrintCommand, fdFullOption, parentWorker);
+test('Prints command, verbose "full", fd-specific, worker', testPrintCommand, fdFullOption, parentWorker);
 
 const testNoPrintCommand = async (t, verbose, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose});

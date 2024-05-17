@@ -910,7 +910,7 @@ _Default:_ `'none'`
 
 If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
 
-If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) and `stderr` are also printed.
+If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), `stderr` and [IPC messages](ipc.md) are also printed.
 
 By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](output.md#stdoutstderr-specific-options).
 

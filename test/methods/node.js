@@ -297,8 +297,6 @@ test('The "serialization" option defaults to "advanced"', async t => {
 
 test('The "serialization" option can be set to "json"', async t => {
 	const subprocess = execa('node', ['ipc-echo.js'], {ipc: true, serialization: 'json'});
-	await t.throwsAsync(() => subprocess.sendMessage([0n]), {message: /serialize a BigInt/});
-	await subprocess.sendMessage(0);
-	t.is(await subprocess.getOneMessage(), 0);
-	await subprocess;
+	await t.throwsAsync(subprocess.sendMessage([0n]), {message: /serialize a BigInt/});
+	await t.throwsAsync(subprocess);
 });

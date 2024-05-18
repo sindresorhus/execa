@@ -39,6 +39,32 @@ test('Handles backpressure', async t => {
 	const subprocess = execa('ipc-iterate.js', {ipc: true});
 	await subprocess.sendMessage(BIG_PAYLOAD_SIZE);
 	t.true(subprocess.send(foobarString));
-	const {stdout} = await subprocess;
-	t.is(stdout, BIG_PAYLOAD_SIZE);
+	const {ipc} = await subprocess;
+	t.deepEqual(ipc, [BIG_PAYLOAD_SIZE]);
+});
+
+test('Disconnects IPC on exports.sendMessage() error', async t => {
+	const subprocess = execa('ipc-echo-twice.js', {ipc: true});
+	await subprocess.sendMessage(foobarString);
+	t.is(await subprocess.getOneMessage(), foobarString);
+
+	await t.throwsAsync(subprocess.sendMessage(0n), {
+		message: /subprocess.sendMessage\(\)'s argument type is invalid/,
+	});
+
+	const {exitCode, isTerminated, stderr} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(stderr.includes('Error: getOneMessage() could not complete'));
+});
+
+test('Disconnects IPC on subprocess.sendMessage() error', async t => {
+	const subprocess = execa('ipc-send-error.js', {ipc: true});
+	const ipcError = await t.throwsAsync(subprocess.getOneMessage());
+	t.true(ipcError.message.includes('subprocess.getOneMessage() could not complete'));
+
+	const {exitCode, isTerminated, stderr} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(stderr.includes('sendMessage()\'s argument type is invalid'));
 });

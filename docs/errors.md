@@ -77,9 +77,9 @@ try {
 
 For better [debugging](debugging.md), [`error.message`](api.md#errormessage) includes both:
 - The command and the [reason it failed](#failure-reason).
-- Its [`stdout`, `stderr`](output.md#stdout-and-stderr) and [other file descriptors'](output.md#additional-file-descriptors) output, separated with newlines and not [interleaved](output.md#interleaved-output).
+- Its [`stdout`, `stderr`](output.md#stdout-and-stderr), [other file descriptors'](output.md#additional-file-descriptors) output and [IPC messages](ipc.md), separated with newlines and not [interleaved](output.md#interleaved-output).
 
-[`error.shortMessage`](api.md#errorshortmessage) is the same but without `stdout`/`stderr`.
+[`error.shortMessage`](api.md#errorshortmessage) is the same but without `stdout`, `stderr` nor IPC messages.
 
 [`error.originalMessage`](api.md#errororiginalmessage) is the same but also without the command. This exists only in specific instances, such as when calling [`subprocess.kill(error)`](termination.md#error-message-and-stack-trace), using the [`cancelSignal`](termination.md#canceling) option, passing an invalid command or [option](api.md#options), or throwing an exception in a [stream](streams.md) or [transform](transform.md).
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import process from 'node:process';
 import {sendMessage, getEachMessage} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 
@@ -10,9 +9,9 @@ for (let index = 0; index < 2; index += 1) {
 			break;
 		}
 
-		process.stdout.write(message);
+		await sendMessage(message);
 	}
 
 	// eslint-disable-next-line no-await-in-loop
-	await sendMessage('.');
+	await sendMessage(foobarString);
 }

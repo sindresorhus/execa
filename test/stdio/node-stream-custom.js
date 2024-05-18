@@ -11,6 +11,7 @@ import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {noopReadable, noopWritable} from '../helpers/stream.js';
+import {getEarlyErrorSubprocess, expectedEarlyError} from '../helpers/early-error.js';
 
 setFixtureDirectory();
 
@@ -87,7 +88,8 @@ test('Handles custom streams destroy errors on subprocess success', async t => {
 });
 
 const testStreamEarlyExit = async (t, stream, streamName) => {
-	await t.throwsAsync(execa('noop.js', {[streamName]: [stream, 'pipe'], uid: -1}));
+	const error = await t.throwsAsync(getEarlyErrorSubprocess({[streamName]: [stream, 'pipe']}));
+	t.like(error, expectedEarlyError);
 	t.true(stream.destroyed);
 };
 

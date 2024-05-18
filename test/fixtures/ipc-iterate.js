@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import process from 'node:process';
-import {getEachMessage} from '../../index.js';
+import {getEachMessage, sendMessage} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 
 for await (const message of getEachMessage()) {
@@ -8,5 +7,5 @@ for await (const message of getEachMessage()) {
 		break;
 	}
 
-	process.stdout.write(`${message}`);
+	await sendMessage(message);
 }

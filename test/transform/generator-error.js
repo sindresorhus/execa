@@ -5,6 +5,7 @@ import {foobarString} from '../helpers/input.js';
 import {noopGenerator, infiniteGenerator, convertTransformToFinal} from '../helpers/generator.js';
 import {generatorsMap} from '../helpers/map.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {getEarlyErrorSubprocess, expectedEarlyError} from '../helpers/early-error.js';
 
 setFixtureDirectory();
 
@@ -85,5 +86,6 @@ test('Generators are destroyed on subprocess error, sync', testGeneratorDestroy,
 test('Generators are destroyed on subprocess error, async', testGeneratorDestroy, infiniteGenerator());
 
 test('Generators are destroyed on early subprocess exit', async t => {
-	await t.throwsAsync(execa('noop.js', {stdout: infiniteGenerator(), uid: -1}));
+	const error = await t.throwsAsync(getEarlyErrorSubprocess({stdout: infiniteGenerator()}));
+	t.like(error, expectedEarlyError);
 });

@@ -181,8 +181,38 @@ const testIoErrorSubprocess = async (t, fixtureName) => {
 test('exports.getOneMessage() acknowledgment I/O error', testIoErrorSubprocess, 'ipc-get-io-error.js');
 test('exports.getEachMessage() acknowledgment I/O error', testIoErrorSubprocess, 'ipc-iterate-io-error.js');
 
-test('Two sendMessage() "strict" at the same time create a deadlock', async t => {
-	const subprocess = execa('ipc-send-strict.js', {ipc: true, timeout: 1e3});
+test('Opposite sendMessage() "strict", buffer true', async t => {
+	const subprocess = execa('ipc-send-strict-get.js', {ipc: true});
+	await subprocess.sendMessage(foobarString, {strict: true});
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString, foobarString]);
+});
+
+test('Opposite sendMessage() "strict", current process listening, buffer false', async t => {
+	const subprocess = execa('ipc-send-strict-get.js', {ipc: true, buffer: false});
+	const [message] = await Promise.all([
+		subprocess.getOneMessage(),
+		subprocess.sendMessage(foobarString, {strict: true}),
+	]);
+	t.is(message, foobarString);
+	t.is(await subprocess.getOneMessage(), foobarString);
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, []);
+});
+
+test('Opposite sendMessage() "strict", subprocess listening, buffer false', async t => {
+	const subprocess = execa('ipc-send-strict-listen.js', {ipc: true, buffer: false});
+	await subprocess.sendMessage(foobarString, {strict: true});
+	t.is(await subprocess.getOneMessage(), foobarString);
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, []);
+});
+
+test('Opposite sendMessage() "strict", not listening, buffer false', async t => {
+	const subprocess = execa('ipc-send-strict-get.js', {ipc: true, timeout: 1e3, buffer: false});
 	const {message} = await t.throwsAsync(subprocess.sendMessage(foobarString, {strict: true}));
 	t.is(message, 'subprocess.sendMessage() failed: the subprocess exited without listening to incoming messages.');
 

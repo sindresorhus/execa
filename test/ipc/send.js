@@ -81,3 +81,29 @@ test('Disconnects IPC on subprocess.sendMessage() error', async t => {
 	t.false(isTerminated);
 	t.true(stderr.includes('sendMessage()\'s argument type is invalid'));
 });
+
+// EPIPE happens based on timing conditions, so we must repeat it until it happens
+const findEpipeError = async t => {
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		// eslint-disable-next-line no-await-in-loop
+		const error = await t.throwsAsync(getEpipeError());
+		if (error.cause?.code === 'EPIPE') {
+			return error;
+		}
+	}
+};
+
+const getEpipeError = async () => {
+	const subprocess = execa('empty.js', {ipc: true});
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		// eslint-disable-next-line no-await-in-loop
+		await subprocess.sendMessage('.');
+	}
+};
+
+test.serial('Can send messages while the subprocess is closing', async t => {
+	const {message} = await findEpipeError(t);
+	t.is(message, 'subprocess.sendMessage() cannot be used: the subprocess is disconnecting.');
+});

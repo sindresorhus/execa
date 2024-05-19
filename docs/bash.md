@@ -1088,12 +1088,12 @@ const {myCliFlag} = argv;
 
 ```js
 // Execa
-import minimist from 'minimist';
+import {parseArgs} from 'node:util';
 
-const {myCliFlag} = minimist(process.argv.slice(2));
+const {myCliFlag} = parseArgs({strict: false}).values;
 ```
 
-[More info.](https://github.com/minimistjs/minimist)
+[More info.](https://nodejs.org/api/util.html#utilparseargsconfig)
 
 ### CLI prompts
 

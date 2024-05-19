@@ -302,12 +302,12 @@ if (isLinux) {
 		}
 	};
 
-	test('Works with yes | head', testYesHead, false, false, false);
-	test('Works with yes | head, input transform', testYesHead, false, true, false);
-	test('Works with yes | head, output transform', testYesHead, true, false, false);
-	test('Works with yes | head, input/output transform', testYesHead, true, true, false);
-	test('Works with yes | head, "all" option', testYesHead, false, false, true);
-	test('Works with yes | head, "all" option, input transform', testYesHead, false, true, true);
-	test('Works with yes | head, "all" option, output transform', testYesHead, true, false, true);
-	test('Works with yes | head, "all" option, input/output transform', testYesHead, true, true, true);
+	test.serial('Works with yes | head', testYesHead, false, false, false);
+	test.serial('Works with yes | head, input transform', testYesHead, false, true, false);
+	test.serial('Works with yes | head, output transform', testYesHead, true, false, false);
+	test.serial('Works with yes | head, input/output transform', testYesHead, true, true, false);
+	test.serial('Works with yes | head, "all" option', testYesHead, false, false, true);
+	test.serial('Works with yes | head, "all" option, input transform', testYesHead, false, true, true);
+	test.serial('Works with yes | head, "all" option, output transform', testYesHead, true, false, true);
+	test.serial('Works with yes | head, "all" option, input/output transform', testYesHead, true, true, true);
 }

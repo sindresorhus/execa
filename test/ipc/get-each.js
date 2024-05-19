@@ -1,3 +1,4 @@
+import {scheduler} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -172,11 +173,11 @@ const testCleanupListeners = async (t, buffer) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 
 	t.is(subprocess.listenerCount('message'), buffer ? 1 : 0);
-	t.is(subprocess.listenerCount('disconnect'), buffer ? 1 : 0);
+	t.is(subprocess.listenerCount('disconnect'), 1);
 
 	const promise = iterateAllMessages(subprocess);
 	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), 1);
+	t.is(subprocess.listenerCount('disconnect'), buffer ? 1 : 2);
 	t.deepEqual(await promise, [foobarString]);
 
 	t.is(subprocess.listenerCount('message'), 0);
@@ -185,3 +186,28 @@ const testCleanupListeners = async (t, buffer) => {
 
 test('Cleans up subprocess.getEachMessage() listeners, buffer false', testCleanupListeners, false);
 test('Cleans up subprocess.getEachMessage() listeners, buffer true', testCleanupListeners, true);
+
+const sendContinuousMessages = async subprocess => {
+	while (subprocess.connected) {
+		for (let index = 0; index < 10; index += 1) {
+			subprocess.emit('message', foobarString);
+		}
+
+		// eslint-disable-next-line no-await-in-loop
+		await scheduler.yield();
+	}
+};
+
+test.serial('Handles buffered messages when disconnecting', async t => {
+	const subprocess = execa('ipc-send-fail.js', {ipc: true, buffer: false});
+
+	const promise = subprocess.getOneMessage();
+	subprocess.emit('message', foobarString);
+	t.is(await promise, foobarString);
+	sendContinuousMessages(subprocess);
+
+	const {exitCode, isTerminated, ipcOutput} = await t.throwsAsync(iterateAllMessages(subprocess));
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.deepEqual(ipcOutput, []);
+});

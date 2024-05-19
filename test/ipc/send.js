@@ -3,6 +3,7 @@ import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
+import {mockSendIoError} from '../helpers/ipc.js';
 
 setFixtureDirectory();
 
@@ -108,4 +109,38 @@ const getEpipeError = async () => {
 test.serial('Can send messages while the subprocess is closing', async t => {
 	const {message} = await findEpipeError(t);
 	t.is(message, 'subprocess.sendMessage() cannot be used: the subprocess is disconnecting.');
+});
+
+test('subprocess.sendMessage() handles I/O errors', async t => {
+	const subprocess = execa('ipc-echo.js', {ipc: true});
+	const error = mockSendIoError(subprocess);
+	t.is(await t.throwsAsync(subprocess.sendMessage('.')), error);
+
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes('Error: getOneMessage() cannot be used: the parent process has already exited or disconnected'));
+	t.deepEqual(ipcOutput, []);
+});
+
+test('Does not hold message events on I/O errors', async t => {
+	const subprocess = execa('ipc-echo.js', {ipc: true});
+	const error = mockSendIoError(subprocess);
+	const promise = subprocess.sendMessage('.');
+	subprocess.emit('message', '.');
+	t.is(await t.throwsAsync(promise), error);
+
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes('Error: getOneMessage() cannot be used: the parent process has already exited or disconnected'));
+	t.deepEqual(ipcOutput, ['.']);
+});
+
+test('exports.sendMessage() handles I/O errors', async t => {
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(execa('ipc-send-io-error.js', {ipc: true}));
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes(`Error: ${foobarString}`));
+	t.deepEqual(ipcOutput, []);
 });

@@ -6,7 +6,7 @@ import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {getEarlyErrorSubprocess} from '../helpers/early-error.js';
 import {maxBuffer, assertErrorMessage} from '../helpers/max-buffer.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarArray} from '../helpers/input.js';
 
 setFixtureDirectory();
 
@@ -274,20 +274,15 @@ test('maxBuffer works with result.ipcOutput', async t => {
 		message,
 		stderr,
 		ipcOutput,
-	} = await t.throwsAsync(execa('ipc-send-twice-wait.js', {ipc: true, maxBuffer: {ipc: 1}}));
+	} = await t.throwsAsync(execa('ipc-send-twice.js', {ipc: true, maxBuffer: {ipc: 1}}));
 	t.true(isMaxBuffer);
-	t.is(shortMessage, 'Command\'s IPC output was larger than 1 messages: ipc-send-twice-wait.js\nmaxBuffer exceeded');
-	t.true(message.endsWith(`\n\n${foobarString}`));
-	t.true(stderr.includes('Error: exchangeMessage() could not complete'));
-	t.deepEqual(ipcOutput, [foobarString]);
+	t.is(shortMessage, 'Command\'s IPC output was larger than 1 messages: ipc-send-twice.js\nmaxBuffer exceeded');
+	t.true(message.endsWith(`\n\n${foobarArray[0]}`));
+	t.is(stderr, '');
+	t.deepEqual(ipcOutput, [foobarArray[0]]);
 });
 
 test('maxBuffer is ignored with result.ipcOutput if buffer is false', async t => {
-	const subprocess = execa('ipc-send-twice-wait.js', {ipc: true, maxBuffer: {ipc: 1}, buffer: false});
-	t.is(await subprocess.getOneMessage(), foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
-	await subprocess.sendMessage(foobarString);
-
-	const {ipcOutput} = await subprocess;
+	const {ipcOutput} = await execa('ipc-send-twice.js', {ipc: true, maxBuffer: {ipc: 1}, buffer: false});
 	t.deepEqual(ipcOutput, []);
 });

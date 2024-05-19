@@ -67,13 +67,17 @@ test.serial('Can retrieve initial IPC messages under heavy load', async t => {
 	);
 });
 
-test('"error" event interrupts result.ipcOutput', async t => {
+test('"error" event does not interrupt result.ipcOutput', async t => {
 	const subprocess = execa('ipc-echo-twice.js', {ipcInput: foobarString});
-	t.is(await subprocess.getOneMessage(), foobarString);
 
 	const cause = new Error(foobarString);
 	subprocess.emit('error', cause);
+	t.is(await subprocess.getOneMessage(), foobarString);
+	t.is(await subprocess.exchangeMessage(foobarString), foobarString);
+
 	const error = await t.throwsAsync(subprocess);
+	t.is(error.exitCode, undefined);
+	t.false(error.isTerminated);
 	t.is(error.cause, cause);
-	t.deepEqual(error.ipcOutput, [foobarString]);
+	t.deepEqual(error.ipcOutput, [foobarString, foobarString]);
 });

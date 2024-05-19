@@ -136,18 +136,6 @@ This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#me
 
 [More info.](ipc.md#listening-to-messages)
 
-### exchangeMessage(message, getOneMessageOptions?)
-
-`message`: [`Message`](ipc.md#message-type)\
-_getOneMessageOptions_: [`GetOneMessageOptions`](#getonemessageoptions)\
-_Returns_: [`Promise<Message>`](ipc.md#message-type)
-
-Send a `message` to the parent process, then receive a response from it.
-
-This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
-
-[More info.](ipc.md#exchanging-messages)
-
 ## Return value
 
 _TypeScript:_ [`ResultPromise`](typescript.md)\
@@ -304,18 +292,6 @@ Iterate over each `message` from the subprocess.
 This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
 
 [More info.](ipc.md#listening-to-messages)
-
-### subprocess.exchangeMessage(message, getOneMessageOptions?)
-
-`message`: [`Message`](ipc.md#message-type)\
-_getOneMessageOptions_: [`GetOneMessageOptions`](#getonemessageoptions)\
-_Returns_: [`Promise<Message>`](ipc.md#message-type)
-
-Send a `message` to the subprocess, then receive a response from it.
-
-This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
-
-[More info.](ipc.md#exchanging-messages)
 
 ### subprocess.stdin
 
@@ -938,7 +914,7 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 _Type:_ `boolean`\
 _Default:_ `true` if either the [`node`](#optionsnode) option or the [`ipcInput`](#optionsipcinput) is set, `false` otherwise
 
-Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions), [`subprocess.exchangeMessage(message)`](#subprocessexchangemessagemessage-getonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
+Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
 
 The subprocess must be a Node.js file.
 

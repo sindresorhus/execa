@@ -1,18 +1,4 @@
-import isPlainObj from 'is-plain-obj';
-
-export const subprocessGetOne = (subprocess, options) => subprocess.getOneMessage(options);
-
-export const subprocessSendGetOne = async (subprocess, message) => {
-	const [response] = await Promise.all([
-		subprocess.getOneMessage(),
-		subprocess.sendMessage(message),
-	]);
-	return response;
-};
-
-export const subprocessExchange = (subprocess, messageOrOptions) => isPlainObj(messageOrOptions)
-	? subprocess.exchangeMessage('.', messageOrOptions)
-	: subprocess.exchangeMessage(messageOrOptions);
+import {getEachMessage} from '../../index.js';
 
 // @todo: replace with Array.fromAsync(subprocess.getEachMessage()) after dropping support for Node <22.0.0
 export const iterateAllMessages = async subprocess => {
@@ -23,5 +9,19 @@ export const iterateAllMessages = async subprocess => {
 
 	return messages;
 };
+
+export const subprocessGetFirst = async subprocess => {
+	const [firstMessage] = await iterateAllMessages(subprocess);
+	return firstMessage;
+};
+
+export const getFirst = async () => {
+	// eslint-disable-next-line no-unreachable-loop
+	for await (const message of getEachMessage()) {
+		return message;
+	}
+};
+
+export const subprocessGetOne = (subprocess, options) => subprocess.getOneMessage(options);
 
 export const alwaysPass = () => true;

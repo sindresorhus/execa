@@ -17,12 +17,10 @@ export const $ = createExeca(mapScriptAsync, {}, deepScriptOptions, setScriptSyn
 const {
 	sendMessage,
 	getOneMessage,
-	exchangeMessage,
 	getEachMessage,
 } = getIpcExport();
 export {
 	sendMessage,
 	getOneMessage,
-	exchangeMessage,
 	getEachMessage,
 };

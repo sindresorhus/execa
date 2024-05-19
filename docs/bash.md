@@ -1233,6 +1233,8 @@ await pRetry(
 );
 ```
 
+[More info.](https://github.com/sindresorhus/p-retry)
+
 <hr>
 
 [**Next**: 🤓 TypeScript](typescript.md)\

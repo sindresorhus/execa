@@ -1171,12 +1171,12 @@ const files = await glob(['packages/*']);
 
 ```js
 // Execa
-import {globby} from 'globby';
+import {glob} from 'node:fs/promises';
 
-const files = await globby(['packages/*']);
+const files = await Array.fromAsync(glob('packages/*'));
 ```
 
-[More info.](https://github.com/sindresorhus/globby)
+[More info.](https://nodejs.org/api/fs.html#fspromisesglobpattern-options)
 
 ### Temporary file
 

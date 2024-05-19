@@ -102,18 +102,6 @@ try {
 }
 ```
 
-## Retry on error
-
-Safely handle failures by using automatic retries and exponential backoff with the [`p-retry`](https://github.com/sindresorhus/p-retry) package.
-
-```js
-import pRetry from 'p-retry';
-import {execa} from 'execa';
-
-const run = () => execa`curl -sSL https://sindresorhus.com/unicorn`;
-console.log(await pRetry(run, {retries: 5}));
-```
-
 <hr>
 
 [**Next**: 🏁 Termination](termination.md)\

@@ -31,7 +31,7 @@ Options to `sendMessage()` and `subprocess.sendMessage()`
 */
 type SendMessageOptions = {
 	/**
-	If `true`, throws when the other process is not receiving or listening to messages.
+	Throw when the other process is not receiving or listening to messages.
 
 	@default false
 	*/

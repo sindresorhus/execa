@@ -122,13 +122,13 @@ test('error.stdout/stderr/stdio is defined, sync', testErrorOutput, execaSync);
 test('ipc on subprocess spawning errors', async t => {
 	const error = await t.throwsAsync(getEarlyErrorSubprocess({ipc: true}));
 	t.like(error, expectedEarlyError);
-	t.deepEqual(error.ipc, []);
+	t.deepEqual(error.ipcOutput, []);
 });
 
 const testEarlyErrorNoIpc = async (t, options) => {
 	const error = await t.throwsAsync(getEarlyErrorSubprocess(options));
 	t.like(error, expectedEarlyError);
-	t.deepEqual(error.ipc, []);
+	t.deepEqual(error.ipcOutput, []);
 };
 
 test('ipc on subprocess spawning errors, ipc false', testEarlyErrorNoIpc, {ipc: false});

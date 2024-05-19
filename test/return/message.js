@@ -95,24 +95,24 @@ test('Original error.message is kept', async t => {
 	t.is(originalMessage, 'The "options.uid" property must be int32. Received type boolean (true)');
 });
 
-const testIpcMessage = async (t, doubles, ipcInput, returnedMessage) => {
+const testIpcOutput = async (t, doubles, ipcInput, returnedMessage) => {
 	const fixtureName = doubles ? 'ipc-echo-twice-fail.js' : 'ipc-echo-fail.js';
-	const {exitCode, message, ipc} = await t.throwsAsync(execa(fixtureName, {ipcInput}));
+	const {exitCode, message, ipcOutput} = await t.throwsAsync(execa(fixtureName, {ipcInput}));
 	t.is(exitCode, 1);
 	t.true(message.endsWith(`\n\n${doubles ? `${returnedMessage}\n${returnedMessage}` : returnedMessage}`));
-	t.deepEqual(ipc, doubles ? [ipcInput, ipcInput] : [ipcInput]);
+	t.deepEqual(ipcOutput, doubles ? [ipcInput, ipcInput] : [ipcInput]);
 };
 
-test('error.message contains IPC messages, single string', testIpcMessage, false, foobarString, foobarString);
-test('error.message contains IPC messages, two strings', testIpcMessage, true, foobarString, foobarString);
-test('error.message contains IPC messages, single object', testIpcMessage, false, foobarObject, foobarObjectInspect);
-test('error.message contains IPC messages, two objects', testIpcMessage, true, foobarObject, foobarObjectInspect);
-test('error.message contains IPC messages, multiline string', testIpcMessage, false, `${foobarString}\n${foobarString}`, `${foobarString}\n${foobarString}`);
-test('error.message contains IPC messages, control characters', testIpcMessage, false, '\0', '\\u0000');
+test('error.message contains IPC messages, single string', testIpcOutput, false, foobarString, foobarString);
+test('error.message contains IPC messages, two strings', testIpcOutput, true, foobarString, foobarString);
+test('error.message contains IPC messages, single object', testIpcOutput, false, foobarObject, foobarObjectInspect);
+test('error.message contains IPC messages, two objects', testIpcOutput, true, foobarObject, foobarObjectInspect);
+test('error.message contains IPC messages, multiline string', testIpcOutput, false, `${foobarString}\n${foobarString}`, `${foobarString}\n${foobarString}`);
+test('error.message contains IPC messages, control characters', testIpcOutput, false, '\0', '\\u0000');
 
 test('error.message does not contain IPC messages, buffer false', async t => {
-	const {exitCode, message, ipc} = await t.throwsAsync(execa('ipc-echo-fail.js', {ipcInput: foobarString, buffer: false}));
+	const {exitCode, message, ipcOutput} = await t.throwsAsync(execa('ipc-echo-fail.js', {ipcInput: foobarString, buffer: false}));
 	t.is(exitCode, 1);
 	t.true(message.endsWith('ipc-echo-fail.js'));
-	t.deepEqual(ipc, []);
+	t.deepEqual(ipcOutput, []);
 });

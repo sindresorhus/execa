@@ -39,8 +39,8 @@ test('Handles backpressure', async t => {
 	const subprocess = execa('ipc-iterate.js', {ipc: true});
 	await subprocess.sendMessage(BIG_PAYLOAD_SIZE);
 	t.true(subprocess.send(foobarString));
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, [BIG_PAYLOAD_SIZE]);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [BIG_PAYLOAD_SIZE]);
 });
 
 test('Disconnects IPC on exports.sendMessage() error', async t => {

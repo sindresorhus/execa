@@ -6,8 +6,8 @@ import {foobarString} from '../helpers/input.js';
 setFixtureDirectory();
 
 const testSuccess = async (t, options) => {
-	const {ipc} = await execa('ipc-echo.js', {ipcInput: foobarString, ...options});
-	t.deepEqual(ipc, [foobarString]);
+	const {ipcOutput} = await execa('ipc-echo.js', {ipcInput: foobarString, ...options});
+	t.deepEqual(ipcOutput, [foobarString]);
 };
 
 test('Sends a message with the "ipcInput" option, ipc undefined', testSuccess, {});

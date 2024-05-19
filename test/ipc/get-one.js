@@ -47,8 +47,8 @@ test('Does not buffer initial message to current process, buffer true', async t 
 	t.is(chunk.toString(), '.');
 	t.is(await Promise.race([setTimeout(1e3), subprocess.getOneMessage()]), undefined);
 	await subprocess.sendMessage('.');
-	const {ipc} = await subprocess;
-	t.deepEqual(ipc, [foobarString]);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
 });
 
 const HIGH_CONCURRENCY_COUNT = 100;
@@ -66,8 +66,8 @@ test.serial('Can retrieve initial IPC messages under heavy load, buffer false', 
 test.serial('Can retrieve initial IPC messages under heavy load, buffer true', async t => {
 	await Promise.all(
 		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
-			const {ipc} = await execa('ipc-send-argv.js', [`${index}`], {ipc: true});
-			t.deepEqual(ipc, [`${index}`]);
+			const {ipcOutput} = await execa('ipc-send-argv.js', [`${index}`], {ipc: true});
+			t.deepEqual(ipcOutput, [`${index}`]);
 		}),
 	);
 });
@@ -108,7 +108,7 @@ const testCleanupListeners = async (t, buffer) => {
 test('Cleans up subprocess.getOneMessage() listeners, buffer false', testCleanupListeners, false);
 test('Cleans up subprocess.getOneMessage() listeners, buffer true', testCleanupListeners, true);
 
-test('"error" event interrupts result.ipc', async t => {
+test('"error" event interrupts result.ipcOutput', async t => {
 	const subprocess = execa('ipc-echo-twice.js', {ipcInput: foobarString});
 	t.is(await subprocess.getOneMessage(), foobarString);
 
@@ -116,7 +116,7 @@ test('"error" event interrupts result.ipc', async t => {
 	subprocess.emit('error', cause);
 	const error = await t.throwsAsync(subprocess);
 	t.is(error.cause, cause);
-	t.deepEqual(error.ipc, [foobarString]);
+	t.deepEqual(error.ipcOutput, [foobarString]);
 });
 
 const testParentDisconnect = async (t, buffer) => {

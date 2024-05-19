@@ -2,6 +2,7 @@ import type {SignalConstants} from 'node:os';
 import type {env} from 'node:process';
 import type {Readable} from 'node:stream';
 import type {Unless} from '../utils.js';
+import type {Message} from '../ipc.js';
 import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsProperty} from '../stdio/type.js';
 import type {FdGenericOption} from './specific.js';
 import type {EncodingOption} from './encoding-option.js';
@@ -200,7 +201,9 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	Enables exchanging messages with the subprocess using `subprocess.sendMessage(message)`, `subprocess.getOneMessage()` and `subprocess.getEachMessage()`.
 
-	@default `true` if the `node` option is enabled, `false` otherwise
+	The subprocess must be a Node.js file.
+
+	@default `true` if either the `node` option or the `ipcInput` option is set, `false` otherwise
 	*/
 	readonly ipc?: Unless<IsSync, boolean>;
 
@@ -210,6 +213,13 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	@default 'advanced'
 	*/
 	readonly serialization?: Unless<IsSync, 'json' | 'advanced'>;
+
+	/**
+	Sends an IPC message when the subprocess starts.
+
+	The subprocess must be a Node.js file. The value's type depends on the `serialization` option.
+	*/
+	readonly ipcInput?: Unless<IsSync, Message>;
 
 	/**
 	If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.

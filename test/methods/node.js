@@ -286,17 +286,3 @@ const testNoShell = async (t, execaMethod) => {
 test('Cannot use "shell: true" - execaNode()', testNoShell, execaNode);
 test('Cannot use "shell: true" - "node" option', testNoShell, runWithNodeOption);
 test('Cannot use "shell: true" - "node" option sync', testNoShell, runWithNodeOptionSync);
-
-test('The "serialization" option defaults to "advanced"', async t => {
-	const subprocess = execa('node', ['ipc-echo.js'], {ipc: true});
-	await subprocess.sendMessage([0n]);
-	const message = await subprocess.getOneMessage();
-	t.is(message[0], 0n);
-	await subprocess;
-});
-
-test('The "serialization" option can be set to "json"', async t => {
-	const subprocess = execa('node', ['ipc-echo.js'], {ipc: true, serialization: 'json'});
-	await t.throwsAsync(subprocess.sendMessage([0n]), {message: /serialize a BigInt/});
-	await t.throwsAsync(subprocess);
-});

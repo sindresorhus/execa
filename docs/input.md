@@ -90,6 +90,28 @@ The parent process' input can be re-used in the subprocess by passing `'inherit'
 await execa({stdin: 'inherit'})`npm run scaffold`;
 ```
 
+## Any input type
+
+If the subprocess [uses Node.js](node.md), [almost any type](ipc.md#message-type) can be passed to the subprocess using the [`ipcInput`](ipc.md#send-an-initial-message) option. The subprocess retrieves that input using [`getOneMessage()`](api.md#getonemessage).
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const ipcInput = [
+	{task: 'lint', ignore: /test\.js/},
+	{task: 'copy', files: new Set(['main.js', 'index.js']),
+}];
+await execaNode({ipcInput})`build.js`;
+```
+
+```js
+// build.js
+import {getOneMessage} from 'execa';
+
+const ipcInput = await getOneMessage();
+```
+
 ## Additional file descriptors
 
 The [`stdio`](api.md#optionsstdio) option can be used to pass some input to any [file descriptor](https://en.wikipedia.org/wiki/File_descriptor), as opposed to only [`stdin`](api.md#optionsstdin).

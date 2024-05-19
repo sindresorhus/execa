@@ -7,6 +7,7 @@ import {
 	type ExecaError,
 	type ExecaSyncError,
 	type Message,
+	type Options,
 } from '../../index.js';
 
 const ipcResult = await execa('unicorns', {ipc: true});
@@ -21,11 +22,35 @@ expectType<Array<Message<'advanced'>>>(advancedResult.ipc);
 const jsonResult = await execa('unicorns', {ipc: true, serialization: 'json'});
 expectType<Array<Message<'json'>>>(jsonResult.ipc);
 
+const inputResult = await execa('unicorns', {ipcInput: ''});
+expectType<Array<Message<'advanced'>>>(inputResult.ipc);
+
+const genericInputResult = await execa('unicorns', {ipcInput: '' as Message});
+expectType<Array<Message<'advanced'>>>(genericInputResult.ipc);
+
+const genericResult = await execa('unicorns', {} as Options);
+expectType<Message[] | []>(genericResult.ipc);
+
+const genericIpc = await execa('unicorns', {ipc: true as boolean});
+expectType<Array<Message<'advanced'>> | []>(genericIpc.ipc);
+
+const maybeInputResult = await execa('unicorns', {ipcInput: '' as '' | undefined});
+expectType<Array<Message<'advanced'>> | []>(maybeInputResult.ipc);
+
 const falseIpcResult = await execa('unicorns', {ipc: false});
 expectType<[]>(falseIpcResult.ipc);
 
 const noIpcResult = await execa('unicorns');
 expectType<[]>(noIpcResult.ipc);
+
+const emptyIpcResult = await execa('unicorns', {});
+expectType<[]>(emptyIpcResult.ipc);
+
+const undefinedInputResult = await execa('unicorns', {ipcInput: undefined});
+expectType<[]>(undefinedInputResult.ipc);
+
+const inputNoIpcResult = await execa('unicorns', {ipc: false, ipcInput: ''});
+expectType<[]>(inputNoIpcResult.ipc);
 
 const noBufferResult = await execa('unicorns', {ipc: true, buffer: false});
 expectType<[]>(noBufferResult.ipc);

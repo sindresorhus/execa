@@ -50,9 +50,9 @@ export function getEachMessage(): AsyncIterableIterator<Message>;
 
 // IPC methods in the current process
 export type IpcMethods<
-	IpcOption extends Options['ipc'],
+	IpcEnabled extends boolean,
 	Serialization extends Options['serialization'],
-> = IpcOption extends true
+> = IpcEnabled extends true
 	? {
 		/**
 		Send a `message` to the subprocess.
@@ -77,9 +77,26 @@ export type IpcMethods<
 	}
 	// Those methods only work if the `ipc` option is `true`.
 	// At runtime, they are actually defined, in order to provide with a nice error message.
-	// At type check time, they are typed as `never` to prevent calling them.
+	// At type check time, they are typed as `undefined` to prevent calling them.
 	: {
-		sendMessage: never;
-		getOneMessage: never;
-		getEachMessage: never;
+		sendMessage: undefined;
+		getOneMessage: undefined;
+		getEachMessage: undefined;
 	};
+
+// Whether IPC is enabled, based on the `ipc` and `ipcInput` options
+export type HasIpc<OptionsType extends Options> = HasIpcOption<
+OptionsType['ipc'],
+'ipcInput' extends keyof OptionsType ? OptionsType['ipcInput'] : undefined
+>;
+
+type HasIpcOption<
+	IpcOption extends Options['ipc'],
+	IpcInputOption extends Options['ipcInput'],
+> = IpcOption extends true
+	? true
+	: IpcOption extends false
+		? false
+		: IpcInputOption extends undefined
+			? false
+			: true;

@@ -62,10 +62,11 @@ One of the maintainers [@ehmicky](https://github.com/ehmicky) is looking for a r
 - [Pipe multiple subprocesses](#pipe-multiple-subprocesses) better than in shells: retrieve [intermediate results](docs/pipe.md#result), use multiple [sources](docs/pipe.md#multiple-sources-1-destination)/[destinations](docs/pipe.md#1-source-multiple-destinations), [unpipe](docs/pipe.md#unpipe).
 - [Split](#split-into-text-lines) the output into text lines, or [iterate](#iterate-over-text-lines) progressively over them.
 - Strip [unnecessary newlines](docs/lines.md#newlines).
+- Pass any [input](docs/input.md) to the subprocess: [files](#file-input), [strings](#simple-input), [`Uint8Array`s](docs/binary.md#binary-input), [iterables](docs/streams.md#iterables-as-input), [objects](docs/transform.md#object-mode) and almost any [other type](#any-input-type).
+- Return [almost any type](#any-output-type) from the subprocess, or redirect it to [files](#file-output).
 - Get [interleaved output](#interleaved-output) from `stdout` and `stderr` similar to what is printed on the terminal.
 - Retrieve the output [programmatically and print it](#programmatic--terminal-output) on the console at the same time.
 - [Transform or filter](#transformfilter-output) the input and output with [simple functions](docs/transform.md).
-- Redirect the [input](docs/input.md) and [output](docs/output.md) from/to [files](#files), [strings](#simple-input), [`Uint8Array`s](docs/binary.md#binary-input), [iterables](docs/streams.md#iterables-as-input) or [objects](docs/transform.md#object-mode).
 - Pass [Node.js streams](docs/streams.md#nodejs-streams) or [web streams](#web-streams) to subprocesses, or [convert](#convert-to-duplex-stream) subprocesses to [a stream](docs/streams.md#converting-a-subprocess-to-a-stream).
 - [Exchange messages](#exchange-messages) with the subprocess.
 - Ensure subprocesses exit even when they [intercept termination signals](docs/termination.md#forceful-termination), or when the current process [ends abruptly](docs/termination.md#current-process-exit).
@@ -183,18 +184,25 @@ const {stdout} = await execa({stdout: ['pipe', 'inherit']})`npm run build`;
 console.log(stdout);
 ```
 
-#### Files
-
-```js
-// Similar to: npm run build > output.txt
-await execa({stdout: {file: './output.txt'}})`npm run build`;
-```
-
 #### Simple input
 
 ```js
 const {stdout} = await execa({input: getInputString()})`sort`;
 console.log(stdout);
+```
+
+#### File input
+
+```js
+// Similar to: npm run build < input.txt
+await execa({stdin: {file: 'input.txt'}})`npm run build`;
+```
+
+#### File output
+
+```js
+// Similar to: npm run build > output.txt
+await execa({stdout: {file: 'output.txt'}})`npm run build`;
 ```
 
 #### Split into text lines
@@ -253,6 +261,8 @@ await pipeline(
 );
 ```
 
+### IPC
+
 #### Exchange messages
 
 ```js
@@ -262,6 +272,7 @@ import {execaNode} from 'execa';
 const subprocess = execaNode`child.js`;
 console.log(await subprocess.getOneMessage()); // 'Hello from child'
 await subprocess.sendMessage('Hello from parent');
+const result = await subprocess;
 ```
 
 ```js
@@ -270,6 +281,46 @@ import {sendMessage, getOneMessage} from 'execa';
 
 await sendMessage('Hello from child');
 console.log(await getOneMessage()); // 'Hello from parent'
+```
+
+#### Any input type
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const ipcInput = [
+	{task: 'lint', ignore: /test\.js/},
+	{task: 'copy', files: new Set(['main.js', 'index.js']),
+}];
+await execaNode({ipcInput})`build.js`;
+```
+
+```js
+// build.js
+import {getOneMessage} from 'execa';
+
+const ipcInput = await getOneMessage();
+```
+
+#### Any output type
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const {ipc} = await execaNode`build.js`;
+console.log(ipc[0]); // {kind: 'start', timestamp: date}
+console.log(ipc[1]); // {kind: 'stop', timestamp: date}
+```
+
+```js
+// build.js
+import {sendMessage} from 'execa';
+
+await sendMessage({kind: 'start', timestamp: new Date()});
+await runBuild();
+await sendMessage({kind: 'stop', timestamp: new Date()});
 ```
 
 ### Debugging

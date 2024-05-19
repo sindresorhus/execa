@@ -105,18 +105,25 @@ const {stdout} = await execa({stdout: ['pipe', 'inherit']})`npm run build`;
 console.log(stdout);
 ```
 
-@example <caption>Files</caption>
-
-```
-// Similar to: npm run build > output.txt
-await execa({stdout: {file: './output.txt'}})`npm run build`;
-```
-
 @example <caption>Simple input</caption>
 
 ```
 const {stdout} = await execa({input: getInputString()})`sort`;
 console.log(stdout);
+```
+
+@example <caption>File input</caption>
+
+```
+// Similar to: npm run build < input.txt
+await execa({stdin: {file: 'input.txt'}})`npm run build`;
+```
+
+@example <caption>File output</caption>
+
+```
+// Similar to: npm run build > output.txt
+await execa({stdout: {file: 'output.txt'}})`npm run build`;
 ```
 
 @example <caption>Split into text lines</caption>
@@ -171,6 +178,66 @@ await pipeline(
 	execa`node ./transform.js`.duplex(),
 	createWriteStream('./output.txt'),
 );
+```
+
+@example <caption>Exchange messages</caption>
+
+```
+// parent.js
+import {execaNode} from 'execa';
+
+const subprocess = execaNode`child.js`;
+console.log(await subprocess.getOneMessage()); // 'Hello from child'
+await subprocess.sendMessage('Hello from parent');
+const result = await subprocess;
+```
+
+```
+// child.js
+import {sendMessage, getOneMessage} from 'execa';
+
+await sendMessage('Hello from child');
+console.log(await getOneMessage()); // 'Hello from parent'
+```
+
+@example <caption>Any input type</caption>
+
+```
+// main.js
+import {execaNode} from 'execa';
+
+const ipcInput = [
+	{task: 'lint', ignore: /test\.js/},
+	{task: 'copy', files: new Set(['main.js', 'index.js']),
+}];
+await execaNode({ipcInput})`build.js`;
+```
+
+```
+// build.js
+import {getOneMessage} from 'execa';
+
+const ipcInput = await getOneMessage();
+```
+
+@example <caption>Any output type</caption>
+
+```
+// main.js
+import {execaNode} from 'execa';
+
+const {ipc} = await execaNode`build.js`;
+console.log(ipc[0]); // {kind: 'start', timestamp: date}
+console.log(ipc[1]); // {kind: 'stop', timestamp: date}
+```
+
+```
+// build.js
+import {sendMessage} from 'execa';
+
+await sendMessage({kind: 'start', timestamp: new Date()});
+await runBuild();
+await sendMessage({kind: 'stop', timestamp: new Date()});
 ```
 
 @example <caption>Detailed error</caption>

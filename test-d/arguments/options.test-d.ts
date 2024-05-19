@@ -201,6 +201,15 @@ expectError(execaSync('unicorns', {serialization: 'advanced'}));
 expectError(await execa('unicorns', {serialization: 'other'}));
 expectError(execaSync('unicorns', {serialization: 'other'}));
 
+await execa('unicorns', {ipcInput: ''});
+expectError(execaSync('unicorns', {ipcInput: ''}));
+await execa('unicorns', {ipcInput: {}});
+expectError(execaSync('unicorns', {ipcInput: {}}));
+await execa('unicorns', {ipcInput: undefined});
+execaSync('unicorns', {ipcInput: undefined});
+expectError(await execa('unicorns', {ipcInput: 0n}));
+expectError(execaSync('unicorns', {ipcInput: 0n}));
+
 await execa('unicorns', {detached: true});
 expectError(execaSync('unicorns', {detached: true}));
 expectError(await execa('unicorns', {detached: 'true'}));

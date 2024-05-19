@@ -1,6 +1,6 @@
 import type {FdSpecificOption} from '../arguments/specific.js';
-import type {CommonOptions} from '../arguments/options.js';
-import type {Message} from '../ipc.js';
+import type {CommonOptions, Options, StricterOptions} from '../arguments/options.js';
+import type {Message, HasIpc} from '../ipc.js';
 
 // `result.ipc`
 // This is empty unless the `ipc` option is `true`.
@@ -12,16 +12,16 @@ export type ResultIpc<
 	? []
 	: ResultIpcAsync<
 	FdSpecificOption<OptionsType['buffer'], 'ipc'>,
-	OptionsType['ipc'],
+	HasIpc<StricterOptions<OptionsType, Options>>,
 	OptionsType['serialization']
 	>;
 
 type ResultIpcAsync<
 	BufferOption extends boolean | undefined,
-	IpcOption extends boolean | undefined,
+	IpcEnabled extends boolean,
 	SerializationOption extends CommonOptions['serialization'],
 > = BufferOption extends false
 	? []
-	: IpcOption extends true
+	: IpcEnabled extends true
 		? Array<Message<SerializationOption>>
 		: [];

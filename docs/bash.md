@@ -519,7 +519,7 @@ set -v
 npm run build
 ```
 
-```js
+```
 // zx
 $ zx --verbose file.js
 $ npm run build

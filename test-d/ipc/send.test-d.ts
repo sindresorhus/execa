@@ -30,3 +30,16 @@ expectType<undefined>(execa('test', {}).sendMessage);
 expectType<undefined>(execa('test', {ipc: false}).sendMessage);
 expectType<undefined>(execa('test', {ipcInput: undefined}).sendMessage);
 expectType<undefined>(execa('test', {ipc: false, ipcInput: ''}).sendMessage);
+
+await subprocess.sendMessage('', {} as const);
+await sendMessage('', {} as const);
+await subprocess.sendMessage('', {strict: true} as const);
+await sendMessage('', {strict: true} as const);
+expectError(await subprocess.sendMessage('', true));
+expectError(await sendMessage('', true));
+expectError(await subprocess.sendMessage('', {strict: 'true'}));
+expectError(await sendMessage('', {strict: 'true'}));
+expectError(await subprocess.sendMessage('', {unknown: true}));
+expectError(await sendMessage('', {unknown: true}));
+expectError(await subprocess.sendMessage('', {strict: true}, {}));
+expectError(await sendMessage('', {strict: true}, {}));

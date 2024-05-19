@@ -12,9 +12,9 @@ When the [`ipc`](api.md#optionsipc) option is `true`, the current process and su
 
 The `ipc` option defaults to `true` when using [`execaNode()`](node.md#run-nodejs-files) or the [`node`](node.md#run-nodejs-files) option.
 
-The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions).
+The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage-sendmessageoptions) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions).
 
-The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage) and [`getOneMessage()`](api.md#getonemessagegetonemessageoptions). Those are the same methods, but imported directly from the `'execa'` module.
+The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage-sendmessageoptions) and [`getOneMessage()`](api.md#getonemessagegetonemessageoptions). Those are the same methods, but imported directly from the `'execa'` module.
 
 ```js
 // parent.js
@@ -24,6 +24,7 @@ const subprocess = execaNode`child.js`;
 await subprocess.sendMessage('Hello from parent');
 const message = await subprocess.getOneMessage();
 console.log(message); // 'Hello from child'
+await subprocess;
 ```
 
 ```js
@@ -91,6 +92,40 @@ for await (const message of getEachMessage()) {
 }
 ```
 
+## Ensure messages are received
+
+When a message is sent by one process, the other process must receive it using [`getOneMessage()`](#exchanging-messages), [`getEachMessage()`](#listening-to-messages), or automatically with [`result.ipcOutput`](api.md#resultipcoutput). If not, that message is silently discarded.
+
+If the [`strict: true`](api.md#sendmessageoptionsstrict) option is passed to [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage-sendmessageoptions) or [`sendMessage(message)`](api.md#sendmessagemessage-sendmessageoptions), an exception is thrown instead. This helps identifying subtle race conditions like the following example.
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const subprocess = execaNode`build.js`;
+// This `build` message is received
+await subprocess.sendMessage('build', {strict: true});
+// This `lint` message is not received, so it throws
+await subprocess.sendMessage('lint', {strict: true});
+await subprocess;
+```
+
+```js
+// build.js
+import {getOneMessage} from 'execa';
+
+// Receives the 'build' message
+const task = await getOneMessage();
+// The `lint` message is sent while `runTask()` is ongoing
+// Therefore the `lint` message is discarded
+await runTask(task);
+
+// Does not receive the `lint` message
+// Without `strict`, this would wait forever
+const secondTask = await getOneMessage();
+await runTask(secondTask);
+```
+
 ## Retrieve all messages
 
 The [`result.ipcOutput`](api.md#resultipcoutput) array contains all the messages sent by the subprocess. In many situations, this is simpler than using [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage).
@@ -144,7 +179,7 @@ To limit messages to JSON instead, the [`serialization`](api.md#optionsserializa
 ```js
 import {execaNode} from 'execa';
 
-const subprocess = execaNode({serialization: 'json'})`child.js`;
+await execaNode({serialization: 'json'})`child.js`;
 ```
 
 ## Messages order

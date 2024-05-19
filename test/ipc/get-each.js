@@ -3,6 +3,7 @@ import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
 import {iterateAllMessages} from '../helpers/ipc.js';
+import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
@@ -82,15 +83,13 @@ test('Exceptions in subprocess.getEachMessage() disconnect', async t => {
 	t.deepEqual(ipcOutput, [foobarString]);
 });
 
-const HIGH_CONCURRENCY_COUNT = 10;
-
 test.serial('Can send many messages at once with exports.getEachMessage()', async t => {
 	const subprocess = execa('ipc-iterate.js', {ipc: true});
-	await Promise.all(Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => subprocess.sendMessage(index)));
+	await Promise.all(Array.from({length: PARALLEL_COUNT}, (_, index) => subprocess.sendMessage(index)));
 	await subprocess.sendMessage(foobarString);
 
 	const {ipcOutput} = await subprocess;
-	t.deepEqual(ipcOutput, Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => index));
+	t.deepEqual(ipcOutput, Array.from({length: PARALLEL_COUNT}, (_, index) => index));
 });
 
 test('Disconnecting in the current process stops exports.getEachMessage()', async t => {

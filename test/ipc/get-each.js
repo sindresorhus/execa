@@ -52,14 +52,37 @@ test('subprocess.getEachMessage() can be called twice at the same time', async t
 	t.deepEqual(ipcOutput, foobarArray);
 });
 
-test('break in subprocess.getEachMessage() disconnects', async t => {
-	const subprocess = execa('ipc-iterate-send.js', {ipc: true});
-
+const loopAndBreak = async (t, subprocess) => {
 	// eslint-disable-next-line no-unreachable-loop
 	for await (const message of subprocess.getEachMessage()) {
 		t.is(message, foobarString);
 		break;
 	}
+};
+
+test('Breaking in subprocess.getEachMessage() disconnects', async t => {
+	const subprocess = execa('ipc-iterate-send.js', {ipc: true});
+	await loopAndBreak(t, subprocess);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
+test('Breaking from subprocess.getEachMessage() awaits the subprocess', async t => {
+	const subprocess = execa('ipc-send-get.js', {ipc: true});
+
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(loopAndBreak(t, subprocess));
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes('Error: exchangeMessage() could not complete'));
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
+test('Breaking from exports.getEachMessage() disconnects', async t => {
+	const subprocess = execa('ipc-iterate-break.js', {ipc: true});
+
+	t.is(await subprocess.getOneMessage(), foobarString);
+	const ipcError = await t.throwsAsync(subprocess.exchangeMessage(foobarString));
+	t.true(ipcError.message.includes('subprocess.exchangeMessage() could not complete'));
 
 	const {ipcOutput} = await subprocess;
 	t.deepEqual(ipcOutput, [foobarString]);
@@ -73,13 +96,40 @@ const iterateAndError = async (t, subprocess, cause) => {
 	}
 };
 
-test('Exceptions in subprocess.getEachMessage() disconnect', async t => {
+test('Throwing from subprocess.getEachMessage() disconnects', async t => {
 	const subprocess = execa('ipc-iterate-send.js', {ipc: true});
 
 	const cause = new Error(foobarString);
 	t.is(await t.throwsAsync(iterateAndError(t, subprocess, cause)), cause);
 
 	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
+test('Throwing from subprocess.getEachMessage() awaits the subprocess', async t => {
+	const subprocess = execa('ipc-send-get.js', {ipc: true});
+
+	const cause = new Error(foobarString);
+	t.is(await t.throwsAsync(iterateAndError(t, subprocess, cause)), cause);
+
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes('Error: exchangeMessage() could not complete'));
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
+test('Throwing from exports.getEachMessage() disconnects', async t => {
+	const subprocess = execa('ipc-iterate-throw.js', {ipc: true});
+
+	t.is(await subprocess.getOneMessage(), foobarString);
+	const ipcError = await t.throwsAsync(subprocess.exchangeMessage(foobarString));
+	t.true(ipcError.message.includes('subprocess.exchangeMessage() could not complete'));
+
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes(`Error: ${foobarString}`));
 	t.deepEqual(ipcOutput, [foobarString]);
 });
 
@@ -143,21 +193,6 @@ const testParentError = async (t, buffer) => {
 
 test('"error" event interrupts subprocess.getEachMessage(), buffer false', testParentError, false);
 test('error" event interrupts subprocess.getEachMessage(), buffer true', testParentError, true);
-
-const loopAndBreak = async (t, subprocess) => {
-	// eslint-disable-next-line no-unreachable-loop
-	for await (const message of subprocess.getEachMessage()) {
-		t.is(message, foobarString);
-		break;
-	}
-};
-
-test('Breaking from subprocess.getEachMessage() awaits the subprocess', async t => {
-	const subprocess = execa('ipc-send-fail.js', {ipc: true});
-	const {exitCode, ipcOutput} = await t.throwsAsync(loopAndBreak(t, subprocess));
-	t.is(exitCode, 1);
-	t.deepEqual(ipcOutput, [foobarString]);
-});
 
 const testCleanupListeners = async (t, buffer) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});

@@ -172,12 +172,12 @@ test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
 const testCleanupListeners = async (t, buffer) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 
-	t.is(subprocess.listenerCount('message'), buffer ? 1 : 0);
+	t.is(subprocess.listenerCount('message'), 1);
 	t.is(subprocess.listenerCount('disconnect'), 1);
 
 	const promise = iterateAllMessages(subprocess);
 	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), buffer ? 1 : 2);
+	t.is(subprocess.listenerCount('disconnect'), 1);
 	t.deepEqual(await promise, [foobarString]);
 
 	t.is(subprocess.listenerCount('message'), 0);

@@ -469,7 +469,7 @@ Items are arrays when their corresponding `stdio` option is a [transform in obje
 
 ### result.ipc
 
-_Type_: `unknown[]`
+_Type_: [`Message[]`](ipc.md#message-type)
 
 All the messages [sent by the subprocess](#sendmessagemessage) to the current process.
 

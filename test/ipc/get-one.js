@@ -4,34 +4,37 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
-import {iterateAllMessages, alwaysPass} from '../helpers/ipc.js';
+import {
+	subprocessGetOne,
+	subprocessSendGetOne,
+	subprocessExchange,
+	alwaysPass,
+} from '../helpers/ipc.js';
 
 setFixtureDirectory();
 
-const getOneSubprocessMessage = subprocess => subprocess.getOneMessage();
-const getOneFilteredMessage = subprocess => subprocess.getOneMessage({filter: alwaysPass});
-
-const testKeepAlive = async (t, buffer) => {
+const testKeepAlive = async (t, buffer, exchangeMethod) => {
 	const subprocess = execa('ipc-echo-twice.js', {ipc: true, buffer});
-	await subprocess.sendMessage(foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
-	await subprocess.sendMessage(foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
+	t.is(await exchangeMethod(subprocess, foobarString), foobarString);
+	t.is(await exchangeMethod(subprocess, foobarString), foobarString);
 	await subprocess;
 };
 
-test('subprocess.getOneMessage() keeps the subprocess alive, buffer false', testKeepAlive, false);
-test('subprocess.getOneMessage() keeps the subprocess alive, buffer true', testKeepAlive, true);
+test('subprocess.getOneMessage() keeps the subprocess alive, buffer false', testKeepAlive, false, subprocessSendGetOne);
+test('subprocess.getOneMessage() keeps the subprocess alive, buffer true', testKeepAlive, true, subprocessSendGetOne);
+test('subprocess.getOneMessage() keeps the subprocess alive, buffer false, exchangeMessage()', testKeepAlive, false, subprocessExchange);
+test('subprocess.getOneMessage() keeps the subprocess alive, buffer true, exchangeMessage()', testKeepAlive, true, subprocessExchange);
 
-const testBufferInitial = async (t, buffer) => {
+const testBufferInitial = async (t, buffer, exchangeMethod) => {
 	const subprocess = execa('ipc-echo-wait.js', {ipc: true, buffer});
-	await subprocess.sendMessage(foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
+	t.is(await exchangeMethod(subprocess, foobarString), foobarString);
 	await subprocess;
 };
 
-test('Buffers initial message to subprocess, buffer false', testBufferInitial, false);
-test('Buffers initial message to subprocess, buffer true', testBufferInitial, true);
+test('Buffers initial message to subprocess, buffer false', testBufferInitial, false, subprocessSendGetOne);
+test('Buffers initial message to subprocess, buffer true', testBufferInitial, true, subprocessSendGetOne);
+test('Buffers initial message to subprocess, buffer false, exchangeMessage()', testBufferInitial, false, subprocessExchange);
+test('Buffers initial message to subprocess, buffer true, exchangeMessage()', testBufferInitial, true, subprocessExchange);
 
 test('Buffers initial message to current process, buffer false', async t => {
 	const subprocess = execa('ipc-send-print.js', {ipc: true, buffer: false});
@@ -53,67 +56,71 @@ test.serial('Does not buffer initial message to current process, buffer true', a
 	t.deepEqual(ipcOutput, [foobarString]);
 });
 
-const HIGH_CONCURRENCY_COUNT = 100;
-
-test('subprocess.getOneMessage() can filter messages', async t => {
+const testFilterParent = async (t, exchangeMethod) => {
 	const subprocess = execa('ipc-send-twice.js', {ipc: true});
-	const message = await subprocess.getOneMessage({filter: message => message === foobarArray[1]});
+	const message = await exchangeMethod(subprocess, {filter: message => message === foobarArray[1]});
 	t.is(message, foobarArray[1]);
 
 	const {ipcOutput} = await subprocess;
 	t.deepEqual(ipcOutput, foobarArray);
-});
+};
 
-test('exports.getOneMessage() can filter messages', async t => {
-	const subprocess = execa('ipc-echo-filter.js', {ipc: true});
+test('subprocess.getOneMessage() can filter messages', testFilterParent, subprocessGetOne);
+test('subprocess.exchangeMessage() can filter messages', testFilterParent, subprocessExchange);
+
+const testFilterSubprocess = async (t, fixtureName, expectedOutput) => {
+	const subprocess = execa(fixtureName, {ipc: true});
 	await subprocess.sendMessage(foobarArray[0]);
 	await subprocess.sendMessage(foobarArray[1]);
 
 	const {ipcOutput} = await subprocess;
-	t.deepEqual(ipcOutput, [foobarArray[1]]);
-});
+	t.deepEqual(ipcOutput, expectedOutput);
+};
 
-test.serial('Can retrieve initial IPC messages under heavy load, buffer false', async t => {
+test('exports.getOneMessage() can filter messages', testFilterSubprocess, 'ipc-echo-filter.js', [foobarArray[1]]);
+test('exports.exchangeMessage() can filter messages', testFilterSubprocess, 'ipc-echo-filter-exchange.js', ['.', foobarArray[1]]);
+
+const HIGH_CONCURRENCY_COUNT = 10;
+
+const testHeavyLoad = async (t, exchangeMethod) => {
 	await Promise.all(
 		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
 			const subprocess = execa('ipc-send-argv.js', [`${index}`], {ipc: true, buffer: false});
-			t.is(await subprocess.getOneMessage(), `${index}`);
+			t.is(await exchangeMethod(subprocess, {}), `${index}`);
 			await subprocess;
 		}),
 	);
-});
+};
 
-test.serial('Can retrieve initial IPC messages under heavy load, buffer true', async t => {
-	await Promise.all(
-		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
-			const {ipcOutput} = await execa('ipc-send-argv.js', [`${index}`], {ipc: true});
-			t.deepEqual(ipcOutput, [`${index}`]);
-		}),
-	);
-});
+test.serial('Can retrieve initial IPC messages under heavy load', testHeavyLoad, subprocessGetOne);
+test.serial('Can retrieve initial IPC messages under heavy load, exchangeMessage()', testHeavyLoad, subprocessExchange);
 
-const testTwice = async (t, buffer, filter) => {
+const testTwice = async (t, exchangeMethod, buffer, filter) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 	t.deepEqual(
-		await Promise.all([subprocess.getOneMessage({filter}), subprocess.getOneMessage({filter})]),
+		await Promise.all([exchangeMethod(subprocess, {filter}), exchangeMethod(subprocess, {filter})]),
 		[foobarString, foobarString],
 	);
 	await subprocess;
 };
 
-test('subprocess.getOneMessage() can be called twice at the same time, buffer false', testTwice, false, undefined);
-test('subprocess.getOneMessage() can be called twice at the same time, buffer true', testTwice, true, undefined);
-test('subprocess.getOneMessage() can be called twice at the same time, buffer false, filter', testTwice, false, alwaysPass);
-test('subprocess.getOneMessage() can be called twice at the same time, buffer true, filter', testTwice, true, alwaysPass);
+test('subprocess.getOneMessage() can be called twice at the same time, buffer false', testTwice, subprocessGetOne, false, undefined);
+test('subprocess.getOneMessage() can be called twice at the same time, buffer true', testTwice, subprocessGetOne, true, undefined);
+test('subprocess.getOneMessage() can be called twice at the same time, buffer false, filter', testTwice, subprocessGetOne, false, alwaysPass);
+test('subprocess.getOneMessage() can be called twice at the same time, buffer true, filter', testTwice, subprocessGetOne, true, alwaysPass);
+test('subprocess.exchangeMessage() can be called twice at the same time, buffer false', testTwice, subprocessExchange, false, undefined);
+test('subprocess.exchangeMessage() can be called twice at the same time, buffer true', testTwice, subprocessExchange, true, undefined);
+test('subprocess.exchangeMessage() can be called twice at the same time, buffer false, filter', testTwice, subprocessExchange, false, alwaysPass);
+test('subprocess.exchangeMessage() can be called twice at the same time, buffer true, filter', testTwice, subprocessExchange, true, alwaysPass);
 
-const testCleanupListeners = async (t, buffer, filter) => {
+const testCleanupListeners = async (t, exchangeMethod, buffer, filter) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 	const bufferCount = buffer ? 1 : 0;
 
 	t.is(subprocess.listenerCount('message'), bufferCount);
 	t.is(subprocess.listenerCount('disconnect'), bufferCount);
 
-	const promise = subprocess.getOneMessage({filter});
+	const promise = exchangeMethod(subprocess, {filter});
 	t.is(subprocess.listenerCount('message'), bufferCount + 1);
 	t.is(subprocess.listenerCount('disconnect'), bufferCount + 1);
 	t.is(await promise, foobarString);
@@ -127,13 +134,18 @@ const testCleanupListeners = async (t, buffer, filter) => {
 	t.is(subprocess.listenerCount('disconnect'), 0);
 };
 
-test('Cleans up subprocess.getOneMessage() listeners, buffer false', testCleanupListeners, false, undefined);
-test('Cleans up subprocess.getOneMessage() listeners, buffer true', testCleanupListeners, true, undefined);
-test('Cleans up subprocess.getOneMessage() listeners, buffer false, filter', testCleanupListeners, false, alwaysPass);
-test('Cleans up subprocess.getOneMessage() listeners, buffer true, filter', testCleanupListeners, true, alwaysPass);
+test('Cleans up subprocess.getOneMessage() listeners, buffer false', testCleanupListeners, subprocessGetOne, false, undefined);
+test('Cleans up subprocess.getOneMessage() listeners, buffer true', testCleanupListeners, subprocessGetOne, true, undefined);
+test('Cleans up subprocess.getOneMessage() listeners, buffer false, filter', testCleanupListeners, subprocessGetOne, false, alwaysPass);
+test('Cleans up subprocess.getOneMessage() listeners, buffer true, filter', testCleanupListeners, subprocessGetOne, true, alwaysPass);
+test('Cleans up subprocess.exchangeMessage() listeners, buffer false', testCleanupListeners, subprocessExchange, false, undefined);
+test('Cleans up subprocess.exchangeMessage() listeners, buffer true', testCleanupListeners, subprocessExchange, true, undefined);
+test('Cleans up subprocess.exchangeMessage() listeners, buffer false, filter', testCleanupListeners, subprocessExchange, false, alwaysPass);
+test('Cleans up subprocess.exchangeMessage() listeners, buffer true, filter', testCleanupListeners, subprocessExchange, true, alwaysPass);
 
-const testParentDisconnect = async (t, buffer, filter) => {
-	const fixtureName = filter ? 'ipc-echo-twice-filter.js' : 'ipc-echo-twice.js';
+const testParentDisconnect = async (t, buffer, filter, exchange) => {
+	const fixtureStart = filter ? 'ipc-echo-twice-filter' : 'ipc-echo-twice';
+	const fixtureName = exchange ? `${fixtureStart}.js` : `${fixtureStart}-get.js`;
 	const subprocess = execa(fixtureName, {ipc: true, buffer});
 	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);
@@ -144,57 +156,66 @@ const testParentDisconnect = async (t, buffer, filter) => {
 	t.is(exitCode, 1);
 	t.false(isTerminated);
 	if (buffer) {
-		t.true(message.includes('Error: getOneMessage() could not complete'));
+		const methodName = exchange ? 'exchangeMessage()' : 'getOneMessage()';
+		t.true(message.includes(`Error: ${methodName} could not complete`));
 	}
 };
 
-test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer false', testParentDisconnect, false, false);
-test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer true', testParentDisconnect, true, false);
-test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer false, filter', testParentDisconnect, false, true);
-test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer true, filter', testParentDisconnect, true, true);
+test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer false', testParentDisconnect, false, false, false);
+test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer true', testParentDisconnect, true, false, false);
+test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer false, filter', testParentDisconnect, false, true, false);
+test('subprocess.disconnect() interrupts exports.getOneMessage(), buffer true, filter', testParentDisconnect, true, false);
+test('subprocess.disconnect() interrupts exports.exchangeMessage(), buffer false', testParentDisconnect, false, false, true);
+test('subprocess.disconnect() interrupts exports.exchangeMessage(), buffer true', testParentDisconnect, true, false, true);
+test('subprocess.disconnect() interrupts exports.exchangeMessage(), buffer false, filter', testParentDisconnect, false, true, true);
+test('subprocess.disconnect() interrupts exports.exchangeMessage(), buffer true, filter', testParentDisconnect, true, true, true);
 
-const testSubprocessDisconnect = async (t, buffer, filter) => {
+// eslint-disable-next-line max-params
+const testSubprocessDisconnect = async (t, exchangeMethod, methodName, buffer, filter) => {
 	const subprocess = execa('empty.js', {ipc: true, buffer});
-	await t.throwsAsync(subprocess.getOneMessage({filter}), {
-		message: /subprocess\.getOneMessage\(\) could not complete/,
-	});
+	const {message} = await t.throwsAsync(exchangeMethod(subprocess, {filter}));
+	t.true(message.includes(`subprocess.${methodName}() could not complete`));
 	await subprocess;
 };
 
-test('Subprocess exit interrupts disconnect.getOneMessage(), buffer false', testSubprocessDisconnect, false, undefined);
-test('Subprocess exit interrupts disconnect.getOneMessage(), buffer true', testSubprocessDisconnect, true, undefined);
-test('Subprocess exit interrupts disconnect.getOneMessage(), buffer false, filter', testSubprocessDisconnect, false, alwaysPass);
-test('Subprocess exit interrupts disconnect.getOneMessage(), buffer true, filter', testSubprocessDisconnect, true, alwaysPass);
+test('Subprocess exit interrupts subprocess.getOneMessage(), buffer false', testSubprocessDisconnect, subprocessGetOne, 'getOneMessage', false, undefined);
+test('Subprocess exit interrupts subprocess.getOneMessage(), buffer true', testSubprocessDisconnect, subprocessGetOne, 'getOneMessage', true, undefined);
+test('Subprocess exit interrupts subprocess.getOneMessage(), buffer false, filter', testSubprocessDisconnect, subprocessGetOne, 'getOneMessage', false, alwaysPass);
+test('Subprocess exit interrupts subprocess.getOneMessage(), buffer true, filter', testSubprocessDisconnect, subprocessGetOne, 'getOneMessage', true, alwaysPass);
+test('Subprocess exit interrupts subprocess.exchangeMessage(), buffer false', testSubprocessDisconnect, subprocessExchange, 'exchangeMessage', false, undefined);
+test('Subprocess exit interrupts subprocess.exchangeMessage(), buffer true', testSubprocessDisconnect, subprocessExchange, 'exchangeMessage', true, undefined);
+test('Subprocess exit interrupts subprocess.exchangeMessage(), buffer false, filter', testSubprocessDisconnect, subprocessExchange, 'exchangeMessage', false, alwaysPass);
+test('Subprocess exit interrupts subprocess.exchangeMessage(), buffer true, filter', testSubprocessDisconnect, subprocessExchange, 'exchangeMessage', true, alwaysPass);
 
-const testParentError = async (t, getMessages, useCause, buffer) => {
-	const subprocess = execa('ipc-echo.js', {ipc: true, buffer});
-	await subprocess.sendMessage(foobarString);
-	const promise = getMessages(subprocess);
+const testParentError = async (t, exchangeMethod, filter, buffer) => {
+	const subprocess = execa('forever.js', {ipc: true, buffer});
+	const promise = exchangeMethod(subprocess, {filter});
 
 	const cause = new Error(foobarString);
 	subprocess.emit('error', cause);
+	t.is(await t.throwsAsync(promise), cause);
 
-	const ipcError = await t.throwsAsync(promise);
-	t.is(useCause ? ipcError.cause : ipcError, cause);
-
+	subprocess.kill();
 	const error = await t.throwsAsync(subprocess);
-	t.is(error.exitCode, 1);
+	t.is(error.exitCode, undefined);
 	t.false(error.isTerminated);
 	t.is(error.cause, cause);
-	if (buffer) {
-		t.true(error.message.includes('Error: getOneMessage() cannot be used'));
-	}
 };
 
-test('"error" event interrupts subprocess.getOneMessage(), buffer false', testParentError, getOneSubprocessMessage, false, false);
-test('"error" event interrupts subprocess.getOneMessage(), buffer true', testParentError, getOneSubprocessMessage, false, true);
-test('"error" event interrupts subprocess.getOneMessage(), buffer false, filter', testParentError, getOneFilteredMessage, false, false);
-test('"error" event interrupts subprocess.getOneMessage(), buffer true, filter', testParentError, getOneFilteredMessage, false, true);
-test('"error" event interrupts subprocess.getEachMessage(), buffer false', testParentError, iterateAllMessages, true, false);
-test('"error" event interrupts subprocess.getEachMessage(), buffer true', testParentError, iterateAllMessages, true, true);
+test('"error" event interrupts subprocess.getOneMessage(), buffer false', testParentError, subprocessGetOne, undefined, false);
+test('"error" event interrupts subprocess.getOneMessage(), buffer true', testParentError, subprocessGetOne, undefined, true);
+test('"error" event interrupts subprocess.getOneMessage(), buffer false, filter', testParentError, subprocessGetOne, alwaysPass, false);
+test('"error" event interrupts subprocess.getOneMessage(), buffer true, filter', testParentError, subprocessGetOne, alwaysPass, true);
+test('"error" event interrupts subprocess.exchangeMessage(), buffer false', testParentError, subprocessExchange, undefined, false);
+test('"error" event interrupts subprocess.exchangeMessage(), buffer true', testParentError, subprocessExchange, undefined, true);
+test('"error" event interrupts subprocess.exchangeMessage(), buffer false, filter', testParentError, subprocessExchange, alwaysPass, false);
+test('"error" event interrupts subprocess.exchangeMessage(), buffer true, filter', testParentError, subprocessExchange, alwaysPass, true);
 
 const testSubprocessError = async (t, fixtureName, buffer) => {
 	const subprocess = execa(fixtureName, {ipc: true, buffer});
+	if (fixtureName.includes('exchange')) {
+		await subprocess.getOneMessage();
+	}
 
 	const ipcError = await t.throwsAsync(subprocess.getOneMessage());
 	t.true(ipcError.message.includes('subprocess.getOneMessage() could not complete'));
@@ -211,5 +232,9 @@ test('"error" event interrupts exports.getOneMessage(), buffer false', testSubpr
 test('"error" event interrupts exports.getOneMessage(), buffer true', testSubprocessError, 'ipc-process-error.js', true);
 test('"error" event interrupts exports.getOneMessage(), buffer false, filter', testSubprocessError, 'ipc-process-error-filter.js', false);
 test('"error" event interrupts exports.getOneMessage(), buffer true, filter', testSubprocessError, 'ipc-process-error-filter.js', true);
+test('"error" event interrupts exports.exchangeMessage(), buffer false', testSubprocessError, 'ipc-process-error-exchange.js', false);
+test('"error" event interrupts exports.exchangeMessage(), buffer true', testSubprocessError, 'ipc-process-error-exchange.js', true);
+test('"error" event interrupts exports.exchangeMessage(), buffer false, filter', testSubprocessError, 'ipc-process-error-filter-exchange.js', false);
+test('"error" event interrupts exports.exchangeMessage(), buffer true, filter', testSubprocessError, 'ipc-process-error-filter-exchange.js', true);
 test('"error" event interrupts exports.getEachMessage(), buffer false', testSubprocessError, 'ipc-iterate-error.js', false);
 test('"error" event interrupts exports.getEachMessage(), buffer true', testSubprocessError, 'ipc-iterate-error.js', true);

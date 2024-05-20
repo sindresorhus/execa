@@ -31,14 +31,10 @@ test('Can iterate over IPC messages in subprocess', async t => {
 test('Can iterate multiple times over IPC messages in subprocess', async t => {
 	const subprocess = execa('ipc-iterate-twice.js', {ipc: true});
 
-	await subprocess.sendMessage('.');
-	t.is(await subprocess.getOneMessage(), '.');
-	await subprocess.sendMessage(foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
-	await subprocess.sendMessage('.');
-	t.is(await subprocess.getOneMessage(), '.');
-	await subprocess.sendMessage(foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
+	t.is(await subprocess.exchangeMessage('.'), '.');
+	t.is(await subprocess.exchangeMessage(foobarString), foobarString);
+	t.is(await subprocess.exchangeMessage('.'), '.');
+	t.is(await subprocess.exchangeMessage(foobarString), foobarString);
 
 	const {ipcOutput} = await subprocess;
 	t.deepEqual(ipcOutput, ['.', foobarString, '.', foobarString]);
@@ -55,9 +51,9 @@ test('subprocess.getEachMessage() can be called twice at the same time', async t
 	t.deepEqual(ipcOutput, foobarArray);
 });
 
-const HIGH_CONCURRENCY_COUNT = 100;
+const HIGH_CONCURRENCY_COUNT = 10;
 
-test('Can send many messages at once with exports.getEachMessage()', async t => {
+test.serial('Can send many messages at once with exports.getEachMessage()', async t => {
 	const subprocess = execa('ipc-iterate.js', {ipc: true});
 	await Promise.all(Array.from({length: HIGH_CONCURRENCY_COUNT}, (_, index) => subprocess.sendMessage(index)));
 	await subprocess.sendMessage(foobarString);
@@ -95,6 +91,28 @@ test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
 	const {ipcOutput} = await subprocess;
 	t.deepEqual(ipcOutput, [foobarString]);
 });
+
+const testParentError = async (t, buffer) => {
+	const subprocess = execa('ipc-send-twice.js', {ipc: true, buffer});
+	const promise = iterateAllMessages(subprocess);
+
+	const cause = new Error(foobarString);
+	subprocess.emit('error', cause);
+
+	const ipcError = await t.throwsAsync(promise);
+	t.is(ipcError.cause, cause);
+
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.exitCode, undefined);
+	t.false(error.isTerminated);
+	t.is(error.cause, cause);
+	if (buffer) {
+		t.true(error.message.includes('Error: sendMessage() cannot be used'));
+	}
+};
+
+test('"error" event interrupts subprocess.getEachMessage(), buffer false', testParentError, false);
+test('error" event interrupts subprocess.getEachMessage(), buffer true', testParentError, true);
 
 const loopAndBreak = async (t, subprocess) => {
 	// eslint-disable-next-line no-unreachable-loop

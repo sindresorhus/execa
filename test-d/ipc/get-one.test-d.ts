@@ -14,6 +14,8 @@ expectType<Promise<Message>>(getOneMessage());
 
 expectError(await subprocess.getOneMessage(''));
 expectError(await getOneMessage(''));
+expectError(await subprocess.getOneMessage({}, ''));
+expectError(await getOneMessage({}, ''));
 
 await execa('test', {ipcInput: ''}).getOneMessage();
 await execa('test', {ipcInput: '' as Message}).getOneMessage();

@@ -278,7 +278,7 @@ test('maxBuffer works with result.ipcOutput', async t => {
 	t.true(isMaxBuffer);
 	t.is(shortMessage, 'Command\'s IPC output was larger than 1 messages: ipc-send-twice-wait.js\nmaxBuffer exceeded');
 	t.true(message.endsWith(`\n\n${foobarString}`));
-	t.true(stderr.includes('Error: getOneMessage() could not complete'));
+	t.true(stderr.includes('Error: exchangeMessage() could not complete'));
 	t.deepEqual(ipcOutput, [foobarString]);
 });
 

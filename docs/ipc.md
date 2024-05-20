@@ -12,7 +12,7 @@ When the [`ipc`](api.md#optionsipc) option is `true`, the current process and su
 
 The `ipc` option defaults to `true` when using [`execaNode()`](node.md#run-nodejs-files) or the [`node`](node.md#run-nodejs-files) option.
 
-The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessage). The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage) and [`getOneMessage()`](api.md#getonemessage) instead.
+The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions). The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage) and [`getOneMessage()`](api.md#getonemessagegetonemessageoptions) instead.
 
 ```js
 // parent.js
@@ -33,7 +33,7 @@ console.log(await getOneMessage()); // 'Hello from parent'
 
 ## Listening to messages
 
-[`subprocess.getOneMessage()`](api.md#subprocessgetonemessage) and [`getOneMessage()`](api.md#getonemessage) read a single message. To listen to multiple messages in a row, [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) and [`getEachMessage()`](api.md#geteachmessage) should be used instead.
+[`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions) and [`getOneMessage()`](api.md#getonemessagegetonemessageoptions) read a single message. To listen to multiple messages in a row, [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) and [`getEachMessage()`](api.md#geteachmessage) should be used instead.
 
 [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) waits for the subprocess to end (even when using [`break`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/break) or [`return`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return)). It throws if the subprocess [fails](api.md#result). This means you do not need to `await` the subprocess' [promise](execution.md#result).
 
@@ -67,9 +67,29 @@ for await (const message of getEachMessage()) {
 }
 ```
 
+## Filter messages
+
+```js
+import {getOneMessage} from 'execa';
+
+const startMessage = await getOneMessage({
+	filter: message => message.type === 'start',
+});
+```
+
+```js
+import {getEachMessage} from 'execa';
+
+for await (const message of getEachMessage()) {
+	if (message.type === 'start') {
+		// ...
+	}
+}
+```
+
 ## Retrieve all messages
 
-The [`result.ipcOutput`](api.md#resultipcoutput) array contains all the messages sent by the subprocess. In many situations, this is simpler than using [`subprocess.getOneMessage()`](api.md#subprocessgetonemessage) and [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage).
+The [`result.ipcOutput`](api.md#resultipcoutput) array contains all the messages sent by the subprocess. In many situations, this is simpler than using [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage).
 
 ```js
 // main.js
@@ -118,6 +138,8 @@ By default, messages are serialized using [`structuredClone()`](https://develope
 To limit messages to JSON instead, the [`serialization`](api.md#optionsserialization) option can be set to `'json'`.
 
 ```js
+import {execaNode} from 'execa';
+
 const subprocess = execaNode({serialization: 'json'})`child.js`;
 ```
 

@@ -6,17 +6,18 @@ import {
 	type Options,
 } from '../../index.js';
 
-expectType<Promise<void>>(sendMessage(''));
-
-expectError(await sendMessage());
-expectError(await sendMessage(undefined));
-expectError(await sendMessage(0n));
-expectError(await sendMessage(Symbol('test')));
-
 const subprocess = execa('test', {ipc: true});
 expectType<void>(await subprocess.sendMessage(''));
+expectType<Promise<void>>(sendMessage(''));
 
 expectError(await subprocess.sendMessage());
+expectError(await sendMessage());
+expectError(await subprocess.sendMessage(undefined));
+expectError(await sendMessage(undefined));
+expectError(await subprocess.sendMessage(0n));
+expectError(await sendMessage(0n));
+expectError(await subprocess.sendMessage(Symbol('test')));
+expectError(await sendMessage(Symbol('test')));
 
 await execa('test', {ipcInput: ''}).sendMessage('');
 await execa('test', {ipcInput: '' as Message}).sendMessage('');

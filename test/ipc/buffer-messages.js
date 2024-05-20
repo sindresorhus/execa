@@ -56,3 +56,14 @@ test('Sets empty error.ipcOutput, sync', t => {
 	const {ipcOutput} = t.throws(() => execaSync('fail.js'));
 	t.deepEqual(ipcOutput, []);
 });
+
+test('"error" event interrupts result.ipcOutput', async t => {
+	const subprocess = execa('ipc-echo-twice.js', {ipcInput: foobarString});
+	t.is(await subprocess.getOneMessage(), foobarString);
+
+	const cause = new Error(foobarString);
+	subprocess.emit('error', cause);
+	const error = await t.throwsAsync(subprocess);
+	t.is(error.cause, cause);
+	t.deepEqual(error.ipcOutput, [foobarString]);
+});

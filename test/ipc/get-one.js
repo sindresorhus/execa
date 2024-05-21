@@ -10,6 +10,7 @@ import {
 	subprocessExchange,
 	alwaysPass,
 } from '../helpers/ipc.js';
+import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
@@ -80,11 +81,9 @@ const testFilterSubprocess = async (t, fixtureName, expectedOutput) => {
 test('exports.getOneMessage() can filter messages', testFilterSubprocess, 'ipc-echo-filter.js', [foobarArray[1]]);
 test('exports.exchangeMessage() can filter messages', testFilterSubprocess, 'ipc-echo-filter-exchange.js', ['.', foobarArray[1]]);
 
-const HIGH_CONCURRENCY_COUNT = 10;
-
 const testHeavyLoad = async (t, exchangeMethod) => {
 	await Promise.all(
-		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
+		Array.from({length: PARALLEL_COUNT}, async (_, index) => {
 			const subprocess = execa('ipc-send-argv.js', [`${index}`], {ipc: true, buffer: false});
 			t.is(await exchangeMethod(subprocess, {}), `${index}`);
 			await subprocess;

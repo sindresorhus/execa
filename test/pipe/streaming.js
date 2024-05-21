@@ -6,6 +6,7 @@ import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {assertMaxListeners} from '../helpers/listeners.js';
 import {fullReadableStdio} from '../helpers/stdio.js';
+import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
@@ -41,12 +42,10 @@ test('Can pipe three sources to same destination', async t => {
 	t.is(await thirdPromise, await destination);
 });
 
-const subprocessesCount = 100;
-
 test.serial('Can pipe many sources to same destination', async t => {
 	const checkMaxListeners = assertMaxListeners(t);
 
-	const expectedResults = Array.from({length: subprocessesCount}, (_, index) => `${index}`).sort();
+	const expectedResults = Array.from({length: PARALLEL_COUNT}, (_, index) => `${index}`).sort();
 	const sources = expectedResults.map(expectedResult => execa('noop.js', [expectedResult]));
 	const destination = execa('stdin.js');
 	const pipePromises = sources.map(source => source.pipe(destination));
@@ -64,7 +63,7 @@ test.serial('Can pipe same source to many destinations', async t => {
 	const checkMaxListeners = assertMaxListeners(t);
 
 	const source = execa('noop-fd.js', ['1', foobarString]);
-	const expectedResults = Array.from({length: subprocessesCount}, (_, index) => `${index}`);
+	const expectedResults = Array.from({length: PARALLEL_COUNT}, (_, index) => `${index}`);
 	const destinations = expectedResults.map(expectedResult => execa('noop-stdin-double.js', [expectedResult]));
 	const pipePromises = destinations.map(destination => source.pipe(destination));
 

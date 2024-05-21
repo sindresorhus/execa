@@ -3,6 +3,7 @@ import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {subprocessSendGetOne, subprocessExchange} from '../helpers/ipc.js';
+import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
@@ -15,11 +16,9 @@ const testExchange = async (t, exchangeMethod) => {
 test('Can exchange IPC messages', testExchange, subprocessSendGetOne);
 test('Can exchange IPC messages, exchangeMessage()', testExchange, subprocessExchange);
 
-const HIGH_CONCURRENCY_COUNT = 10;
-
 const testHeavyLoad = async (t, exchangeMethod) => {
 	await Promise.all(
-		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
+		Array.from({length: PARALLEL_COUNT}, async (_, index) => {
 			const subprocess = execa('ipc-echo.js', {ipc: true});
 			t.is(await exchangeMethod(subprocess, index), index);
 			await subprocess;

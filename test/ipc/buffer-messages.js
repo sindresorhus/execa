@@ -2,6 +2,7 @@ import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
+import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
@@ -57,11 +58,9 @@ test('Sets empty error.ipcOutput, sync', t => {
 	t.deepEqual(ipcOutput, []);
 });
 
-const HIGH_CONCURRENCY_COUNT = 10;
-
 test.serial('Can retrieve initial IPC messages under heavy load', async t => {
 	await Promise.all(
-		Array.from({length: HIGH_CONCURRENCY_COUNT}, async (_, index) => {
+		Array.from({length: PARALLEL_COUNT}, async (_, index) => {
 			const {ipcOutput} = await execa('ipc-send-argv.js', [`${index}`], {ipc: true});
 			t.deepEqual(ipcOutput, [`${index}`]);
 		}),

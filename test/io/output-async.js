@@ -7,6 +7,7 @@ import {STANDARD_STREAMS} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {assertMaxListeners} from '../helpers/listeners.js';
+import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
@@ -39,11 +40,9 @@ const testListenersCleanup = async (t, isMultiple) => {
 test.serial('process.std* listeners are cleaned up on success with a single input', testListenersCleanup, false);
 test.serial('process.std* listeners are cleaned up on success with multiple inputs', testListenersCleanup, true);
 
-const subprocessesCount = 100;
-
 test.serial('Can spawn many subprocesses in parallel', async t => {
 	const results = await Promise.all(
-		Array.from({length: subprocessesCount}, () => execa('noop.js', [foobarString])),
+		Array.from({length: PARALLEL_COUNT}, () => execa('noop.js', [foobarString])),
 	);
 	t.true(results.every(({stdout}) => stdout === foobarString));
 });
@@ -57,7 +56,7 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 
 	try {
 		const results = await Promise.all(
-			Array.from({length: subprocessesCount}, () => execa('empty.js', getComplexStdio(isMultiple))),
+			Array.from({length: PARALLEL_COUNT}, () => execa('empty.js', getComplexStdio(isMultiple))),
 		);
 		t.true(results.every(({exitCode}) => exitCode === 0));
 	} finally {

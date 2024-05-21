@@ -51,6 +51,37 @@ test('subprocess.getEachMessage() can be called twice at the same time', async t
 	t.deepEqual(ipcOutput, foobarArray);
 });
 
+test('break in subprocess.getEachMessage() disconnects', async t => {
+	const subprocess = execa('ipc-iterate-send.js', {ipc: true});
+
+	// eslint-disable-next-line no-unreachable-loop
+	for await (const message of subprocess.getEachMessage()) {
+		t.is(message, foobarString);
+		break;
+	}
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
+const iterateAndError = async (t, subprocess, cause) => {
+	// eslint-disable-next-line no-unreachable-loop
+	for await (const message of subprocess.getEachMessage()) {
+		t.is(message, foobarString);
+		throw cause;
+	}
+};
+
+test('Exceptions in subprocess.getEachMessage() disconnect', async t => {
+	const subprocess = execa('ipc-iterate-send.js', {ipc: true});
+
+	const cause = new Error(foobarString);
+	t.is(await t.throwsAsync(iterateAndError(t, subprocess, cause)), cause);
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
 const HIGH_CONCURRENCY_COUNT = 10;
 
 test.serial('Can send many messages at once with exports.getEachMessage()', async t => {

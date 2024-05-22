@@ -32,13 +32,14 @@ test('Can iterate over IPC messages in subprocess', async t => {
 test('Can iterate multiple times over IPC messages in subprocess', async t => {
 	const subprocess = execa('ipc-iterate-twice.js', {ipc: true});
 
-	t.is(await subprocess.exchangeMessage('.'), '.');
+	t.is(await subprocess.getOneMessage(), foobarString);
+	t.is(await subprocess.exchangeMessage('.'), '0.');
 	t.is(await subprocess.exchangeMessage(foobarString), foobarString);
-	t.is(await subprocess.exchangeMessage('.'), '.');
-	t.is(await subprocess.exchangeMessage(foobarString), foobarString);
+	t.is(await subprocess.exchangeMessage('.'), '1.');
+	await subprocess.sendMessage(foobarString);
 
 	const {ipcOutput} = await subprocess;
-	t.deepEqual(ipcOutput, ['.', foobarString, '.', foobarString]);
+	t.deepEqual(ipcOutput, [foobarString, '0.', foobarString, '1.']);
 });
 
 test('subprocess.getEachMessage() can be called twice at the same time', async t => {
@@ -174,36 +175,47 @@ test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
 
 const testParentError = async (t, buffer) => {
 	const subprocess = execa('ipc-send-twice.js', {ipc: true, buffer});
-	const promise = iterateAllMessages(subprocess);
 
+	const promise = iterateAllMessages(subprocess);
 	const cause = new Error(foobarString);
 	subprocess.emit('error', cause);
 
-	const ipcError = await t.throwsAsync(promise);
-	t.is(ipcError.cause, cause);
-
 	const error = await t.throwsAsync(subprocess);
+	t.is(error, await t.throwsAsync(promise));
 	t.is(error.exitCode, undefined);
 	t.false(error.isTerminated);
 	t.is(error.cause, cause);
 	if (buffer) {
-		t.true(error.message.includes('Error: sendMessage() cannot be used'));
+		t.deepEqual(error.ipcOutput, foobarArray);
 	}
 };
 
-test('"error" event interrupts subprocess.getEachMessage(), buffer false', testParentError, false);
-test('error" event interrupts subprocess.getEachMessage(), buffer true', testParentError, true);
+test('"error" event does not interrupt subprocess.getEachMessage(), buffer false', testParentError, false);
+test('"error" event does not interrupt subprocess.getEachMessage(), buffer true', testParentError, true);
+
+const testSubprocessError = async (t, filter, buffer) => {
+	const subprocess = execa('ipc-iterate-error.js', [`${filter}`], {ipc: true, buffer});
+	t.is(await subprocess.exchangeMessage('.'), '.');
+	await subprocess.sendMessage(foobarString);
+
+	const {ipcOutput} = await subprocess;
+	if (buffer) {
+		t.deepEqual(ipcOutput, ['.']);
+	}
+};
+
+test('"error" event does not interrupt exports.getEachMessage(), buffer false', testSubprocessError, 'ipc-iterate-error.js', false);
+test('"error" event does not interrupt exports.getEachMessage(), buffer true', testSubprocessError, 'ipc-iterate-error.js', true);
 
 const testCleanupListeners = async (t, buffer) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
-	const bufferCount = buffer ? 1 : 0;
 
-	t.is(subprocess.listenerCount('message'), bufferCount);
-	t.is(subprocess.listenerCount('disconnect'), bufferCount);
+	t.is(subprocess.listenerCount('message'), buffer ? 1 : 0);
+	t.is(subprocess.listenerCount('disconnect'), buffer ? 3 : 0);
 
 	const promise = iterateAllMessages(subprocess);
-	t.is(subprocess.listenerCount('message'), bufferCount + 1);
-	t.is(subprocess.listenerCount('disconnect'), bufferCount + 1);
+	t.is(subprocess.listenerCount('message'), 1);
+	t.is(subprocess.listenerCount('disconnect'), 3);
 	t.deepEqual(await promise, [foobarString]);
 
 	t.is(subprocess.listenerCount('message'), 0);

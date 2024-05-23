@@ -2,4 +2,5 @@
 import {sendMessage, getOneMessage} from '../../index.js';
 import {foobarArray} from '../helpers/input.js';
 
-await sendMessage(await getOneMessage(({filter: message => message === foobarArray[1]})));
+const message = await getOneMessage({filter: message => message === foobarArray[1]});
+await sendMessage(message);

@@ -187,7 +187,8 @@ await pipeline(
 import {execaNode} from 'execa';
 
 const subprocess = execaNode`child.js`;
-const message = await subprocess.exchangeMessage('Hello from parent');
+await subprocess.sendMessage('Hello from parent');
+const message = await subprocess.getOneMessage();
 console.log(message); // 'Hello from child'
 ```
 

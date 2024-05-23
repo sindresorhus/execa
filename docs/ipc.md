@@ -12,16 +12,17 @@ When the [`ipc`](api.md#optionsipc) option is `true`, the current process and su
 
 The `ipc` option defaults to `true` when using [`execaNode()`](node.md#run-nodejs-files) or the [`node`](node.md#run-nodejs-files) option.
 
-The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions). [`subprocess.exchangeMessage(message)`](api.md#subprocessexchangemessagemessage-getonemessageoptions) combines both: first it sends a message, then it returns the response.
+The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions).
 
-The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage), [`getOneMessage()`](api.md#getonemessagegetonemessageoptions) and [`exchangeMessage(message)`](api.md#exchangemessagemessage-getonemessageoptions) instead. Those are the same methods, but imported directly from the `'execa'` module.
+The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage) and [`getOneMessage()`](api.md#getonemessagegetonemessageoptions). Those are the same methods, but imported directly from the `'execa'` module.
 
 ```js
 // parent.js
 import {execaNode} from 'execa';
 
 const subprocess = execaNode`child.js`;
-const message = await subprocess.exchangeMessage('Hello from parent');
+await subprocess.sendMessage('Hello from parent');
+const message = await subprocess.getOneMessage();
 console.log(message); // 'Hello from child'
 ```
 
@@ -36,7 +37,7 @@ await sendMessage(newMessage);
 
 ## Listening to messages
 
-The methods described above read a single message. On the other hand, [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) and [`getEachMessage()`](api.md#geteachmessage) return an [async iterable](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols). This should be [preferred](#prefer-geteachmessage-over-multiple-getonemessage) when listening to multiple messages.
+The methods described above read a single message. On the other hand, [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) and [`getEachMessage()`](api.md#geteachmessage) return an [async iterable](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols). This should be preferred when listening to multiple messages.
 
 [`subprocess.getEachMessage()`](api.md#subprocessgeteachmessage) waits for the subprocess to end (even when using [`break`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/break) or [`return`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return)). It throws if the subprocess [fails](api.md#result). This means you do not need to `await` the subprocess' [promise](execution.md#result).
 
@@ -148,94 +149,23 @@ const subprocess = execaNode({serialization: 'json'})`child.js`;
 
 ## Messages order
 
-The messages are always received in the same order they were sent.
+The messages are always received in the same order they were sent. Even when sent all at once.
+
+```js
+import {sendMessage} from 'execa';
+
+await Promise.all([
+	sendMessage('first'),
+	sendMessage('second'),
+	sendMessage('third'),
+]);
+```
 
 ## Debugging
 
 When the [`verbose`](api.md#optionsverbose) option is `'full'`, the IPC messages sent by the subprocess to the current process are [printed on the console](debugging.md#full-mode).
 
 Also, when the subprocess [failed](errors.md#subprocess-failure), [`error.ipcOutput`](api.md) contains all the messages sent by the subprocess. Those are also shown at the end of the [error message](errors.md#error-message).
-
-## Best practices
-
-### Call `getOneMessage()`/`getEachMessage()` early
-
-If a process sends a message but the other process is not listening/receiving it, that message is silently ignored.
-
-This means if [`getOneMessage()`](api.md#getonemessagegetonemessageoptions) or [`getEachMessage()`](api.md#geteachmessage) is called too late (i.e. after the other process called [`sendMessage(message)`](api.md#sendmessagemessage)), it will miss the message. Also, it will keep waiting for the missed message, which might either make it hang forever, or throw when the other process exits.
-
-Therefore, listening to messages should always be done early, before the other process sends any message.
-
-### First `getOneMessage()` call
-
-On the other hand, the _very first_ call to [`getOneMessage()`](api.md#getonemessagegetonemessageoptions), [`getEachMessage()`](api.md#geteachmessage) or [`exchangeMessage(message)`](api.md#exchangemessagemessage-getonemessageoptions) never misses any message. That's because, when a subprocess is just starting, any message sent to it is buffered.
-
-This allows the current process to call [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage) right after spawning the subprocess, even if it is still initializing.
-
-```js
-// parent.js
-import {execaNode} from 'execa';
-
-const subprocess = execaNode`child.js`;
-await subprocess.sendMessage('Hello');
-await subprocess.sendMessage('world');
-```
-
-```js
-// child.js
-import {getOneMessage} from 'execa';
-
-// This always retrieves the first message.
-// Even if `sendMessage()` was called while the subprocess was still initializing.
-const helloMessage = await getOneMessage();
-
-// But this might miss the second message, and hang forever.
-// That's because it is not the first call to `getOneMessage()`.
-const worldMessage = await getOneMessage();
-```
-
-### Prefer `getEachMessage()` over multiple `getOneMessage()`
-
-If you call [`getOneMessage()`](api.md#getonemessagegetonemessageoptions) multiple times (like the example above) and the other process sends any message in between those calls, that message [will be missed](#call-getonemessagegeteachmessage-early).
-
-This can be prevented by using [`getEachMessage()`](api.md#geteachmessage) instead.
-
-### Prefer `exchangeMessage(message)` over `sendMessage(message)` + `getOneMessage()`
-
-When _first_ sending a message, _then_ receiving a response, the following code should be avoided.
-
-```js
-import {sendMessage, getOneMessage} from 'execa';
-
-await sendMessage(message);
-
-// The other process might respond between those two calls
-
-const response = await getOneMessage();
-```
-
-Indeed, when [`getOneMessage()`](api.md#getonemessagegetonemessageoptions) is called, the other process might have already sent a response. This only happens when the other process is very fast. However, when it does happen, `getOneMessage()` will miss that response.
-
-Using [`exchangeMessage(message)`](api.md#exchangemessagemessage-getonemessageoptions) prevents this race condition.
-
-```js
-import {exchangeMessage} from 'execa';
-
-const response = await exchangeMessage(message);
-```
-
-However please note that, when doing the reverse (_first_ receiving a message, _then_ sending a response), the following code is correct.
-
-```js
-import {sendMessage, getOneMessage} from 'execa';
-
-const message = await getOneMessage();
-
-// The other process is just waiting for a response between those two calls.
-// So there is no race condition here.
-
-await sendMessage('response');
-```
 
 <hr>
 

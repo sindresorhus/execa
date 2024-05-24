@@ -26,21 +26,23 @@ test('Cannot use the "ipcInput" option with execaSync()', t => {
 });
 
 test('Invalid "ipcInput" option v8 format', t => {
-	const {message} = t.throws(() => {
+	const {message, cause} = t.throws(() => {
 		execa('empty.js', {ipcInput() {}});
 	});
-	t.is(message, 'The `ipcInput` option is not serializable with a structured clone.\nipcInput() {} could not be cloned.');
+	t.is(message, 'The `ipcInput` option is not serializable with a structured clone.');
+	t.is(cause.message, 'ipcInput() {} could not be cloned.');
 });
 
 test('Invalid "ipcInput" option JSON format', t => {
-	const {message} = t.throws(() => {
+	const {message, cause} = t.throws(() => {
 		execa('empty.js', {ipcInput: 0n, serialization: 'json'});
 	});
-	t.is(message, 'The `ipcInput` option is not serializable with JSON.\nDo not know how to serialize a BigInt');
+	t.is(message, 'The `ipcInput` option is not serializable with JSON.');
+	t.is(cause.message, 'Do not know how to serialize a BigInt');
 });
 
 test('Handles "ipcInput" option during sending', async t => {
-	await t.throwsAsync(execa('empty.js', {ipcInput: 0n}), {
-		message: /The "message" argument must be one of type string/,
-	});
+	const {message, cause} = await t.throwsAsync(execa('empty.js', {ipcInput: 0n}));
+	t.true(message.includes('subprocess.sendMessage()\'s argument type is invalid: the message cannot be serialized: 0.'));
+	t.true(cause.cause.message.includes('The "message" argument must be one of type string'));
 });

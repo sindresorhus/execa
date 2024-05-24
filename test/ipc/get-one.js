@@ -57,6 +57,35 @@ test('exports.getOneMessage() can filter messages', async t => {
 	t.deepEqual(ipcOutput, [foobarArray[1]]);
 });
 
+test('Throwing from subprocess.getOneMessage() filter disconnects', async t => {
+	const subprocess = execa('ipc-send-get.js', {ipc: true});
+	const error = new Error(foobarString);
+	t.is(await t.throwsAsync(subprocess.getOneMessage({
+		filter() {
+			throw error;
+		},
+	})), error);
+
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes('Error: getOneMessage() could not complete'));
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
+test('Throwing from exports.getOneMessage() filter disconnects', async t => {
+	const subprocess = execa('ipc-get-filter-throw.js', {ipc: true, ipcInput: 0});
+	await t.throwsAsync(subprocess.getOneMessage(), {
+		message: /subprocess.getOneMessage\(\) could not complete/,
+	});
+
+	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(message.includes(`Error: ${foobarString}`));
+	t.deepEqual(ipcOutput, []);
+});
+
 test.serial('Can retrieve initial IPC messages under heavy load', async t => {
 	await Promise.all(
 		Array.from({length: PARALLEL_COUNT}, async (_, index) => {

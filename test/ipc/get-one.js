@@ -1,5 +1,3 @@
-import {once} from 'node:events';
-import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -8,36 +6,6 @@ import {alwaysPass} from '../helpers/ipc.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
-
-const testBufferInitial = async (t, buffer) => {
-	const subprocess = execa('ipc-echo-wait.js', {ipc: true, buffer});
-	await subprocess.sendMessage(foobarString);
-	t.is(await subprocess.getOneMessage(), foobarString);
-	await subprocess;
-};
-
-test('Buffers initial message to subprocess, buffer false', testBufferInitial, false);
-test('Buffers initial message to subprocess, buffer true', testBufferInitial, true);
-
-test('Buffers initial message to current process, buffer false', async t => {
-	const subprocess = execa('ipc-send-print.js', {ipc: true, buffer: false});
-	const [chunk] = await once(subprocess.stdout, 'data');
-	t.is(chunk.toString(), '.');
-	t.is(await subprocess.getOneMessage(), foobarString);
-	await subprocess.sendMessage('.');
-	await subprocess;
-});
-
-test.serial('Does not buffer initial message to current process, buffer true', async t => {
-	const subprocess = execa('ipc-send-print.js', {ipc: true});
-	const [chunk] = await once(subprocess.stdout, 'data');
-	t.is(chunk.toString(), '.');
-	await setTimeout(1e3);
-	t.is(await Promise.race([setTimeout(0), subprocess.getOneMessage()]), undefined);
-	await subprocess.sendMessage('.');
-	const {ipcOutput} = await subprocess;
-	t.deepEqual(ipcOutput, [foobarString]);
-});
 
 test('subprocess.getOneMessage() can filter messages', async t => {
 	const subprocess = execa('ipc-send-twice.js', {ipc: true});
@@ -113,12 +81,12 @@ test('subprocess.getOneMessage() can be called twice at the same time, buffer tr
 const testCleanupListeners = async (t, buffer, filter) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 
-	t.is(subprocess.listenerCount('message'), buffer ? 1 : 0);
+	t.is(subprocess.listenerCount('message'), 1);
 	t.is(subprocess.listenerCount('disconnect'), 1);
 
 	const promise = subprocess.getOneMessage({filter});
 	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), buffer ? 1 : 2);
+	t.is(subprocess.listenerCount('disconnect'), 1);
 
 	t.is(await promise, foobarString);
 	await subprocess;

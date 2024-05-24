@@ -22,6 +22,13 @@ const testResultNoBuffer = async (t, options) => {
 test('Sets empty result.ipcOutput if buffer is false', testResultNoBuffer, {buffer: false});
 test('Sets empty result.ipcOutput if buffer is false, fd-specific buffer', testResultNoBuffer, {buffer: {ipc: false}});
 
+test('Can use IPC methods when buffer is false', async t => {
+	const subprocess = execa('ipc-send.js', {ipc: true, buffer: false});
+	t.is(await subprocess.getOneMessage(), foobarString);
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, []);
+});
+
 test('Sets empty result.ipcOutput if ipc is false', async t => {
 	const {ipcOutput} = await execa('empty.js');
 	t.deepEqual(ipcOutput, []);

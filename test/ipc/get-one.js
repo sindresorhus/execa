@@ -114,11 +114,11 @@ const testCleanupListeners = async (t, buffer, filter) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 
 	t.is(subprocess.listenerCount('message'), buffer ? 1 : 0);
-	t.is(subprocess.listenerCount('disconnect'), buffer ? 1 : 0);
+	t.is(subprocess.listenerCount('disconnect'), 1);
 
 	const promise = subprocess.getOneMessage({filter});
 	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), 1);
+	t.is(subprocess.listenerCount('disconnect'), buffer ? 1 : 2);
 
 	t.is(await promise, foobarString);
 	await subprocess;

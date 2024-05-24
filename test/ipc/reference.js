@@ -100,3 +100,22 @@ test('process.once("disconnect") does not keep the subprocess alive, after getOn
 	t.deepEqual(ipcOutput, ['.']);
 	t.is(stdout, '.');
 });
+
+test('Can call subprocess.disconnect() right away', async t => {
+	const subprocess = execa('ipc-send.js', {ipc: true});
+	subprocess.disconnect();
+	t.is(subprocess.channel, null);
+
+	await t.throwsAsync(subprocess.getOneMessage(), {
+		message: /subprocess.getOneMessage\(\) could not complete/,
+	});
+	await t.throwsAsync(subprocess, {
+		message: /Error: sendMessage\(\) cannot be used/,
+	});
+});
+
+test('Can call process.disconnect() right away', async t => {
+	const {stdout, stderr} = await t.throwsAsync(execa('ipc-disconnect-get.js', {ipc: true}));
+	t.is(stdout, 'null');
+	t.true(stderr.includes('Error: getOneMessage() cannot be used'));
+});

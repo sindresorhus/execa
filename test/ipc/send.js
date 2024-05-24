@@ -62,8 +62,9 @@ test('Disconnects IPC on exports.sendMessage() error', async t => {
 	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);
 
-	const {message} = await t.throwsAsync(subprocess.sendMessage(0n));
-	t.true(message.includes('subprocess.sendMessage()\'s argument type is invalid'));
+	const {message, cause} = await t.throwsAsync(subprocess.sendMessage(0n));
+	t.is(message, 'subprocess.sendMessage()\'s argument type is invalid: the message cannot be serialized: 0.');
+	t.true(cause.message.includes('The "message" argument must be one of type string'));
 
 	const {exitCode, isTerminated, stderr} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 1);
@@ -79,7 +80,8 @@ test('Disconnects IPC on subprocess.sendMessage() error', async t => {
 	const {exitCode, isTerminated, stderr} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 1);
 	t.false(isTerminated);
-	t.true(stderr.includes('sendMessage()\'s argument type is invalid'));
+	t.true(stderr.includes('Error: sendMessage()\'s argument type is invalid: the message cannot be serialized: 0.'));
+	t.true(stderr.includes('The "message" argument must be one of type string'));
 });
 
 // EPIPE happens based on timing conditions, so we must repeat it until it happens

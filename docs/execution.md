@@ -66,6 +66,15 @@ await execa`npm run build
 	--fail-fast`;
 ```
 
+### Shells
+
+By default, any shell-specific syntax has no special meaning and does not need to be escaped. This prevents [shell injections](https://en.wikipedia.org/wiki/Code_injection#Shell_injection). [More info.](escaping.md#shells)
+
+```js
+// This prints `$TASK_NAME`, not `build`
+await execa({env: {TASK_NAME: 'build'}})`echo $TASK_NAME`;
+```
+
 ## Options
 
 [Options](api.md#options) can be passed to influence the execution's behavior.

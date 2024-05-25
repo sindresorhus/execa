@@ -65,6 +65,11 @@ await execa`${parseCommandString('npm run task\\ with\\ space')}`;
 - Globbing: `*`, `**`
 - Expressions: `$?`, `~`
 
+```js
+// This prints `$TASK_NAME`, not `build`
+await execa({env: {TASK_NAME: 'build'}})`echo $TASK_NAME`;
+```
+
 If you do set the `shell` option, arguments will not be automatically escaped anymore. Instead, they will be concatenated as a single string using spaces as delimiters.
 
 ```js

@@ -439,7 +439,7 @@ Converts the subprocess to a duplex stream.
 
 ## Result
 
-_TypeScript:_ [`Result`](typescript.md) or [`SyncResult`](typescript.md\
+_TypeScript:_ [`Result`](typescript.md) or [`SyncResult`](typescript.md)\
 _Type:_ `object`
 
 [Result](execution.md#result) of a subprocess successful execution.

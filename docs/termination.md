@@ -68,7 +68,7 @@ If the current process exits, the subprocess is automatically [terminated](#defa
 
 ### SIGTERM
 
-[`SIGTERM`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGTERM) is the default signal. It terminates the subprocess.
+[`SIGTERM`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGTERM) is the default signal. It terminates the subprocess. On Unix, it can [be handled](#handling-signals) to run some cleanup logic.
 
 ```js
 const subprocess = execa`npm run build`;
@@ -77,18 +77,17 @@ subprocess.kill();
 subprocess.kill('SIGTERM');
 ```
 
-The subprocess can [handle that signal](https://nodejs.org/api/process.html#process_signal_events) to run some cleanup logic.
+### SIGINT
+
+[`SIGINT`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGINT) terminates the process. Its [handler](#handling-signals) is triggered on `CTRL-C`.
 
 ```js
-process.on('SIGTERM', () => {
-	cleanup();
-	process.exit(1);
-})
+subprocess.kill('SIGINT');
 ```
 
 ### SIGKILL
 
-[`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL) is like [`SIGTERM`](#sigterm) except it forcefully terminates the subprocess, i.e. it does not allow it to handle the signal.
+[`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL) forcefully terminates the subprocess. It [cannot be handled](#handling-signals).
 
 ```js
 subprocess.kill('SIGKILL');
@@ -96,7 +95,7 @@ subprocess.kill('SIGKILL');
 
 ### SIGQUIT
 
-[`SIGQUIT`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGQUIT) is like [`SIGTERM`](#sigterm) except it creates a [core dump](https://en.wikipedia.org/wiki/Core_dump).
+[`SIGQUIT`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGQUIT) terminates the process. On Unix, it creates a [core dump](https://en.wikipedia.org/wiki/Core_dump).
 
 ```js
 subprocess.kill('SIGQUIT');
@@ -114,6 +113,19 @@ The [`killSignal`](api.md#optionskillsignal) option sets the default signal used
 const subprocess = execa({killSignal: 'SIGKILL'})`npm run build`;
 subprocess.kill(); // Forceful termination
 ```
+
+### Handling signals
+
+On Unix, most signals (not [`SIGKILL`](#sigkill)) can be intercepted to perform a graceful exit.
+
+```js
+process.on('SIGTERM', () => {
+	cleanup();
+	process.exit(1);
+})
+```
+
+Unfortunately this [usually does not work](https://github.com/ehmicky/cross-platform-node-guide/blob/main/docs/6_networking_ipc/signals.md#cross-platform-signals) on Windows. The only signal that is somewhat cross-platform is [`SIGINT`](#sigint): on Windows, its handler is triggered when the user types `CTRL-C` in the terminal. However `subprocess.kill('SIGINT')` is only handled on Unix.
 
 ### Signal name and description
 

@@ -35,3 +35,7 @@ expectType<undefined>(execa('test', {ipc: false}).getEachMessage);
 expectType<undefined>(execa('test', {ipcInput: undefined}).getEachMessage);
 expectType<undefined>(execa('test', {ipc: false, ipcInput: ''}).getEachMessage);
 
+subprocess.getEachMessage({reference: true} as const);
+getEachMessage({reference: true} as const);
+expectError(subprocess.getEachMessage({reference: 'true'} as const));
+expectError(getEachMessage({reference: 'true'} as const));

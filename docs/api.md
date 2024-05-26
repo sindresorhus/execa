@@ -140,8 +140,18 @@ Ignore any `message` that returns `false`.
 
 [More info.](ipc.md#filter-messages)
 
-### getEachMessage()
+#### getOneMessageOptions.reference
 
+_Type_: `boolean`\
+_Default_: `true`
+
+Keep the subprocess alive while `getOneMessage()` is waiting.
+
+[More info.](ipc.md#keeping-the-subprocess-alive)
+
+### getEachMessage(getEachMessageOptions?)
+
+`getEachMessageOptions`: [`GetEachMessageOptions`](#geteachmessageoptions)\
 _Returns_: [`AsyncIterable<Message>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
 Iterate over each `message` from the parent process.
@@ -149,6 +159,19 @@ Iterate over each `message` from the parent process.
 This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#message-type) of `message` depends on the [`serialization`](#optionsserialization) option.
 
 [More info.](ipc.md#listening-to-messages)
+
+#### getEachMessageOptions
+
+_Type_: `object`
+
+#### getEachMessageOptions.reference
+
+_Type_: `boolean`\
+_Default_: `true`
+
+Keep the subprocess alive while `getEachMessage()` is waiting.
+
+[More info.](ipc.md#keeping-the-subprocess-alive)
 
 ## Return value
 
@@ -298,8 +321,9 @@ This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#me
 
 [More info.](ipc.md#exchanging-messages)
 
-### subprocess.getEachMessage()
+### subprocess.getEachMessage(getEachMessageOptions?)
 
+`getEachMessageOptions`: [`GetEachMessageOptions`](#geteachmessageoptions)\
 _Returns_: [`AsyncIterable<Message>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
 
 Iterate over each `message` from the subprocess.

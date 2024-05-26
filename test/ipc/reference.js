@@ -6,13 +6,21 @@ import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
-const testKeepAliveSubprocess = async (t, fixtureName) => {
+const testReference = async (t, fixtureName) => {
 	const {timedOut} = await t.throwsAsync(execa(fixtureName, {ipc: true, timeout: 1e3}));
 	t.true(timedOut);
 };
 
-test('exports.getOneMessage() keeps the subprocess alive', testKeepAliveSubprocess, 'ipc-echo.js');
-test('exports.getEachMessage() keeps the subprocess alive', testKeepAliveSubprocess, 'ipc-iterate.js');
+test('exports.getOneMessage() keeps the subprocess alive', testReference, 'ipc-get-ref.js');
+test('exports.getEachMessage() keeps the subprocess alive', testReference, 'ipc-iterate-ref.js');
+
+const testUnreference = async (t, fixtureName) => {
+	const {ipcOutput} = await execa(fixtureName, {ipc: true});
+	t.deepEqual(ipcOutput, []);
+};
+
+test('exports.getOneMessage() does not keep the subprocess alive, reference false', testUnreference, 'ipc-get-unref.js');
+test('exports.getEachMessage() does not keep the subprocess alive, reference false', testUnreference, 'ipc-iterate-unref.js');
 
 test('exports.sendMessage() keeps the subprocess alive', async t => {
 	const {ipcOutput} = await execa('ipc-send-repeat.js', [`${PARALLEL_COUNT}`], {ipc: true});

@@ -18,41 +18,52 @@ test('cancelSignal option cannot be null', testValidCancelSignal, null);
 test('cancelSignal option cannot be a symbol', testValidCancelSignal, Symbol('test'));
 
 test('result.isCanceled is false when abort isn\'t called (success)', async t => {
-	const {isCanceled} = await execa('noop.js');
+	const {isCanceled, isGracefullyCanceled} = await execa('noop.js');
 	t.false(isCanceled);
+	t.false(isGracefullyCanceled);
 });
 
 test('result.isCanceled is false when abort isn\'t called (failure)', async t => {
-	const {isCanceled} = await t.throwsAsync(execa('fail.js'));
+	const {isCanceled, isGracefullyCanceled} = await t.throwsAsync(execa('fail.js'));
 	t.false(isCanceled);
+	t.false(isGracefullyCanceled);
 });
 
 test('result.isCanceled is false when abort isn\'t called in sync mode (success)', t => {
-	const {isCanceled} = execaSync('noop.js');
+	const {isCanceled, isGracefullyCanceled} = execaSync('noop.js');
 	t.false(isCanceled);
+	t.false(isGracefullyCanceled);
 });
 
 test('result.isCanceled is false when abort isn\'t called in sync mode (failure)', t => {
-	const {isCanceled} = t.throws(() => {
+	const {isCanceled, isGracefullyCanceled} = t.throws(() => {
 		execaSync('fail.js');
 	});
 	t.false(isCanceled);
+	t.false(isGracefullyCanceled);
 });
 
-test('error.isCanceled is true when abort is used', async t => {
+const testCancelSuccess = async (t, options) => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
+	const subprocess = execa('noop.js', {cancelSignal: abortController.signal, ...options});
 	abortController.abort();
-	const {isCanceled} = await t.throwsAsync(subprocess);
+	const {isCanceled, isGracefullyCanceled} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
-});
+	t.false(isGracefullyCanceled);
+};
+
+test('error.isCanceled is true when abort is used', testCancelSuccess, {});
+test('gracefulCancel can be false with cancelSignal', testCancelSuccess, {gracefulCancel: false});
+test('ipc can be false with cancelSignal', testCancelSuccess, {ipc: false});
+test('serialization can be "json" with cancelSignal', testCancelSuccess, {ipc: true, serialization: 'json'});
 
 test('error.isCanceled is false when kill method is used', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
 	subprocess.kill();
-	const {isCanceled} = await t.throwsAsync(subprocess);
+	const {isCanceled, isGracefullyCanceled} = await t.throwsAsync(subprocess);
 	t.false(isCanceled);
+	t.false(isGracefullyCanceled);
 });
 
 test('calling abort is considered a signal termination', async t => {
@@ -60,16 +71,18 @@ test('calling abort is considered a signal termination', async t => {
 	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
 	await once(subprocess, 'spawn');
 	abortController.abort();
-	const {isCanceled, isTerminated, signal} = await t.throwsAsync(subprocess);
+	const {isCanceled, isGracefullyCanceled, isTerminated, signal} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
+	t.false(isGracefullyCanceled);
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');
 });
 
 test('cancelSignal can already be aborted', async t => {
 	const cancelSignal = AbortSignal.abort();
-	const {isCanceled, isTerminated, signal} = await t.throwsAsync(execa('forever.js', {cancelSignal}));
+	const {isCanceled, isGracefullyCanceled, isTerminated, signal} = await t.throwsAsync(execa('forever.js', {cancelSignal}));
 	t.true(isCanceled);
+	t.false(isGracefullyCanceled);
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');
 	t.deepEqual(getEventListeners(cancelSignal, 'abort'), []);
@@ -83,8 +96,9 @@ test('calling abort does not emit the "error" event', async t => {
 		error = errorArgument;
 	});
 	abortController.abort();
-	const {isCanceled} = await t.throwsAsync(subprocess);
+	const {isCanceled, isGracefullyCanceled} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
+	t.false(isGracefullyCanceled);
 	t.is(error, undefined);
 });
 
@@ -93,8 +107,9 @@ test('calling abort cleans up listeners on cancelSignal, called', async t => {
 	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
 	t.is(getEventListeners(abortController.signal, 'abort').length, 1);
 	abortController.abort();
-	const {isCanceled} = await t.throwsAsync(subprocess);
+	const {isCanceled, isGracefullyCanceled} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
+	t.false(isGracefullyCanceled);
 	t.is(getEventListeners(abortController.signal, 'abort').length, 0);
 });
 
@@ -110,8 +125,9 @@ test('calling abort cleans up listeners on cancelSignal, already aborted', async
 	const cancelSignal = AbortSignal.abort();
 	const subprocess = execa('noop.js', {cancelSignal});
 	t.is(getEventListeners(cancelSignal, 'abort').length, 0);
-	const {isCanceled} = await t.throwsAsync(subprocess);
+	const {isCanceled, isGracefullyCanceled} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
+	t.false(isGracefullyCanceled);
 	t.is(getEventListeners(cancelSignal, 'abort').length, 0);
 });
 
@@ -164,16 +180,18 @@ test('calling abort twice should show the same behaviour as calling it once', as
 	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
 	abortController.abort();
 	abortController.abort();
-	const {isCanceled} = await t.throwsAsync(subprocess);
+	const {isCanceled, isGracefullyCanceled} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
+	t.false(isGracefullyCanceled);
 });
 
 test('calling abort on a successfully completed subprocess does not make result.isCanceled true', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
-	const result = await subprocess;
+	const {isCanceled, isGracefullyCanceled} = await subprocess;
 	abortController.abort();
-	t.false(result.isCanceled);
+	t.false(isCanceled);
+	t.false(isGracefullyCanceled);
 });
 
 test('Throws when using the former "signal" option name', t => {

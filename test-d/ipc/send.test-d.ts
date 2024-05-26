@@ -21,15 +21,20 @@ expectError(await sendMessage(Symbol('test')));
 
 await execa('test', {ipcInput: ''}).sendMessage('');
 await execa('test', {ipcInput: '' as Message}).sendMessage('');
+await execa('test', {gracefulCancel: true, cancelSignal: AbortSignal.abort()}).sendMessage('');
 await execa('test', {} as Options).sendMessage?.('');
 await execa('test', {ipc: true as boolean}).sendMessage?.('');
 await execa('test', {ipcInput: '' as '' | undefined}).sendMessage?.('');
+await execa('test', {gracefulCancel: true as boolean | undefined, cancelSignal: AbortSignal.abort()}).sendMessage?.('');
 
 expectType<undefined>(execa('test').sendMessage);
 expectType<undefined>(execa('test', {}).sendMessage);
 expectType<undefined>(execa('test', {ipc: false}).sendMessage);
 expectType<undefined>(execa('test', {ipcInput: undefined}).sendMessage);
+expectType<undefined>(execa('test', {gracefulCancel: undefined}).sendMessage);
+expectType<undefined>(execa('test', {gracefulCancel: false}).sendMessage);
 expectType<undefined>(execa('test', {ipc: false, ipcInput: ''}).sendMessage);
+expectType<undefined>(execa('test', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()}).sendMessage);
 
 await subprocess.sendMessage('', {} as const);
 await sendMessage('', {} as const);

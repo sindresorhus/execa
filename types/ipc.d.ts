@@ -91,7 +91,14 @@ This requires the `ipc` option to be `true`. The type of `message` depends on th
 */
 export function getEachMessage(getEachMessageOptions?: GetEachMessageOptions): AsyncIterableIterator<Message>;
 
-// IPC methods in the current process
+/**
+Retrieves the [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) shared by the `cancelSignal` option.
+
+This can only be called inside a subprocess. This requires the `gracefulCancel` option to be `true`.
+*/
+export function getCancelSignal(): Promise<AbortSignal>;
+
+// IPC methods in the subprocess
 export type IpcMethods<
 	IpcEnabled extends boolean,
 	Serialization extends Options['serialization'],
@@ -127,19 +134,23 @@ export type IpcMethods<
 		getEachMessage: undefined;
 	};
 
-// Whether IPC is enabled, based on the `ipc` and `ipcInput` options
+// Whether IPC is enabled, based on the `ipc`, `ipcInput` and `gracefulCancel` options
 export type HasIpc<OptionsType extends Options> = HasIpcOption<
 OptionsType['ipc'],
-'ipcInput' extends keyof OptionsType ? OptionsType['ipcInput'] : undefined
+'ipcInput' extends keyof OptionsType ? OptionsType['ipcInput'] : undefined,
+'gracefulCancel' extends keyof OptionsType ? OptionsType['gracefulCancel'] : undefined
 >;
 
 type HasIpcOption<
 	IpcOption extends Options['ipc'],
 	IpcInputOption extends Options['ipcInput'],
+	GracefulCancelOption extends Options['gracefulCancel'],
 > = IpcOption extends true
 	? true
 	: IpcOption extends false
 		? false
 		: IpcInputOption extends undefined
-			? false
+			? GracefulCancelOption extends true
+				? true
+				: false
 			: true;

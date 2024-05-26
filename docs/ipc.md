@@ -96,7 +96,7 @@ for await (const message of getEachMessage()) {
 
 When a message is sent by one process, the other process must receive it using [`getOneMessage()`](#exchanging-messages), [`getEachMessage()`](#listening-to-messages), or automatically with [`result.ipcOutput`](api.md#resultipcoutput). If not, that message is silently discarded.
 
-If the [`strict: true`](api.md#sendmessageoptionsstrict) option is passed to [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage-sendmessageoptions) or [`sendMessage(message)`](api.md#sendmessagemessage-sendmessageoptions), an exception is thrown instead. This helps identifying subtle race conditions like the following example.
+If the [`strict: true`](api.md#sendmessageoptionsstrict) option is passed to [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage-sendmessageoptions) or [`sendMessage(message)`](api.md#sendmessagemessage-sendmessageoptions), an error is thrown instead. This helps identifying subtle race conditions like the following example.
 
 ```js
 // main.js

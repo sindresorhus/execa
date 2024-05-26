@@ -27,6 +27,26 @@ export type Message<
 > = Serialization extends 'json' ? JsonMessage : AdvancedMessage;
 
 /**
+Options to `sendMessage()` and `subprocess.sendMessage()`
+*/
+type SendMessageOptions = {
+	/**
+	Throw when the other process is not receiving or listening to messages.
+
+	@default false
+	*/
+	readonly strict?: boolean;
+};
+
+// IPC methods in subprocess
+/**
+Send a `message` to the parent process.
+
+This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
+*/
+export function sendMessage(message: Message, sendMessageOptions?: SendMessageOptions): Promise<void>;
+
+/**
 Options to `getOneMessage()` and `subprocess.getOneMessage()`
 */
 type GetOneMessageOptions<
@@ -37,14 +57,6 @@ type GetOneMessageOptions<
 	*/
 	readonly filter?: (message: Message<Serialization>) => boolean;
 };
-
-// IPC methods in subprocess
-/**
-Send a `message` to the parent process.
-
-This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
-*/
-export function sendMessage(message: Message): Promise<void>;
 
 /**
 Receive a single `message` from the parent process.
@@ -71,7 +83,7 @@ export type IpcMethods<
 
 		This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
 		*/
-		sendMessage(message: Message<Serialization>): Promise<void>;
+		sendMessage(message: Message<Serialization>, sendMessageOptions?: SendMessageOptions): Promise<void>;
 
 		/**
 		Receive a single `message` from the subprocess.

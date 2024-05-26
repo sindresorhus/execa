@@ -46,3 +46,8 @@ test('Handles "ipcInput" option during sending', async t => {
 	t.true(message.includes('subprocess.sendMessage()\'s argument type is invalid: the message cannot be serialized: 0.'));
 	t.true(cause.cause.message.includes('The "message" argument must be one of type string'));
 });
+
+test('Can use "ipcInput" option even if the subprocess is not listening to messages', async t => {
+	const {ipcOutput} = await execa('empty.js', {ipcInput: foobarString});
+	t.deepEqual(ipcOutput, []);
+});

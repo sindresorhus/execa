@@ -8,7 +8,7 @@ import {foobarString} from '../helpers/input.js';
 setFixtureDirectory();
 
 const testBufferInitial = async (t, buffer) => {
-	const subprocess = execa('ipc-echo-wait.js', {ipc: true, buffer, ipcInput: foobarString});
+	const subprocess = execa('ipc-echo-wait.js', {buffer, ipcInput: foobarString});
 	t.is(await subprocess.getOneMessage(), foobarString);
 
 	const {ipcOutput} = await subprocess;
@@ -17,6 +17,33 @@ const testBufferInitial = async (t, buffer) => {
 
 test('Buffers initial message to subprocess, buffer false', testBufferInitial, false);
 test('Buffers initial message to subprocess, buffer true', testBufferInitial, true);
+
+const testBufferInitialSend = async (t, buffer) => {
+	const subprocess = execa('ipc-send-echo-wait.js', {buffer, ipcInput: foobarString});
+	t.is(await subprocess.getOneMessage(), '.');
+	t.is(await subprocess.getOneMessage(), foobarString);
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, buffer ? ['.', foobarString] : []);
+};
+
+test('sendMessage() does not empty the initial message buffering, buffer false', testBufferInitialSend, false);
+test('sendMessage() does not empty the initial message buffering, buffer true', testBufferInitialSend, true);
+
+const testBufferInitialStrict = async (t, buffer) => {
+	const subprocess = execa('ipc-send-echo-strict.js', {buffer, ipcInput: foobarString});
+	t.is(await subprocess.getOneMessage(), '.');
+	await setTimeout(1e3);
+	const promise = subprocess.getOneMessage();
+	await subprocess.sendMessage('..');
+	t.is(await promise, '..');
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, buffer ? ['.', '..'] : []);
+};
+
+test('sendMessage() with "strict" empties the initial message buffering, buffer false', testBufferInitialStrict, false);
+test('sendMessage() with "strict" empties the initial message buffering, buffer true', testBufferInitialStrict, true);
 
 const testNoBufferInitial = async (t, buffer) => {
 	const subprocess = execa('ipc-send-print.js', {ipc: true, buffer});
@@ -34,7 +61,7 @@ test.serial('Does not buffer initial message to current process, buffer false', 
 test.serial('Does not buffer initial message to current process, buffer true', testNoBufferInitial, true);
 
 const testReplay = async (t, buffer) => {
-	const subprocess = execa('ipc-replay.js', {ipc: true, buffer, ipcInput: foobarString});
+	const subprocess = execa('ipc-replay.js', {buffer, ipcInput: foobarString});
 	t.is(await subprocess.getOneMessage(), foobarString);
 	await subprocess.sendMessage('.');
 	await setTimeout(2e3);

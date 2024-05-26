@@ -36,7 +36,7 @@ test('Multiple parallel subprocess.sendMessage() + subprocess.getEachMessage(), 
 test('Multiple parallel subprocess.sendMessage() + subprocess.getEachMessage(), buffer true', testSendHoldParent, subprocessGetFirst, true, undefined);
 
 const testSendHoldSubprocess = async (t, filter, isGetEach) => {
-	const {ipcOutput} = await execa('ipc-iterate-back.js', [`${filter}`, `${isGetEach}`], {ipc: true, ipcInput: 0});
+	const {ipcOutput} = await execa('ipc-iterate-back.js', [`${filter}`, `${isGetEach}`], {ipcInput: 0});
 	const expectedOutput = [...Array.from({length: PARALLEL_COUNT + 1}, (_, index) => index), '.'];
 	t.deepEqual(ipcOutput, expectedOutput);
 };
@@ -78,7 +78,7 @@ test('Multiple serial subprocess.sendMessage() + subprocess.getEachMessage(), bu
 test('Multiple serial subprocess.sendMessage() + subprocess.getEachMessage(), buffer true', testSendHoldParentSerial, subprocessGetFirst, true, undefined);
 
 const testSendHoldSubprocessSerial = async (t, filter, isGetEach) => {
-	const {ipcOutput} = await execa('ipc-iterate-back-serial.js', [`${filter}`, `${isGetEach}`], {ipc: true, ipcInput: 0, stdout: 'inherit'});
+	const {ipcOutput} = await execa('ipc-iterate-back-serial.js', [`${filter}`, `${isGetEach}`], {ipcInput: 0});
 	const expectedOutput = [...Array.from({length: PARALLEL_COUNT + 2}, (_, index) => index), '.'];
 	t.deepEqual(ipcOutput, expectedOutput);
 };

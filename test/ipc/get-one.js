@@ -42,7 +42,7 @@ test('Throwing from subprocess.getOneMessage() filter disconnects', async t => {
 });
 
 test('Throwing from exports.getOneMessage() filter disconnects', async t => {
-	const subprocess = execa('ipc-get-filter-throw.js', {ipc: true, ipcInput: 0});
+	const subprocess = execa('ipc-get-filter-throw.js', {ipcInput: 0});
 	await t.throwsAsync(subprocess.getOneMessage(), {
 		message: /subprocess.getOneMessage\(\) could not complete/,
 	});

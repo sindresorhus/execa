@@ -92,9 +92,10 @@ Split a `command` string into an array. For example, `'npm run build'` returns `
 
 [More info.](escaping.md#user-defined-input)
 
-### sendMessage(message)
+### sendMessage(message, sendMessageOptions?)
 
 `message`: [`Message`](ipc.md#message-type)\
+`sendMessageOptions`: [`SendMessageOptions`](#sendmessageoptions)\
 _Returns_: `Promise<void>`
 
 Send a `message` to the parent process.
@@ -103,9 +104,22 @@ This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#me
 
 [More info.](ipc.md#exchanging-messages)
 
+#### sendMessageOptions
+
+_Type_: `object`
+
+#### sendMessageOptions.strict
+
+_Type_: `boolean`\
+_Default_: `false`
+
+Throw when the other process is not receiving or listening to messages.
+
+[More info.](ipc.md#ensure-messages-are-received)
+
 ### getOneMessage(getOneMessageOptions?)
 
-_getOneMessageOptions_: [`GetOneMessageOptions`](#getonemessageoptions)\
+`getOneMessageOptions`: [`GetOneMessageOptions`](#getonemessageoptions)\
 _Returns_: [`Promise<Message>`](ipc.md#message-type)
 
 Receive a single `message` from the parent process.
@@ -261,9 +275,10 @@ This is `undefined` if the subprocess failed to spawn.
 
 [More info.](termination.md#inter-process-termination)
 
-### subprocess.sendMessage(message)
+### subprocess.sendMessage(message, sendMessageOptions)
 
 `message`: [`Message`](ipc.md#message-type)\
+`sendMessageOptions`: [`SendMessageOptions`](#sendmessageoptions)\
 _Returns_: `Promise<void>`
 
 Send a `message` to the subprocess.
@@ -274,7 +289,7 @@ This requires the [`ipc`](#optionsipc) option to be `true`. The [type](ipc.md#me
 
 ### subprocess.getOneMessage(getOneMessageOptions?)
 
-_getOneMessageOptions_: [`GetOneMessageOptions`](#getonemessageoptions)\
+`getOneMessageOptions`: [`GetOneMessageOptions`](#getonemessageoptions)\
 _Returns_: [`Promise<Message>`](ipc.md#message-type)
 
 Receive a single `message` from the subprocess.
@@ -485,7 +500,7 @@ Items are arrays when their corresponding `stdio` option is a [transform in obje
 
 _Type_: [`Message[]`](ipc.md#message-type)
 
-All the messages [sent by the subprocess](#sendmessagemessage) to the current process.
+All the messages [sent by the subprocess](#sendmessagemessage-sendmessageoptions) to the current process.
 
 This is empty unless the [`ipc`](#optionsipc) option is `true`. Also, this is empty if the [`buffer`](#optionsbuffer) option is `false`.
 
@@ -914,7 +929,7 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 _Type:_ `boolean`\
 _Default:_ `true` if either the [`node`](#optionsnode) option or the [`ipcInput`](#optionsipcinput) is set, `false` otherwise
 
-Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
+Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage-sendmessageoptions), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
 
 The subprocess must be a Node.js file.
 

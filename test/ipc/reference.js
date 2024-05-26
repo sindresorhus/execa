@@ -27,7 +27,7 @@ test('process.send() keeps the subprocess alive', async t => {
 });
 
 test('process.send() keeps the subprocess alive, after getOneMessage()', async t => {
-	const {ipcOutput, stdout} = await execa('ipc-process-send-get.js', {ipc: true, ipcInput: 0});
+	const {ipcOutput, stdout} = await execa('ipc-process-send-get.js', {ipcInput: 0});
 	t.deepEqual(ipcOutput, [foobarString]);
 	t.is(stdout, '.');
 });

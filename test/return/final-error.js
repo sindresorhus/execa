@@ -99,12 +99,13 @@ test('error.cause is set on error event', async t => {
 test('error.cause is set if error.isCanceled', async t => {
 	const controller = new AbortController();
 	const subprocess = execa('forever.js', {cancelSignal: controller.signal});
-	const error = new Error('test');
-	controller.abort(error);
-	const {isCanceled, isTerminated, cause} = await t.throwsAsync(subprocess);
-	t.true(isCanceled);
-	t.false(isTerminated);
-	t.is(cause.cause, error);
+	const cause = new Error('test');
+	controller.abort(cause);
+	const error = await t.throwsAsync(subprocess);
+	t.true(error.isCanceled);
+	t.true(error.isTerminated);
+	t.is(error.signal, 'SIGTERM');
+	t.is(error.cause, cause);
 });
 
 test('error.cause is not set if error.isTerminated with .kill(error)', async t => {

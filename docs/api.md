@@ -113,7 +113,7 @@ _Type_: `object`
 _Type_: `boolean`\
 _Default_: `false`
 
-If `true`, throws when the other process is not receiving or listening to messages.
+Throw when the other process is not receiving or listening to messages.
 
 [More info.](ipc.md#ensure-messages-are-received)
 

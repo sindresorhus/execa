@@ -279,6 +279,8 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
 
+	When this happens, `error.isForcefullyTerminated` becomes `true`.
+
 	@default 5000
 	*/
 	readonly forceKillAfterDelay?: Unless<IsSync, number | false>;

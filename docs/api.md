@@ -669,6 +669,14 @@ Whether the subprocess was terminated by a [signal](termination.md#signal-termin
 
 [More info.](termination.md#signal-name-and-description)
 
+### error.isForcefullyTerminated
+
+_Type:_ `boolean`
+
+Whether the subprocess was terminated by the [`SIGKILL`](termination.md#sigkill) signal sent by the [`forceKillAfterDelay`](#optionsforcekillafterdelay) option.
+
+[More info.](termination.md#forceful-termination)
+
 ### error.exitCode
 
 _Type:_ `number | undefined`
@@ -1027,6 +1035,8 @@ _Type:_ `number | false`\
 _Default:_ `5000`
 
 If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+
+When this happens, [`error.isForcefullyTerminated`](#errorisforcefullyterminated) becomes `true`.
 
 [More info.](termination.md#forceful-termination)
 

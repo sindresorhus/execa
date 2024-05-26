@@ -113,6 +113,11 @@ export declare abstract class CommonResult<
 	isTerminated: boolean;
 
 	/**
+	Whether the subprocess was terminated by the `SIGKILL` signal sent by the `forceKillAfterDelay` option.
+	*/
+	isForcefullyTerminated: boolean;
+
+	/**
 	The numeric [exit code](https://en.wikipedia.org/wiki/Exit_status) of the subprocess that was run.
 
 	This is `undefined` when the subprocess could not be spawned or was terminated by a signal.

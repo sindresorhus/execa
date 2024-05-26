@@ -124,39 +124,39 @@ test('calling abort throws an error with message "Command was canceled"', async 
 
 test('calling abort with no argument keeps error properties', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
+	const subprocess = execa('empty.js', {cancelSignal: abortController.signal});
 	abortController.abort();
 	const {cause, originalMessage, shortMessage, message} = await t.throwsAsync(subprocess);
 	t.is(cause.message, 'This operation was aborted');
 	t.is(cause.name, 'AbortError');
 	t.is(originalMessage, 'This operation was aborted');
-	t.is(shortMessage, 'Command was canceled: noop.js\nThis operation was aborted');
-	t.is(message, 'Command was canceled: noop.js\nThis operation was aborted');
+	t.is(shortMessage, 'Command was canceled: empty.js\nThis operation was aborted');
+	t.is(message, 'Command was canceled: empty.js\nThis operation was aborted');
 });
 
 test('calling abort with an error instance keeps error properties', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
+	const subprocess = execa('empty.js', {cancelSignal: abortController.signal});
 	const error = new Error(foobarString);
 	error.code = foobarString;
 	abortController.abort(error);
 	const {cause, originalMessage, shortMessage, message, code} = await t.throwsAsync(subprocess);
 	t.is(cause, error);
 	t.is(originalMessage, foobarString);
-	t.is(shortMessage, `Command was canceled: noop.js\n${foobarString}`);
-	t.is(message, `Command was canceled: noop.js\n${foobarString}`);
+	t.is(shortMessage, `Command was canceled: empty.js\n${foobarString}`);
+	t.is(message, `Command was canceled: empty.js\n${foobarString}`);
 	t.is(code, foobarString);
 });
 
 test('calling abort with null keeps error properties', async t => {
 	const abortController = new AbortController();
-	const subprocess = execa('noop.js', {cancelSignal: abortController.signal});
+	const subprocess = execa('empty.js', {cancelSignal: abortController.signal});
 	abortController.abort(null);
 	const {cause, originalMessage, shortMessage, message} = await t.throwsAsync(subprocess);
 	t.is(cause, null);
 	t.is(originalMessage, 'null');
-	t.is(shortMessage, 'Command was canceled: noop.js\nnull');
-	t.is(message, 'Command was canceled: noop.js\nnull');
+	t.is(shortMessage, 'Command was canceled: empty.js\nnull');
+	t.is(message, 'Command was canceled: empty.js\nnull');
 });
 
 test('calling abort twice should show the same behaviour as calling it once', async t => {

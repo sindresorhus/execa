@@ -114,7 +114,12 @@ test('subprocess.sendMessage() "strict" fails if the subprocess uses once()', as
 test('exports.sendMessage() "strict" fails if the current process uses once() and buffer false', async t => {
 	const subprocess = execa('ipc-send-strict.js', {ipc: true, buffer: {ipc: false}});
 	const [message] = await once(subprocess, 'message');
-	t.deepEqual(message, {id: 0n, type: 'execa:ipc:request', message: foobarString});
+	t.deepEqual(message, {
+		id: 0n,
+		type: 'execa:ipc:request',
+		message: foobarString,
+		hasListeners: false,
+	});
 
 	const {exitCode, isTerminated, stderr, ipcOutput} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 1);
@@ -190,7 +195,7 @@ test('Opposite sendMessage() "strict", buffer true', async t => {
 });
 
 test('Opposite sendMessage() "strict", current process listening, buffer false', async t => {
-	const subprocess = execa('ipc-send-strict-get.js', {ipc: true, buffer: false});
+	const subprocess = execa('ipc-send-strict-get.js', {ipc: true, buffer: {ipc: false}});
 	const [message] = await Promise.all([
 		subprocess.getOneMessage(),
 		subprocess.sendMessage(foobarString, {strict: true}),
@@ -203,7 +208,7 @@ test('Opposite sendMessage() "strict", current process listening, buffer false',
 });
 
 test('Opposite sendMessage() "strict", subprocess listening, buffer false', async t => {
-	const subprocess = execa('ipc-send-strict-listen.js', {ipc: true, buffer: false});
+	const subprocess = execa('ipc-send-strict-listen.js', {ipc: true, buffer: {ipc: false}});
 	await subprocess.sendMessage(foobarString, {strict: true});
 	t.is(await subprocess.getOneMessage(), foobarString);
 
@@ -212,11 +217,13 @@ test('Opposite sendMessage() "strict", subprocess listening, buffer false', asyn
 });
 
 test('Opposite sendMessage() "strict", not listening, buffer false', async t => {
-	const subprocess = execa('ipc-send-strict-get.js', {ipc: true, timeout: 1e3, buffer: false});
+	const subprocess = execa('ipc-send-strict.js', {ipc: true, buffer: {ipc: false}});
 	const {message} = await t.throwsAsync(subprocess.sendMessage(foobarString, {strict: true}));
-	t.is(message, 'subprocess.sendMessage() failed: the subprocess exited without listening to incoming messages.');
+	t.true(message.startsWith('subprocess.sendMessage() failed: the subprocess is sending a message too, instead of listening to incoming messages.'));
 
-	const {timedOut, ipcOutput} = await t.throwsAsync(subprocess);
-	t.true(timedOut);
+	const {exitCode, isTerminated, stderr, ipcOutput} = await t.throwsAsync(subprocess);
+	t.is(exitCode, 1);
+	t.false(isTerminated);
+	t.true(stderr.includes('Error: sendMessage() failed: the parent process is sending a message too, instead of listening to incoming messages.'));
 	t.deepEqual(ipcOutput, []);
 });

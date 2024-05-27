@@ -47,7 +47,7 @@ test('Handles "ipcInput" option during sending', async t => {
 	t.true(cause.cause.message.includes('The "message" argument must be one of type string'));
 });
 
-test('Can use "ipcInput" option even if the subprocess is not listening to messages', async t => {
+test.serial('Can use "ipcInput" option even if the subprocess is not listening to messages', async t => {
 	const {ipcOutput} = await execa('empty.js', {ipcInput: foobarString});
 	t.deepEqual(ipcOutput, []);
 });

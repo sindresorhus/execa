@@ -56,6 +56,13 @@ type GetOneMessageOptions<
 	Ignore any `message` that returns `false`.
 	*/
 	readonly filter?: (message: Message<Serialization>) => boolean;
+
+	/**
+	Keep the subprocess alive while `getOneMessage()` is waiting.
+
+	@default true
+	*/
+	readonly reference?: boolean;
 };
 
 /**
@@ -66,11 +73,23 @@ This requires the `ipc` option to be `true`. The type of `message` depends on th
 export function getOneMessage(getOneMessageOptions?: GetOneMessageOptions<Options['serialization']>): Promise<Message>;
 
 /**
+Options to `getEachMessage()` and `subprocess.getEachMessage()`
+*/
+type GetEachMessageOptions = {
+	/**
+	Keep the subprocess alive while `getEachMessage()` is waiting.
+
+	@default true
+	*/
+	readonly reference?: boolean;
+};
+
+/**
 Iterate over each `message` from the parent process.
 
 This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
 */
-export function getEachMessage(): AsyncIterableIterator<Message>;
+export function getEachMessage(getEachMessageOptions?: GetEachMessageOptions): AsyncIterableIterator<Message>;
 
 // IPC methods in the current process
 export type IpcMethods<
@@ -97,7 +116,7 @@ export type IpcMethods<
 
 		This requires the `ipc` option to be `true`. The type of `message` depends on the `serialization` option.
 		*/
-		getEachMessage(): AsyncIterableIterator<Message<Serialization>>;
+		getEachMessage(getEachMessageOptions?: GetEachMessageOptions): AsyncIterableIterator<Message<Serialization>>;
 	}
 	// Those methods only work if the `ipc` option is `true`.
 	// At runtime, they are actually defined, in order to provide with a nice error message.

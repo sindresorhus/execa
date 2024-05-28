@@ -41,7 +41,6 @@ expectError(await subprocess.getOneMessage({filter(message: Message<'advanced'>)
 expectError(await subprocess.getOneMessage({filter: (message: Message<'json'>) => true} as const));
 expectError(await subprocess.getOneMessage({filter: (message: '') => true} as const));
 expectError(await subprocess.getOneMessage({filter: true} as const));
-expectError(await subprocess.getOneMessage({unknownOption: true} as const));
 
 await getOneMessage({filter: undefined} as const);
 await getOneMessage({filter: (message: Message) => true} as const);
@@ -54,4 +53,11 @@ expectError(await getOneMessage({filter(message: Message) {}} as const));
 expectError(await getOneMessage({filter: (message: Message<'json'>) => true} as const));
 expectError(await getOneMessage({filter: (message: '') => true} as const));
 expectError(await getOneMessage({filter: true} as const));
+
+expectError(await subprocess.getOneMessage({unknownOption: true} as const));
 expectError(await getOneMessage({unknownOption: true} as const));
+
+await subprocess.getOneMessage({reference: true} as const);
+await getOneMessage({reference: true} as const);
+expectError(await subprocess.getOneMessage({reference: 'true'} as const));
+expectError(await getOneMessage({reference: 'true'} as const));

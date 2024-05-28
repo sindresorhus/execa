@@ -196,6 +196,23 @@ await Promise.all([
 ]);
 ```
 
+## Keeping the subprocess alive
+
+By default, the subprocess is kept alive as long as [`getOneMessage()`](api.md#getonemessagegetonemessageoptions) or [`getEachMessage()`](api.md#geteachmessagegeteachmessageoptions) is waiting. This is recommended if you're sure the current process will send a message, as this prevents the subprocess from exiting too early.
+
+However, if you don't know whether a message will be sent, this can leave the subprocess hanging forever. In that case, the [`reference: false`](api.md#geteachmessageoptionsreference) option can be set.
+
+```js
+import {getEachMessage} from 'execa';
+
+// {type: 'gracefulExit'} is sometimes received, but not always
+for await (const message of getEachMessage()) {
+	if (message.type === 'gracefulExit') {
+		gracefulExit({reference: false});
+	}
+}
+```
+
 ## Debugging
 
 When the [`verbose`](api.md#optionsverbose) option is `'full'`, the IPC messages sent by the subprocess to the current process are [printed on the console](debugging.md#full-mode).

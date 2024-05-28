@@ -1,6 +1,6 @@
 import {execa, execaSync} from '../../index.js';
 
-export const earlyErrorOptions = {cancelSignal: false};
+export const earlyErrorOptions = {detached: 'true'};
 export const getEarlyErrorSubprocess = options => execa('empty.js', {...earlyErrorOptions, ...options});
 export const earlyErrorOptionsSync = {maxBuffer: false};
 export const getEarlyErrorSubprocessSync = options => execaSync('empty.js', {...earlyErrorOptionsSync, ...options});

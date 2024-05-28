@@ -134,6 +134,7 @@ test('subprocess double errors are handled after spawn', async t => {
 	subprocess.emit('error', cause);
 	await setImmediate();
 	abortController.abort();
+	subprocess.emit('error', cause);
 	const error = await t.throwsAsync(subprocess);
 	t.is(error.cause, cause);
 	t.is(error.exitCode, undefined);

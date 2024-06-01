@@ -28,7 +28,7 @@ try {
 When the [`reject`](api.md#optionsreject) option is `false`, the `error` is returned instead.
 
 ```js
-const resultOrError = await execa`npm run build`;
+const resultOrError = await execa({reject: false})`npm run build`;
 if (resultOrError.failed) {
 	console.error(resultOrError);
 }

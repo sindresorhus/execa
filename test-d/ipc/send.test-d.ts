@@ -40,6 +40,8 @@ await subprocess.sendMessage('', {} as const);
 await sendMessage('', {} as const);
 await subprocess.sendMessage('', {strict: true} as const);
 await sendMessage('', {strict: true} as const);
+await subprocess.sendMessage('', {strict: true as boolean});
+await sendMessage('', {strict: true as boolean});
 expectError(await subprocess.sendMessage('', true));
 expectError(await sendMessage('', true));
 expectError(await subprocess.sendMessage('', {strict: 'true'}));

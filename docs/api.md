@@ -262,7 +262,7 @@ This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile
 `options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<Result>`](#result)
 
-Like [`subprocess.pipe(file, arguments?, options?)`](#subprocesspipefile-arguments-options) but using a [`command` template string](scripts.md#piping-stdout-to-another-command) instead. This follows the same syntax as `execa` [template strings](execution.md#template-string-syntax).
+Like [`subprocess.pipe(file, arguments?, options?)`](#subprocesspipefile-arguments-options) but using a [`command` template string](execution.md#template-string-syntax) instead. This follows the same syntax as `execa` [template strings](execution.md#template-string-syntax).
 
 [More info.](pipe.md#template-string-syntax)
 
@@ -1006,7 +1006,7 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 _Type:_ `boolean`\
 _Default:_ `true` if the [`node`](#optionsnode), [`ipcInput`](#optionsipcinput) or [`gracefulCancel`](#optionsgracefulcancel) option is set, `false` otherwise
 
-Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage-sendmessageoptions), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
+Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage-sendmessageoptions), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessagegeteachmessageoptions).
 
 The subprocess must be a Node.js file.
 

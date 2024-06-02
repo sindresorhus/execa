@@ -152,6 +152,8 @@ If the subprocess is terminated but does not exit, [`SIGKILL`](#sigkill) is auto
 
 The grace period is set by the [`forceKillAfterDelay`](api.md#optionsforcekillafterdelay) option, which is 5 seconds by default. This feature can be disabled with `false`.
 
+The [`error.isForcefullyTerminated`](api.md#errorisforcefullyterminated) boolean property can be used to check whether a subprocess was forcefully terminated by the `forceKillAfterDelay` option.
+
 This works when the subprocess is terminated by either:
 - Calling [`subprocess.kill()`](api.md#subprocesskillsignal-error) with no arguments.
 - The [`cancelSignal`](#canceling), [`timeout`](#timeout), [`maxBuffer`](output.md#big-output) or [`cleanup`](#current-process-exit) option.

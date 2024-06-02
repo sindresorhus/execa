@@ -2,23 +2,6 @@ import type {Options} from '../arguments/options.js';
 import type {ResultPromise} from '../subprocess/subprocess.js';
 import type {TemplateString} from './template.js';
 
-type ExecaNode<OptionsType extends Options> = {
-	<NewOptionsType extends Options = {}>(options: NewOptionsType): ExecaNode<OptionsType & NewOptionsType>;
-
-	(...templateString: TemplateString): ResultPromise<OptionsType>;
-
-	<NewOptionsType extends Options = {}>(
-		scriptPath: string | URL,
-		arguments?: readonly string[],
-		options?: NewOptionsType,
-	): ResultPromise<OptionsType & NewOptionsType>;
-
-	<NewOptionsType extends Options = {}>(
-		scriptPath: string | URL,
-		options?: NewOptionsType,
-	): ResultPromise<OptionsType & NewOptionsType>;
-};
-
 /**
 Same as `execa()` but using the `node: true` option.
 Executes a Node.js file using `node scriptPath ...arguments`.
@@ -45,4 +28,33 @@ await execa({node: true})`file.js argument`;
 await execa`node file.js argument`;
 ```
 */
-export declare const execaNode: ExecaNode<{}>;
+export declare const execaNode: ExecaNodeMethod<{}>;
+
+/**
+`execaNode()` method either exported by Execa, or bound using `execaNode(options)`.
+*/
+type ExecaNodeMethod<OptionsType extends Options> =
+	& ExecaNodeBind<OptionsType>
+	& ExecaNodeTemplate<OptionsType>
+	& ExecaNodeArrayLong<OptionsType>
+	& ExecaNodeArrayShort<OptionsType>;
+
+// `execaNode(options)` binding
+type ExecaNodeBind<OptionsType extends Options> =
+	<NewOptionsType extends Options = {}>(options: NewOptionsType)
+	=> ExecaNodeMethod<OptionsType & NewOptionsType>;
+
+// `execaNode`command`` template syntax
+type ExecaNodeTemplate<OptionsType extends Options> =
+	(...templateString: TemplateString)
+	=> ResultPromise<OptionsType>;
+
+// `execaNode('script', ['argument'], {})` array syntax
+type ExecaNodeArrayLong<OptionsType extends Options> =
+	<NewOptionsType extends Options = {}>(scriptPath: string | URL, arguments?: readonly string[], options?: NewOptionsType)
+	=> ResultPromise<OptionsType & NewOptionsType>;
+
+// `execaNode('script', {})` array syntax
+type ExecaNodeArrayShort<OptionsType extends Options> =
+	<NewOptionsType extends Options = {}>(scriptPath: string | URL, options?: NewOptionsType)
+	=> ResultPromise<OptionsType & NewOptionsType>;

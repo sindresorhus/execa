@@ -138,7 +138,7 @@ type StdioExtraOptionCommon<IsSync extends boolean> =
 	| StdoutStderrOptionCommon<IsSync, true>;
 
 // `options.stdin|stdout|stderr|stdio` array items
-export type StdioSingleOption<
+type StdioSingleOption<
 	IsSync extends boolean = boolean,
 	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
@@ -147,9 +147,7 @@ export type StdioSingleOption<
 	| StdoutStderrSingleOption<IsSync, IsExtra, IsArray>;
 
 // Get `options.stdin|stdout|stderr|stdio` items if it is an array, else keep as is
-export type StdioSingleOptionItems<
-	StdioOptionType extends StdioOptionCommon,
-> = StdioOptionType extends readonly StdioSingleOption[]
+export type StdioSingleOptionItems<StdioOptionType> = StdioOptionType extends readonly StdioSingleOption[]
 	? StdioOptionType[number]
 	: StdioOptionType;
 

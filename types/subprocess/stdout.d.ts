@@ -11,7 +11,7 @@ export type SubprocessStdioStream<
 
 type SubprocessStream<
 	FdNumber extends string,
-	StreamResultIgnored extends boolean,
+	StreamResultIgnored,
 	OptionsType extends Options,
 > = StreamResultIgnored extends true
 	? null

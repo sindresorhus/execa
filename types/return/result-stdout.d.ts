@@ -26,7 +26,7 @@ OptionsType
 type ResultStdioProperty<
 	ObjectFdNumber extends string,
 	LinesFdNumber extends string,
-	StreamOutputIgnored extends boolean,
+	StreamOutputIgnored,
 	OptionsType extends CommonOptions,
 > = StreamOutputIgnored extends true
 	? undefined
@@ -37,7 +37,7 @@ type ResultStdioProperty<
 	>;
 
 type ResultStdioItem<
-	IsObjectResult extends boolean,
+	IsObjectResult,
 	LinesOption extends boolean | undefined,
 	Encoding extends CommonOptions['encoding'],
 > = IsObjectResult extends true ? unknown[]

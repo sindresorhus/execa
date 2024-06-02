@@ -1,4 +1,3 @@
-import type {StdioOptionsArray} from '../stdio/type.js';
 import type {StdioOptionNormalizedArray} from '../stdio/array.js';
 import type {CommonOptions} from '../arguments/options.js';
 import type {ResultStdioNotAll} from './result-stdout.js';
@@ -8,7 +7,7 @@ export type ResultStdioArray<OptionsType extends CommonOptions> =
 	MapResultStdio<StdioOptionNormalizedArray<OptionsType>, OptionsType>;
 
 type MapResultStdio<
-	StdioOptionsArrayType extends StdioOptionsArray,
+	StdioOptionsArrayType,
 	OptionsType extends CommonOptions,
 > = {
 	-readonly [FdNumber in keyof StdioOptionsArrayType]: ResultStdioNotAll<

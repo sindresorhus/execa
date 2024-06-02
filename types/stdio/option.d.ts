@@ -1,17 +1,12 @@
 import type {CommonOptions} from '../arguments/options.js';
 import type {StdioOptionNormalizedArray} from './array.js';
-import type {
-	StandardStreams,
-	StdioOptionCommon,
-	StdioOptionsArray,
-	StdioOptionsProperty,
-} from './type.js';
+import type {StandardStreams, StdioOptionCommon, StdioOptionsArray} from './type.js';
 
 // `options.stdin|stdout|stderr|stdio` for a given file descriptor
 export type FdStdioOption<
 	FdNumber extends string,
 	OptionsType extends CommonOptions,
-> = Extract<FdStdioOptionProperty<FdNumber, OptionsType>, StdioOptionCommon>;
+> = FdStdioOptionProperty<FdNumber, OptionsType>;
 
 type FdStdioOptionProperty<
 	FdNumber extends string,
@@ -29,11 +24,11 @@ type FdStdioOptionProperty<
 export type FdStdioArrayOption<
 	FdNumber extends string,
 	OptionsType extends CommonOptions,
-> = Extract<FdStdioArrayOptionProperty<FdNumber, StdioOptionNormalizedArray<OptionsType>>, StdioOptionCommon>;
+> = FdStdioArrayOptionProperty<FdNumber, StdioOptionNormalizedArray<OptionsType>>;
 
 type FdStdioArrayOptionProperty<
 	FdNumber extends string,
-	StdioOptionsType extends StdioOptionsProperty,
+	StdioOptionsType,
 > = string extends FdNumber
 	? StdioOptionCommon | undefined
 	: StdioOptionsType extends StdioOptionsArray

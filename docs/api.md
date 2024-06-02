@@ -6,7 +6,7 @@
 
 # 📔 API reference
 
-This lists all available [methods](#methods) and their [options](#options). This also describes the properties of the [subprocess](#subprocess), [result](#result) and [error](#execaerror) they return.
+This lists all available [methods](#methods) and their [options](#options-1). This also describes the properties of the [subprocess](#subprocess), [result](#result) and [error](#execaerror) they return.
 
 ## Methods
 
@@ -14,54 +14,21 @@ This lists all available [methods](#methods) and their [options](#options). This
 
 `file`: `string | URL`\
 `arguments`: `string[]`\
-`options`: [`Options`](#options)\
+`options`: [`Options`](#options-1)\
 _Returns_: [`ResultPromise`](#return-value)
 
 Executes a command using `file ...arguments`.
 
 More info on the [syntax](execution.md#array-syntax) and [escaping](escaping.md#array-syntax).
 
-### execa\`command\`
-### execa(options)\`command\`
-
-`command`: `string`\
-`options`: [`Options`](#options)\
-_Returns_: [`ResultPromise`](#return-value)
-
-Executes a command. `command` is a [template string](execution.md#template-string-syntax) that includes both the `file` and its `arguments`.
-
-More info on the [syntax](execution.md#template-string-syntax) and [escaping](escaping.md#template-string-syntax).
-
-### execa(options)
-
-`options`: [`Options`](#options)\
-_Returns_: [`execa`](#execafile-arguments-options)
-
-Returns a new instance of Execa but with different default [`options`](#options). Consecutive calls are merged to previous ones.
-
-[More info.](execution.md#globalshared-options)
-
-### execaSync(file, arguments?, options?)
-### execaSync\`command\`
-
-_Returns_: [`SyncResult`](#return-value)
-
-Same as [`execa()`](#execafile-arguments-options) but synchronous.
-
-Returns or throws a subprocess [`result`](#result). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available.
-
-[More info.](execution.md#synchronous-execution)
-
 ### $(file, arguments?, options?)
 
 `file`: `string | URL`\
 `arguments`: `string[]`\
-`options`: [`Options`](#options)\
+`options`: [`Options`](#options-1)\
 _Returns_: [`ResultPromise`](#return-value)
 
 Same as [`execa()`](#execafile-arguments-options) but using [script-friendly default options](scripts.md#script-files).
-
-Just like `execa()`, this can use the [template string syntax](execution.md#template-string-syntax) or [bind options](execution.md#globalshared-options). It can also be [run synchronously](#execasyncfile-arguments-options) using `$.sync()` or `$.s()`.
 
 This is the preferred method when executing multiple commands in a script file.
 
@@ -71,17 +38,75 @@ This is the preferred method when executing multiple commands in a script file.
 
 `scriptPath`: `string | URL`\
 `arguments`: `string[]`\
-`options`: [`Options`](#options)\
+`options`: [`Options`](#options-1)\
 _Returns_: [`ResultPromise`](#return-value)
 
 Same as [`execa()`](#execafile-arguments-options) but using the [`node: true`](#optionsnode) option.
 Executes a Node.js file using `node scriptPath ...arguments`.
 
-Just like `execa()`, this can use the [template string syntax](execution.md#template-string-syntax) or [bind options](execution.md#globalshared-options).
-
 This is the preferred method when executing Node.js files.
 
 [More info.](node.md)
+
+### execaSync(file, arguments?, options?)
+### $.sync(file, arguments?, options?)
+### $.s(file, arguments?, options?)
+
+`file`: `string | URL`\
+`arguments`: `string[]`\
+`options`: [`SyncOptions`](#options-1)\
+_Returns_: [`SyncResult`](#return-value)
+
+Same as [`execa()`](#execafile-arguments-options) and [`$`](#file-arguments-options) but synchronous.
+
+Returns a subprocess [`result`](#result) or throws an [`error`](#execasyncerror). The [`subprocess`](#subprocess) is not returned: its methods and properties are not available.
+
+Those methods are discouraged as they hold the CPU and lack multiple features.
+
+[More info.](execution.md#synchronous-execution)
+
+### execa\`command\`
+### $\`command\`
+### execaNode\`command\`
+### execaSync\`command\`
+### $.sync\`command\`
+### $.s\`command\`
+
+`command`: `string`\
+_Returns_: [`ResultPromise`](#return-value), [`SyncResult`](#return-value)
+
+Same as [`execa()`](#execafile-arguments-options), [`$()`](#file-arguments-options), [`execaNode()`](#execanodescriptpath-arguments-options) and [`execaSync()`](#execasyncfile-arguments-options) but using a [template string](execution.md#template-string-syntax). `command` includes both the `file` and its `arguments`.
+
+More info on the [syntax](execution.md#template-string-syntax) and [escaping](escaping.md#template-string-syntax).
+
+### execa(options)\`command\`
+### $(options)\`command\`
+### execaNode(options)\`command\`
+### execaSync(options)\`command\`
+### $.sync(options)\`command\`
+### $.s(options)\`command\`
+
+`command`: `string`\
+`options`: [`Options`](#options-1), [`SyncOptions`](#options-1)\
+_Returns_: [`ResultPromise`](#return-value), [`SyncResult`](#return-value)
+
+Same as [```execa`command` ```](#execacommand) but with [options](#options-1).
+
+[More info.](execution.md#template-string-syntax)
+
+### execa(options)
+### $(options)
+### execaNode(options)
+### execaSync(options)
+### $.sync(options)
+### $.s(options)
+
+`options`: [`Options`](#options-1), [`SyncOptions`](#options-1)\
+_Returns_: [`ExecaMethod`](#execafile-arguments-options), [`ExecaScriptMethod`](#file-arguments-options), [`ExecaNodeMethod`](#execanodescriptpath-arguments-options), [`ExecaSyncMethod`](#execasyncfile-arguments-options), [`ExecaScriptSyncMethod`](#syncfile-arguments-options)
+
+Returns a new instance of those methods but with different default [`options`](#options-1). Consecutive calls are merged to previous ones.
+
+[More info.](execution.md#globalshared-options)
 
 ### parseCommandString(command)
 
@@ -221,12 +246,12 @@ Same as [`subprocess[Symbol.asyncIterator]`](#subprocesssymbolasynciterator) exc
 
 `file`: `string | URL`\
 `arguments`: `string[]`\
-`options`: [`Options`](#options) and [`PipeOptions`](#pipeoptions)\
+`options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<Result>`](#result)
 
 [Pipe](https://nodejs.org/api/stream.html#readablepipedestination-options) the subprocess' [`stdout`](#subprocessstdout) to a second Execa subprocess' [`stdin`](#subprocessstdin). This resolves with that second subprocess' [result](#result). If either subprocess is rejected, this is rejected with that subprocess' [error](#execaerror) instead.
 
-This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile-arguments-options) except both [regular options](#options) and [pipe-specific options](#pipeoptions) can be specified.
+This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile-arguments-options) except both [regular options](#options-1) and [pipe-specific options](#pipeoptions) can be specified.
 
 [More info.](pipe.md#array-syntax)
 
@@ -234,7 +259,7 @@ This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile
 ### subprocess.pipe(options)\`command\`
 
 `command`: `string`\
-`options`: [`Options`](#options) and [`PipeOptions`](#pipeoptions)\
+`options`: [`Options`](#options-1) and [`PipeOptions`](#pipeoptions)\
 _Returns_: [`Promise<Result>`](#result)
 
 Like [`subprocess.pipe(file, arguments?, options?)`](#subprocesspipefile-arguments-options) but using a [`command` template string](scripts.md#piping-stdout-to-another-command) instead. This follows the same syntax as `execa` [template strings](execution.md#template-string-syntax).

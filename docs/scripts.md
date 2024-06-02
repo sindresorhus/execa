@@ -35,7 +35,7 @@ await $`mkdir /tmp/${directoryName}`;
 
 ## Template string syntax
 
-Just like [`execa`](api.md#execafile-arguments-options), [`$`](api.md#file-arguments-options) can use either the [template string syntax](execution.md#template-string-syntax) or the [array syntax](execution.md#array-syntax).
+Just like [`execa`](api.md#execacommand), [`$`](api.md#command) can use either the [template string syntax](execution.md#template-string-syntax) or the [array syntax](execution.md#array-syntax).
 
 Conversely, the template string syntax can be used outside of script files: `$` is not required to use that syntax. For example, `execa` [can use it too](execution.md#template-string-syntax).
 

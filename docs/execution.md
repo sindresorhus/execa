@@ -100,7 +100,7 @@ await execa({env: {TASK_NAME: 'build'}})`echo $TASK_NAME`;
 
 ## Options
 
-[Options](api.md#options) can be passed to influence the execution's behavior.
+[Options](api.md#options-1) can be passed to influence the execution's behavior.
 
 ### Array syntax
 
@@ -144,7 +144,7 @@ const {stdout} = await execa`npm run build`;
 
 ### Synchronous execution
 
-[Every method](api.md#methods) can be called synchronously by appending `Sync` to the method's name. The [`result`](api.md#result) is returned without needing to `await`. The [`subprocess`](#subprocess) is not returned: its methods and properties are not available.
+[`execaSync()`](api.md#execasyncfile-arguments-options) and [`$.sync()`](api.md#syncfile-arguments-options) return the [`result`](api.md#result) without needing to `await`. The [`subprocess`](#subprocess) is not returned: its methods and properties are not available.
 
 ```js
 import {execaSync} from 'execa';

@@ -35,7 +35,7 @@ const {stdout} = await execa`npm run build`
 
 ## Options
 
-[Options](api.md#options) can be passed to either the source or the destination subprocess. Some [pipe-specific options](api.md#pipeoptions) can also be set by the destination subprocess.
+[Options](api.md#options-1) can be passed to either the source or the destination subprocess. Some [pipe-specific options](api.md#pipeoptions) can also be set by the destination subprocess.
 
 ```js
 const {stdout} = await execa('npm', ['run', 'build'], subprocessOptions)

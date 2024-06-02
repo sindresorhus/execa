@@ -17,9 +17,11 @@ type ExecaCommand<OptionsType extends Options> = {
 /**
 Executes a command. `command` is a string that includes both the `file` and its `arguments`.
 
-This is only intended for very specific cases, such as a REPL. This should be avoided otherwise.
+When `command` is a template string, it includes both the `file` and its `arguments`.
 
-Just like `execa()`, this can bind options. It can also be run synchronously using `execaCommandSync()`.
+`execaCommand(options)` can be used to return a new instance of this method but with different default `options`. Consecutive calls are merged to previous ones.
+
+This is only intended for very specific cases, such as a REPL. This should be avoided otherwise.
 
 @param command - The program/script to execute and its arguments.
 @returns A `ResultPromise` that is both:
@@ -52,7 +54,11 @@ type ExecaCommandSync<OptionsType extends SyncOptions> = {
 /**
 Same as `execaCommand()` but synchronous.
 
-Returns or throws a subprocess `result`. The `subprocess` is not returned: its methods and properties are not available.
+When `command` is a template string, it includes both the `file` and its `arguments`.
+
+`execaCommandSync(options)` can be used to return a new instance of this method but with different default `options`. Consecutive calls are merged to previous ones.
+
+Returns a subprocess `result` or throws an `error`. The `subprocess` is not returned: its methods and properties are not available.
 
 @param command - The program/script to execute and its arguments.
 @returns `SyncResult`

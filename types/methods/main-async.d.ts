@@ -24,7 +24,7 @@ Executes a command using `file ...arguments`.
 
 When `command` is a template string, it includes both the `file` and its `arguments`.
 
-`execa(options)` can be used to return a new instance of Execa but with different default `options`. Consecutive calls are merged to previous ones.
+`execa(options)` can be used to return a new instance of this method but with different default `options`. Consecutive calls are merged to previous ones.
 
 @param file - The program/script to execute, as a string or file URL
 @param arguments - Arguments to pass to `file` on execution.

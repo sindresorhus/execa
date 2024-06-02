@@ -8,11 +8,11 @@
 
 ## Available types
 
-The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options-1), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand) and [`Message`](api.md#subprocesssendmessagemessage-sendmessageoptions).
+The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options-1), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand), [`Message`](api.md#subprocesssendmessagemessage-sendmessageoptions), [`ExecaMethod`](api.md#execaoptions), [`ExecaNodeMethod`](api.md#execanodeoptions) and [`ExecaScriptMethod`](api.md#options).
 
 ```ts
 import {
-	execa,
+	execa as execa_,
 	ExecaError,
 	type ResultPromise,
 	type Result,
@@ -21,7 +21,10 @@ import {
 	type StdoutStderrOption,
 	type TemplateExpression,
 	type Message,
+	type ExecaMethod,
 } from 'execa';
+
+const execa: ExecaMethod = execa_({preferLocal: true});
 
 const options: Options = {
 	stdin: 'inherit' satisfies StdinOption,
@@ -47,18 +50,21 @@ try {
 
 ## Synchronous execution
 
-Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options-1), [`StdinSyncOption`](api.md#optionsstdin), [`StdoutStderrSyncOption`](api.md#optionsstdout) and [`TemplateExpression`](api.md#execacommand).
+Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options-1), [`StdinSyncOption`](api.md#optionsstdin), [`StdoutStderrSyncOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand), [`ExecaSyncMethod`](api.md#execasyncoptions) and [`ExecaScriptSyncMethod`](api.md#syncoptions).
 
 ```ts
 import {
-	execaSync,
+	execaSync as execaSync_,
 	ExecaSyncError,
 	type SyncResult,
 	type SyncOptions,
 	type StdinSyncOption,
 	type StdoutStderrSyncOption,
 	type TemplateExpression,
+	type ExecaSyncMethod,
 } from 'execa';
+
+const execaSync: ExecaSyncMethod = execaSync_({preferLocal: true});
 
 const options: SyncOptions = {
 	stdin: 'inherit' satisfies StdinSyncOption,
@@ -84,10 +90,12 @@ The above examples demonstrate those types. However, types are automatically inf
 
 ```ts
 import {
-	execa,
+	execa as execa_,
 	ExecaError,
 	type Result,
 } from 'execa';
+
+const execa = execa_({preferLocal: true});
 
 const printResultStdout = (result: Result) => {
 	console.log('Stdout', result.stdout);

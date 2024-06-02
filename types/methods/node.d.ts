@@ -35,7 +35,7 @@ export declare const execaNode: ExecaNodeMethod<{}>;
 /**
 `execaNode()` method either exported by Execa, or bound using `execaNode(options)`.
 */
-type ExecaNodeMethod<OptionsType extends Options> =
+export type ExecaNodeMethod<OptionsType extends Options = Options> =
 	& ExecaNodeBind<OptionsType>
 	& ExecaNodeTemplate<OptionsType>
 	& ExecaNodeArrayLong<OptionsType>

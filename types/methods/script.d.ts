@@ -55,7 +55,7 @@ export const $: ExecaScriptMethod<{}>;
 /**
 `$()` method either exported by Execa, or bound using `$(options)`.
 */
-type ExecaScriptMethod<OptionsType extends CommonOptions> =
+export type ExecaScriptMethod<OptionsType extends CommonOptions = CommonOptions> =
 	& ExecaScriptBind<OptionsType>
 	& ExecaScriptTemplate<OptionsType>
 	& ExecaScriptArrayLong<OptionsType>
@@ -88,7 +88,7 @@ type ExecaScriptArrayShort<OptionsType extends CommonOptions> =
 /**
 `$.sync()` method either exported by Execa, or bound using `$.sync(options)`.
 */
-type ExecaScriptSyncMethod<OptionsType extends CommonOptions> =
+export type ExecaScriptSyncMethod<OptionsType extends CommonOptions = CommonOptions> =
 	& ExecaScriptSyncBind<OptionsType>
 	& ExecaScriptSyncTemplate<OptionsType>
 	& ExecaScriptSyncArrayLong<OptionsType>

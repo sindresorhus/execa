@@ -22,6 +22,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
+      - uses: lycheeverse/lychee-action@v1
+        with:
+          args: --verbose --no-progress --include-fragments --max-concurrency 10 --exclude linkedin --exclude file:///test --exclude invalid.com '*.md' 'docs/*.md' '.github/**/*.md' '*.json' '*.js' 'lib/**/*.js' 'test/**/*.js' '*.ts' 'test-d/**/*.ts'
+          fail: true
+        if: ${{ matrix.os == 'ubuntu' && matrix.node-version == 22 }}
       - run: npm run lint
       - run: npm run type
       - run: npm run unit

@@ -55,7 +55,30 @@ await execa`mkdir ${tmpDirectory}/filename`;
 ```js
 const result = await execa`get-concurrency`;
 
-await execa`npm ${['run', 'build', '--concurrency', 2]}`;
+await execa`npm ${['run', 'build', '--concurrency', result]}`;
+```
+
+### No arguments
+
+```js
+await execa`npm run build ${[]}`;
+// Same as:
+await execa('npm', ['run', 'build']);
+```
+
+### Empty string argument
+
+```js
+await execa`npm run build ${''}`;
+// Same as:
+await execa('npm', ['run', 'build', '']);
+```
+
+### Conditional argument
+
+```js
+const commandArguments = failFast ? ['--fail-fast'] : [];
+await execa`npm run build ${commandArguments}`;
 ```
 
 ### Multiple lines

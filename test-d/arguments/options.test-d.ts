@@ -215,7 +215,12 @@ expectError(execaSync('unicorns', {detached: true}));
 expectError(await execa('unicorns', {detached: 'true'}));
 expectError(execaSync('unicorns', {detached: 'true'}));
 
-await execa('unicorns', {cancelSignal: new AbortController().signal});
-expectError(execaSync('unicorns', {cancelSignal: new AbortController().signal}));
+await execa('unicorns', {cancelSignal: AbortSignal.abort()});
+expectError(execaSync('unicorns', {cancelSignal: AbortSignal.abort()}));
 expectError(await execa('unicorns', {cancelSignal: false}));
 expectError(execaSync('unicorns', {cancelSignal: false}));
+
+await execa('unicorns', {gracefulCancel: true, cancelSignal: AbortSignal.abort()});
+expectError(execaSync('unicorns', {gracefulCancel: true, cancelSignal: AbortSignal.abort()}));
+expectError(await execa('unicorns', {gracefulCancel: 'true', cancelSignal: AbortSignal.abort()}));
+expectError(execaSync('unicorns', {gracefulCancel: 'true', cancelSignal: AbortSignal.abort()}));

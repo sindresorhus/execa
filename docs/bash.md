@@ -10,7 +10,7 @@ This page describes the differences between [Bash](https://en.wikipedia.org/wiki
 - [Simple](#simplicity): minimalistic API, no [globals](#global-variables), no [binary](#main-binary), no builtin CLI utilities.
 - [Cross-platform](#shell): [no shell](shell.md) is used, only JavaScript.
 - [Secure](#escaping): no shell injection.
-- [Featureful](#simplicity): all Execa features are available ([text lines iteration](#iterate-over-output-lines), [advanced piping](#piping-stdout-to-another-command), [simple IPC](#ipc), [passing any input type](#pass-any-input-type), [returning any output type](#return-any-output-type), [transforms](#transforms), [web streams](#web-streams), [convert to Duplex stream](#convert-to-duplex-stream), [cleanup on exit](termination.md#current-process-exit), [forceful termination](termination.md#forceful-termination), and [more](../readme.md#documentation)).
+- [Featureful](#simplicity): all Execa features are available ([text lines iteration](#iterate-over-output-lines), [advanced piping](#piping-stdout-to-another-command), [simple IPC](#ipc), [passing any input type](#pass-any-input-type), [returning any output type](#return-any-output-type), [transforms](#transforms), [web streams](#web-streams), [convert to Duplex stream](#convert-to-duplex-stream), [cleanup on exit](termination.md#current-process-exit), [graceful termination](#graceful-termination), [forceful termination](termination.md#forceful-termination), and [more](../readme.md#documentation)).
 - [Easy to debug](#debugging): [verbose mode](#verbose-mode-single-command), [detailed errors](#detailed-errors), [messages and stack traces](#cancelation), stateless API.
 - [Performant](#performance)
 
@@ -1041,6 +1041,38 @@ await $({cancelSignal: controller.signal})`node long-script.js`;
 ```
 
 [More info.](termination.md#canceling)
+
+### Graceful termination
+
+```sh
+# Bash
+trap cleanup SIGTERM
+```
+
+```js
+// zx
+// This does not work on Windows
+process.on('SIGTERM', () => {
+	// ...
+});
+```
+
+```js
+// Execa - main.js
+const controller = new AbortController();
+await $({
+	cancelSignal: controller.signal,
+	gracefulCancel: true,
+})`node build.js`;
+```
+
+```js
+// Execa - build.js
+import {getCancelSignal} from 'execa';
+
+const cancelSignal = await getCancelSignal();
+await fetch('https://example.com', {signal: cancelSignal});
+```
 
 ### Interleaved output
 

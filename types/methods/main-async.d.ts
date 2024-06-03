@@ -108,6 +108,7 @@ console.log(stdout);
 @example <caption>Simple input</caption>
 
 ```
+const getInputString = () => { /* ... *\/ };
 const {stdout} = await execa({input: getInputString()})`sort`;
 console.log(stdout);
 ```
@@ -236,9 +237,37 @@ console.log(ipcOutput[1]); // {kind: 'stop', timestamp: date}
 // build.js
 import {sendMessage} from 'execa';
 
+const runBuild = () => { /* ... *\/ };
+
 await sendMessage({kind: 'start', timestamp: new Date()});
 await runBuild();
 await sendMessage({kind: 'stop', timestamp: new Date()});
+```
+
+@example <caption>Graceful termination</caption>
+
+```
+// main.js
+import {execaNode} from 'execa';
+
+const controller = new AbortController();
+setTimeout(() => {
+	controller.abort();
+}, 5000);
+
+await execaNode({
+	cancelSignal: controller.signal,
+	gracefulCancel: true,
+})`build.js`;
+```
+
+```
+// build.js
+import {getCancelSignal} from 'execa';
+
+const cancelSignal = await getCancelSignal();
+const url = 'https://example.com/build/info';
+const response = await fetch(url, {signal: cancelSignal});
 ```
 
 @example <caption>Detailed error</caption>

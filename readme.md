@@ -57,7 +57,7 @@ One of the maintainers [@ehmicky](https://github.com/ehmicky) is looking for a r
 - [Script](#script) interface.
 - [No escaping](docs/escaping.md) nor quoting needed. No risk of shell injection.
 - Execute [locally installed binaries](#local-binaries) without `npx`.
-- Improved [Windows support](docs/windows.md): [shebangs](docs/windows.md#shebang), [`PATHEXT`](https://ss64.com/nt/path.html#pathext), [and more](https://github.com/moxystudio/node-cross-spawn?tab=readme-ov-file#why).
+- Improved [Windows support](docs/windows.md): [shebangs](docs/windows.md#shebang), [`PATHEXT`](https://ss64.com/nt/path.html#pathext), [graceful termination](#graceful-termination), [and more](https://github.com/moxystudio/node-cross-spawn?tab=readme-ov-file#why).
 - [Detailed errors](#detailed-error) and [verbose mode](#verbose-mode), for [debugging](docs/debugging.md).
 - [Pipe multiple subprocesses](#pipe-multiple-subprocesses) better than in shells: retrieve [intermediate results](docs/pipe.md#result), use multiple [sources](docs/pipe.md#multiple-sources-1-destination)/[destinations](docs/pipe.md#1-source-multiple-destinations), [unpipe](docs/pipe.md#unpipe).
 - [Split](#split-into-text-lines) the output into text lines, or [iterate](#iterate-over-text-lines) progressively over them.
@@ -187,6 +187,7 @@ console.log(stdout);
 #### Simple input
 
 ```js
+const getInputString = () => { /* ... */ };
 const {stdout} = await execa({input: getInputString()})`sort`;
 console.log(stdout);
 ```
@@ -319,9 +320,37 @@ console.log(ipcOutput[1]); // {kind: 'stop', timestamp: date}
 // build.js
 import {sendMessage} from 'execa';
 
+const runBuild = () => { /* ... */ };
+
 await sendMessage({kind: 'start', timestamp: new Date()});
 await runBuild();
 await sendMessage({kind: 'stop', timestamp: new Date()});
+```
+
+#### Graceful termination
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const controller = new AbortController();
+setTimeout(() => {
+	controller.abort();
+}, 5000);
+
+await execaNode({
+	cancelSignal: controller.signal,
+	gracefulCancel: true,
+})`build.js`;
+```
+
+```js
+// build.js
+import {getCancelSignal} from 'execa';
+
+const cancelSignal = await getCancelSignal();
+const url = 'https://example.com/build/info';
+const response = await fetch(url, {signal: cancelSignal});
 ```
 
 ### Debugging

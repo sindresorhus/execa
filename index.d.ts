@@ -21,5 +21,6 @@ export {
 	sendMessage,
 	getOneMessage,
 	getEachMessage,
+	getCancelSignal,
 	type Message,
 } from './types/ipc.js';

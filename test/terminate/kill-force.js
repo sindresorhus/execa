@@ -113,10 +113,11 @@ if (isWindows) {
 		const subprocess = spawnNoKillableSimple({cancelSignal: abortController.signal});
 		await once(subprocess, 'spawn');
 		abortController.abort('');
-		const {isTerminated, signal, isCanceled, isForcefullyTerminated, shortMessage} = await t.throwsAsync(subprocess);
+		const {isTerminated, signal, isCanceled, isGracefullyCanceled, isForcefullyTerminated, shortMessage} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
 		t.is(signal, 'SIGKILL');
 		t.true(isCanceled);
+		t.false(isGracefullyCanceled);
 		t.true(isForcefullyTerminated);
 		t.is(shortMessage, 'Command was canceled and was forcefully terminated after 1 milliseconds: forever.js');
 	});

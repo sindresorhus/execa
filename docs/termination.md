@@ -8,34 +8,119 @@
 
 ## Alternatives
 
-Terminating a subprocess ends it abruptly. This prevents rolling back the subprocess' operations and leaves them incomplete. When possible, graceful exits should be preferred, such as:
-- Letting the subprocess end on its own.
-- [Performing cleanup](#sigterm) in termination [signal handlers](https://nodejs.org/api/process.html#process_signal_events).
-- [Sending a message](ipc.md) to the subprocess so it aborts its operations and cleans up.
+Terminating a subprocess ends it abruptly. This prevents rolling back the subprocess' operations and leaves them incomplete.
+
+Ideally subprocesses should end on their own. If that's not possible, [graceful termination](#graceful-termination) should be preferred.
 
 ## Canceling
 
-The [`cancelSignal`](api.md#optionscancelsignal) option can be used to cancel a subprocess. When [`abortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) is [aborted](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort), a [`SIGTERM` signal](#default-signal) is sent to the subprocess.
+The [`cancelSignal`](api.md#optionscancelsignal) option can be used to cancel a subprocess. When it is [aborted](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort), a [`SIGTERM` signal](#default-signal) is sent to the subprocess.
 
 ```js
-import {execa} from 'execa';
+import {execaNode} from 'execa';
 
-const abortController = new AbortController();
+const controller = new AbortController();
+const cancelSignal = controller.signal;
 
 setTimeout(() => {
-	abortController.abort();
+	controller.abort();
 }, 5000);
 
 try {
-	await execa({cancelSignal: abortController.signal})`npm run build`;
+	await execaNode({cancelSignal})`build.js`;
 } catch (error) {
 	if (error.isCanceled) {
-		console.error('Aborted by cancelSignal.');
+		console.error('Canceled by cancelSignal.');
 	}
 
 	throw error;
 }
 ```
+
+## Graceful termination
+
+### Share a `cancelSignal`
+
+When the [`gracefulCancel`](api.md#optionsgracefulcancel) option is `true`, the [`cancelSignal`](api.md#optionscancelsignal) option does not send any [`SIGTERM`](#sigterm). Instead, the subprocess calls [`getCancelSignal()`](api.md#getcancelsignal) to retrieve and handle the [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal). This allows the subprocess to properly clean up and abort operations.
+
+This option only works with Node.js files.
+
+This is cross-platform. If you do not need to support Windows, [signal handlers](#handling-signals) can also be used.
+
+```js
+// main.js
+import {execaNode} from 'execa';
+
+const controller = new AbortController();
+const cancelSignal = controller.signal;
+
+setTimeout(() => {
+	controller.abort();
+}, 5000);
+
+try {
+	await execaNode({cancelSignal, gracefulCancel: true})`build.js`;
+} catch (error) {
+	if (error.isGracefullyCanceled) {
+		console.error('Cancelled gracefully.');
+	}
+
+	throw error;
+}
+```
+
+```js
+// build.js
+import {getCancelSignal} from 'execa';
+
+const cancelSignal = await getCancelSignal();
+```
+
+### Abort operations
+
+The [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) returned by [`getCancelSignal()`](api.md#getcancelsignal) can be passed to most long-running Node.js methods: [`setTimeout()`](https://nodejs.org/api/timers.html#timerspromisessettimeoutdelay-value-options), [`setInterval()`](https://nodejs.org/api/timers.html#timerspromisessetintervaldelay-value-options), [events](https://nodejs.org/api/events.html#eventsonemitter-eventname-options), [streams](https://nodejs.org/api/stream.html#new-streamreadableoptions), [REPL](https://nodejs.org/api/readline.html#rlquestionquery-options), HTTP/TCP [requests](https://nodejs.org/api/http.html#httprequesturl-options-callback) or [servers](https://nodejs.org/api/net.html#serverlistenoptions-callback), [reading](https://nodejs.org/api/fs.html#fspromisesreadfilepath-options) / [writing](https://nodejs.org/api/fs.html#fspromiseswritefilefile-data-options) / [watching](https://nodejs.org/api/fs.html#fspromiseswatchfilename-options) files, or spawning another subprocess.
+
+When aborted, those methods throw the `Error` instance which was passed to [`abortController.abort(error)`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort). Since those methods keep the subprocess alive, aborting them makes the subprocess end on its own.
+
+```js
+import {getCancelSignal} from 'execa';
+import {watch} from 'node:fs/promises';
+
+const cancelSignal = await getCancelSignal();
+
+try {
+	for await (const fileChange of watch('./src', {signal: cancelSignal})) {
+		onFileChange(fileChange);
+	}
+} catch (error) {
+	if (error.isGracefullyCanceled) {
+		console.log(error.cause === cancelSignal.reason); // true
+	}
+}
+```
+
+### Cleanup logic
+
+For other kinds of operations, the [`abort`](https://nodejs.org/api/globals.html#event-abort) event should be listened to. Although [`cancelSignal.addEventListener('abort')`](https://nodejs.org/api/events.html#eventtargetaddeventlistenertype-listener-options) can be used, [`events.addAbortListener(cancelSignal)`](https://nodejs.org/api/events.html#eventsaddabortlistenersignal-listener) is preferred since it works even if the `cancelSignal` is already aborted.
+
+### Graceful exit
+
+We recommend explicitly [stopping](#abort-operations) each pending operation when the subprocess is aborted. This allows it to end on its own.
+
+```js
+import {getCancelSignal} from 'execa';
+import {addAbortListener} from 'node:events';
+
+const cancelSignal = await getCancelSignal();
+addAbortListener(cancelSignal, async () => {
+	await cleanup();
+	process.exitCode = 1;
+});
+```
+
+However, if any operation is still ongoing, the subprocess will keep running. It can be forcefully ended using [`process.exit(exitCode)`](https://nodejs.org/api/process.html#processexitcode) instead of [`process.exitCode`](https://nodejs.org/api/process.html#processexitcode_1).
+
+If the subprocess is still alive after 5 seconds, it is forcefully terminated with [`SIGKILL`](#sigkill). This can be [configured or disabled](#forceful-termination) using the [`forceKillAfterDelay`](api.md#optionsforcekillafterdelay) option.
 
 ## Timeout
 
@@ -126,6 +211,8 @@ process.on('SIGTERM', () => {
 ```
 
 Unfortunately this [usually does not work](https://github.com/ehmicky/cross-platform-node-guide/blob/main/docs/6_networking_ipc/signals.md#cross-platform-signals) on Windows. The only signal that is somewhat cross-platform is [`SIGINT`](#sigint): on Windows, its handler is triggered when the user types `CTRL-C` in the terminal. However `subprocess.kill('SIGINT')` is only handled on Unix.
+
+Execa provides the [`gracefulCancel`](#graceful-termination) option as a cross-platform alternative to signal handlers.
 
 ### Signal name and description
 

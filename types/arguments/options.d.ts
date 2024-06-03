@@ -185,6 +185,8 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
 
+	When reached, `error.isMaxBuffer` becomes `true`.
+
 	@default 100_000_000
 	*/
 	readonly maxBuffer?: FdGenericOption<number>;
@@ -203,7 +205,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	The subprocess must be a Node.js file.
 
-	@default `true` if either the `node` option or the `ipcInput` option is set, `false` otherwise
+	@default `true` if the `node`, `ipcInput` or `gracefulCancel` option is set, `false` otherwise
 	*/
 	readonly ipc?: Unless<IsSync, boolean>;
 
@@ -242,32 +244,33 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	If `timeout` is greater than `0`, the subprocess will be terminated if it runs for longer than that amount of milliseconds.
 
-	On timeout, `result.timedOut` becomes `true`.
+	On timeout, `error.timedOut` becomes `true`.
 
 	@default 0
 	*/
 	readonly timeout?: number;
 
 	/**
-	You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+	When the `cancelSignal` is [aborted](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort), terminate the subprocess using a `SIGTERM` signal.
 
-	When `AbortController.abort()` is called, `result.isCanceled` becomes `true`.
+	When aborted, `error.isCanceled` becomes `true`.
 
 	@example
 	```
-	import {execa} from 'execa';
+	import {execaNode} from 'execa';
 
-	const abortController = new AbortController();
+	const controller = new AbortController();
+	const cancelSignal = controller.signal;
 
 	setTimeout(() => {
-		abortController.abort();
+		controller.abort();
 	}, 5000);
 
 	try {
-		await execa({cancelSignal: abortController.signal})`npm run build`;
+		await execaNode({cancelSignal})`build.js`;
 	} catch (error) {
 		if (error.isCanceled) {
-			console.error('Aborted by cancelSignal.');
+			console.error('Canceled by cancelSignal.');
 		}
 
 		throw error;
@@ -275,6 +278,17 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	```
 	*/
 	readonly cancelSignal?: Unless<IsSync, AbortSignal>;
+
+	/**
+	When the `cancelSignal` option is [aborted](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort), do not send any `SIGTERM`. Instead, abort the [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) returned by `getCancelSignal()`. The subprocess should use it to terminate gracefully.
+
+	The subprocess must be a Node.js file.
+
+	When aborted, `error.isGracefullyCanceled` becomes `true`.
+
+	@default false
+	*/
+	readonly gracefulCancel?: Unless<IsSync, boolean>;
 
 	/**
 	If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).

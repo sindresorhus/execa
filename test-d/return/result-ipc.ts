@@ -28,6 +28,9 @@ expectType<Array<Message<'advanced'>>>(inputResult.ipcOutput);
 const genericInputResult = await execa('unicorns', {ipcInput: '' as Message});
 expectType<Array<Message<'advanced'>>>(genericInputResult.ipcOutput);
 
+const gracefulResult = await execa('unicorns', {gracefulCancel: true, cancelSignal: AbortSignal.abort()});
+expectType<Array<Message<'advanced'>>>(gracefulResult.ipcOutput);
+
 const genericResult = await execa('unicorns', {} as Options);
 expectType<Message[] | []>(genericResult.ipcOutput);
 
@@ -36,6 +39,9 @@ expectType<Array<Message<'advanced'>> | []>(genericIpc.ipcOutput);
 
 const maybeInputResult = await execa('unicorns', {ipcInput: '' as '' | undefined});
 expectType<Array<Message<'advanced'>> | []>(maybeInputResult.ipcOutput);
+
+const maybeGracefulResult = await execa('unicorns', {gracefulCancel: true as boolean | undefined, cancelSignal: AbortSignal.abort()});
+expectType<Array<Message<'advanced'>> | []>(maybeGracefulResult.ipcOutput);
 
 const falseIpcResult = await execa('unicorns', {ipc: false});
 expectType<[]>(falseIpcResult.ipcOutput);
@@ -51,6 +57,15 @@ expectType<[]>(undefinedInputResult.ipcOutput);
 
 const inputNoIpcResult = await execa('unicorns', {ipc: false, ipcInput: ''});
 expectType<[]>(inputNoIpcResult.ipcOutput);
+
+const undefinedGracefulResult = await execa('unicorns', {gracefulCancel: undefined});
+expectType<[]>(undefinedGracefulResult.ipcOutput);
+
+const falseGracefulResult = await execa('unicorns', {gracefulCancel: false});
+expectType<[]>(falseGracefulResult.ipcOutput);
+
+const gracefulNoIpcResult = await execa('unicorns', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()});
+expectType<[]>(gracefulNoIpcResult.ipcOutput);
 
 const noBufferResult = await execa('unicorns', {ipc: true, buffer: false});
 expectType<[]>(noBufferResult.ipcOutput);

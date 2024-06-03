@@ -101,6 +101,11 @@ export declare abstract class CommonResult<
 	isCanceled: boolean;
 
 	/**
+	Whether the subprocess was canceled using both the `cancelSignal` and the `gracefulCancel` options.
+	*/
+	isGracefullyCanceled: boolean;
+
+	/**
 	Whether the subprocess failed because its output was larger than the `maxBuffer` option.
 	*/
 	isMaxBuffer: boolean;

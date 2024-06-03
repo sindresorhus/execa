@@ -18,9 +18,11 @@ const {
 	sendMessage,
 	getOneMessage,
 	getEachMessage,
+	getCancelSignal,
 } = getIpcExport();
 export {
 	sendMessage,
 	getOneMessage,
 	getEachMessage,
+	getCancelSignal,
 };

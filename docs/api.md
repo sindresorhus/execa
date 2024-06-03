@@ -173,6 +173,16 @@ Keep the subprocess alive while `getEachMessage()` is waiting.
 
 [More info.](ipc.md#keeping-the-subprocess-alive)
 
+### getCancelSignal()
+
+_Returns_: [`Promise<AbortSignal>`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
+
+Retrieves the [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) shared by the [`cancelSignal`](#optionscancelsignal) option.
+
+This can only be called inside a subprocess. This requires the [`gracefulCancel`](#optionsgracefulcancel) option to be `true`.
+
+[More info.](termination.md#graceful-termination)
+
 ## Return value
 
 _TypeScript:_ [`ResultPromise`](typescript.md)\
@@ -651,6 +661,14 @@ Whether the subprocess was canceled using the [`cancelSignal`](#optionscancelsig
 
 [More info.](termination.md#canceling)
 
+### error.isGracefullyCanceled
+
+_Type:_ `boolean`
+
+Whether the subprocess was canceled using both the [`cancelSignal`](#optionscancelsignal) and the [`gracefulCancel`](#optionsgracefulcancel) options.
+
+[More info.](termination.md#graceful-termination)
+
 ### error.isMaxBuffer
 
 _Type:_ `boolean`
@@ -943,6 +961,8 @@ Largest amount of data allowed on [`stdout`](#resultstdout), [`stderr`](#results
 
 By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](output.md#stdoutstderr-specific-options).
 
+When reached, [`error.isMaxBuffer`](#errorismaxbuffer) becomes `true`.
+
 [More info.](output.md#big-output)
 
 ### options.buffer
@@ -959,7 +979,7 @@ By default, this applies to both `stdout` and `stderr`, but [different values ca
 ### options.ipc
 
 _Type:_ `boolean`\
-_Default:_ `true` if either the [`node`](#optionsnode) option or the [`ipcInput`](#optionsipcinput) is set, `false` otherwise
+_Default:_ `true` if the [`node`](#optionsnode), [`ipcInput`](#optionsipcinput) or [`gracefulCancel`](#optionsgracefulcancel) option is set, `false` otherwise
 
 Enables exchanging messages with the subprocess using [`subprocess.sendMessage(message)`](#subprocesssendmessagemessage-sendmessageoptions), [`subprocess.getOneMessage()`](#subprocessgetonemessagegetonemessageoptions) and [`subprocess.getEachMessage()`](#subprocessgeteachmessage).
 
@@ -1015,7 +1035,7 @@ _Default:_ `0`
 
 If `timeout` is greater than `0`, the subprocess will be [terminated](#optionskillsignal) if it runs for longer than that amount of milliseconds.
 
-On timeout, [`result.timedOut`](#errortimedout) becomes `true`.
+On timeout, [`error.timedOut`](#errortimedout) becomes `true`.
 
 [More info.](termination.md#timeout)
 
@@ -1023,11 +1043,24 @@ On timeout, [`result.timedOut`](#errortimedout) becomes `true`.
 
 _Type:_ [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
 
-You can abort the subprocess using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+When the `cancelSignal` is [aborted](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort), terminate the subprocess using a `SIGTERM` signal.
 
-When `AbortController.abort()` is called, [`result.isCanceled`](#erroriscanceled) becomes `true`.
+When aborted, [`error.isCanceled`](#erroriscanceled) becomes `true`.
 
 [More info.](termination.md#canceling)
+
+### options.gracefulCancel
+
+_Type:_ `boolean`\
+_Default:_: `false`
+
+When the [`cancelSignal`](#optionscancelsignal) option is [aborted](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort), do not send any [`SIGTERM`](termination.md#canceling). Instead, abort the [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) returned by [`getCancelSignal()`](#getcancelsignal). The subprocess should use it to terminate gracefully.
+
+The subprocess must be a [Node.js file](#optionsnode).
+
+When aborted, [`error.isGracefullyCanceled`](#errorisgracefullycanceled) becomes `true`.
+
+[More info.](termination.md#graceful-termination)
 
 ### options.forceKillAfterDelay
 

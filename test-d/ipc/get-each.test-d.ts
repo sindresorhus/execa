@@ -42,5 +42,7 @@ expectType<undefined>(execa('test', {ipc: false, gracefulCancel: true, cancelSig
 
 subprocess.getEachMessage({reference: true} as const);
 getEachMessage({reference: true} as const);
+subprocess.getEachMessage({reference: true as boolean});
+getEachMessage({reference: true as boolean});
 expectError(subprocess.getEachMessage({reference: 'true'} as const));
 expectError(getEachMessage({reference: 'true'} as const));

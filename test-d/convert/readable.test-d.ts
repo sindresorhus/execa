@@ -10,6 +10,7 @@ subprocess.readable({from: 'stdout'});
 subprocess.readable({from: 'stderr'});
 subprocess.readable({from: 'all'});
 subprocess.readable({from: 'fd3'});
+expectError(subprocess.readable({from: 'fd3' as string}));
 expectError(subprocess.readable({from: 'stdin'}));
 expectError(subprocess.readable({from: 'fd'}));
 expectError(subprocess.readable({from: 'fdNotANumber'}));

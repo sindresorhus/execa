@@ -2,23 +2,6 @@ import type {Options} from '../arguments/options.js';
 import type {ResultPromise} from '../subprocess/subprocess.js';
 import type {TemplateString} from './template.js';
 
-type Execa<OptionsType extends Options> = {
-	<NewOptionsType extends Options = {}>(options: NewOptionsType): Execa<OptionsType & NewOptionsType>;
-
-	(...templateString: TemplateString): ResultPromise<OptionsType>;
-
-	<NewOptionsType extends Options = {}>(
-		file: string | URL,
-		arguments?: readonly string[],
-		options?: NewOptionsType,
-	): ResultPromise<OptionsType & NewOptionsType>;
-
-	<NewOptionsType extends Options = {}>(
-		file: string | URL,
-		options?: NewOptionsType,
-	): ResultPromise<OptionsType & NewOptionsType>;
-};
-
 /**
 Executes a command using `file ...arguments`.
 
@@ -336,4 +319,33 @@ $ NODE_DEBUG=execa node build.js
 [00:57:44.747] [1] ✘ (done in 89ms)
 ```
 */
-export declare const execa: Execa<{}>;
+export declare const execa: ExecaMethod<{}>;
+
+/**
+`execa()` method either exported by Execa, or bound using `execa(options)`.
+*/
+type ExecaMethod<OptionsType extends Options> =
+	& ExecaBind<OptionsType>
+	& ExecaTemplate<OptionsType>
+	& ExecaArrayLong<OptionsType>
+	& ExecaArrayShort<OptionsType>;
+
+// `execa(options)` binding
+type ExecaBind<OptionsType extends Options> =
+	<NewOptionsType extends Options = {}>(options: NewOptionsType)
+	=> ExecaMethod<OptionsType & NewOptionsType>;
+
+// `execa`command`` template syntax
+type ExecaTemplate<OptionsType extends Options> =
+	(...templateString: TemplateString)
+	=> ResultPromise<OptionsType>;
+
+// `execa('file', ['argument'], {})` array syntax
+type ExecaArrayLong<OptionsType extends Options> =
+	<NewOptionsType extends Options = {}>(file: string | URL, arguments?: readonly string[], options?: NewOptionsType)
+	=> ResultPromise<OptionsType & NewOptionsType>;
+
+// `execa('file', {})` array syntax
+type ExecaArrayShort<OptionsType extends Options> =
+	<NewOptionsType extends Options = {}>(file: string | URL, options?: NewOptionsType)
+	=> ResultPromise<OptionsType & NewOptionsType>;

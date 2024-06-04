@@ -8,45 +8,6 @@ import type {SyncResult} from '../return/result.js';
 import type {ResultPromise} from '../subprocess/subprocess.js';
 import type {TemplateString} from './template.js';
 
-type ExecaScriptCommon<OptionsType extends CommonOptions> = {
-	<NewOptionsType extends CommonOptions = {}>(options: NewOptionsType): ExecaScript<OptionsType & NewOptionsType>;
-
-	(...templateString: TemplateString): ResultPromise<StricterOptions<OptionsType, Options>>;
-
-	<NewOptionsType extends Options = {}>(
-		file: string | URL,
-		arguments?: readonly string[],
-		options?: NewOptionsType,
-	): ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
-
-	<NewOptionsType extends Options = {}>(
-		file: string | URL,
-		options?: NewOptionsType,
-	): ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
-};
-
-type ExecaScriptSync<OptionsType extends CommonOptions> = {
-	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType): ExecaScriptSync<OptionsType & NewOptionsType>;
-
-	(...templateString: TemplateString): SyncResult<StricterOptions<OptionsType, SyncOptions>>;
-
-	<NewOptionsType extends SyncOptions = {}>(
-		file: string | URL,
-		arguments?: readonly string[],
-		options?: NewOptionsType,
-	): SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
-
-	<NewOptionsType extends SyncOptions = {}>(
-		file: string | URL,
-		options?: NewOptionsType,
-	): SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
-};
-
-type ExecaScript<OptionsType extends CommonOptions> = {
-	sync: ExecaScriptSync<OptionsType>;
-	s: ExecaScriptSync<OptionsType>;
-} & ExecaScriptCommon<OptionsType>;
-
 /**
 Same as `execa()` but using script-friendly default options.
 
@@ -87,4 +48,66 @@ $ NODE_DEBUG=execa node build.js
 [00:57:44.747] [1] ✘ (done in 89ms)
 ```
 */
-export const $: ExecaScript<{}>;
+export const $: ExecaScriptMethod<{}>;
+
+/**
+`$()` method either exported by Execa, or bound using `$(options)`.
+*/
+type ExecaScriptMethod<OptionsType extends CommonOptions> =
+	& ExecaScriptBind<OptionsType>
+	& ExecaScriptTemplate<OptionsType>
+	& ExecaScriptArrayLong<OptionsType>
+	& ExecaScriptArrayShort<OptionsType>
+	& {sync: ExecaScriptSyncMethod<OptionsType>}
+	& {s: ExecaScriptSyncMethod<OptionsType>};
+
+// `$(options)` binding
+type ExecaScriptBind<OptionsType extends CommonOptions> =
+	<NewOptionsType extends CommonOptions = {}>(options: NewOptionsType)
+	=> ExecaScriptMethod<OptionsType & NewOptionsType>;
+
+// `$`command`` template syntax
+type ExecaScriptTemplate<OptionsType extends CommonOptions> =
+	(...templateString: TemplateString)
+	=> ResultPromise<StricterOptions<OptionsType, Options>>;
+
+// `$('file', ['arg'], {})` array syntax
+type ExecaScriptArrayLong<OptionsType extends CommonOptions> =
+	<NewOptionsType extends Options = {}>(file: string | URL, arguments?: readonly string[], options?: NewOptionsType)
+	=> ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
+
+// `$('file', {})` array syntax
+type ExecaScriptArrayShort<OptionsType extends CommonOptions> =
+	<NewOptionsType extends Options = {}>(file: string | URL, options?: NewOptionsType)
+	=> ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
+
+// We must intersect the overloaded methods with & instead of using a simple object as a workaround for a TypeScript bug
+// See https://github.com/microsoft/TypeScript/issues/58765
+/**
+`$.sync()` method either exported by Execa, or bound using `$.sync(options)`.
+*/
+type ExecaScriptSyncMethod<OptionsType extends CommonOptions> =
+	& ExecaScriptSyncBind<OptionsType>
+	& ExecaScriptSyncTemplate<OptionsType>
+	& ExecaScriptSyncArrayLong<OptionsType>
+	& ExecaScriptSyncArrayShort<OptionsType>;
+
+// `$.sync(options)` binding
+type ExecaScriptSyncBind<OptionsType extends CommonOptions> =
+	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType)
+	=> ExecaScriptSyncMethod<OptionsType & NewOptionsType>;
+
+// $.sync`command` template syntax
+type ExecaScriptSyncTemplate<OptionsType extends CommonOptions> =
+	(...templateString: TemplateString)
+	=> SyncResult<StricterOptions<OptionsType, SyncOptions>>;
+
+// `$.sync('file', ['arg'], {})` array syntax
+type ExecaScriptSyncArrayLong<OptionsType extends CommonOptions> =
+	<NewOptionsType extends SyncOptions = {}>(file: string | URL, arguments?: readonly string[], options?: NewOptionsType)
+	=> SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
+
+// `$.sync('file', {})` array syntax
+type ExecaScriptSyncArrayShort<OptionsType extends CommonOptions> =
+	<NewOptionsType extends SyncOptions = {}>(file: string | URL, options?: NewOptionsType)
+	=> SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;

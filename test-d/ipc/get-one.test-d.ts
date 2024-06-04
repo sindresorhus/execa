@@ -64,5 +64,7 @@ expectError(await getOneMessage({unknownOption: true} as const));
 
 await subprocess.getOneMessage({reference: true} as const);
 await getOneMessage({reference: true} as const);
+await subprocess.getOneMessage({reference: true as boolean});
+await getOneMessage({reference: true as boolean});
 expectError(await subprocess.getOneMessage({reference: 'true'} as const));
 expectError(await getOneMessage({reference: 'true'} as const));

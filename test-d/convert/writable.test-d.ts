@@ -8,6 +8,7 @@ expectType<Writable>(subprocess.writable());
 
 subprocess.writable({to: 'stdin'});
 subprocess.writable({to: 'fd3'});
+expectError(subprocess.writable({to: 'fd3' as string}));
 expectError(subprocess.writable({to: 'stdout'}));
 expectError(subprocess.writable({to: 'fd'}));
 expectError(subprocess.writable({to: 'fdNotANumber'}));

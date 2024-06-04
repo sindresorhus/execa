@@ -69,6 +69,7 @@ subprocess.iterable({from: 'stdout'});
 subprocess.iterable({from: 'stderr'});
 subprocess.iterable({from: 'all'});
 subprocess.iterable({from: 'fd3'});
+expectError(subprocess.iterable({from: 'fd3' as string}));
 expectError(subprocess.iterable({from: 'stdin'}));
 expectError(subprocess.iterable({from: 'fd'}));
 expectError(subprocess.iterable({from: 'fdNotANumber'}));

@@ -41,5 +41,8 @@ expectError(execaSync('unicorns', {encoding: 'binary'}));
 await execa('unicorns', {encoding: 'ascii'});
 execaSync('unicorns', {encoding: 'ascii'});
 
+expectError(await execa('unicorns', {encoding: 'utf8' as string}));
+expectError(execaSync('unicorns', {encoding: 'utf8' as string}));
+
 expectError(await execa('unicorns', {encoding: 'unknownEncoding'}));
 expectError(execaSync('unicorns', {encoding: 'unknownEncoding'}));

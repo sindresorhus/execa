@@ -297,7 +297,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 5000
 	*/
-	readonly forceKillAfterDelay?: Unless<IsSync, number | false>;
+	readonly forceKillAfterDelay?: Unless<IsSync, number | boolean>;
 
 	/**
 	Default [signal](https://en.wikipedia.org/wiki/Signal_(IPC)) used to terminate the subprocess.

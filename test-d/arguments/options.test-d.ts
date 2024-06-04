@@ -150,6 +150,10 @@ expectError(execaSync('unicorns', {killSignal: 'SIGRT1'}));
 
 await execa('unicorns', {forceKillAfterDelay: false});
 expectError(execaSync('unicorns', {forceKillAfterDelay: false}));
+await execa('unicorns', {forceKillAfterDelay: true});
+expectError(execaSync('unicorns', {forceKillAfterDelay: true}));
+await execa('unicorns', {forceKillAfterDelay: false as boolean});
+expectError(execaSync('unicorns', {forceKillAfterDelay: false as boolean}));
 await execa('unicorns', {forceKillAfterDelay: 42});
 expectError(execaSync('unicorns', {forceKillAfterDelay: 42}));
 expectError(await execa('unicorns', {forceKillAfterDelay: 'true'}));

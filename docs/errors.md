@@ -59,7 +59,7 @@ The subprocess can fail for other reasons. Some of them can be detected using a 
 Otherwise, the subprocess failed because either:
 - An exception was thrown in a [stream](streams.md) or [transform](transform.md).
 - The command's executable file was not found.
-- An invalid [option](api.md#options) was passed.
+- An invalid [option](api.md#options-1) was passed.
 - There was not enough memory or too many subprocesses.
 
 ```js
@@ -82,7 +82,7 @@ For better [debugging](debugging.md), [`error.message`](api.md#errormessage) inc
 
 [`error.shortMessage`](api.md#errorshortmessage) is the same but without `stdout`, `stderr` nor IPC messages.
 
-[`error.originalMessage`](api.md#errororiginalmessage) is the same but also without the command. This exists only in specific instances, such as when calling [`subprocess.kill(error)`](termination.md#error-message-and-stack-trace), using the [`cancelSignal`](termination.md#canceling) option, passing an invalid command or [option](api.md#options), or throwing an exception in a [stream](streams.md) or [transform](transform.md).
+[`error.originalMessage`](api.md#errororiginalmessage) is the same but also without the command. This exists only in specific instances, such as when calling [`subprocess.kill(error)`](termination.md#error-message-and-stack-trace), using the [`cancelSignal`](termination.md#canceling) option, passing an invalid command or [option](api.md#options-1), or throwing an exception in a [stream](streams.md) or [transform](transform.md).
 
 ```js
 try {

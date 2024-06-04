@@ -6,7 +6,9 @@ import type {TemplateString} from './template.js';
 Same as `execa()` but using the `node: true` option.
 Executes a Node.js file using `node scriptPath ...arguments`.
 
-Just like `execa()`, this can use the template string syntax or bind options.
+When `command` is a template string, it includes both the `file` and its `arguments`.
+
+`execaNode(options)` can be used to return a new instance of this method but with different default `options`. Consecutive calls are merged to previous ones.
 
 This is the preferred method when executing Node.js files.
 

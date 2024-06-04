@@ -8,7 +8,7 @@
 
 ## Available types
 
-The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand) and [`Message`](api.md#subprocesssendmessagemessage-sendmessageoptions).
+The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options-1), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand) and [`Message`](api.md#subprocesssendmessagemessage-sendmessageoptions).
 
 ```ts
 import {
@@ -35,7 +35,7 @@ const message: Message = 'hello world';
 
 try {
 	const subprocess: ResultPromise = execa(options)`npm run ${task}`;
-	await subprocess.sendMessage(message);
+	await subprocess.sendMessage?.(message);
 	const result: Result = await subprocess;
 	console.log(result.stdout);
 } catch (error) {
@@ -47,7 +47,7 @@ try {
 
 ## Synchronous execution
 
-Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options), [`StdinSyncOption`](api.md#optionsstdin), [`StdoutStderrSyncOption`](api.md#optionsstdout) and [`TemplateExpression`](api.md#execacommand).
+Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options-1), [`StdinSyncOption`](api.md#optionsstdin), [`StdoutStderrSyncOption`](api.md#optionsstdout) and [`TemplateExpression`](api.md#execacommand).
 
 ```ts
 import {
@@ -139,7 +139,7 @@ ReferenceError: exports is not defined in ES module scope
 
 ### Strict unions
 
-Several options are typed as unions. For example, the [`serialization`](api.md#optionsserialization) option's type is `'advanced' | 'json'`, not `string`. Therefore the following example fails:
+Several options are typed as unions of strings: [`stdin`](api.md#optionsstdin), [`stdout`](api.md#optionsstdout), [`stderr`](api.md#optionsstderr), [`encoding`](api.md#optionsencoding), [`serialization`](api.md#optionsserialization), [`verbose`](api.md#optionsverbose), [`killSignal`](api.md#optionskillsignal), [`from`](api.md#pipeoptionsfrom) and [`to`](api.md#pipeoptionsto). For example, the `serialization` option's type is `'advanced' | 'json'`, not `string`. Therefore the following example fails:
 
 ```ts
 import {execa} from 'execa';

@@ -1,4 +1,4 @@
-import type {NoStreamStdioOption, StdioOptionCommon} from '../stdio/type.js';
+import type {NoStreamStdioOption} from '../stdio/type.js';
 import type {IsInputFd} from '../stdio/direction.js';
 import type {FdStdioOption} from '../stdio/option.js';
 import type {FdSpecificOption} from '../arguments/specific.js';
@@ -22,5 +22,5 @@ export type IgnoresSubprocessOutput<
 
 type IgnoresOutput<
 	FdNumber extends string,
-	StdioOptionType extends StdioOptionCommon,
+	StdioOptionType,
 > = StdioOptionType extends NoStreamStdioOption<FdNumber> ? true : false;

@@ -8,7 +8,7 @@ export type SubprocessAll<OptionsType extends Options> = AllStream<AllIgnored<Op
 type AllStream<IsIgnored> = IsIgnored extends true ? undefined : Readable;
 
 type AllIgnored<
-	AllOption extends Options['all'],
+	AllOption,
 	OptionsType extends Options,
 > = AllOption extends true
 	? IgnoresSubprocessOutput<'1', OptionsType> extends true

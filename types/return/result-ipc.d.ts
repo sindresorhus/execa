@@ -6,7 +6,7 @@ import type {Message, HasIpc} from '../ipc.js';
 // This is empty unless the `ipc` option is `true`.
 // Also, this is empty if the `buffer` option is `false`.
 export type ResultIpcOutput<
-	IsSync extends boolean,
+	IsSync,
 	OptionsType extends CommonOptions,
 > = IsSync extends true
 	? []

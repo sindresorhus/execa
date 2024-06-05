@@ -324,7 +324,7 @@ export declare const execa: ExecaMethod<{}>;
 /**
 `execa()` method either exported by Execa, or bound using `execa(options)`.
 */
-type ExecaMethod<OptionsType extends Options> =
+export type ExecaMethod<OptionsType extends Options = Options> =
 	& ExecaBind<OptionsType>
 	& ExecaTemplate<OptionsType>
 	& ExecaArrayLong<OptionsType>

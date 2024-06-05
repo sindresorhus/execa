@@ -32,7 +32,7 @@ export declare const execaSync: ExecaSyncMethod<{}>;
 
 // For the moment, we purposely do not export `ExecaSyncMethod` and `ExecaScriptSyncMethod`.
 // This is because synchronous invocation is discouraged.
-type ExecaSyncMethod<OptionsType extends SyncOptions> =
+export type ExecaSyncMethod<OptionsType extends SyncOptions = SyncOptions> =
 	& ExecaSyncBind<OptionsType>
 	& ExecaSyncTemplate<OptionsType>
 	& ExecaSyncArrayLong<OptionsType>

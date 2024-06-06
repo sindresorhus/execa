@@ -206,9 +206,9 @@ However, if you don't know whether a message will be sent, this can leave the su
 import {getEachMessage} from 'execa';
 
 // {type: 'gracefulExit'} is sometimes received, but not always
-for await (const message of getEachMessage()) {
+for await (const message of getEachMessage({reference: false})) {
 	if (message.type === 'gracefulExit') {
-		gracefulExit({reference: false});
+		gracefulExit();
 	}
 }
 ```

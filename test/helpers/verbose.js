@@ -27,9 +27,35 @@ export const runWarningSubprocess = async (t, isSync) => {
 export const runEarlyErrorSubprocess = async (t, isSync) => {
 	const {stderr, nestedResult} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short', cwd: true, isSync});
 	t.true(nestedResult instanceof Error);
-	t.true(stderr.includes('The "cwd" option must'));
+	t.true(nestedResult.message.startsWith('The "cwd" option must'));
 	return stderr;
 };
+
+export const runVerboseSubprocess = ({
+	isSync = false,
+	type,
+	eventProperty,
+	optionName,
+	errorMessage,
+	fdNumber,
+	secondFdNumber,
+	optionsFixture = 'custom-event.js',
+	output = '. .',
+	...options
+}) => nestedSubprocess('noop-verbose.js', [output], {
+	ipc: !isSync,
+	optionsFixture,
+	optionsInput: {
+		type,
+		eventProperty,
+		optionName,
+		errorMessage,
+		fdNumber,
+		secondFdNumber,
+	},
+	isSync,
+	...options,
+});
 
 export const getCommandLine = stderr => getCommandLines(stderr)[0];
 export const getCommandLines = stderr => getNormalizedLines(stderr).filter(line => isCommandLine(line));
@@ -46,6 +72,7 @@ const isErrorLine = line => (line.includes(' × ') || line.includes(' ‼ ')) &&
 export const getCompletionLine = stderr => getCompletionLines(stderr)[0];
 export const getCompletionLines = stderr => getNormalizedLines(stderr).filter(line => isCompletionLine(line));
 const isCompletionLine = line => line.includes('(done in');
+export const getNormalizedLine = stderr => getNormalizedLines(stderr)[0];
 export const getNormalizedLines = stderr => splitLines(normalizeStderr(stderr));
 const splitLines = stderr => stderr.split('\n');
 

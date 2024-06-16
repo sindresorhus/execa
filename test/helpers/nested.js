@@ -4,6 +4,7 @@ import {execa} from '../../index.js';
 import {FIXTURES_DIRECTORY_URL} from './fixtures-directory.js';
 
 const WORKER_URL = new URL('worker.js', FIXTURES_DIRECTORY_URL);
+const NESTED_URL = new URL('nested/', FIXTURES_DIRECTORY_URL);
 
 // Like `execa(file, commandArguments, options)` but spawns inside another parent process.
 // This is useful when testing logic where Execa modifies the global state.
@@ -55,3 +56,14 @@ const spawnWorker = async workerData => {
 };
 
 export const spawnParentProcess = ({parentFixture, parentOptions, ...ipcInput}) => execa(parentFixture, {...parentOptions, ipcInput});
+
+// Some subprocess options cannot be serialized between processes.
+// For those, we pass a fixture filename instead, which dynamically creates the options.
+export const getNestedOptions = async (options, optionsFixture, optionsInput) => {
+	if (optionsFixture === undefined) {
+		return options;
+	}
+
+	const {getOptions} = await import(new URL(optionsFixture, NESTED_URL));
+	return {...options, ...getOptions({...options, ...optionsInput})};
+};

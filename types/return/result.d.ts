@@ -179,9 +179,9 @@ export declare abstract class CommonResult<
 	stack?: Error['stack'];
 }
 
-type SuccessResult<
-	IsSync extends boolean,
-	OptionsType extends CommonOptions,
+export type SuccessResult<
+	IsSync extends boolean = boolean,
+	OptionsType extends CommonOptions = CommonOptions,
 > = InstanceType<typeof CommonResult<IsSync, OptionsType>> & OmitErrorIfReject<OptionsType['reject']>;
 
 type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = {

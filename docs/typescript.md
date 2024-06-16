@@ -8,7 +8,7 @@
 
 ## Available types
 
-The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options-1), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand), [`Message`](api.md#subprocesssendmessagemessage-sendmessageoptions), [`ExecaMethod`](api.md#execaoptions), [`ExecaNodeMethod`](api.md#execanodeoptions) and [`ExecaScriptMethod`](api.md#options).
+The following types can be imported: [`ResultPromise`](api.md#return-value), [`Subprocess`](api.md#subprocess), [`Result`](api.md#result), [`ExecaError`](api.md#execaerror), [`Options`](api.md#options-1), [`StdinOption`](api.md#optionsstdin), [`StdoutStderrOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand), [`Message`](api.md#subprocesssendmessagemessage-sendmessageoptions), [`VerboseObject`](api.md#verbose-object), [`ExecaMethod`](api.md#execaoptions), [`ExecaNodeMethod`](api.md#execanodeoptions) and [`ExecaScriptMethod`](api.md#options).
 
 ```ts
 import {
@@ -21,6 +21,7 @@ import {
 	type StdoutStderrOption,
 	type TemplateExpression,
 	type Message,
+	type VerboseObject,
 	type ExecaMethod,
 } from 'execa';
 
@@ -32,6 +33,9 @@ const options: Options = {
 	stderr: 'pipe' satisfies StdoutStderrOption,
 	timeout: 1000,
 	ipc: true,
+	verbose(verboseLine: string, verboseObject: VerboseObject) {
+		return verboseObject.type === 'duration' ? verboseLine : undefined;
+	},
 };
 const task: TemplateExpression = 'build';
 const message: Message = 'hello world';
@@ -50,7 +54,7 @@ try {
 
 ## Synchronous execution
 
-Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options-1), [`StdinSyncOption`](api.md#optionsstdin), [`StdoutStderrSyncOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand), [`ExecaSyncMethod`](api.md#execasyncoptions) and [`ExecaScriptSyncMethod`](api.md#syncoptions).
+Their [synchronous](#synchronous-execution) counterparts are [`SyncResult`](api.md#result), [`ExecaSyncError`](api.md#execasyncerror), [`SyncOptions`](api.md#options-1), [`StdinSyncOption`](api.md#optionsstdin), [`StdoutStderrSyncOption`](api.md#optionsstdout), [`TemplateExpression`](api.md#execacommand), [`SyncVerboseObject`](api.md#verbose-object), [`ExecaSyncMethod`](api.md#execasyncoptions) and [`ExecaScriptSyncMethod`](api.md#syncoptions).
 
 ```ts
 import {
@@ -61,6 +65,7 @@ import {
 	type StdinSyncOption,
 	type StdoutStderrSyncOption,
 	type TemplateExpression,
+	type SyncVerboseObject,
 	type ExecaSyncMethod,
 } from 'execa';
 
@@ -71,6 +76,9 @@ const options: SyncOptions = {
 	stdout: 'pipe' satisfies StdoutStderrSyncOption,
 	stderr: 'pipe' satisfies StdoutStderrSyncOption,
 	timeout: 1000,
+	verbose(verboseLine: string, verboseObject: SyncVerboseObject) {
+		return verboseObject.type === 'duration' ? verboseLine : undefined;
+	},
 };
 const task: TemplateExpression = 'build';
 
@@ -93,6 +101,7 @@ import {
 	execa as execa_,
 	ExecaError,
 	type Result,
+	type VerboseObject,
 } from 'execa';
 
 const execa = execa_({preferLocal: true});
@@ -107,6 +116,9 @@ const options = {
 	stderr: 'pipe',
 	timeout: 1000,
 	ipc: true,
+	verbose(verboseLine: string, verboseObject: VerboseObject) {
+		return verboseObject.type === 'duration' ? verboseLine : undefined;
+	},
 } as const;
 const task = 'build';
 const message = 'hello world';

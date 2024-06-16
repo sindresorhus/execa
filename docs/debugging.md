@@ -106,6 +106,96 @@ When printed to a terminal, the verbose mode uses colors.
 
 <img alt="execa verbose output" src="../media/verbose.png" width="603">
 
+## Custom logging
+
+### Verbose function
+
+The [`verbose`](api.md#optionsverbose) option can be a function to customize logging.
+
+It is called once per log line. The first argument is the default log line string. The second argument is the same information but as an object instead (documented [here](api.md#verbose-object)).
+
+If a string is returned, it is printed on `stderr`. If `undefined` is returned, nothing is printed.
+
+### Filter logs
+
+```js
+import {execa as execa_} from 'execa';
+
+// Only print log lines showing the subprocess duration
+const execa = execa_({
+	verbose(verboseLine, {type}) {
+		return type === 'duration' ? verboseLine : undefined;
+	},
+});
+```
+
+### Transform logs
+
+```js
+import {execa as execa_} from 'execa';
+
+// Prepend current process' PID
+const execa = execa_({
+	verbose(verboseLine) {
+		return `[${process.pid}] ${verboseLine}`
+	},
+});
+```
+
+### Custom log format
+
+```js
+import {execa as execa_} from 'execa';
+
+// Use a different format for the timestamp
+const execa = execa_({
+	verbose(verboseLine, {timestamp}) {
+		return verboseLine.replace(timestampRegExp, timestamp.toISOString());
+	},
+});
+
+// Timestamp at the start of each log line
+const timestampRegExp = /\d{2}:\d{2}:\d{2}\.\d{3}/;
+```
+
+### JSON logging
+
+```js
+import {execa as execa_} from 'execa';
+
+const execa = execa_({
+	verbose(verboseLine, verboseObject) {
+		return JSON.stringify(verboseObject)
+	},
+});
+```
+
+### Advanced logging
+
+```js
+import {execa as execa_} from 'execa';
+import {createLogger, transports} from 'winston';
+
+// Log to a file using Winston
+const transport = new transports.File({filename: 'logs.txt'});
+const logger = createLogger({transports: [transport]});
+
+const execa = execa_({
+	verbose(verboseLine, {type, message, ...verboseObject}) {
+		const level = LOG_LEVELS[type];
+		logger[level](message, verboseObject);
+	},
+});
+
+const LOG_LEVELS = {
+	command: 'info',
+	output: 'verbose',
+	ipc: 'verbose',
+	error: 'error',
+	duration: 'info',
+};
+```
+
 <hr>
 
 [**Next**: 📎 Windows](windows.md)\

@@ -1033,12 +1033,14 @@ More info [here](ipc.md#send-an-initial-message) and [there](input.md#any-input-
 
 ### options.verbose
 
-_Type:_ `'none' | 'short' | 'full'`\
+_Type:_ `'none' | 'short' | 'full' | Function`\
 _Default:_ `'none'`
 
 If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
 
-If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), `stderr` and [IPC messages](ipc.md) are also printed.
+If `verbose` is `'full'` or a function, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), `stderr` and [IPC messages](ipc.md) are also printed.
+
+A [function](#verbose-function) can be passed to customize logging. Please see [this page](debugging.md#custom-logging) for more information.
 
 By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](output.md#stdoutstderr-specific-options).
 
@@ -1169,6 +1171,84 @@ _Default:_ `true` if the [`shell`](#optionsshell) option is `true`, `false` othe
 If `false`, escapes the command arguments on Windows.
 
 [More info.](windows.md#cmdexe-escaping)
+
+## Verbose function
+
+_Type_: `(string, VerboseObject) => string | undefined`
+
+Function passed to the [`verbose`](#optionsverbose) option to customize logging.
+
+[More info.](debugging.md#custom-logging)
+
+### Verbose object
+
+_Type_: `VerboseObject` or `SyncVerboseObject`
+
+Subprocess event object, for logging purpose, using the [`verbose`](#optionsverbose) option.
+
+#### verboseObject.type
+
+_Type_: `string`
+
+Event type. This can be:
+- `'command'`: subprocess start
+- `'output'`: `stdout`/`stderr` [output](output.md#stdout-and-stderr)
+- `'ipc'`: IPC [output](ipc.md#retrieve-all-messages)
+- `'error'`: subprocess [failure](errors.md#subprocess-failure)
+- `'duration'`: subprocess success or failure
+
+#### verboseObject.message
+
+_Type_: `string`
+
+Depending on [`verboseObject.type`](#verboseobjecttype), this is:
+- `'command'`: the [`result.escapedCommand`](#resultescapedcommand)
+- `'output'`: one line from [`result.stdout`](#resultstdout) or [`result.stderr`](#resultstderr)
+- `'ipc'`: one IPC message from [`result.ipcOutput`](#resultipcoutput)
+- `'error'`: the [`error.shortMessage`](#errorshortmessage)
+- `'duration'`: the [`result.durationMs`](#resultdurationms)
+
+#### verboseObject.escapedCommand
+
+_Type_: `string`
+
+The file and [arguments](input.md#command-arguments) that were run. This is the same as [`result.escapedCommand`](#resultescapedcommand).
+
+#### verboseObject.options
+
+_Type_: [`Options`](#options-1) or [`SyncOptions`](#options-1)
+
+The [options](#options-1) passed to the subprocess.
+
+#### verboseObject.commandId
+
+_Type_: `string`
+
+Serial number identifying the subprocess within the current process. It is incremented from `'0'`.
+
+This is helpful when multiple subprocesses are running at the same time.
+
+This is similar to a [PID](https://en.wikipedia.org/wiki/Process_identifier) except it has no maximum limit, which means it never repeats. Also, it is usually shorter.
+
+#### verboseObject.timestamp
+
+_Type_: `Date`
+
+Event date/time.
+
+#### verboseObject.result
+
+_Type_: [`Result`](#result), [`SyncResult`](#result) or `undefined`
+
+Subprocess [result](#result).
+
+This is `undefined` if [`verboseObject.type`](#verboseobjecttype) is `'command'`, `'output'` or `'ipc'`.
+
+#### verboseObject.piped
+
+_Type_: `boolean`
+
+Whether another subprocess is [piped](pipe.md) into this subprocess. This is `false` when [`result.pipedFrom`](#resultfailed) is empty.
 
 ## Transform options
 

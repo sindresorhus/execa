@@ -14,9 +14,18 @@ import {
 	getCommandLines,
 	testTimestamp,
 	getVerboseOption,
-	fdNoneOption,
-	fdShortOption,
-	fdFullOption,
+	stdoutNoneOption,
+	stdoutShortOption,
+	stdoutFullOption,
+	stderrNoneOption,
+	stderrShortOption,
+	stderrFullOption,
+	fd3NoneOption,
+	fd3ShortOption,
+	fd3FullOption,
+	ipcNoneOption,
+	ipcShortOption,
+	ipcFullOption,
 } from '../helpers/verbose.js';
 
 setFixtureDirectory();
@@ -28,16 +37,34 @@ const testPrintCommand = async (t, verbose, execaMethod) => {
 
 test('Prints command, verbose "short"', testPrintCommand, 'short', parentExecaAsync);
 test('Prints command, verbose "full"', testPrintCommand, 'full', parentExecaAsync);
-test('Prints command, verbose "short", fd-specific', testPrintCommand, fdShortOption, parentExecaAsync);
-test('Prints command, verbose "full", fd-specific', testPrintCommand, fdFullOption, parentExecaAsync);
+test('Prints command, verbose "short", fd-specific stdout', testPrintCommand, stdoutShortOption, parentExecaAsync);
+test('Prints command, verbose "full", fd-specific stdout', testPrintCommand, stdoutFullOption, parentExecaAsync);
+test('Prints command, verbose "short", fd-specific stderr', testPrintCommand, stderrShortOption, parentExecaAsync);
+test('Prints command, verbose "full", fd-specific stderr', testPrintCommand, stderrFullOption, parentExecaAsync);
+test('Prints command, verbose "short", fd-specific fd3', testPrintCommand, fd3ShortOption, parentExecaAsync);
+test('Prints command, verbose "full", fd-specific fd3', testPrintCommand, fd3FullOption, parentExecaAsync);
+test('Prints command, verbose "short", fd-specific ipc', testPrintCommand, ipcShortOption, parentExecaAsync);
+test('Prints command, verbose "full", fd-specific ipc', testPrintCommand, ipcFullOption, parentExecaAsync);
 test('Prints command, verbose "short", sync', testPrintCommand, 'short', parentExecaSync);
 test('Prints command, verbose "full", sync', testPrintCommand, 'full', parentExecaSync);
-test('Prints command, verbose "short", fd-specific, sync', testPrintCommand, fdShortOption, parentExecaSync);
-test('Prints command, verbose "full", fd-specific, sync', testPrintCommand, fdFullOption, parentExecaSync);
+test('Prints command, verbose "short", fd-specific stdout, sync', testPrintCommand, stdoutShortOption, parentExecaSync);
+test('Prints command, verbose "full", fd-specific stdout, sync', testPrintCommand, stdoutFullOption, parentExecaSync);
+test('Prints command, verbose "short", fd-specific stderr, sync', testPrintCommand, stderrShortOption, parentExecaSync);
+test('Prints command, verbose "full", fd-specific stderr, sync', testPrintCommand, stderrFullOption, parentExecaSync);
+test('Prints command, verbose "short", fd-specific fd3, sync', testPrintCommand, fd3ShortOption, parentExecaSync);
+test('Prints command, verbose "full", fd-specific fd3, sync', testPrintCommand, fd3FullOption, parentExecaSync);
+test('Prints command, verbose "short", fd-specific ipc, sync', testPrintCommand, ipcShortOption, parentExecaSync);
+test('Prints command, verbose "full", fd-specific ipc, sync', testPrintCommand, ipcFullOption, parentExecaSync);
 test('Prints command, verbose "short", worker', testPrintCommand, 'short', parentWorker);
 test('Prints command, verbose "full", worker', testPrintCommand, 'full', parentWorker);
-test('Prints command, verbose "short", fd-specific, worker', testPrintCommand, fdShortOption, parentWorker);
-test('Prints command, verbose "full", fd-specific, worker', testPrintCommand, fdFullOption, parentWorker);
+test('Prints command, verbose "short", fd-specific stdout, worker', testPrintCommand, stdoutShortOption, parentWorker);
+test('Prints command, verbose "full", fd-specific stdout, worker', testPrintCommand, stdoutFullOption, parentWorker);
+test('Prints command, verbose "short", fd-specific stderr, worker', testPrintCommand, stderrShortOption, parentWorker);
+test('Prints command, verbose "full", fd-specific stderr, worker', testPrintCommand, stderrFullOption, parentWorker);
+test('Prints command, verbose "short", fd-specific fd3, worker', testPrintCommand, fd3ShortOption, parentWorker);
+test('Prints command, verbose "full", fd-specific fd3, worker', testPrintCommand, fd3FullOption, parentWorker);
+test('Prints command, verbose "short", fd-specific ipc, worker', testPrintCommand, ipcShortOption, parentWorker);
+test('Prints command, verbose "full", fd-specific ipc, worker', testPrintCommand, ipcFullOption, parentWorker);
 
 const testNoPrintCommand = async (t, verbose, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose});
@@ -46,11 +73,17 @@ const testNoPrintCommand = async (t, verbose, execaMethod) => {
 
 test('Does not print command, verbose "none"', testNoPrintCommand, 'none', parentExecaAsync);
 test('Does not print command, verbose default', testNoPrintCommand, undefined, parentExecaAsync);
-test('Does not print command, verbose "none", fd-specific', testNoPrintCommand, fdNoneOption, parentExecaAsync);
+test('Does not print command, verbose "none", fd-specific stdout', testNoPrintCommand, stdoutNoneOption, parentExecaAsync);
+test('Does not print command, verbose "none", fd-specific stderr', testNoPrintCommand, stderrNoneOption, parentExecaAsync);
+test('Does not print command, verbose "none", fd-specific fd3', testNoPrintCommand, fd3NoneOption, parentExecaAsync);
+test('Does not print command, verbose "none", fd-specific ipc', testNoPrintCommand, ipcNoneOption, parentExecaAsync);
 test('Does not print command, verbose default, fd-specific', testNoPrintCommand, {}, parentExecaAsync);
 test('Does not print command, verbose "none", sync', testNoPrintCommand, 'none', parentExecaSync);
 test('Does not print command, verbose default, sync', testNoPrintCommand, undefined, parentExecaSync);
-test('Does not print command, verbose "none", fd-specific, sync', testNoPrintCommand, fdNoneOption, parentExecaSync);
+test('Does not print command, verbose "none", fd-specific stdout, sync', testNoPrintCommand, stdoutNoneOption, parentExecaSync);
+test('Does not print command, verbose "none", fd-specific stderr, sync', testNoPrintCommand, stderrNoneOption, parentExecaSync);
+test('Does not print command, verbose "none", fd-specific fd3, sync', testNoPrintCommand, fd3NoneOption, parentExecaSync);
+test('Does not print command, verbose "none", fd-specific ipc, sync', testNoPrintCommand, ipcNoneOption, parentExecaSync);
 test('Does not print command, verbose default, fd-specific, sync', testNoPrintCommand, {}, parentExecaSync);
 
 const testPrintCommandError = async (t, execaMethod) => {

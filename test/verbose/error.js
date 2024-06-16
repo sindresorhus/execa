@@ -14,9 +14,18 @@ import {
 	getErrorLines,
 	testTimestamp,
 	getVerboseOption,
-	fdNoneOption,
-	fdShortOption,
-	fdFullOption,
+	stdoutNoneOption,
+	stdoutShortOption,
+	stdoutFullOption,
+	stderrNoneOption,
+	stderrShortOption,
+	stderrFullOption,
+	fd3NoneOption,
+	fd3ShortOption,
+	fd3FullOption,
+	ipcNoneOption,
+	ipcShortOption,
+	ipcFullOption,
 } from '../helpers/verbose.js';
 
 setFixtureDirectory();
@@ -30,12 +39,24 @@ const testPrintError = async (t, verbose, execaMethod) => {
 
 test('Prints error, verbose "short"', testPrintError, 'short', runErrorSubprocessAsync);
 test('Prints error, verbose "full"', testPrintError, 'full', runErrorSubprocessAsync);
-test('Prints error, verbose "short", fd-specific', testPrintError, fdShortOption, runErrorSubprocessAsync);
-test('Prints error, verbose "full", fd-specific', testPrintError, fdFullOption, runErrorSubprocessAsync);
+test('Prints error, verbose "short", fd-specific stdout', testPrintError, stdoutShortOption, runErrorSubprocessAsync);
+test('Prints error, verbose "full", fd-specific stdout', testPrintError, stdoutFullOption, runErrorSubprocessAsync);
+test('Prints error, verbose "short", fd-specific stderr', testPrintError, stderrShortOption, runErrorSubprocessAsync);
+test('Prints error, verbose "full", fd-specific stderr', testPrintError, stderrFullOption, runErrorSubprocessAsync);
+test('Prints error, verbose "short", fd-specific fd3', testPrintError, fd3ShortOption, runErrorSubprocessAsync);
+test('Prints error, verbose "full", fd-specific fd3', testPrintError, fd3FullOption, runErrorSubprocessAsync);
+test('Prints error, verbose "short", fd-specific ipc', testPrintError, ipcShortOption, runErrorSubprocessAsync);
+test('Prints error, verbose "full", fd-specific ipc', testPrintError, ipcFullOption, runErrorSubprocessAsync);
 test('Prints error, verbose "short", sync', testPrintError, 'short', runErrorSubprocessSync);
 test('Prints error, verbose "full", sync', testPrintError, 'full', runErrorSubprocessSync);
-test('Prints error, verbose "short", fd-specific, sync', testPrintError, fdShortOption, runErrorSubprocessSync);
-test('Prints error, verbose "full", fd-specific, sync', testPrintError, fdFullOption, runErrorSubprocessSync);
+test('Prints error, verbose "short", fd-specific stdout, sync', testPrintError, stdoutShortOption, runErrorSubprocessSync);
+test('Prints error, verbose "full", fd-specific stdout, sync', testPrintError, stdoutFullOption, runErrorSubprocessSync);
+test('Prints error, verbose "short", fd-specific stderr, sync', testPrintError, stderrShortOption, runErrorSubprocessSync);
+test('Prints error, verbose "full", fd-specific stderr, sync', testPrintError, stderrFullOption, runErrorSubprocessSync);
+test('Prints error, verbose "short", fd-specific fd3, sync', testPrintError, fd3ShortOption, runErrorSubprocessSync);
+test('Prints error, verbose "full", fd-specific fd3, sync', testPrintError, fd3FullOption, runErrorSubprocessSync);
+test('Prints error, verbose "short", fd-specific ipc, sync', testPrintError, ipcShortOption, runErrorSubprocessSync);
+test('Prints error, verbose "full", fd-specific ipc, sync', testPrintError, ipcFullOption, runErrorSubprocessSync);
 
 const testNoPrintError = async (t, verbose, execaMethod) => {
 	const stderr = await execaMethod(t, verbose, false);
@@ -44,11 +65,17 @@ const testNoPrintError = async (t, verbose, execaMethod) => {
 
 test('Does not print error, verbose "none"', testNoPrintError, 'none', runErrorSubprocessAsync);
 test('Does not print error, verbose default', testNoPrintError, undefined, runErrorSubprocessAsync);
-test('Does not print error, verbose "none", fd-specific', testNoPrintError, fdNoneOption, runErrorSubprocessAsync);
+test('Does not print error, verbose "none", fd-specific stdout', testNoPrintError, stdoutNoneOption, runErrorSubprocessAsync);
+test('Does not print error, verbose "none", fd-specific stderr', testNoPrintError, stderrNoneOption, runErrorSubprocessAsync);
+test('Does not print error, verbose "none", fd-specific fd3', testNoPrintError, fd3NoneOption, runErrorSubprocessAsync);
+test('Does not print error, verbose "none", fd-specific ipc', testNoPrintError, ipcNoneOption, runErrorSubprocessAsync);
 test('Does not print error, verbose default, fd-specific', testNoPrintError, {}, runErrorSubprocessAsync);
 test('Does not print error, verbose "none", sync', testNoPrintError, 'none', runErrorSubprocessSync);
 test('Does not print error, verbose default, sync', testNoPrintError, undefined, runErrorSubprocessSync);
-test('Does not print error, verbose "none", fd-specific, sync', testNoPrintError, fdNoneOption, runErrorSubprocessSync);
+test('Does not print error, verbose "none", fd-specific stdout, sync', testNoPrintError, stdoutNoneOption, runErrorSubprocessSync);
+test('Does not print error, verbose "none", fd-specific stderr, sync', testNoPrintError, stderrNoneOption, runErrorSubprocessSync);
+test('Does not print error, verbose "none", fd-specific fd3, sync', testNoPrintError, fd3NoneOption, runErrorSubprocessSync);
+test('Does not print error, verbose "none", fd-specific ipc, sync', testNoPrintError, ipcNoneOption, runErrorSubprocessSync);
 test('Does not print error, verbose default, fd-specific, sync', testNoPrintError, {}, runErrorSubprocessSync);
 
 const testPrintNoError = async (t, execaMethod) => {

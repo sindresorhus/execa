@@ -66,16 +66,15 @@ const normalizeDuration = stderr => stderr.replaceAll(/\(done in [^)]+\)/g, '(do
 
 export const getVerboseOption = (isVerbose, verbose = 'short') => ({verbose: isVerbose ? verbose : 'none'});
 
-export const fdNoneOption = {stdout: 'none', stderr: 'none'};
-export const fdShortOption = {stdout: 'short', stderr: 'none'};
-export const fdFullOption = {stdout: 'full', stderr: 'none'};
-export const fdStdoutNoneOption = {stdout: 'none', stderr: 'full'};
-export const fdStderrNoneOption = {stdout: 'full', stderr: 'none'};
-export const fdStderrShortOption = {stdout: 'none', stderr: 'short'};
-export const fdStderrFullOption = {stdout: 'none', stderr: 'full'};
-export const fd3NoneOption = {stdout: 'full', fd3: 'none'};
-export const fd3ShortOption = {stdout: 'none', fd3: 'short'};
-export const fd3FullOption = {stdout: 'none', fd3: 'full'};
+export const stdoutNoneOption = {stdout: 'none'};
+export const stdoutShortOption = {stdout: 'short'};
+export const stdoutFullOption = {stdout: 'full'};
+export const stderrNoneOption = {stderr: 'none'};
+export const stderrShortOption = {stderr: 'short'};
+export const stderrFullOption = {stderr: 'full'};
+export const fd3NoneOption = {fd3: 'none'};
+export const fd3ShortOption = {fd3: 'short'};
+export const fd3FullOption = {fd3: 'full'};
 export const ipcNoneOption = {ipc: 'none'};
 export const ipcShortOption = {ipc: 'short'};
 export const ipcFullOption = {ipc: 'full'};

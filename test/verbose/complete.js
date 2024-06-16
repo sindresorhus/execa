@@ -15,9 +15,18 @@ import {
 	getCompletionLines,
 	testTimestamp,
 	getVerboseOption,
-	fdNoneOption,
-	fdShortOption,
-	fdFullOption,
+	stdoutNoneOption,
+	stdoutShortOption,
+	stdoutFullOption,
+	stderrNoneOption,
+	stderrShortOption,
+	stderrFullOption,
+	fd3NoneOption,
+	fd3ShortOption,
+	fd3FullOption,
+	ipcNoneOption,
+	ipcShortOption,
+	ipcFullOption,
 } from '../helpers/verbose.js';
 
 setFixtureDirectory();
@@ -29,12 +38,24 @@ const testPrintCompletion = async (t, verbose, execaMethod) => {
 
 test('Prints completion, verbose "short"', testPrintCompletion, 'short', parentExecaAsync);
 test('Prints completion, verbose "full"', testPrintCompletion, 'full', parentExecaAsync);
-test('Prints completion, verbose "short", fd-specific', testPrintCompletion, fdShortOption, parentExecaAsync);
-test('Prints completion, verbose "full", fd-specific', testPrintCompletion, fdFullOption, parentExecaAsync);
+test('Prints completion, verbose "short", fd-specific stdout', testPrintCompletion, stdoutShortOption, parentExecaAsync);
+test('Prints completion, verbose "full", fd-specific stdout', testPrintCompletion, stdoutFullOption, parentExecaAsync);
+test('Prints completion, verbose "short", fd-specific stderr', testPrintCompletion, stderrShortOption, parentExecaAsync);
+test('Prints completion, verbose "full", fd-specific stderr', testPrintCompletion, stderrFullOption, parentExecaAsync);
+test('Prints completion, verbose "short", fd-specific fd3', testPrintCompletion, fd3ShortOption, parentExecaAsync);
+test('Prints completion, verbose "full", fd-specific fd3', testPrintCompletion, fd3FullOption, parentExecaAsync);
+test('Prints completion, verbose "short", fd-specific ipc', testPrintCompletion, ipcShortOption, parentExecaAsync);
+test('Prints completion, verbose "full", fd-specific ipc', testPrintCompletion, ipcFullOption, parentExecaAsync);
 test('Prints completion, verbose "short", sync', testPrintCompletion, 'short', parentExecaSync);
 test('Prints completion, verbose "full", sync', testPrintCompletion, 'full', parentExecaSync);
-test('Prints completion, verbose "short", fd-specific, sync', testPrintCompletion, fdShortOption, parentExecaSync);
-test('Prints completion, verbose "full", fd-specific, sync', testPrintCompletion, fdFullOption, parentExecaSync);
+test('Prints completion, verbose "short", fd-specific stdout, sync', testPrintCompletion, stdoutShortOption, parentExecaSync);
+test('Prints completion, verbose "full", fd-specific stdout, sync', testPrintCompletion, stdoutFullOption, parentExecaSync);
+test('Prints completion, verbose "short", fd-specific stderr, sync', testPrintCompletion, stderrShortOption, parentExecaSync);
+test('Prints completion, verbose "full", fd-specific stderr, sync', testPrintCompletion, stderrFullOption, parentExecaSync);
+test('Prints completion, verbose "short", fd-specific fd3, sync', testPrintCompletion, fd3ShortOption, parentExecaSync);
+test('Prints completion, verbose "full", fd-specific fd3, sync', testPrintCompletion, fd3FullOption, parentExecaSync);
+test('Prints completion, verbose "short", fd-specific ipc, sync', testPrintCompletion, ipcShortOption, parentExecaSync);
+test('Prints completion, verbose "full", fd-specific ipc, sync', testPrintCompletion, ipcFullOption, parentExecaSync);
 
 const testNoPrintCompletion = async (t, verbose, execaMethod) => {
 	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose});
@@ -43,11 +64,17 @@ const testNoPrintCompletion = async (t, verbose, execaMethod) => {
 
 test('Does not print completion, verbose "none"', testNoPrintCompletion, 'none', parentExecaAsync);
 test('Does not print completion, verbose default"', testNoPrintCompletion, undefined, parentExecaAsync);
-test('Does not print completion, verbose "none", fd-specific', testNoPrintCompletion, fdNoneOption, parentExecaAsync);
+test('Does not print completion, verbose "none", fd-specific stdout', testNoPrintCompletion, stdoutNoneOption, parentExecaAsync);
+test('Does not print completion, verbose "none", fd-specific stderr', testNoPrintCompletion, stderrNoneOption, parentExecaAsync);
+test('Does not print completion, verbose "none", fd-specific fd3', testNoPrintCompletion, fd3NoneOption, parentExecaAsync);
+test('Does not print completion, verbose "none", fd-specific ipc', testNoPrintCompletion, ipcNoneOption, parentExecaAsync);
 test('Does not print completion, verbose default", fd-specific', testNoPrintCompletion, {}, parentExecaAsync);
 test('Does not print completion, verbose "none", sync', testNoPrintCompletion, 'none', parentExecaSync);
 test('Does not print completion, verbose default", sync', testNoPrintCompletion, undefined, parentExecaSync);
-test('Does not print completion, verbose "none", fd-specific, sync', testNoPrintCompletion, fdNoneOption, parentExecaSync);
+test('Does not print completion, verbose "none", fd-specific stdout, sync', testNoPrintCompletion, stdoutNoneOption, parentExecaSync);
+test('Does not print completion, verbose "none", fd-specific stderr, sync', testNoPrintCompletion, stderrNoneOption, parentExecaSync);
+test('Does not print completion, verbose "none", fd-specific fd3, sync', testNoPrintCompletion, fd3NoneOption, parentExecaSync);
+test('Does not print completion, verbose "none", fd-specific ipc, sync', testNoPrintCompletion, ipcNoneOption, parentExecaSync);
 test('Does not print completion, verbose default", fd-specific, sync', testNoPrintCompletion, {}, parentExecaSync);
 
 const testPrintCompletionError = async (t, execaMethod) => {

@@ -58,7 +58,7 @@ One of the maintainers [@ehmicky](https://github.com/ehmicky) is looking for a r
 - [No escaping](docs/escaping.md) nor quoting needed. No risk of shell injection.
 - Execute [locally installed binaries](#local-binaries) without `npx`.
 - Improved [Windows support](docs/windows.md): [shebangs](docs/windows.md#shebang), [`PATHEXT`](https://ss64.com/nt/path.html#pathext), [graceful termination](#graceful-termination), [and more](https://github.com/moxystudio/node-cross-spawn?tab=readme-ov-file#why).
-- [Detailed errors](#detailed-error) and [verbose mode](#verbose-mode), for [debugging](docs/debugging.md).
+- [Detailed errors](#detailed-error), [verbose mode](#verbose-mode) and [custom logging](#custom-logging), for [debugging](docs/debugging.md).
 - [Pipe multiple subprocesses](#pipe-multiple-subprocesses) better than in shells: retrieve [intermediate results](docs/pipe.md#result), use multiple [sources](docs/pipe.md#multiple-sources-1-destination)/[destinations](docs/pipe.md#1-source-multiple-destinations), [unpipe](docs/pipe.md#unpipe).
 - [Split](#split-into-text-lines) the output into text lines, or [iterate](#iterate-over-text-lines) progressively over them.
 - Strip [unnecessary newlines](docs/lines.md#newlines).
@@ -409,6 +409,34 @@ await execa`npm run test`;
 ```
 
 <img alt="execa verbose output" src="media/verbose.png" width="603">
+
+#### Custom logging
+
+```js
+import {execa as execa_} from 'execa';
+import {createLogger, transports} from 'winston';
+
+// Log to a file using Winston
+const transport = new transports.File({filename: 'logs.txt'});
+const logger = createLogger({transports: [transport]});
+const LOG_LEVELS = {
+	command: 'info',
+	output: 'verbose',
+	ipc: 'verbose',
+	error: 'error',
+	duration: 'info',
+};
+
+const execa = execa_({
+	verbose(verboseLine, {message, ...verboseObject}) {
+		const level = LOG_LEVELS[verboseObject.type];
+		logger[level](message, verboseObject);
+	},
+});
+
+await execa`npm run build`;
+await execa`npm run test`;
+```
 
 ## Related
 

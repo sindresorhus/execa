@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-import process from 'node:process';
-import {$} from '../../index.js';
+import {$, getOneMessage} from '../../index.js';
 
-const [
-	sourceOptions,
-	sourceFile,
-	sourceArgument,
-	destinationOptions,
-	destinationFile,
-	destinationArgument,
-] = process.argv.slice(2);
-await $(JSON.parse(sourceOptions))`${sourceFile} ${sourceArgument}`
-	.pipe(JSON.parse(destinationOptions))`${destinationFile} ${destinationArgument === undefined ? [] : [destinationArgument]}`;
+const {
+	file,
+	commandArguments = [],
+	options: {
+		sourceOptions = {},
+		destinationFile,
+		destinationArguments = [],
+		destinationOptions = {},
+	},
+} = await getOneMessage();
+await $(sourceOptions)`${file} ${commandArguments}`
+	.pipe(destinationOptions)`${destinationFile} ${destinationArguments}`;

@@ -17,7 +17,7 @@ import {appendDuplex} from '../helpers/duplex.js';
 import {appendWebTransform} from '../helpers/web-transform.js';
 import {foobarString, foobarUint8Array, foobarUppercase} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {nestedExecaAsync, nestedExecaSync} from '../helpers/nested.js';
+import {nestedSubprocess} from '../helpers/nested.js';
 import {getAbsolutePath} from '../helpers/file-path.js';
 import {noopDuplex} from '../helpers/stream.js';
 
@@ -145,13 +145,13 @@ test('Can re-use same native Writable stream on different output file descriptor
 test('Can re-use same non-native Writable stream on different output file descriptors', testMultipleStreamOutput, getNonNativeStream);
 test('Can re-use same web Writable stream on different output file descriptors', testMultipleStreamOutput, getWebWritableStream);
 
-const testMultipleInheritOutput = async (t, execaMethod) => {
-	const {stdout} = await execaMethod('noop-both.js', [foobarString], getDifferentOutputs(1)).parent;
+const testMultipleInheritOutput = async (t, isSync) => {
+	const {stdout} = await nestedSubprocess('noop-both.js', [foobarString], {...getDifferentOutputs(1), isSync});
 	t.is(stdout, `${foobarString}\n${foobarString}`);
 };
 
-test('Can re-use same parent file descriptor on different output file descriptors', testMultipleInheritOutput, nestedExecaAsync);
-test('Can re-use same parent file descriptor on different output file descriptors, sync', testMultipleInheritOutput, nestedExecaSync);
+test('Can re-use same parent file descriptor on different output file descriptors', testMultipleInheritOutput, false);
+test('Can re-use same parent file descriptor on different output file descriptors, sync', testMultipleInheritOutput, true);
 
 const testMultipleFileInput = async (t, mapFile) => {
 	const filePath = tempfile();

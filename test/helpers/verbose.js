@@ -2,15 +2,14 @@ import {platform} from 'node:process';
 import {stripVTControlCharacters} from 'node:util';
 import {replaceSymbols} from 'figures';
 import {foobarString} from './input.js';
-import {nestedExecaAsync, nestedExecaSync} from './nested.js';
+import {nestedSubprocess} from './nested.js';
 
 const isWindows = platform === 'win32';
 export const QUOTE = isWindows ? '"' : '\'';
 
-const runErrorSubprocess = async (execaMethod, t, verbose, expectExitCode = true) => {
-	const subprocess = execaMethod('noop-fail.js', ['1', foobarString], {verbose});
-	await t.throwsAsync(subprocess);
-	const {stderr} = await subprocess.parent;
+export const runErrorSubprocess = async (t, verbose, isSync = false, expectExitCode = true) => {
+	const {stderr, nestedResult} = await nestedSubprocess('noop-fail.js', ['1', foobarString], {verbose, isSync});
+	t.true(nestedResult instanceof Error);
 	if (expectExitCode) {
 		t.true(stderr.includes('exit code 2'));
 	}
@@ -18,28 +17,19 @@ const runErrorSubprocess = async (execaMethod, t, verbose, expectExitCode = true
 	return stderr;
 };
 
-export const runErrorSubprocessAsync = runErrorSubprocess.bind(undefined, nestedExecaAsync);
-export const runErrorSubprocessSync = runErrorSubprocess.bind(undefined, nestedExecaSync);
-
-const runWarningSubprocess = async (execaMethod, t) => {
-	const {stderr} = await execaMethod('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false}).parent;
+export const runWarningSubprocess = async (t, isSync) => {
+	const {stderr, nestedResult} = await nestedSubprocess('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false, isSync});
+	t.true(nestedResult instanceof Error);
 	t.true(stderr.includes('exit code 2'));
 	return stderr;
 };
 
-export const runWarningSubprocessAsync = runWarningSubprocess.bind(undefined, nestedExecaAsync);
-export const runWarningSubprocessSync = runWarningSubprocess.bind(undefined, nestedExecaSync);
-
-const runEarlyErrorSubprocess = async (execaMethod, t) => {
-	const subprocess = execaMethod('noop.js', [foobarString], {verbose: 'short', cwd: true});
-	await t.throwsAsync(subprocess);
-	const {stderr} = await subprocess.parent;
+export const runEarlyErrorSubprocess = async (t, isSync) => {
+	const {stderr, nestedResult} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short', cwd: true, isSync});
+	t.true(nestedResult instanceof Error);
 	t.true(stderr.includes('The "cwd" option must'));
 	return stderr;
 };
-
-export const runEarlyErrorSubprocessAsync = runEarlyErrorSubprocess.bind(undefined, nestedExecaAsync);
-export const runEarlyErrorSubprocessSync = runEarlyErrorSubprocess.bind(undefined, nestedExecaSync);
 
 export const getCommandLine = stderr => getCommandLines(stderr)[0];
 export const getCommandLines = stderr => getNormalizedLines(stderr).filter(line => isCommandLine(line));

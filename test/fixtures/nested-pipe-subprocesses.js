@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-import process from 'node:process';
-import {execa} from '../../index.js';
+import {execa, getOneMessage} from '../../index.js';
 
-const [
-	sourceOptions,
-	sourceFile,
-	sourceArgument,
-	destinationOptions,
-	destinationFile,
-	destinationArgument,
-] = process.argv.slice(2);
-await execa(sourceFile, [sourceArgument], JSON.parse(sourceOptions))
-	.pipe(execa(destinationFile, destinationArgument === undefined ? [] : [destinationArgument], JSON.parse(destinationOptions)));
+const {
+	file,
+	commandArguments = [],
+	options: {
+		sourceOptions = {},
+		destinationFile,
+		destinationArguments = [],
+		destinationOptions = {},
+	},
+} = await getOneMessage();
+await execa(file, commandArguments, sourceOptions)
+	.pipe(execa(destinationFile, destinationArguments, destinationOptions));

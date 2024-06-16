@@ -1,17 +1,11 @@
 import test from 'ava';
 import {red} from 'yoctocolors';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString, foobarUtf16Uint8Array} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
+import {nestedSubprocess} from '../helpers/nested.js';
 import {
-	nestedExecaAsync,
-	parentExeca,
-	parentExecaAsync,
-	parentExecaSync,
-} from '../helpers/nested.js';
-import {
-	runErrorSubprocessAsync,
-	runErrorSubprocessSync,
+	runErrorSubprocess,
 	getOutputLine,
 	getOutputLines,
 	testTimestamp,
@@ -28,117 +22,122 @@ import {
 
 setFixtureDirectory();
 
-const testPrintOutput = async (t, verbose, fdNumber, execaMethod) => {
-	const {stderr} = await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], {verbose});
+const testPrintOutput = async (t, verbose, fdNumber, isSync) => {
+	const {stderr} = await nestedSubprocess('noop-fd.js', [`${fdNumber}`, foobarString], {verbose, isSync});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 };
 
-test('Prints stdout, verbose "full"', testPrintOutput, 'full', 1, parentExecaAsync);
-test('Prints stderr, verbose "full"', testPrintOutput, 'full', 2, parentExecaAsync);
-test('Prints stdout, verbose "full", fd-specific', testPrintOutput, stdoutFullOption, 1, parentExecaAsync);
-test('Prints stderr, verbose "full", fd-specific', testPrintOutput, stderrFullOption, 2, parentExecaAsync);
-test('Prints stdout, verbose "full", sync', testPrintOutput, 'full', 1, parentExecaSync);
-test('Prints stderr, verbose "full", sync', testPrintOutput, 'full', 2, parentExecaSync);
-test('Prints stdout, verbose "full", fd-specific, sync', testPrintOutput, stdoutFullOption, 1, parentExecaSync);
-test('Prints stderr, verbose "full", fd-specific, sync', testPrintOutput, stderrFullOption, 2, parentExecaSync);
+test('Prints stdout, verbose "full"', testPrintOutput, 'full', 1, false);
+test('Prints stderr, verbose "full"', testPrintOutput, 'full', 2, false);
+test('Prints stdout, verbose "full", fd-specific', testPrintOutput, stdoutFullOption, 1, false);
+test('Prints stderr, verbose "full", fd-specific', testPrintOutput, stderrFullOption, 2, false);
+test('Prints stdout, verbose "full", sync', testPrintOutput, 'full', 1, true);
+test('Prints stderr, verbose "full", sync', testPrintOutput, 'full', 2, true);
+test('Prints stdout, verbose "full", fd-specific, sync', testPrintOutput, stdoutFullOption, 1, true);
+test('Prints stderr, verbose "full", fd-specific, sync', testPrintOutput, stderrFullOption, 2, true);
 
-const testNoPrintOutput = async (t, verbose, fdNumber, execaMethod) => {
-	const {stderr} = await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], {verbose, ...fullStdio});
+const testNoPrintOutput = async (t, verbose, fdNumber, isSync) => {
+	const {stderr} = await nestedSubprocess('noop-fd.js', [`${fdNumber}`, foobarString], {verbose, ...fullStdio, isSync});
 	t.is(getOutputLine(stderr), undefined);
 };
 
-test('Does not print stdout, verbose default', testNoPrintOutput, undefined, 1, parentExecaAsync);
-test('Does not print stdout, verbose "none"', testNoPrintOutput, 'none', 1, parentExecaAsync);
-test('Does not print stdout, verbose "short"', testNoPrintOutput, 'short', 1, parentExecaAsync);
-test('Does not print stderr, verbose default', testNoPrintOutput, undefined, 2, parentExecaAsync);
-test('Does not print stderr, verbose "none"', testNoPrintOutput, 'none', 2, parentExecaAsync);
-test('Does not print stderr, verbose "short"', testNoPrintOutput, 'short', 2, parentExecaAsync);
-test('Does not print stdio[*], verbose default', testNoPrintOutput, undefined, 3, parentExecaAsync);
-test('Does not print stdio[*], verbose "none"', testNoPrintOutput, 'none', 3, parentExecaAsync);
-test('Does not print stdio[*], verbose "short"', testNoPrintOutput, 'short', 3, parentExecaAsync);
-test('Does not print stdio[*], verbose "full"', testNoPrintOutput, 'full', 3, parentExecaAsync);
-test('Does not print stdout, verbose default, fd-specific', testNoPrintOutput, {}, 1, parentExecaAsync);
-test('Does not print stdout, verbose "none", fd-specific', testNoPrintOutput, stdoutNoneOption, 1, parentExecaAsync);
-test('Does not print stdout, verbose "short", fd-specific', testNoPrintOutput, stdoutShortOption, 1, parentExecaAsync);
-test('Does not print stderr, verbose default, fd-specific', testNoPrintOutput, {}, 2, parentExecaAsync);
-test('Does not print stderr, verbose "none", fd-specific', testNoPrintOutput, stderrNoneOption, 2, parentExecaAsync);
-test('Does not print stderr, verbose "short", fd-specific', testNoPrintOutput, stderrShortOption, 2, parentExecaAsync);
-test('Does not print stdio[*], verbose default, fd-specific', testNoPrintOutput, {}, 3, parentExecaAsync);
-test('Does not print stdio[*], verbose "none", fd-specific', testNoPrintOutput, fd3NoneOption, 3, parentExecaAsync);
-test('Does not print stdio[*], verbose "short", fd-specific', testNoPrintOutput, fd3ShortOption, 3, parentExecaAsync);
-test('Does not print stdio[*], verbose "full", fd-specific', testNoPrintOutput, fd3FullOption, 3, parentExecaAsync);
-test('Does not print stdout, verbose default, sync', testNoPrintOutput, undefined, 1, parentExecaSync);
-test('Does not print stdout, verbose "none", sync', testNoPrintOutput, 'none', 1, parentExecaSync);
-test('Does not print stdout, verbose "short", sync', testNoPrintOutput, 'short', 1, parentExecaSync);
-test('Does not print stderr, verbose default, sync', testNoPrintOutput, undefined, 2, parentExecaSync);
-test('Does not print stderr, verbose "none", sync', testNoPrintOutput, 'none', 2, parentExecaSync);
-test('Does not print stderr, verbose "short", sync', testNoPrintOutput, 'short', 2, parentExecaSync);
-test('Does not print stdio[*], verbose default, sync', testNoPrintOutput, undefined, 3, parentExecaSync);
-test('Does not print stdio[*], verbose "none", sync', testNoPrintOutput, 'none', 3, parentExecaSync);
-test('Does not print stdio[*], verbose "short", sync', testNoPrintOutput, 'short', 3, parentExecaSync);
-test('Does not print stdio[*], verbose "full", sync', testNoPrintOutput, 'full', 3, parentExecaSync);
-test('Does not print stdout, verbose default, fd-specific, sync', testNoPrintOutput, {}, 1, parentExecaSync);
-test('Does not print stdout, verbose "none", fd-specific, sync', testNoPrintOutput, stdoutNoneOption, 1, parentExecaSync);
-test('Does not print stdout, verbose "short", fd-specific, sync', testNoPrintOutput, stdoutShortOption, 1, parentExecaSync);
-test('Does not print stderr, verbose default, fd-specific, sync', testNoPrintOutput, {}, 2, parentExecaSync);
-test('Does not print stderr, verbose "none", fd-specific, sync', testNoPrintOutput, stderrNoneOption, 2, parentExecaSync);
-test('Does not print stderr, verbose "short", fd-specific, sync', testNoPrintOutput, stderrShortOption, 2, parentExecaSync);
-test('Does not print stdio[*], verbose default, fd-specific, sync', testNoPrintOutput, {}, 3, parentExecaSync);
-test('Does not print stdio[*], verbose "none", fd-specific, sync', testNoPrintOutput, fd3NoneOption, 3, parentExecaSync);
-test('Does not print stdio[*], verbose "short", fd-specific, sync', testNoPrintOutput, fd3ShortOption, 3, parentExecaSync);
-test('Does not print stdio[*], verbose "full", fd-specific, sync', testNoPrintOutput, fd3FullOption, 3, parentExecaSync);
+test('Does not print stdout, verbose default', testNoPrintOutput, undefined, 1, false);
+test('Does not print stdout, verbose "none"', testNoPrintOutput, 'none', 1, false);
+test('Does not print stdout, verbose "short"', testNoPrintOutput, 'short', 1, false);
+test('Does not print stderr, verbose default', testNoPrintOutput, undefined, 2, false);
+test('Does not print stderr, verbose "none"', testNoPrintOutput, 'none', 2, false);
+test('Does not print stderr, verbose "short"', testNoPrintOutput, 'short', 2, false);
+test('Does not print stdio[*], verbose default', testNoPrintOutput, undefined, 3, false);
+test('Does not print stdio[*], verbose "none"', testNoPrintOutput, 'none', 3, false);
+test('Does not print stdio[*], verbose "short"', testNoPrintOutput, 'short', 3, false);
+test('Does not print stdio[*], verbose "full"', testNoPrintOutput, 'full', 3, false);
+test('Does not print stdout, verbose default, fd-specific', testNoPrintOutput, {}, 1, false);
+test('Does not print stdout, verbose "none", fd-specific', testNoPrintOutput, stdoutNoneOption, 1, false);
+test('Does not print stdout, verbose "short", fd-specific', testNoPrintOutput, stdoutShortOption, 1, false);
+test('Does not print stderr, verbose default, fd-specific', testNoPrintOutput, {}, 2, false);
+test('Does not print stderr, verbose "none", fd-specific', testNoPrintOutput, stderrNoneOption, 2, false);
+test('Does not print stderr, verbose "short", fd-specific', testNoPrintOutput, stderrShortOption, 2, false);
+test('Does not print stdio[*], verbose default, fd-specific', testNoPrintOutput, {}, 3, false);
+test('Does not print stdio[*], verbose "none", fd-specific', testNoPrintOutput, fd3NoneOption, 3, false);
+test('Does not print stdio[*], verbose "short", fd-specific', testNoPrintOutput, fd3ShortOption, 3, false);
+test('Does not print stdio[*], verbose "full", fd-specific', testNoPrintOutput, fd3FullOption, 3, false);
+test('Does not print stdout, verbose default, sync', testNoPrintOutput, undefined, 1, true);
+test('Does not print stdout, verbose "none", sync', testNoPrintOutput, 'none', 1, true);
+test('Does not print stdout, verbose "short", sync', testNoPrintOutput, 'short', 1, true);
+test('Does not print stderr, verbose default, sync', testNoPrintOutput, undefined, 2, true);
+test('Does not print stderr, verbose "none", sync', testNoPrintOutput, 'none', 2, true);
+test('Does not print stderr, verbose "short", sync', testNoPrintOutput, 'short', 2, true);
+test('Does not print stdio[*], verbose default, sync', testNoPrintOutput, undefined, 3, true);
+test('Does not print stdio[*], verbose "none", sync', testNoPrintOutput, 'none', 3, true);
+test('Does not print stdio[*], verbose "short", sync', testNoPrintOutput, 'short', 3, true);
+test('Does not print stdio[*], verbose "full", sync', testNoPrintOutput, 'full', 3, true);
+test('Does not print stdout, verbose default, fd-specific, sync', testNoPrintOutput, {}, 1, true);
+test('Does not print stdout, verbose "none", fd-specific, sync', testNoPrintOutput, stdoutNoneOption, 1, true);
+test('Does not print stdout, verbose "short", fd-specific, sync', testNoPrintOutput, stdoutShortOption, 1, true);
+test('Does not print stderr, verbose default, fd-specific, sync', testNoPrintOutput, {}, 2, true);
+test('Does not print stderr, verbose "none", fd-specific, sync', testNoPrintOutput, stderrNoneOption, 2, true);
+test('Does not print stderr, verbose "short", fd-specific, sync', testNoPrintOutput, stderrShortOption, 2, true);
+test('Does not print stdio[*], verbose default, fd-specific, sync', testNoPrintOutput, {}, 3, true);
+test('Does not print stdio[*], verbose "none", fd-specific, sync', testNoPrintOutput, fd3NoneOption, 3, true);
+test('Does not print stdio[*], verbose "short", fd-specific, sync', testNoPrintOutput, fd3ShortOption, 3, true);
+test('Does not print stdio[*], verbose "full", fd-specific, sync', testNoPrintOutput, fd3FullOption, 3, true);
 
-const testPrintError = async (t, execaMethod) => {
-	const stderr = await execaMethod(t, 'full');
+const testPrintError = async (t, isSync) => {
+	const stderr = await runErrorSubprocess(t, 'full', isSync);
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 };
 
-test('Prints stdout after errors', testPrintError, runErrorSubprocessAsync);
-test('Prints stdout after errors, sync', testPrintError, runErrorSubprocessSync);
+test('Prints stdout after errors', testPrintError, false);
+test('Prints stdout after errors, sync', testPrintError, true);
 
 test('Does not quote spaces from stdout', async t => {
-	const {stderr} = await parentExecaAsync('noop.js', ['foo bar'], {verbose: 'full'});
+	const {stderr} = await nestedSubprocess('noop.js', ['foo bar'], {verbose: 'full'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   foo bar`);
 });
 
 test('Does not quote special punctuation from stdout', async t => {
-	const {stderr} = await parentExecaAsync('noop.js', ['%'], {verbose: 'full'});
+	const {stderr} = await nestedSubprocess('noop.js', ['%'], {verbose: 'full'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   %`);
 });
 
 test('Does not escape internal characters from stdout', async t => {
-	const {stderr} = await parentExecaAsync('noop.js', ['ã'], {verbose: 'full'});
+	const {stderr} = await nestedSubprocess('noop.js', ['ã'], {verbose: 'full'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ã`);
 });
 
 test('Strips color sequences from stdout', async t => {
-	const {stderr} = await parentExecaAsync('noop.js', [red(foobarString)], {verbose: 'full'}, {env: {FORCE_COLOR: '1'}});
+	const {stderr} = await nestedSubprocess('noop.js', [red(foobarString)], {verbose: 'full'}, {env: {FORCE_COLOR: '1'}});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 });
 
 test('Escapes control characters from stdout', async t => {
-	const {stderr} = await parentExecaAsync('noop.js', ['\u0001'], {verbose: 'full'});
+	const {stderr} = await nestedSubprocess('noop.js', ['\u0001'], {verbose: 'full'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   \\u0001`);
 });
 
 const testStdioSame = async (t, fdNumber) => {
-	const {stdio} = await nestedExecaAsync('noop-fd.js', [`${fdNumber}`, foobarString], {verbose: 'full'});
+	const {nestedResult: {stdio}} = await nestedSubprocess('noop-fd.js', [`${fdNumber}`, foobarString], {verbose: 'full'});
 	t.is(stdio[fdNumber], foobarString);
 };
 
 test('Does not change subprocess.stdout', testStdioSame, 1);
 test('Does not change subprocess.stderr', testStdioSame, 2);
 
-const testSingleNewline = async (t, execaMethod) => {
-	const {stderr} = await execaMethod('noop-fd.js', ['1', '\n'], {verbose: 'full'});
+const testSingleNewline = async (t, isSync) => {
+	const {stderr} = await nestedSubprocess('noop-fd.js', ['1', '\n'], {verbose: 'full', isSync});
 	t.deepEqual(getOutputLines(stderr), [`${testTimestamp} [0]   `]);
 };
 
-test('Prints stdout, single newline', testSingleNewline, parentExecaAsync);
-test('Prints stdout, single newline, sync', testSingleNewline, parentExecaSync);
+test('Prints stdout, single newline', testSingleNewline, false);
+test('Prints stdout, single newline, sync', testSingleNewline, true);
 
 const testUtf16 = async (t, isSync) => {
-	const {stderr} = await parentExeca('nested-input.js', 'stdin.js', [`${isSync}`], {verbose: 'full', encoding: 'utf16le'});
+	const {stderr} = await nestedSubprocess('stdin.js', {
+		verbose: 'full',
+		input: foobarUtf16Uint8Array,
+		encoding: 'utf16le',
+		isSync,
+	});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 };
 

@@ -2,7 +2,7 @@ import test from 'ava';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
-import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
+import {nestedSubprocess} from '../helpers/nested.js';
 import {
 	QUOTE,
 	getCommandLine,
@@ -29,19 +29,19 @@ test('Prints command, NODE_DEBUG=execa + "inherit"', testVerboseGeneral, execa);
 test('Prints command, NODE_DEBUG=execa + "inherit", sync', testVerboseGeneral, execaSync);
 
 test('NODE_DEBUG=execa changes verbose default value to "full"', async t => {
-	const {stderr} = await parentExecaAsync('noop.js', [foobarString], {}, {env: {NODE_DEBUG: 'execa'}});
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {}, {env: {NODE_DEBUG: 'execa'}});
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${foobarString}`);
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 });
 
-const testDebugEnvPriority = async (t, execaMethod) => {
-	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: 'short'}, {env: {NODE_DEBUG: 'execa'}});
+const testDebugEnvPriority = async (t, isSync) => {
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short', isSync}, {env: {NODE_DEBUG: 'execa'}});
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${foobarString}`);
 	t.is(getOutputLine(stderr), undefined);
 };
 
-test('NODE_DEBUG=execa has lower priority', testDebugEnvPriority, parentExecaAsync);
-test('NODE_DEBUG=execa has lower priority, sync', testDebugEnvPriority, parentExecaSync);
+test('NODE_DEBUG=execa has lower priority', testDebugEnvPriority, false);
+test('NODE_DEBUG=execa has lower priority, sync', testDebugEnvPriority, true);
 
 const invalidFalseMessage = 'renamed to "verbose: \'none\'"';
 const invalidTrueMessage = 'renamed to "verbose: \'short\'"';

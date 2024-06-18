@@ -5,8 +5,9 @@ import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.
 import {
 	getOutputLine,
 	testTimestamp,
-	fdFullOption,
-	fdStderrFullOption,
+	stdoutNoneOption,
+	stdoutFullOption,
+	stderrFullOption,
 } from '../helpers/verbose.js';
 
 setFixtureDirectory();
@@ -18,20 +19,22 @@ const testPrintOutputNoBuffer = async (t, verbose, buffer, execaMethod) => {
 
 test('Prints stdout, buffer: false', testPrintOutputNoBuffer, 'full', false, parentExecaAsync);
 test('Prints stdout, buffer: false, fd-specific buffer', testPrintOutputNoBuffer, 'full', {stdout: false}, parentExecaAsync);
-test('Prints stdout, buffer: false, fd-specific verbose', testPrintOutputNoBuffer, fdFullOption, false, parentExecaAsync);
+test('Prints stdout, buffer: false, fd-specific verbose', testPrintOutputNoBuffer, stdoutFullOption, false, parentExecaAsync);
 test('Prints stdout, buffer: false, sync', testPrintOutputNoBuffer, 'full', false, parentExecaSync);
 test('Prints stdout, buffer: false, fd-specific buffer, sync', testPrintOutputNoBuffer, 'full', {stdout: false}, parentExecaSync);
-test('Prints stdout, buffer: false, fd-specific verbose, sync', testPrintOutputNoBuffer, fdFullOption, false, parentExecaSync);
+test('Prints stdout, buffer: false, fd-specific verbose, sync', testPrintOutputNoBuffer, stdoutFullOption, false, parentExecaSync);
 
-const testPrintOutputNoBufferFalse = async (t, buffer, execaMethod) => {
-	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose: fdStderrFullOption, buffer});
+const testPrintOutputNoBufferFalse = async (t, verbose, buffer, execaMethod) => {
+	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose, buffer});
 	t.is(getOutputLine(stderr), undefined);
 };
 
-test('Does not print stdout, buffer: false, different fd', testPrintOutputNoBufferFalse, false, parentExecaAsync);
-test('Does not print stdout, buffer: false, different fd, fd-specific buffer', testPrintOutputNoBufferFalse, {stdout: false}, parentExecaAsync);
-test('Does not print stdout, buffer: false, different fd, sync', testPrintOutputNoBufferFalse, false, parentExecaSync);
-test('Does not print stdout, buffer: false, different fd, fd-specific buffer, sync', testPrintOutputNoBufferFalse, {stdout: false}, parentExecaSync);
+test('Does not print stdout, buffer: false, fd-specific none', testPrintOutputNoBufferFalse, stdoutNoneOption, false, parentExecaAsync);
+test('Does not print stdout, buffer: false, different fd', testPrintOutputNoBufferFalse, stderrFullOption, false, parentExecaAsync);
+test('Does not print stdout, buffer: false, different fd, fd-specific buffer', testPrintOutputNoBufferFalse, stderrFullOption, {stdout: false}, parentExecaAsync);
+test('Does not print stdout, buffer: false, fd-specific none, sync', testPrintOutputNoBufferFalse, stdoutNoneOption, false, parentExecaSync);
+test('Does not print stdout, buffer: false, different fd, sync', testPrintOutputNoBufferFalse, stderrFullOption, false, parentExecaSync);
+test('Does not print stdout, buffer: false, different fd, fd-specific buffer, sync', testPrintOutputNoBufferFalse, stderrFullOption, {stdout: false}, parentExecaSync);
 
 const testPrintOutputNoBufferTransform = async (t, buffer, isSync) => {
 	const {stderr} = await parentExeca('nested-transform.js', 'noop.js', [foobarString], {

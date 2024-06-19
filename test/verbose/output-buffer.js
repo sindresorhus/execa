@@ -1,7 +1,7 @@
 import test from 'ava';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUppercase} from '../helpers/input.js';
-import {parentExeca, parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
+import {nestedSubprocess} from '../helpers/nested.js';
 import {
 	getOutputLine,
 	testTimestamp,
@@ -12,35 +12,35 @@ import {
 
 setFixtureDirectory();
 
-const testPrintOutputNoBuffer = async (t, verbose, buffer, execaMethod) => {
-	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose, buffer});
+const testPrintOutputNoBuffer = async (t, verbose, buffer, isSync) => {
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose, buffer, isSync});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 };
 
-test('Prints stdout, buffer: false', testPrintOutputNoBuffer, 'full', false, parentExecaAsync);
-test('Prints stdout, buffer: false, fd-specific buffer', testPrintOutputNoBuffer, 'full', {stdout: false}, parentExecaAsync);
-test('Prints stdout, buffer: false, fd-specific verbose', testPrintOutputNoBuffer, stdoutFullOption, false, parentExecaAsync);
-test('Prints stdout, buffer: false, sync', testPrintOutputNoBuffer, 'full', false, parentExecaSync);
-test('Prints stdout, buffer: false, fd-specific buffer, sync', testPrintOutputNoBuffer, 'full', {stdout: false}, parentExecaSync);
-test('Prints stdout, buffer: false, fd-specific verbose, sync', testPrintOutputNoBuffer, stdoutFullOption, false, parentExecaSync);
+test('Prints stdout, buffer: false', testPrintOutputNoBuffer, 'full', false, false);
+test('Prints stdout, buffer: false, fd-specific buffer', testPrintOutputNoBuffer, 'full', {stdout: false}, false);
+test('Prints stdout, buffer: false, fd-specific verbose', testPrintOutputNoBuffer, stdoutFullOption, false, false);
+test('Prints stdout, buffer: false, sync', testPrintOutputNoBuffer, 'full', false, true);
+test('Prints stdout, buffer: false, fd-specific buffer, sync', testPrintOutputNoBuffer, 'full', {stdout: false}, true);
+test('Prints stdout, buffer: false, fd-specific verbose, sync', testPrintOutputNoBuffer, stdoutFullOption, false, true);
 
-const testPrintOutputNoBufferFalse = async (t, verbose, buffer, execaMethod) => {
-	const {stderr} = await execaMethod('noop.js', [foobarString], {verbose, buffer});
+const testPrintOutputNoBufferFalse = async (t, verbose, buffer, isSync) => {
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose, buffer, isSync});
 	t.is(getOutputLine(stderr), undefined);
 };
 
-test('Does not print stdout, buffer: false, fd-specific none', testPrintOutputNoBufferFalse, stdoutNoneOption, false, parentExecaAsync);
-test('Does not print stdout, buffer: false, different fd', testPrintOutputNoBufferFalse, stderrFullOption, false, parentExecaAsync);
-test('Does not print stdout, buffer: false, different fd, fd-specific buffer', testPrintOutputNoBufferFalse, stderrFullOption, {stdout: false}, parentExecaAsync);
-test('Does not print stdout, buffer: false, fd-specific none, sync', testPrintOutputNoBufferFalse, stdoutNoneOption, false, parentExecaSync);
-test('Does not print stdout, buffer: false, different fd, sync', testPrintOutputNoBufferFalse, stderrFullOption, false, parentExecaSync);
-test('Does not print stdout, buffer: false, different fd, fd-specific buffer, sync', testPrintOutputNoBufferFalse, stderrFullOption, {stdout: false}, parentExecaSync);
+test('Does not print stdout, buffer: false, fd-specific none', testPrintOutputNoBufferFalse, stdoutNoneOption, false, false);
+test('Does not print stdout, buffer: false, different fd', testPrintOutputNoBufferFalse, stderrFullOption, false, false);
+test('Does not print stdout, buffer: false, different fd, fd-specific buffer', testPrintOutputNoBufferFalse, stderrFullOption, {stdout: false}, false);
+test('Does not print stdout, buffer: false, fd-specific none, sync', testPrintOutputNoBufferFalse, stdoutNoneOption, false, true);
+test('Does not print stdout, buffer: false, different fd, sync', testPrintOutputNoBufferFalse, stderrFullOption, false, true);
+test('Does not print stdout, buffer: false, different fd, fd-specific buffer, sync', testPrintOutputNoBufferFalse, stderrFullOption, {stdout: false}, true);
 
 const testPrintOutputNoBufferTransform = async (t, buffer, isSync) => {
-	const {stderr} = await parentExeca('nested-transform.js', 'noop.js', [foobarString], {
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {
+		optionsFixture: 'generator-uppercase.js',
 		verbose: 'full',
 		buffer,
-		type: 'generator',
 		isSync,
 	});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarUppercase}`);

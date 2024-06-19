@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import {execa} from '../../index.js';
+import {execa, getOneMessage} from '../../index.js';
 
-const [options, file, commandArgument, unpipe] = process.argv.slice(2);
-const subprocess = execa(file, [commandArgument], JSON.parse(options));
+const {file, commandArguments, options: {unpipe, ...options}} = await getOneMessage();
+const subprocess = execa(file, commandArguments, options);
 subprocess.stdout.pipe(process.stdout);
-if (unpipe === 'true') {
+if (unpipe) {
 	subprocess.stdout.unpipe(process.stdout);
 }
 

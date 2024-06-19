@@ -4,7 +4,7 @@ import test from 'ava';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {nestedExecaAsync, nestedWorker} from '../helpers/nested.js';
+import {nestedSubprocess} from '../helpers/nested.js';
 import {foobarString} from '../helpers/input.js';
 
 setFixtureDirectory();
@@ -12,19 +12,19 @@ setFixtureDirectory();
 const isWindows = process.platform === 'win32';
 
 // When subprocess exits before current process
-const spawnAndExit = async (t, execaMethod, cleanup, detached) => {
-	const {stdout} = await execaMethod('noop-fd.js', ['1', foobarString], {cleanup, detached});
+const spawnAndExit = async (t, worker, cleanup, detached) => {
+	const {nestedResult: {stdout}} = await nestedSubprocess('noop-fd.js', ['1', foobarString], {worker, cleanup, detached});
 	t.is(stdout, foobarString);
 };
 
-test('spawnAndExit', spawnAndExit, nestedExecaAsync, false, false);
-test('spawnAndExit cleanup', spawnAndExit, nestedExecaAsync, true, false);
-test('spawnAndExit detached', spawnAndExit, nestedExecaAsync, false, true);
-test('spawnAndExit cleanup detached', spawnAndExit, nestedExecaAsync, true, true);
-test('spawnAndExit, worker', spawnAndExit, nestedWorker, false, false);
-test('spawnAndExit cleanup, worker', spawnAndExit, nestedWorker, true, false);
-test('spawnAndExit detached, worker', spawnAndExit, nestedWorker, false, true);
-test('spawnAndExit cleanup detached, worker', spawnAndExit, nestedWorker, true, true);
+test('spawnAndExit', spawnAndExit, false, false, false);
+test('spawnAndExit cleanup', spawnAndExit, false, true, false);
+test('spawnAndExit detached', spawnAndExit, false, false, true);
+test('spawnAndExit cleanup detached', spawnAndExit, false, true, true);
+test('spawnAndExit, worker', spawnAndExit, true, false, false);
+test('spawnAndExit cleanup, worker', spawnAndExit, true, true, false);
+test('spawnAndExit detached, worker', spawnAndExit, true, false, true);
+test('spawnAndExit cleanup detached, worker', spawnAndExit, true, true, true);
 
 // When current process exits before subprocess
 const spawnAndKill = async (t, [signal, cleanup, detached, isKilled]) => {

@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-import process from 'node:process';
-import {execa} from '../../index.js';
+import {execa, getOneMessage} from '../../index.js';
 
-const [options, file, ...commandArguments] = process.argv.slice(2);
-const subprocess = execa(file, commandArguments, JSON.parse(options));
+const {file, commandArguments, options} = await getOneMessage();
+const subprocess = execa(file, commandArguments, options);
 subprocess.kill(new Error(commandArguments[0]));
 await subprocess;

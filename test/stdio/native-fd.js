@@ -4,45 +4,45 @@ import {execa, execaSync} from '../../index.js';
 import {getStdio, fullStdio} from '../helpers/stdio.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
-import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
+import {nestedSubprocess} from '../helpers/nested.js';
 
 setFixtureDirectory();
 
 const isLinux = platform === 'linux';
 const isWindows = platform === 'win32';
 
-const testFd3InheritOutput = async (t, stdioOption, execaMethod) => {
-	const {stdio} = await execaMethod('noop-fd.js', ['3', foobarString], getStdio(3, stdioOption), fullStdio);
+const testFd3InheritOutput = async (t, stdioOption, isSync) => {
+	const {stdio} = await nestedSubprocess('noop-fd.js', ['3', foobarString], {...getStdio(3, stdioOption), isSync}, fullStdio);
 	t.is(stdio[3], foobarString);
 };
 
-test('stdio[*] output can use "inherit"', testFd3InheritOutput, 'inherit', parentExecaAsync);
-test('stdio[*] output can use ["inherit"]', testFd3InheritOutput, ['inherit'], parentExecaAsync);
-test('stdio[*] output can use "inherit", sync', testFd3InheritOutput, 'inherit', parentExecaSync);
-test('stdio[*] output can use ["inherit"], sync', testFd3InheritOutput, ['inherit'], parentExecaSync);
+test('stdio[*] output can use "inherit"', testFd3InheritOutput, 'inherit', false);
+test('stdio[*] output can use ["inherit"]', testFd3InheritOutput, ['inherit'], false);
+test('stdio[*] output can use "inherit", sync', testFd3InheritOutput, 'inherit', true);
+test('stdio[*] output can use ["inherit"], sync', testFd3InheritOutput, ['inherit'], true);
 
 if (isLinux) {
-	const testOverflowStream = async (t, fdNumber, stdioOption, execaMethod) => {
-		const {stdout} = await execaMethod('empty.js', getStdio(fdNumber, stdioOption), fullStdio);
+	const testOverflowStream = async (t, fdNumber, stdioOption, isSync) => {
+		const {stdout} = await nestedSubprocess('empty.js', {...getStdio(fdNumber, stdioOption), isSync}, fullStdio);
 		t.is(stdout, '');
 	};
 
-	test('stdin can use 4+', testOverflowStream, 0, 4, parentExecaAsync);
-	test('stdin can use [4+]', testOverflowStream, 0, [4], parentExecaAsync);
-	test('stdout can use 4+', testOverflowStream, 1, 4, parentExecaAsync);
-	test('stdout can use [4+]', testOverflowStream, 1, [4], parentExecaAsync);
-	test('stderr can use 4+', testOverflowStream, 2, 4, parentExecaAsync);
-	test('stderr can use [4+]', testOverflowStream, 2, [4], parentExecaAsync);
-	test('stdio[*] can use 4+', testOverflowStream, 3, 4, parentExecaAsync);
-	test('stdio[*] can use [4+]', testOverflowStream, 3, [4], parentExecaAsync);
-	test('stdin can use 4+, sync', testOverflowStream, 0, 4, parentExecaSync);
-	test('stdin can use [4+], sync', testOverflowStream, 0, [4], parentExecaSync);
-	test('stdout can use 4+, sync', testOverflowStream, 1, 4, parentExecaSync);
-	test('stdout can use [4+], sync', testOverflowStream, 1, [4], parentExecaSync);
-	test('stderr can use 4+, sync', testOverflowStream, 2, 4, parentExecaSync);
-	test('stderr can use [4+], sync', testOverflowStream, 2, [4], parentExecaSync);
-	test('stdio[*] can use 4+, sync', testOverflowStream, 3, 4, parentExecaSync);
-	test('stdio[*] can use [4+], sync', testOverflowStream, 3, [4], parentExecaSync);
+	test('stdin can use 4+', testOverflowStream, 0, 4, false);
+	test('stdin can use [4+]', testOverflowStream, 0, [4], false);
+	test('stdout can use 4+', testOverflowStream, 1, 4, false);
+	test('stdout can use [4+]', testOverflowStream, 1, [4], false);
+	test('stderr can use 4+', testOverflowStream, 2, 4, false);
+	test('stderr can use [4+]', testOverflowStream, 2, [4], false);
+	test('stdio[*] can use 4+', testOverflowStream, 3, 4, false);
+	test('stdio[*] can use [4+]', testOverflowStream, 3, [4], false);
+	test('stdin can use 4+, sync', testOverflowStream, 0, 4, true);
+	test('stdin can use [4+], sync', testOverflowStream, 0, [4], true);
+	test('stdout can use 4+, sync', testOverflowStream, 1, 4, true);
+	test('stdout can use [4+], sync', testOverflowStream, 1, [4], true);
+	test('stderr can use 4+, sync', testOverflowStream, 2, 4, true);
+	test('stderr can use [4+], sync', testOverflowStream, 2, [4], true);
+	test('stdio[*] can use 4+, sync', testOverflowStream, 3, 4, true);
+	test('stdio[*] can use [4+], sync', testOverflowStream, 3, [4], true);
 }
 
 const testOverflowStreamArray = (t, fdNumber, stdioOption) => {

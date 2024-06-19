@@ -5,7 +5,7 @@ import {execa} from '../../index.js';
 import {getStdio, fullStdio} from '../helpers/stdio.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
-import {parentExecaAsync, parentExecaSync} from '../helpers/nested.js';
+import {nestedSubprocess} from '../helpers/nested.js';
 
 setFixtureDirectory();
 
@@ -57,17 +57,17 @@ test('stderr can be [process.stderr, "pipe"], encoding "buffer", sync', testInhe
 test('stdio[*] output can be ["inherit", "pipe"], encoding "buffer", sync', testInheritStdioOutput, 3, 1, ['inherit', 'pipe'], true, 'buffer');
 test('stdio[*] output can be [3, "pipe"], encoding "buffer", sync', testInheritStdioOutput, 3, 1, [3, 'pipe'], true, 'buffer');
 
-const testInheritNoBuffer = async (t, stdioOption, execaMethod) => {
+const testInheritNoBuffer = async (t, stdioOption, isSync) => {
 	const filePath = tempfile();
-	await execaMethod('nested-write.js', [filePath, foobarString], {stdin: stdioOption, buffer: false}, {input: foobarString});
+	await nestedSubprocess('nested-write.js', [filePath, foobarString], {stdin: stdioOption, buffer: false, isSync}, {input: foobarString});
 	t.is(await readFile(filePath, 'utf8'), `${foobarString} ${foobarString}`);
 	await rm(filePath);
 };
 
-test('stdin can be ["inherit", "pipe"], buffer: false', testInheritNoBuffer, ['inherit', 'pipe'], parentExecaAsync);
-test('stdin can be [0, "pipe"], buffer: false', testInheritNoBuffer, [0, 'pipe'], parentExecaAsync);
-test.serial('stdin can be ["inherit", "pipe"], buffer: false, sync', testInheritNoBuffer, ['inherit', 'pipe'], parentExecaSync);
-test.serial('stdin can be [0, "pipe"], buffer: false, sync', testInheritNoBuffer, [0, 'pipe'], parentExecaSync);
+test('stdin can be ["inherit", "pipe"], buffer: false', testInheritNoBuffer, ['inherit', 'pipe'], false);
+test('stdin can be [0, "pipe"], buffer: false', testInheritNoBuffer, [0, 'pipe'], false);
+test.serial('stdin can be ["inherit", "pipe"], buffer: false, sync', testInheritNoBuffer, ['inherit', 'pipe'], true);
+test.serial('stdin can be [0, "pipe"], buffer: false, sync', testInheritNoBuffer, [0, 'pipe'], true);
 
 test('stdin can use ["inherit", "pipe"] in a TTY', async t => {
 	const stdioOption = [['inherit', 'pipe'], 'inherit', 'pipe'];

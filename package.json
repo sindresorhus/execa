@@ -22,7 +22,7 @@
 	"scripts": {
 		"test": "npm run lint && npm run unit && npm run type",
 		"lint": "xo",
-		"unit": "c8 ava",
+		"unit": "c8 --merge-async ava",
 		"type": "tsd && tsc && npx --yes tsd@0.29.0 && npx --yes --package typescript@5.1 tsc"
 	},
 	"files": [
@@ -67,7 +67,7 @@
 	"devDependencies": {
 		"@types/node": "^20.8.9",
 		"ava": "^6.0.1",
-		"c8": "^9.1.0",
+		"c8": "^10.1.2",
 		"get-node": "^15.0.0",
 		"is-in-ci": "^0.1.0",
 		"is-running": "^2.1.0",

@@ -220,17 +220,6 @@ execaSync('unicorns', {windowsHide: false as boolean});
 expectError(await execa('unicorns', {windowsHide: 'false'}));
 expectError(execaSync('unicorns', {windowsHide: 'false'}));
 
-await execa('unicorns', {verbose: 'none'});
-execaSync('unicorns', {verbose: 'none'});
-await execa('unicorns', {verbose: 'short'});
-execaSync('unicorns', {verbose: 'short'});
-await execa('unicorns', {verbose: 'full'});
-execaSync('unicorns', {verbose: 'full'});
-expectError(await execa('unicorns', {verbose: 'full' as string}));
-expectError(execaSync('unicorns', {verbose: 'full' as string}));
-expectError(await execa('unicorns', {verbose: 'other'}));
-expectError(execaSync('unicorns', {verbose: 'other'}));
-
 await execa('unicorns', {cleanup: false});
 expectError(execaSync('unicorns', {cleanup: false}));
 await execa('unicorns', {cleanup: false as boolean});

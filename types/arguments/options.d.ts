@@ -4,6 +4,7 @@ import type {Readable} from 'node:stream';
 import type {Unless} from '../utils.js';
 import type {Message} from '../ipc.js';
 import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsProperty} from '../stdio/type.js';
+import type {VerboseOption} from '../verbose.js';
 import type {FdGenericOption} from './specific.js';
 import type {EncodingOption} from './encoding-option.js';
 
@@ -226,13 +227,15 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 	/**
 	If `verbose` is `'short'`, prints the command on [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)): its file, arguments, duration and (if it failed) error message.
 
-	If `verbose` is `'full'`, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), `stderr` and IPC messages are also printed.
+	If `verbose` is `'full'` or a function, the command's [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)), `stderr` and IPC messages are also printed.
+
+	A function can be passed to customize logging.
 
 	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
 
 	@default 'none'
 	*/
-	readonly verbose?: FdGenericOption<'none' | 'short' | 'full'>;
+	readonly verbose?: VerboseOption;
 
 	/**
 	Setting this to `false` resolves the result's promise with the error instead of rejecting it.

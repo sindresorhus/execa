@@ -83,7 +83,7 @@ test('Does not print error if none, sync', testPrintNoError, true);
 
 const testPrintErrorEarly = async (t, isSync) => {
 	const stderr = await runEarlyErrorSubprocess(t, isSync);
-	t.is(getErrorLine(stderr), `${testTimestamp} [0] × TypeError: The "cwd" option must be a string or a file URL: true.`);
+	t.is(getErrorLine(stderr), undefined);
 };
 
 test('Prints early validation error', testPrintErrorEarly, false);

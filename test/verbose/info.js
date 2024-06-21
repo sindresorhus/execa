@@ -10,6 +10,7 @@ import {
 	getNormalizedLines,
 	testTimestamp,
 } from '../helpers/verbose.js';
+import {earlyErrorOptions, earlyErrorOptionsSync} from '../helpers/early-error.js';
 
 setFixtureDirectory();
 
@@ -60,3 +61,32 @@ test('Does not allow "verbose: true"', testInvalidVerbose, true, invalidTrueMess
 test('Does not allow "verbose: true", sync', testInvalidVerbose, true, invalidTrueMessage, execaSync);
 test('Does not allow "verbose: \'unknown\'"', testInvalidVerbose, 'unknown', invalidUnknownMessage, execa);
 test('Does not allow "verbose: \'unknown\'", sync', testInvalidVerbose, 'unknown', invalidUnknownMessage, execaSync);
+
+const testValidationError = async (t, isSync) => {
+	const {stderr, nestedResult} = await nestedSubprocess('empty.js', {verbose: 'full', isSync, timeout: []});
+	t.deepEqual(getNormalizedLines(stderr), [`${testTimestamp} [0] $ empty.js`]);
+	t.true(nestedResult instanceof Error);
+};
+
+test('Prints validation errors', testValidationError, false);
+test('Prints validation errors, sync', testValidationError, true);
+
+test('Prints early spawn errors', async t => {
+	const {stderr} = await nestedSubprocess('empty.js', {...earlyErrorOptions, verbose: 'full'});
+	t.deepEqual(getNormalizedLines(stderr), [
+		`${testTimestamp} [0] $ empty.js`,
+		`${testTimestamp} [0] × Command failed with ERR_INVALID_ARG_TYPE: empty.js`,
+		`${testTimestamp} [0] × The "options.detached" property must be of type boolean. Received type string ('true')`,
+		`${testTimestamp} [0] × (done in 0ms)`,
+	]);
+});
+
+test('Prints early spawn errors, sync', async t => {
+	const {stderr} = await nestedSubprocess('empty.js', {...earlyErrorOptionsSync, verbose: 'full', isSync: true});
+	t.deepEqual(getNormalizedLines(stderr), [
+		`${testTimestamp} [0] $ empty.js`,
+		`${testTimestamp} [0] × Command failed with ERR_OUT_OF_RANGE: empty.js`,
+		`${testTimestamp} [0] × The value of "options.maxBuffer" is out of range. It must be a positive number. Received false`,
+		`${testTimestamp} [0] × (done in 0ms)`,
+	]);
+});

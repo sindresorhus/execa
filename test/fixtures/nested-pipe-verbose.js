@@ -1,17 +1,11 @@
 #!/usr/bin/env node
-import {
-	execa,
-	execaSync,
-	getOneMessage,
-	sendMessage,
-} from '../../index.js';
+import {execa, getOneMessage, sendMessage} from '../../index.js';
 import {getNestedOptions} from '../helpers/nested.js';
 
 const {
-	isSync,
 	file,
-	commandArguments,
-	options,
+	commandArguments = [],
+	options: {destinationFile, destinationArguments, ...options},
 	optionsFixture,
 	optionsInput,
 } = await getOneMessage();
@@ -19,9 +13,8 @@ const {
 const commandOptions = await getNestedOptions(options, optionsFixture, optionsInput);
 
 try {
-	const result = isSync
-		? execaSync(file, commandArguments, commandOptions)
-		: await execa(file, commandArguments, commandOptions);
+	const result = await execa(file, commandArguments, commandOptions)
+		.pipe(destinationFile, destinationArguments, commandOptions);
 	await sendMessage(result);
 } catch (error) {
 	await sendMessage(error);

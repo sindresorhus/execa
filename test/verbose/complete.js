@@ -91,7 +91,7 @@ test('Prints completion after errors, "reject" false, sync', testPrintCompletion
 
 const testPrintCompletionEarly = async (t, isSync) => {
 	const stderr = await runEarlyErrorSubprocess(t, isSync);
-	t.is(getCompletionLine(stderr), `${testTimestamp} [0] × (done in 0ms)`);
+	t.is(getCompletionLine(stderr), undefined);
 };
 
 test('Prints completion after early validation errors', testPrintCompletionEarly, false);

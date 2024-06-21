@@ -24,3 +24,4 @@ export {
 	getCancelSignal,
 	type Message,
 } from './types/ipc.js';
+export type {VerboseObject, SyncVerboseObject} from './types/verbose.js';

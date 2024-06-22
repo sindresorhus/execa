@@ -137,7 +137,7 @@ import {execa as execa_} from 'execa';
 // Prepend current process' PID
 const execa = execa_({
 	verbose(verboseLine) {
-		return `[${process.pid}] ${verboseLine}`
+		return `[${process.pid}] ${verboseLine}`;
 	},
 });
 ```
@@ -165,7 +165,7 @@ import {execa as execa_} from 'execa';
 
 const execa = execa_({
 	verbose(verboseLine, verboseObject) {
-		return JSON.stringify(verboseObject)
+		return JSON.stringify(verboseObject);
 	},
 });
 ```
@@ -179,14 +179,6 @@ import {createLogger, transports} from 'winston';
 // Log to a file using Winston
 const transport = new transports.File({filename: 'logs.txt'});
 const logger = createLogger({transports: [transport]});
-
-const execa = execa_({
-	verbose(verboseLine, {type, message, ...verboseObject}) {
-		const level = LOG_LEVELS[type];
-		logger[level](message, verboseObject);
-	},
-});
-
 const LOG_LEVELS = {
 	command: 'info',
 	output: 'verbose',
@@ -194,6 +186,13 @@ const LOG_LEVELS = {
 	error: 'error',
 	duration: 'info',
 };
+
+const execa = execa_({
+	verbose(verboseLine, {message, ...verboseObject}) {
+		const level = LOG_LEVELS[verboseObject.type];
+		logger[level](message, verboseObject);
+	},
+});
 ```
 
 <hr>

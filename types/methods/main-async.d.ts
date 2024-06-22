@@ -318,6 +318,34 @@ $ NODE_DEBUG=execa node build.js
 [00:57:44.747] [1] ✘ Command failed with exit code 1: npm run test
 [00:57:44.747] [1] ✘ (done in 89ms)
 ```
+
+@example <caption>Custom logging</caption>
+
+```
+import {execa as execa_} from 'execa';
+import {createLogger, transports} from 'winston';
+
+// Log to a file using Winston
+const transport = new transports.File({filename: 'logs.txt'});
+const logger = createLogger({transports: [transport]});
+const LOG_LEVELS = {
+	command: 'info',
+	output: 'verbose',
+	ipc: 'verbose',
+	error: 'error',
+	duration: 'info',
+};
+
+const execa = execa_({
+	verbose(verboseLine, {message, ...verboseObject}) {
+		const level = LOG_LEVELS[verboseObject.type];
+		logger[level](message, verboseObject);
+	},
+});
+
+await execa`npm run build`;
+await execa`npm run test`;
+```
 */
 export declare const execa: ExecaMethod<{}>;
 

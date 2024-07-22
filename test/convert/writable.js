@@ -242,10 +242,11 @@ test('.writable() can pipe to errored stream with Stream.pipeline()', async t =>
 	inputStream.destroy(cause);
 
 	await assertPromiseError(t, pipeline(inputStream, stream), cause);
+	await t.throwsAsync(finishedStream(stream));
 
 	await assertStreamError(t, inputStream, cause);
-	const error = await assertStreamError(t, stream, {cause});
-	await assertSubprocessError(t, subprocess, error);
+	const error = await assertStreamError(t, stream, cause);
+	await assertSubprocessError(t, subprocess, {cause: error});
 });
 
 test('.writable() can be used with Stream.compose()', async t => {

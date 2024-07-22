@@ -149,11 +149,12 @@ test('.duplex() can pipe to errored stream with Stream.pipeline()', async t => {
 	outputStream.destroy(cause);
 
 	await assertPromiseError(t, pipeline(inputStream, stream, outputStream), cause);
+	await t.throwsAsync(finishedStream(stream));
 
 	await assertStreamError(t, inputStream, cause);
-	const error = await assertStreamError(t, stream, {cause});
+	const error = await assertStreamError(t, stream, cause);
 	await assertStreamReadError(t, outputStream, cause);
-	await assertSubprocessError(t, subprocess, error);
+	await assertSubprocessError(t, subprocess, {cause: error});
 });
 
 test('.duplex() can be piped to errored stream with Stream.pipeline()', async t => {
@@ -166,11 +167,12 @@ test('.duplex() can be piped to errored stream with Stream.pipeline()', async t 
 	inputStream.destroy(cause);
 
 	await assertPromiseError(t, pipeline(inputStream, stream, outputStream), cause);
+	await t.throwsAsync(finishedStream(stream));
 
 	await assertStreamError(t, inputStream, cause);
-	const error = await assertStreamError(t, stream, {cause});
+	const error = await assertStreamError(t, stream, cause);
 	await assertStreamReadError(t, outputStream, cause);
-	await assertSubprocessError(t, subprocess, error);
+	await assertSubprocessError(t, subprocess, {cause: error});
 });
 
 test('.duplex() can be used with Stream.compose()', async t => {

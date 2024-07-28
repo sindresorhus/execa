@@ -1,4 +1,4 @@
-import {delimiter} from 'node:path';
+import path from 'node:path';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
@@ -12,7 +12,9 @@ const isWindows = process.platform === 'win32';
 const ENOENT_REGEXP = isWindows ? /failed with exit code 1/ : /spawn.* ENOENT/;
 
 const getPathWithoutLocalDirectory = () => {
-	const newPath = process.env[PATH_KEY].split(delimiter).filter(pathDirectory => !BIN_DIR_REGEXP.test(pathDirectory)).join(delimiter);
+	const newPath = process.env[PATH_KEY]
+		.split(path.delimiter)
+		.filter(pathDirectory => !BIN_DIR_REGEXP.test(pathDirectory)).join(path.delimiter);
 	return {[PATH_KEY]: newPath};
 };
 
@@ -59,13 +61,13 @@ test('preferLocal: undefined with $.pipe()', async t => {
 test('localDir option', async t => {
 	const command = isWindows ? 'echo %PATH%' : 'echo $PATH';
 	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: '/test'});
-	const envPaths = stdout.split(delimiter);
+	const envPaths = stdout.split(path.delimiter);
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });
 
 test('localDir option can be a URL', async t => {
 	const command = isWindows ? 'echo %PATH%' : 'echo $PATH';
 	const {stdout} = await execa(command, {shell: true, preferLocal: true, localDir: pathToFileURL('/test')});
-	const envPaths = stdout.split(delimiter);
+	const envPaths = stdout.split(path.delimiter);
 	t.true(envPaths.some(envPath => envPath.endsWith('.bin')));
 });

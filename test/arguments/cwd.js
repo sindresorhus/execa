@@ -1,5 +1,5 @@
 import {mkdir, rmdir} from 'node:fs/promises';
-import {relative, toNamespacedPath} from 'node:path';
+import path from 'node:path';
 import process from 'node:process';
 import {pathToFileURL, fileURLToPath} from 'node:url';
 import tempfile from 'tempfile';
@@ -14,7 +14,7 @@ const isWindows = process.platform === 'win32';
 const testOptionCwdString = async (t, execaMethod) => {
 	const cwd = '/';
 	const {stdout} = await execaMethod('node', ['-p', 'process.cwd()'], {cwd});
-	t.is(toNamespacedPath(stdout), toNamespacedPath(cwd));
+	t.is(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
 };
 
 test('The "cwd" option can be a string', testOptionCwdString, execa);
@@ -24,7 +24,7 @@ const testOptionCwdUrl = async (t, execaMethod) => {
 	const cwd = '/';
 	const cwdUrl = pathToFileURL(cwd);
 	const {stdout} = await execaMethod('node', ['-p', 'process.cwd()'], {cwd: cwdUrl});
-	t.is(toNamespacedPath(stdout), toNamespacedPath(cwd));
+	t.is(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
 };
 
 test('The "cwd" option can be a URL', testOptionCwdUrl, execa);
@@ -93,7 +93,7 @@ const successProperties = {fixtureName: 'empty.js', expectedFailed: false};
 const errorProperties = {fixtureName: 'fail.js', expectedFailed: true};
 
 const testErrorCwd = async (t, execaMethod, {fixtureName, expectedFailed}) => {
-	const {failed, cwd} = await execaMethod(fixtureName, {cwd: relative('.', FIXTURES_DIRECTORY), reject: false});
+	const {failed, cwd} = await execaMethod(fixtureName, {cwd: path.relative('.', FIXTURES_DIRECTORY), reject: false});
 	t.is(failed, expectedFailed);
 	t.is(cwd, FIXTURES_DIRECTORY);
 };

@@ -1,4 +1,4 @@
-import {join, basename} from 'node:path';
+import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import test from 'ava';
 import {
@@ -73,8 +73,8 @@ test('$.sync\'s command argument must be a string or file URL', testInvalidComma
 
 const testRelativePath = async (t, execaMethod) => {
 	// @todo: use import.meta.dirname after dropping support for Node <20.11.0
-	const rootDirectory = basename(fileURLToPath(new URL('../..', import.meta.url)));
-	const pathViaParentDirectory = join('..', rootDirectory, 'test', 'fixtures', 'noop.js');
+	const rootDirectory = path.basename(fileURLToPath(new URL('../..', import.meta.url)));
+	const pathViaParentDirectory = path.join('..', rootDirectory, 'test', 'fixtures', 'noop.js');
 	const {stdout} = await execaMethod(pathViaParentDirectory);
 	t.is(stdout, foobarString);
 };

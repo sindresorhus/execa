@@ -1,4 +1,4 @@
-import {join} from 'node:path';
+import path from 'node:path';
 import test from 'ava';
 import {
 	execa,
@@ -12,8 +12,8 @@ import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-direc
 
 setFixtureDirectory();
 
-const NOOP_PATH = join(FIXTURES_DIRECTORY, 'noop.js');
-const PRINT_ENV_PATH = join(FIXTURES_DIRECTORY, 'environment.js');
+const NOOP_PATH = path.join(FIXTURES_DIRECTORY, 'noop.js');
+const PRINT_ENV_PATH = path.join(FIXTURES_DIRECTORY, 'environment.js');
 
 const testBindOptions = async (t, execaMethod) => {
 	const {stdout} = await execaMethod({stripFinalNewline: false})(NOOP_PATH, [foobarString]);

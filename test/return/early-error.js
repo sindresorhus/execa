@@ -25,6 +25,7 @@ test('execaSync() throws error if ENOENT', t => {
 const testEarlyErrorShape = async (t, reject) => {
 	const subprocess = getEarlyErrorSubprocess({reject});
 	t.notThrows(() => {
+		// eslint-disable-next-line promise/prefer-await-to-then
 		subprocess.catch(() => {});
 		subprocess.unref();
 		subprocess.on('error', () => {});

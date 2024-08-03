@@ -1,4 +1,4 @@
-import {join} from 'node:path';
+import path from 'node:path';
 import test from 'ava';
 import {
 	execa,
@@ -11,7 +11,7 @@ import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-direc
 
 setFixtureDirectory();
 
-const NOOP_PATH = join(FIXTURES_DIRECTORY, 'noop.js');
+const NOOP_PATH = path.join(FIXTURES_DIRECTORY, 'noop.js');
 
 const testTemplate = async (t, execaMethod) => {
 	const {stdout} = await execaMethod`${NOOP_PATH} ${foobarString}`;

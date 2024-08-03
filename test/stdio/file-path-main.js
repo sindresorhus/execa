@@ -1,5 +1,5 @@
 import {readFile, writeFile, rm} from 'node:fs/promises';
-import {dirname, basename} from 'node:path';
+import path from 'node:path';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
@@ -83,10 +83,10 @@ const testInputFileValidUrl = async (t, fdNumber, execaMethod) => {
 	const filePath = tempfile();
 	await writeFile(filePath, foobarString);
 	const currentCwd = process.cwd();
-	process.chdir(dirname(filePath));
+	process.chdir(path.dirname(filePath));
 
 	try {
-		const {stdout} = await execaMethod('stdin.js', getStdioInputFile(fdNumber, basename(filePath)));
+		const {stdout} = await execaMethod('stdin.js', getStdioInputFile(fdNumber, path.basename(filePath)));
 		t.is(stdout, foobarString);
 	} finally {
 		process.chdir(currentCwd);

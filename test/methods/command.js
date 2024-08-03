@@ -1,4 +1,4 @@
-import {join} from 'node:path';
+import path from 'node:path';
 import test from 'ava';
 import {
 	execa,
@@ -17,7 +17,7 @@ import {
 import {QUOTE} from '../helpers/verbose.js';
 
 setFixtureDirectory();
-const STDIN_FIXTURE = join(FIXTURES_DIRECTORY, 'stdin.js');
+const STDIN_FIXTURE = path.join(FIXTURES_DIRECTORY, 'stdin.js');
 const ECHO_FIXTURE_URL = new URL('echo.js', FIXTURES_DIRECTORY_URL);
 
 const parseAndRunCommand = command => execa`${parseCommandString(command)}`;

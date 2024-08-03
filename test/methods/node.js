@@ -1,4 +1,4 @@
-import {dirname, relative} from 'node:path';
+import path from 'node:path';
 import process, {version} from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
@@ -137,7 +137,7 @@ test.serial('The "nodePath" option impacts the subprocess - "node" option sync',
 
 const testSubprocessNodePathDefault = async (t, execaMethod) => {
 	const {stdout} = await execaMethod(...nodePathArguments);
-	t.true(stdout.includes(dirname(process.execPath)));
+	t.true(stdout.includes(path.dirname(process.execPath)));
 };
 
 test('The "nodePath" option defaults to the current Node.js binary in the subprocess - execaNode()', testSubprocessNodePathDefault, execaNode);
@@ -152,8 +152,8 @@ test.serial('The "nodePath" option requires "node: true" to impact the subproces
 
 const testSubprocessNodePathCwd = async (t, execaMethod) => {
 	const nodePath = await getNodePath();
-	const cwd = dirname(dirname(nodePath));
-	const relativeExecPath = relative(cwd, nodePath);
+	const cwd = path.dirname(path.dirname(nodePath));
+	const relativeExecPath = path.relative(cwd, nodePath);
 	const {stdout} = await execaMethod(...nodePathArguments, {nodePath: relativeExecPath, cwd});
 	t.true(stdout.includes(TEST_NODE_VERSION));
 };
@@ -164,8 +164,8 @@ test.serial('The "nodePath" option is relative to "cwd" when used in the subproc
 
 const testCwdNodePath = async (t, execaMethod) => {
 	const nodePath = await getNodePath();
-	const cwd = dirname(dirname(nodePath));
-	const relativeExecPath = relative(cwd, nodePath);
+	const cwd = path.dirname(path.dirname(nodePath));
+	const relativeExecPath = path.relative(cwd, nodePath);
 	const {stdout} = await execaMethod('--version', [], {nodePath: relativeExecPath, cwd});
 	t.is(stdout, `v${TEST_NODE_VERSION}`);
 };

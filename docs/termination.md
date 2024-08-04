@@ -156,12 +156,12 @@ const getInactivityOptions = () => {
 	const cancelSignal = controller.signal;
 
 	// Delay and debounce `cancelSignal` each time `controller.abort()` is called
-	const abort = debounceFn(controller.abort.bind(controller), {wait});
+	const scheduleAbort = debounceFn(controller.abort.bind(controller), {wait});
 
 	const onOutput = {
 		* transform(data) {
 			// When anything is printed, debounce `controller.abort()`
-			abort();
+			scheduleAbort();
 
 			// Keep the output as is
 			yield data;
@@ -171,7 +171,7 @@ const getInactivityOptions = () => {
 	};
 
 	// Start debouncing
-	abort();
+	scheduleAbort();
 
 	return {
 		cancelSignal,

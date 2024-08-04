@@ -124,6 +124,8 @@ If the subprocess is still alive after 5 seconds, it is forcefully terminated wi
 
 ## Timeout
 
+### Execution timeout
+
 If the subprocess lasts longer than the [`timeout`](api.md#optionstimeout) option, a [`SIGTERM` signal](#default-signal) is sent to it.
 
 ```js
@@ -136,6 +138,45 @@ try {
 
 	throw error;
 }
+```
+
+### Inactivity timeout
+
+To terminate a subprocess when it becomes inactive, the [`cancelSignal`](#canceling) option can be combined with [transforms](transform.md) and some [debouncing logic](https://github.com/sindresorhus/debounce-fn). The following example terminates the subprocess if it has not printed to [`stdout`](api.md#resultstdout)/[`stderr`](api.md#resultstderr) in the last minute.
+
+```js
+import {execa} from 'execa';
+import debounceFn from 'debounce-fn';
+
+// 1 minute
+const wait = 60_000;
+
+const getInactivityOptions = () => {
+	const controller = new AbortController();
+	const cancelSignal = controller.signal;
+
+	// Delay and debounce `cancelSignal` each time `controller.abort()` is called
+	const abort = debounceFn(controller.abort.bind(controller), {wait});
+
+	const onOutput = {
+		* transform(data) {
+			// When anything is printed, debounce `controller.abort()`
+			abort();
+			// Keep the output as is
+			yield data;
+		},
+		// Debounce even if the output does not include any newline
+		binary: true,
+	};
+
+	// Start debouncing
+	abort();
+
+	return {cancelSignal, stdout: onOutput, stderr: onOutput};
+};
+
+const options = getInactivityOptions();
+await execa(options)`npm run build`;
 ```
 
 ## Current process exit

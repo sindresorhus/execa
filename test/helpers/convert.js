@@ -1,7 +1,7 @@
 import {text} from 'node:stream/consumers';
 import {finished} from 'node:stream/promises';
 import getStream from 'get-stream';
-import isPlainObj from 'is-plain-obj';
+import isPlainObject from '../../lib/utils/is-plain-object.js';
 import {execa} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
 
@@ -62,7 +62,7 @@ export const assertSubprocessError = (t, subprocess, error) => assertPromiseErro
 export const assertPromiseError = async (t, promise, error) => {
 	const thrownError = await t.throwsAsync(promise);
 
-	if (isPlainObj(error) && error.cause !== undefined) {
+	if (isPlainObject(error) && error.cause !== undefined) {
 		t.is(thrownError.cause, error.cause);
 	} else {
 		t.is(thrownError, error);

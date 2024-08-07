@@ -162,6 +162,7 @@ const getInactivityOptions = () => {
 		* transform(data) {
 			// When anything is printed, debounce `controller.abort()`
 			abort();
+
 			// Keep the output as is
 			yield data;
 		},
@@ -172,10 +173,15 @@ const getInactivityOptions = () => {
 	// Start debouncing
 	abort();
 
-	return {cancelSignal, stdout: onOutput, stderr: onOutput};
+	return {
+		cancelSignal,
+		stdout: onOutput,
+		stderr: onOutput,
+	};
 };
 
 const options = getInactivityOptions();
+
 await execa(options)`npm run build`;
 ```
 

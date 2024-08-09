@@ -1,5 +1,4 @@
 import type {SignalConstants} from 'node:os';
-import type {env} from 'node:process';
 import type {Readable} from 'node:stream';
 import type {Unless} from '../utils.js';
 import type {Message} from '../ipc.js';
@@ -77,7 +76,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default [process.env](https://nodejs.org/api/process.html#processenv)
 	*/
-	readonly env?: typeof env;
+	readonly env?: Partial<Record<string, string>>;
 
 	/**
 	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).

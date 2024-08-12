@@ -76,7 +76,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default [process.env](https://nodejs.org/api/process.html#processenv)
 	*/
-	readonly env?: Partial<Record<string, string>>;
+	readonly env?: Readonly<Partial<Record<string, string>>>;
 
 	/**
 	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).

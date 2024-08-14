@@ -34,9 +34,9 @@ If the subprocess spawns its own subprocesses, they inherit environment variable
 
 ```js
 // Keep the current process' environment variables, and set `NO_COLOR`
-await execa({env: {NO_COLOR: 'true'})`node child.js`;
+await execa({env: {NO_COLOR: 'true'}})`node child.js`;
 // Discard the current process' environment variables, only pass `NO_COLOR`
-await execa({env: {NO_COLOR: 'true'}, extendEnv: false)`node child.js`;
+await execa({env: {NO_COLOR: 'true'}, extendEnv: false})`node child.js`;
 ```
 
 If the subprocess is a Node.js file, environment variables are available using [`process.env`](https://nodejs.org/api/process.html#processenv).

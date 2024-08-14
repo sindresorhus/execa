@@ -21,8 +21,11 @@ test(testResultCommand, ' foo bar', 'foo', 'bar');
 test(testResultCommand, ' baz quz', 'baz', 'quz');
 test(testResultCommand, '');
 
-const testEscapedCommand = async (t, commandArguments, expectedUnix, expectedWindows) => {
-	const expected = isWindows ? expectedWindows : expectedUnix;
+// eslint-disable-next-line max-params
+const testEscapedCommand = async (t, commandArguments, expectedUnix, expectedWindows, expectedUnixNoIcu = expectedUnix, expectedWindowsNoIcu = expectedWindows) => {
+	const expected = RegExp.isMocked
+		? (isWindows ? expectedWindowsNoIcu : expectedUnixNoIcu)
+		: (isWindows ? expectedWindows : expectedUnix);
 
 	t.like(
 		await t.throwsAsync(execa('fail.js', commandArguments)),
@@ -89,12 +92,12 @@ test('result.escapedCommand - \\x01', testEscapedCommand, ['\u0001'], '\'\\u0001
 test('result.escapedCommand - \\x7f', testEscapedCommand, ['\u007F'], '\'\\u007f\'', '"\\u007f"');
 test('result.escapedCommand - \\u0085', testEscapedCommand, ['\u0085'], '\'\\u0085\'', '"\\u0085"');
 test('result.escapedCommand - \\u2000', testEscapedCommand, ['\u2000'], '\'\\u2000\'', '"\\u2000"');
-test('result.escapedCommand - \\u200E', testEscapedCommand, ['\u200E'], '\'\\u200e\'', '"\\u200e"');
+test('result.escapedCommand - \\u200E', testEscapedCommand, ['\u200E'], '\'\\u200e\'', '"\\u200e"', '\'\u200E\'', '"\u200E"');
 test('result.escapedCommand - \\u2028', testEscapedCommand, ['\u2028'], '\'\\u2028\'', '"\\u2028"');
 test('result.escapedCommand - \\u2029', testEscapedCommand, ['\u2029'], '\'\\u2029\'', '"\\u2029"');
 test('result.escapedCommand - \\u5555', testEscapedCommand, ['\u5555'], '\'\u5555\'', '"\u5555"');
-test('result.escapedCommand - \\uD800', testEscapedCommand, ['\uD800'], '\'\\ud800\'', '"\\ud800"');
-test('result.escapedCommand - \\uE000', testEscapedCommand, ['\uE000'], '\'\\ue000\'', '"\\ue000"');
+test('result.escapedCommand - \\uD800', testEscapedCommand, ['\uD800'], '\'\\ud800\'', '"\\ud800"', '\'\uD800\'', '"\uD800"');
+test('result.escapedCommand - \\uE000', testEscapedCommand, ['\uE000'], '\'\\ue000\'', '"\\ue000"', '\'\uE000\'', '"\uE000"');
 test('result.escapedCommand - \\U1D172', testEscapedCommand, ['\u{1D172}'], '\'\u{1D172}\'', '"\u{1D172}"');
-test('result.escapedCommand - \\U1D173', testEscapedCommand, ['\u{1D173}'], '\'\\U1d173\'', '"\\U1d173"');
-test('result.escapedCommand - \\U10FFFD', testEscapedCommand, ['\u{10FFFD}'], '\'\\U10fffd\'', '"\\U10fffd"');
+test('result.escapedCommand - \\U1D173', testEscapedCommand, ['\u{1D173}'], '\'\\U1d173\'', '"\\U1d173"', '\'\u{1D173}\'', '"\u{1D173}"');
+test('result.escapedCommand - \\U10FFFD', testEscapedCommand, ['\u{10FFFD}'], '\'\\U10fffd\'', '"\\U10fffd"', '\'\u{10FFFD}\'', '"\u{10FFFD}"');

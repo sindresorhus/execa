@@ -1170,7 +1170,7 @@ _Default:_ `true` if the [`shell`](#optionsshell) option is `true`, `false` othe
 
 If `false`, escapes the command arguments on Windows.
 
-[More info.](windows.md#cmdexe-escaping)
+[More info.](windows.md#escaping)
 
 ## Verbose function
 

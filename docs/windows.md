@@ -34,11 +34,33 @@ The default value for the [`stdin`](api.md#optionsstdin), [`stdout`](api.md#opti
 
 Instead of `'pipe'`, `'overlapped'` can be used instead to use [asynchronous I/O](https://learn.microsoft.com/en-us/windows/win32/fileio/synchronous-and-asynchronous-i-o) under-the-hood on Windows, instead of the default behavior which is synchronous. On other platforms, asynchronous I/O is always used, so `'overlapped'` behaves the same way as `'pipe'`.
 
-## `cmd.exe` escaping
+## Escaping
 
-If the [`windowsVerbatimArguments`](api.md#optionswindowsverbatimarguments) option is `false`, the [command arguments](input.md#command-arguments) are automatically escaped on Windows. When using a [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) [shell](api.md#optionsshell), this is `true` by default instead.
+Windows requires files and arguments to be quoted when they contain spaces, tabs, backslashes or double quotes. Unlike Unix, this is needed even when no [shell](shell.md) is used.
 
-This is ignored on other platforms: those are [automatically escaped](escaping.md) by default.
+When not using any shell, Execa performs that quoting automatically. This ensures files and arguments are split correctly.
+
+```js
+await execa`npm run ${'task with space'}`;
+```
+
+When using a [shell](shell.md), the user must manually perform shell-specific quoting, on both Unix and Windows. When the [`shell`](api.md#optionsshell) option is `true`, [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) is used on Windows and `sh` on Unix. Unfortunately both shells use different quoting rules. With `cmd.exe`, this mostly involves double quoting arguments and prepending double quotes with a backslash.
+
+```js
+if (isWindows) {
+	await execa({shell: true})`npm run ${'"task with space"'}`;
+} else {
+	await execa({shell: true})`npm run ${'\'task with space\''}`;
+}
+```
+
+When using other Windows shells (such as Powershell or WSL), Execa performs `cmd.exe`-specific automatic quoting by default. This is a problem since Powershell uses different quoting rules. This can be disabled using the [`windowsVerbatimArguments: true`](api.md#optionswindowsverbatimarguments) option.
+
+```js
+if (isWindows) {
+	await execa({windowsVerbatimArguments: true})`wsl ...`;
+}
+```
 
 ## Console window
 

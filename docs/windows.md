@@ -44,7 +44,7 @@ When not using any shell, Execa performs that quoting automatically. This ensure
 await execa`npm run ${'task with space'}`;
 ```
 
-When using a [shell](shell.md), the user must manually perform shell-specific quoting, on both Unix and Windows. When the [`shell`](api.md#optionsshell) option is `true`, [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) is used on Windows and `sh` on Unix. Unfortunately both shells use different quoting rules. With `cmd.exe`, this mostly involves double quoting arguments and prepending double quotes with a backslash.
+When using a [shell](shell.md), the user must manually perform shell-specific quoting, on both Unix and Windows. When the [`shell`](api.md#optionsshell) option is `true`, [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) is used on Windows and `sh` on Unix. Unfortunately, both shells use different quoting rules. With `cmd.exe`, this mostly involves double quoting arguments and prepending double quotes with a backslash.
 
 ```js
 if (isWindows) {
@@ -54,7 +54,7 @@ if (isWindows) {
 }
 ```
 
-When using other Windows shells (such as Powershell or WSL), Execa performs `cmd.exe`-specific automatic quoting by default. This is a problem since Powershell uses different quoting rules. This can be disabled using the [`windowsVerbatimArguments: true`](api.md#optionswindowsverbatimarguments) option.
+When using other Windows shells (such as PowerShell or WSL), Execa performs `cmd.exe`-specific automatic quoting by default. This is a problem since Powershell uses different quoting rules. This can be disabled using the [`windowsVerbatimArguments: true`](api.md#optionswindowsverbatimarguments) option.
 
 ```js
 if (isWindows) {

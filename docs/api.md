@@ -754,7 +754,7 @@ If a signal terminated the subprocess, this property is defined and included in 
 
 ## Options
 
-_TypeScript:_ [`Options`](typescript.md) or [`SyncOptions`](typescript.md\
+_TypeScript:_ [`Options`](typescript.md) or [`SyncOptions`](typescript.md)
 _Type:_ `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).

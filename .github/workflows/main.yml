@@ -29,7 +29,7 @@ jobs:
       - run: npm install
       - uses: lycheeverse/lychee-action@v1
         with:
-          args: --cache --verbose --no-progress --include-fragments --exclude linkedin --exclude file:///test --exclude invalid.com '*.md' 'docs/*.md' '.github/**/*.md' '*.json' '*.js' 'lib/**/*.js' 'test/**/*.js' '*.ts' 'test-d/**/*.ts'
+          args: --cache --verbose --no-progress --include-fragments --exclude packagephobia --exclude /pull/ --exclude linkedin --exclude file:///test --exclude invalid.com '*.md' 'docs/*.md' '.github/**/*.md' '*.json' '*.js' 'lib/**/*.js' 'test/**/*.js' '*.ts' 'test-d/**/*.ts'
           fail: true
         if: ${{ matrix.os == 'ubuntu' && matrix.node-version == 22 }}
       - run: npm run lint

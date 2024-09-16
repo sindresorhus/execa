@@ -103,6 +103,7 @@ Advanced usage:
 - 🐛 [Debugging](docs/debugging.md)
 - 📎 [Windows](docs/windows.md)
 - 🔍 [Difference with Bash and zx](docs/bash.md)
+- 🐭 [Small packages](docs/small.md)
 - 🤓 [TypeScript](docs/typescript.md)
 - 📔 [API reference](docs/api.md)
 
@@ -440,6 +441,7 @@ await execa`npm run test`;
 
 ## Related
 
+- [nano-spawn](https://github.com/sindresorhus/nano-spawn) - Like Execa but [smaller](docs/small.md)
 - [gulp-execa](https://github.com/ehmicky/gulp-execa) - Gulp plugin for Execa
 - [nvexeca](https://github.com/ehmicky/nvexeca) - Run Execa using any Node.js version
 

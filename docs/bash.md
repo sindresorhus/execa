@@ -1269,6 +1269,6 @@ await pRetry(
 
 <hr>
 
-[**Next**: 🤓 TypeScript](typescript.md)\
+[**Next**: 🐭 Small packages](small.md)\
 [**Previous**: 📎 Windows](windows.md)\
 [**Top**: Table of contents](../readme.md#documentation)

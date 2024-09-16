@@ -187,5 +187,5 @@ await execa(options)`npm run build`;
 <hr>
 
 [**Next**: 📔 API reference](api.md)\
-[**Previous**: 🔍 Differences with Bash and zx](bash.md)\
+[**Previous**: 🐭 Small packages](small.md)\
 [**Top**: Table of contents](../readme.md#documentation)

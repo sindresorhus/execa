@@ -7,6 +7,7 @@ import {execa, execaSync, execaNode} from '../../index.js';
 import {FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {identity, fullStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
+import {getDenoNodePath} from '../helpers/file-path.js';
 
 process.chdir(FIXTURES_DIRECTORY);
 
@@ -73,6 +74,9 @@ test('Cannot use "node" as binary - "node" option sync', testDoubleNode, 'node',
 test('Cannot use path to "node" as binary - execaNode()', testDoubleNode, process.execPath, execaNode);
 test('Cannot use path to "node" as binary - "node" option', testDoubleNode, process.execPath, runWithNodeOption);
 test('Cannot use path to "node" as binary - "node" option sync', testDoubleNode, process.execPath, runWithNodeOptionSync);
+test('Cannot use deno style nodePath as binary - execaNode()', testDoubleNode, getDenoNodePath(), execaNode);
+test('Cannot use deno style nodePath as binary - "node" option', testDoubleNode, getDenoNodePath(), runWithNodeOption);
+test('Cannot use deno style nodePath as binary - "node" option sync', testDoubleNode, getDenoNodePath(), runWithNodeOptionSync);
 
 const getNodePath = async () => {
 	const {path} = await getNode(TEST_NODE_VERSION);
@@ -173,6 +177,16 @@ const testCwdNodePath = async (t, execaMethod) => {
 test.serial('The "nodePath" option is relative to "cwd" - execaNode()', testCwdNodePath, execaNode);
 test.serial('The "nodePath" option is relative to "cwd" - "node" option', testCwdNodePath, runWithNodeOption);
 test.serial('The "nodePath" option is relative to "cwd" - "node" option sync', testCwdNodePath, runWithNodeOptionSync);
+
+const testDenoExecPath = async (t, execaMethod) => {
+	const {exitCode, stdout} = await execaMethod('noop.js', [], {nodePath: getDenoNodePath()});
+	t.is(exitCode, 0);
+	t.is(stdout, foobarString);
+};
+
+test('The deno style "nodePath" option can be used - execaNode()', testDenoExecPath, execaNode);
+test('The deno style "nodePath" option can be used - "node" option', testDenoExecPath, runWithNodeOption);
+test('The deno style "nodePath" option can be used - "node" option sync', testDenoExecPath, runWithNodeOptionSync);
 
 const testNodeOptions = async (t, execaMethod) => {
 	const {stdout} = await execaMethod('empty.js', [], {nodeOptions: ['--version']});

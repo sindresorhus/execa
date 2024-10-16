@@ -4,6 +4,7 @@ import test from 'ava';
 import {$, execa} from '../../index.js';
 import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
+import {getDenoNodePath} from '../helpers/file-path.js';
 
 setFixtureDirectory();
 
@@ -70,6 +71,16 @@ test('$.pipe("file", commandArguments, options)', async t => {
 
 test('execa.$.pipe("file", commandArguments, options)`', async t => {
 	const {stdout} = await execa('noop.js', [foobarString]).pipe('node', ['stdin.js'], {cwd: FIXTURES_DIRECTORY});
+	t.is(stdout, foobarString);
+});
+
+test('execa.$.pipe("file", commandArguments, options with denoNodePath)`', async t => {
+	const {stdout} = await execa('noop.js', [foobarString]).pipe('node', ['stdin.js'], {cwd: FIXTURES_DIRECTORY, nodePath: getDenoNodePath()});
+	t.is(stdout, foobarString);
+});
+
+test('execa.$.pipe("file", commandArguments, denoNodePath)`', async t => {
+	const {stdout} = await execa('noop.js', [foobarString]).pipe(getDenoNodePath(), ['stdin.js'], {cwd: FIXTURES_DIRECTORY});
 	t.is(stdout, foobarString);
 });
 

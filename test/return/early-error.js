@@ -1,3 +1,4 @@
+import {arch} from 'node:os';
 import process from 'node:process';
 import test from 'ava';
 import {execa, execaSync, $} from '../../index.js';
@@ -62,16 +63,18 @@ if (!isWindows) {
 		await t.throwsAsync(execa('non-executable.js', {input: 'Hey!'}), {message: /EACCES/});
 	});
 
-	test('write to fast-exit subprocess', async t => {
+	if (arch() === 'x64') {
+		test('write to fast-exit subprocess', async t => {
 		// Try-catch here is necessary, because this test is not 100% accurate
 		// Sometimes subprocess can manage to accept input before exiting
-		try {
-			await execa(`fast-exit-${process.platform}`, [], {input: 'data'});
-			t.pass();
-		} catch (error) {
-			t.is(error.code, 'EPIPE');
-		}
-	});
+			try {
+				await execa(`fast-exit-${process.platform}`, [], {input: 'data'});
+				t.pass();
+			} catch (error) {
+				t.is(error.code, 'EPIPE');
+			}
+		});
+	}
 }
 
 const testEarlyErrorPipe = async (t, getSubprocess) => {

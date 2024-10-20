@@ -49,7 +49,7 @@ type CommonStdioOption<
 > =
 	| SimpleStdioOption<IsSync, IsExtra, IsArray>
 	| URL
-	| {readonly file: string}
+	| {readonly file: string; readonly append?: boolean}
 	| GeneratorTransform<IsSync>
 	| GeneratorTransformFull<IsSync>
 	| Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9>

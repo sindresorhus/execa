@@ -605,6 +605,27 @@ await $({stdout: {file: 'output.txt'}})`npm run build`;
 
 [More info.](output.md#file-output)
 
+### Append stdout to a file
+
+```sh
+# Bash
+npm run build >> output.txt
+```
+
+```js
+// zx
+import {createWriteStream} from 'node:fs';
+
+await $`npm run build`.pipe(createWriteStream('output.txt', {flags: 'a'}));
+```
+
+```js
+// Execa
+await $({stdout: {file: 'output.txt', append: true}})`npm run build`;
+```
+
+[More info.](output.md#file-output)
+
 ### Piping interleaved stdout and stderr to a file
 
 ```sh

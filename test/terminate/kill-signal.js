@@ -1,15 +1,15 @@
 import {once} from 'node:events';
-import {platform, version} from 'node:process';
+import {platform} from 'node:process';
 import {constants} from 'node:os';
 import {setImmediate} from 'node:timers/promises';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {majorNodeVersion} from '../helpers/node-version.js';
 
 setFixtureDirectory();
 
 const isWindows = platform === 'win32';
-const majorNodeVersion = Number(version.split('.')[0].slice(1));
 
 const testKillSignal = async (t, killSignal) => {
 	const {isTerminated, signal} = await t.throwsAsync(execa('forever.js', {killSignal, timeout: 1}));

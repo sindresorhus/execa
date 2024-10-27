@@ -1,5 +1,4 @@
 import {once} from 'node:events';
-import process from 'node:process';
 import {
 	compose,
 	Readable,
@@ -428,8 +427,7 @@ test('.duplex() can be paused', async t => {
 
 // This feature does not work on Node 18.
 // @todo: remove after dropping support for Node 18.
-const majorVersion = Number(process.version.split('.')[0].slice(1));
-if (majorVersion >= 20) {
+if (majorNodeVersion >= 20) {
 	const testHighWaterMark = async (t, methodName) => {
 		const subprocess = execa('stdin.js');
 		const stream = subprocess[methodName]();

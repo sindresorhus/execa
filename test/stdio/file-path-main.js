@@ -158,3 +158,39 @@ const testInputFileHanging = async (t, mapFilePath) => {
 
 test('Passing an input file path when subprocess exits does not make promise hang', testInputFileHanging, getAbsolutePath);
 test('Passing an input file URL when subprocess exits does not make promise hang', testInputFileHanging, pathToFileURL);
+
+const testOverwriteFile = async (t, fdNumber, execaMethod, append) => {
+	const filePath = tempfile();
+	await writeFile(filePath, '.');
+	await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, {file: filePath, append}));
+	t.is(await readFile(filePath, 'utf8'), foobarString);
+	await rm(filePath);
+};
+
+test('Overwrite by default to stdout', testOverwriteFile, 1, execa, undefined);
+test('Overwrite by default to stderr', testOverwriteFile, 2, execa, undefined);
+test('Overwrite by default to stdio[*]', testOverwriteFile, 3, execa, undefined);
+test('Overwrite by default to stdout - sync', testOverwriteFile, 1, execaSync, undefined);
+test('Overwrite by default to stderr - sync', testOverwriteFile, 2, execaSync, undefined);
+test('Overwrite by default to stdio[*] - sync', testOverwriteFile, 3, execaSync, undefined);
+test('Overwrite with append false to stdout', testOverwriteFile, 1, execa, false);
+test('Overwrite with append false to stderr', testOverwriteFile, 2, execa, false);
+test('Overwrite with append false to stdio[*]', testOverwriteFile, 3, execa, false);
+test('Overwrite with append false to stdout - sync', testOverwriteFile, 1, execaSync, false);
+test('Overwrite with append false to stderr - sync', testOverwriteFile, 2, execaSync, false);
+test('Overwrite with append false to stdio[*] - sync', testOverwriteFile, 3, execaSync, false);
+
+const testAppendFile = async (t, fdNumber, execaMethod) => {
+	const filePath = tempfile();
+	await writeFile(filePath, '.');
+	await execaMethod('noop-fd.js', [`${fdNumber}`, foobarString], getStdio(fdNumber, {file: filePath, append: true}));
+	t.is(await readFile(filePath, 'utf8'), `.${foobarString}`);
+	await rm(filePath);
+};
+
+test('Can append to stdout', testAppendFile, 1, execa);
+test('Can append to stderr', testAppendFile, 2, execa);
+test('Can append to stdio[*]', testAppendFile, 3, execa);
+test('Can append to stdout - sync', testAppendFile, 1, execaSync);
+test('Can append to stderr - sync', testAppendFile, 2, execaSync);
+test('Can append to stdio[*] - sync', testAppendFile, 3, execaSync);

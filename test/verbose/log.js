@@ -3,6 +3,8 @@ import test from 'ava';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {nestedSubprocess} from '../helpers/nested.js';
+import {getNormalizedLines, getCommandLine, getCompletionLine} from '../helpers/verbose.js';
+import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
 
@@ -25,3 +27,15 @@ const testColor = async (t, expectedResult, forceColor) => {
 
 test('Prints with colors if supported', testColor, true, '1');
 test('Prints without colors if not supported', testColor, false, '0');
+
+test.serial('Prints lines in order when interleaved with subprocess stderr', async t => {
+	const results = await Promise.all(Array.from({length: PARALLEL_COUNT}, () =>
+		nestedSubprocess('noop-fd.js', ['2', `${foobarString}\n`], {verbose: 'full', stderr: 'inherit'}, {all: true}),
+	));
+	for (const {all} of results) {
+		t.deepEqual(
+			getNormalizedLines(all),
+			[getCommandLine(all), foobarString, getCompletionLine(all)],
+		);
+	}
+});

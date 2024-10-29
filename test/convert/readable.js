@@ -1,5 +1,4 @@
 import {once} from 'node:events';
-import process from 'node:process';
 import {
 	compose,
 	Readable,
@@ -29,6 +28,7 @@ import {
 } from '../helpers/convert.js';
 import {foobarString, foobarBuffer, foobarObject} from '../helpers/input.js';
 import {simpleFull} from '../helpers/lines.js';
+import {majorNodeVersion} from '../helpers/node-version.js';
 import {prematureClose, fullStdio} from '../helpers/stdio.js';
 import {outputObjectGenerator, getOutputsAsyncGenerator} from '../helpers/generator.js';
 import {defaultHighWaterMark, defaultObjectHighWaterMark} from '../helpers/stream.js';
@@ -231,12 +231,18 @@ test('.readable() can pipe to errored stream with Stream.pipeline()', async t =>
 	const cause = new Error('test');
 	outputStream.destroy(cause);
 
-	await assertPromiseError(t, pipeline(stream, outputStream), cause);
-	await t.throwsAsync(finishedStream(stream));
+	// Node 23 does not allow calling `stream.pipeline()` with an already errored stream
+	if (majorNodeVersion >= 23) {
+		outputStream.on('error', () => {});
+		await t.throwsAsync(pipeline(stream, outputStream), {code: 'ERR_STREAM_UNABLE_TO_PIPE'});
+	} else {
+		await assertPromiseError(t, pipeline(stream, outputStream), cause);
+		await t.throwsAsync(finishedStream(stream));
 
-	const error = await assertStreamError(t, stream, cause);
-	await assertStreamReadError(t, outputStream, cause);
-	await assertSubprocessError(t, subprocess, {cause: error});
+		const error = await assertStreamError(t, stream, cause);
+		await assertStreamReadError(t, outputStream, cause);
+		await assertSubprocessError(t, subprocess, {cause: error});
+	}
 });
 
 test('.readable() can be used with Stream.compose()', async t => {
@@ -421,8 +427,7 @@ test('.duplex() can be paused', async t => {
 
 // This feature does not work on Node 18.
 // @todo: remove after dropping support for Node 18.
-const majorVersion = Number(process.version.split('.')[0].slice(1));
-if (majorVersion >= 20) {
+if (majorNodeVersion >= 20) {
 	const testHighWaterMark = async (t, methodName) => {
 		const subprocess = execa('stdin.js');
 		const stream = subprocess[methodName]();

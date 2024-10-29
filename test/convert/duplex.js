@@ -23,6 +23,7 @@ import {
 	getReadWriteSubprocess,
 } from '../helpers/convert.js';
 import {foobarString} from '../helpers/input.js';
+import {majorNodeVersion} from '../helpers/node-version.js';
 import {prematureClose, fullStdio, fullReadableStdio} from '../helpers/stdio.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
 
@@ -148,13 +149,21 @@ test('.duplex() can pipe to errored stream with Stream.pipeline()', async t => {
 	const cause = new Error('test');
 	outputStream.destroy(cause);
 
-	await assertPromiseError(t, pipeline(inputStream, stream, outputStream), cause);
-	await t.throwsAsync(finishedStream(stream));
+	// Node 23 does not allow calling `stream.pipeline()` with an already errored stream
+	if (majorNodeVersion >= 23) {
+		outputStream.on('error', () => {});
+		stream.on('error', () => {});
+		await t.throwsAsync(pipeline(stream, outputStream), {code: 'ERR_STREAM_UNABLE_TO_PIPE'});
+		stream.end();
+	} else {
+		await assertPromiseError(t, pipeline(inputStream, stream, outputStream), cause);
+		await t.throwsAsync(finishedStream(stream));
 
-	await assertStreamError(t, inputStream, cause);
-	const error = await assertStreamError(t, stream, cause);
-	await assertStreamReadError(t, outputStream, cause);
-	await assertSubprocessError(t, subprocess, {cause: error});
+		await assertStreamError(t, inputStream, cause);
+		const error = await assertStreamError(t, stream, cause);
+		await assertStreamReadError(t, outputStream, cause);
+		await assertSubprocessError(t, subprocess, {cause: error});
+	}
 });
 
 test('.duplex() can be piped to errored stream with Stream.pipeline()', async t => {

@@ -22,6 +22,8 @@ test('$ can use newlines and tab indentations', testScriptStdout, () => $`echo.j
 	bar`, 'foo\nbar');
 test('$ can use newlines and space indentations', testScriptStdout, () => $`echo.js foo
   bar`, 'foo\nbar');
+test('$ can use escaped newlines and space indentations', testScriptStdout, () => $`echo.js foo\
+  bar`, 'foo\nbar');
 test('$ can use Windows newlines and tab indentations', testScriptStdout, () => escapedCall('echo.js foo\r\n\tbar'), 'foo\nbar');
 test('$ can use Windows newlines and space indentations', testScriptStdout, () => escapedCall('echo.js foo\r\n  bar'), 'foo\nbar');
 test('$ does not ignore comments in expressions', testScriptStdout, () => $`echo.js foo

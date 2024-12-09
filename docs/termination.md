@@ -263,7 +263,7 @@ Execa provides the [`gracefulCancel`](#graceful-termination) option as a cross-p
 
 ### Signal name and description
 
-When a subprocess was terminated by a signal, [`error.isTerminated`](api.md#erroristerminated) is `true`.
+When a subprocess was terminated by a signal, [`error.isTerminated`](api.md#erroristerminated) is `true`. However if the process handles the signal and instead exits with an exit code, `error.isTerminated` will be `false`.
 
 Also, [`error.signal`](api.md#errorsignal) and [`error.signalDescription`](api.md#errorsignaldescription) indicate the signal's name and [human-friendly description](https://github.com/ehmicky/human-signals). On Windows, those are only set if the current process terminated the subprocess, as opposed to [another process](#inter-process-termination).
 

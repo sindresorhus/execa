@@ -111,13 +111,16 @@ test('result.isTerminated is false if not killed', async t => {
 	t.false(isTerminated);
 });
 
-test('result.isTerminated is false if not killed and subprocess.kill() was called', async t => {
-	const subprocess = execa('noop.js');
-	subprocess.kill(0);
-	t.true(subprocess.killed);
-	const {isTerminated} = await subprocess;
-	t.false(isTerminated);
-});
+// Remove the condition after fixing the bug at https://github.com/sindresorhus/execa/issues/1193
+if (!isWindows) {
+	test('result.isTerminated is false if not killed and subprocess.kill() was called', async t => {
+		const subprocess = execa('noop.js');
+		subprocess.kill(0);
+		t.true(subprocess.killed);
+		const {isTerminated} = await subprocess;
+		t.false(isTerminated);
+	});
+}
 
 test('result.isTerminated is false if not killed, in sync mode', t => {
 	const {isTerminated} = execaSync('noop.js');

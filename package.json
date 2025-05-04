@@ -71,6 +71,7 @@
 		"get-node": "^15.0.0",
 		"is-in-ci": "^1.0.0",
 		"is-running": "^2.1.0",
+		"log-process-errors": "^12.0.1",
 		"path-exists": "^5.0.0",
 		"path-key": "^4.0.0",
 		"tempfile": "^5.0.0",

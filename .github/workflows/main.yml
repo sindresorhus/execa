@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version:
-          - 23
+          - 24
           - 18
         os:
           - ubuntu
@@ -31,7 +31,7 @@ jobs:
         with:
           args: --cache --verbose --no-progress --include-fragments --exclude packagephobia --exclude /pull/ --exclude linkedin --exclude stackoverflow --exclude stackexchange --exclude github.com/nodejs/node --exclude file:///test --exclude invalid.com '*.md' 'docs/*.md' '.github/**/*.md' '*.json' '*.js' 'lib/**/*.js' 'test/**/*.js' '*.ts' 'test-d/**/*.ts'
           fail: true
-        if: ${{ matrix.os == 'ubuntu' && matrix.node-version == 23 }}
+        if: ${{ matrix.os == 'ubuntu' && matrix.node-version == 24 }}
       - run: npm run lint
       - run: npm run type
       - run: npm run unit

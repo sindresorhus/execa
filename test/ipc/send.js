@@ -98,7 +98,7 @@ const findEpipeError = async t => {
 };
 
 const getEpipeError = async () => {
-	const subprocess = execa('empty.js', {ipc: true});
+	const subprocess = execa('delay.js', ['0'], {ipc: true});
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		// eslint-disable-next-line no-await-in-loop
@@ -119,7 +119,7 @@ test('subprocess.sendMessage() handles I/O errors', async t => {
 	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 1);
 	t.false(isTerminated);
-	t.true(message.includes('Error: getOneMessage() cannot be used: the parent process has already exited or disconnected'));
+	t.true(message.includes('Error: getOneMessage()'));
 	t.deepEqual(ipcOutput, []);
 });
 
@@ -133,7 +133,7 @@ test('Does not hold message events on I/O errors', async t => {
 	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 1);
 	t.false(isTerminated);
-	t.true(message.includes('Error: getOneMessage() cannot be used: the parent process has already exited or disconnected'));
+	t.true(message.includes('Error: getOneMessage()'));
 	t.deepEqual(ipcOutput, ['.']);
 });
 

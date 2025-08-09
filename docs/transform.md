@@ -18,8 +18,8 @@ const transform = function * (line) {
 	yield `${prefix}: ${line}`;
 };
 
-const {stdout} = await execa({stdout: transform})`npm run build`;
-console.log(stdout); // HELLO
+const {stdout} = await execa({stdout: transform})`echo HELLO`;
+console.log(stdout); // INFO: HELLO
 ```
 
 ## Difference with iteration

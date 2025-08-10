@@ -6,6 +6,7 @@ import tempfile from 'tempfile';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
 import {FIXTURES_DIRECTORY, setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {majorNodeVersion} from '../helpers/node-version.js';
 
 setFixtureDirectory();
 
@@ -70,7 +71,7 @@ if (!isWindows) {
 }
 
 const cwdNotExisting = {cwd: 'does_not_exist', expectedCode: 'ENOENT', expectedMessage: 'The "cwd" option is invalid'};
-const cwdTooLong = {cwd: '.'.repeat(1e5), expectedCode: 'ENAMETOOLONG', expectedMessage: 'The "cwd" option is invalid'};
+const cwdTooLong = {cwd: '.'.repeat(1e5), expectedCode: isWindows && majorNodeVersion >= 20 ? 'ENOENT' : 'ENAMETOOLONG', expectedMessage: 'The "cwd" option is invalid'};
 // @todo: use import.meta.dirname after dropping support for Node <20.11.0
 const cwdNotDirectory = {cwd: fileURLToPath(import.meta.url), expectedCode: isWindows ? 'ENOENT' : 'ENOTDIR', expectedMessage: 'The "cwd" option is not a directory'};
 

@@ -95,7 +95,7 @@ const {stdout} = await execa({stdout: ['inherit', {file: 'output.txt'}, 'pipe']}
 console.log(stdout);
 ```
 
-When combining [`'inherit'`](#terminal-output) with other values, please note that the subprocess will not be connected to an interactive TTY, even if the current process is.
+__Loss of TTY control:__ Please note that when a file descriptor is configured with a combination of 'inherit' and other values, this file descriptor will never refer to a TTY in the subprocess, even if in the current process it does.
 
 ## Interleaved output
 

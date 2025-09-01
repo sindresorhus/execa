@@ -22,9 +22,21 @@
 		<sup>Special thanks to:</sup>
 		<br>
 		<br>
+		<br>
 		<a href="https://coderabbit.ai?utm_source=sindre&utm_medium=execa">
 			<img width="300" src="https://sindresorhus.com/assets/thanks/coderabbit-logo.png" alt="CodeRabbit logo">
 		</a>
+		<br>
+		<br>
+		<br>
+		<a href="https://kruu.com">
+			<picture>
+				<source srcset="https://sindresorhus.com/assets/thanks/kruu-logo-dark.svg?y" media="(prefers-color-scheme: dark)" width="260">
+				<source srcset="https://sindresorhus.com/assets/thanks/kruu-logo-light.svg?y" media="(prefers-color-scheme: light)" width="260">
+				<img src="https://sindresorhus.com/assets/thanks/kruu-logo-light.svg?y" width="260"alt="KRUU logo">
+			</picture>
+		</a>
+		<br>
 		<br>
 		<br>
 	</p>

@@ -10,3 +10,5 @@ export type IsInputFd<
 > = FdNumber extends '0'
 	? true
 	: Intersects<StdioSingleOptionItems<FdStdioArrayOption<FdNumber, OptionsType>>, InputStdioOption>;
+
+export {};

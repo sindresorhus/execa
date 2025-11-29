@@ -55,3 +55,5 @@ export type DuplexTransform = {
 export type WebTransform = {
 	readonly transform: TransformStream;
 } & TransformCommon;
+
+export {};

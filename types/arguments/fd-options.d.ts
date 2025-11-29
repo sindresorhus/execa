@@ -6,3 +6,5 @@ export type FromOption = 'stdout' | 'stderr' | 'all' | FileDescriptorOption;
 
 // `to` option of `subprocess.writable|duplex|pipe()`
 export type ToOption = 'stdin' | FileDescriptorOption;
+
+export {};

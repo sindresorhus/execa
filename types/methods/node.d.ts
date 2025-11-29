@@ -60,3 +60,5 @@ type ExecaNodeArrayLong<OptionsType extends Options> =
 type ExecaNodeArrayShort<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(scriptPath: string | URL, options?: NewOptionsType)
 	=> ResultPromise<OptionsType & NewOptionsType>;
+
+export {};

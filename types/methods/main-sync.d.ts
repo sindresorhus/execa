@@ -57,3 +57,5 @@ type ExecaSyncArrayLong<OptionsType extends SyncOptions> =
 type ExecaSyncArrayShort<OptionsType extends SyncOptions> =
 	<NewOptionsType extends SyncOptions = {}>(file: string | URL, options?: NewOptionsType)
 	=> SyncResult<OptionsType & NewOptionsType>;
+
+export {};

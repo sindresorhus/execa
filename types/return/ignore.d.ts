@@ -24,3 +24,5 @@ type IgnoresOutput<
 	FdNumber extends string,
 	StdioOptionType,
 > = StdioOptionType extends NoStreamStdioOption<FdNumber> ? true : false;
+
+export {};

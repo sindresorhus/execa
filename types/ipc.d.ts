@@ -154,3 +154,5 @@ type HasIpcOption<
 				? true
 				: false
 			: true;
+
+export {};

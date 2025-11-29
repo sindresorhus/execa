@@ -398,3 +398,5 @@ export type StricterOptions<
 	WideOptions extends CommonOptions,
 	StrictOptions extends CommonOptions,
 > = WideOptions extends StrictOptions ? WideOptions : StrictOptions;
+
+export {};

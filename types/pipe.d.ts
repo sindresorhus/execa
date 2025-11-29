@@ -56,3 +56,5 @@ export type PipableSubprocess = {
 	pipe<Destination extends ResultPromise>(destination: Destination, options?: PipeOptions):
 	Promise<Awaited<Destination>> & PipableSubprocess;
 };
+
+export {};

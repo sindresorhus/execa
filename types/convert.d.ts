@@ -56,3 +56,5 @@ EncodingOption extends BinaryEncodingOption
 		? Uint8Array
 		: string
 >;
+
+export {};

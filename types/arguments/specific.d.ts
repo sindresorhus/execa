@@ -50,3 +50,5 @@ type FdNumberToFromOption<
 			: 'ipc' extends GenericOptionKeys
 				? 'ipc'
 				: never;
+
+export {};

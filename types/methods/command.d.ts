@@ -112,3 +112,5 @@ await execa(file, commandArguments);
 ```
 */
 export function parseCommandString(command: string): string[];
+
+export {};

@@ -377,3 +377,5 @@ type ExecaArrayLong<OptionsType extends Options> =
 type ExecaArrayShort<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(file: string | URL, options?: NewOptionsType)
 	=> ResultPromise<OptionsType & NewOptionsType>;
+
+export {};

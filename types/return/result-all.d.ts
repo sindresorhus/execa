@@ -28,3 +28,5 @@ type AllObjectFd<OptionsType extends CommonOptions> =
 
 type AllLinesFd<OptionsType extends CommonOptions> =
 	FdSpecificOption<OptionsType['lines'], '1'> extends true ? '1' : '2';
+
+export {};

@@ -16,3 +16,5 @@ type MapStdioStreams<
 	'3' extends keyof StdioOptionsArrayType ? SubprocessStdioStream<'3', OptionsType> : never,
 	'4' extends keyof StdioOptionsArrayType ? SubprocessStdioStream<'4', OptionsType> : never,
 ];
+
+export {};

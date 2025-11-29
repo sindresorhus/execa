@@ -20,3 +20,5 @@ type SubprocessStream<
 type InputOutputStream<IsInput extends boolean> = IsInput extends true
 	? Writable
 	: Readable;
+
+export {};

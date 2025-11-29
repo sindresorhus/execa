@@ -11,3 +11,5 @@ export type AndUnless<Condition extends boolean, ThenValue, ElseValue = unknown>
 // Whether any of T's union element is the same as one of U's union element.
 // `&` does not work here.
 export type Intersects<T, U> = true extends (T extends U ? true : false) ? true : false;
+
+export {};

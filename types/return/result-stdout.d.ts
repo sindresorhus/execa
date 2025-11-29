@@ -48,3 +48,5 @@ type ResultStdioItem<
 				? string
 				: string[]
 			: string;
+
+export {};

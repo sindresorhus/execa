@@ -115,3 +115,5 @@ The return value of all asynchronous methods is both:
 export type ResultPromise<OptionsType extends Options = Options> =
 	& Subprocess<OptionsType>
 	& Promise<Result<OptionsType>>;
+
+export {};

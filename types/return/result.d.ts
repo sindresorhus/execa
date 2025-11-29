@@ -201,3 +201,5 @@ Result of a subprocess successful execution.
 When the subprocess fails, it is rejected with an `ExecaError` instead.
 */
 export type SyncResult<OptionsType extends SyncOptions = SyncOptions> = SuccessResult<true, OptionsType>;
+
+export {};

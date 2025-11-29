@@ -96,3 +96,5 @@ export type SyncVerboseObject = GenericVerboseObject & {
 	*/
 	result?: SyncResult;
 };
+
+export {};

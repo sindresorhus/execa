@@ -15,3 +15,5 @@ type AllIgnored<
 		? IgnoresSubprocessOutput<'2', OptionsType>
 		: false
 	: true;
+
+export {};

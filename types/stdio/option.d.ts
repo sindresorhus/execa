@@ -38,3 +38,5 @@ type FdStdioArrayOptionProperty<
 				? StdioOptionsType[number]
 				: undefined
 		: undefined;
+
+export {};

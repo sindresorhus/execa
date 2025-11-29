@@ -19,3 +19,5 @@ type IsObjectStdioSingleOption<StdioSingleOptionType> = StdioSingleOptionType ex
 		: false;
 
 type BooleanObjectMode<ObjectModeOption extends boolean | undefined> = ObjectModeOption extends true ? true : false;
+
+export {};

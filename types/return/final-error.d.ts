@@ -49,3 +49,5 @@ This has the same shape as successful results, with a few additional properties.
 export class ExecaSyncError<OptionsType extends SyncOptions = SyncOptions> extends CommonError<true, OptionsType> {
 	readonly name: 'ExecaSyncError';
 }
+
+export {};

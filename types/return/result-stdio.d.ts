@@ -15,3 +15,5 @@ type MapResultStdio<
 	OptionsType
 	>
 };
+
+export {};

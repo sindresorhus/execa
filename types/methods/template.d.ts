@@ -16,3 +16,5 @@ export type TemplateString = readonly [TemplateStringsArray, ...readonly Templat
 
 // `...${...}...` template syntax, but only allowing a single argument, for `execaCommand()`
 export type SimpleTemplateString = readonly [TemplateStringsArray, string?];
+
+export {};

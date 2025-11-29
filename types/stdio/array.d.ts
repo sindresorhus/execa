@@ -14,3 +14,5 @@ type StdioOptionNormalized<StdioOption extends CommonOptions['stdio']> = StdioOp
 
 // `options.stdio` default value
 type DefaultStdioOption = readonly ['pipe', 'pipe', 'pipe'];
+
+export {};

@@ -113,3 +113,5 @@ type ExecaScriptSyncArrayLong<OptionsType extends CommonOptions> =
 type ExecaScriptSyncArrayShort<OptionsType extends CommonOptions> =
 	<NewOptionsType extends SyncOptions = {}>(file: string | URL, options?: NewOptionsType)
 	=> SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
+
+export {};

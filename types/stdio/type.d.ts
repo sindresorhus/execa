@@ -168,3 +168,5 @@ export type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
 export type StdioOptionsProperty<IsSync extends boolean = boolean> =
 	| SimpleStdioOption<IsSync, false, false>
 	| StdioOptionsArray<IsSync>;
+
+export {};

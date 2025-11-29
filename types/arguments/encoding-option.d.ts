@@ -17,3 +17,5 @@ export type EncodingOption =
 	| TextEncodingOption
 	| BinaryEncodingOption
 	| undefined;
+
+export {};

@@ -25,3 +25,5 @@ type ResultIpcAsync<
 	: IpcEnabled extends true
 		? Array<Message<SerializationOption>>
 		: [];
+
+export {};

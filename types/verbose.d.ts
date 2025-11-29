@@ -2,7 +2,7 @@ import type {FdGenericOption} from './arguments/specific.js';
 import type {Options, SyncOptions} from './arguments/options.js';
 import type {Result, SyncResult} from './return/result.js';
 
-type VerboseOption = FdGenericOption<
+export type VerboseOption = FdGenericOption<
 | 'none'
 | 'short'
 | 'full'

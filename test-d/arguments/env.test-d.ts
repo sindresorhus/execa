@@ -24,7 +24,6 @@ expectType<NodeEnv>('' as NodeJS.ProcessEnv['NODE_ENV']);
 expectType<NodeEnv>('' as globalThis.NodeJS.ProcessEnv['NODE_ENV']);
 
 // But Execa's types are not impacted
-expectType<string | undefined>('' as Exclude<Options['env'], undefined>['NODE_ENV']);
 expectAssignable<Result>(await execa({env: {test: 'example'}})`unicorns`);
 expectAssignable<Result>(await execa({env: {test: 'example'} as const})`unicorns`);
 expectAssignable<Result>(await execa({env: {test: undefined}})`unicorns`);

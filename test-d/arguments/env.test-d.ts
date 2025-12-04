@@ -29,3 +29,4 @@ expectAssignable<Result>(await execa({env: {test: 'example'}})`unicorns`);
 expectAssignable<Result>(await execa({env: {test: 'example'} as const})`unicorns`);
 expectAssignable<Result>(await execa({env: {test: undefined}})`unicorns`);
 expectAssignable<Result>(await execa({env: {test: undefined} as const})`unicorns`);
+expectAssignable<Result>(await execa({env: {port: 3000} as const})`unicorns`);

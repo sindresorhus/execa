@@ -112,6 +112,18 @@ import {getOneMessage} from 'execa';
 const ipcInput = await getOneMessage();
 ```
 
+## Multiple inputs
+
+The input can come from multiple sources by setting the [`stdin`](api.md#optionsstdin) option to an array of values. Alternatively the [`input`](api.md#optionsinput), [`inputFile`](api.md#optionsinputfile) and [`stdin`](api.md#optionsstdin) options can be combined.
+
+The following example redirects `stdin` from both the [terminal](#terminal-input) and an `input.txt` [file](#file-input).
+
+```js
+await execa({stdin: ['inherit', {file: 'input.txt'}]})`npm run scaffold`;
+```
+
+__Loss of TTY control:__ Please note that when a file descriptor is configured with a combination of 'inherit' and other values, this file descriptor will never refer to a TTY in the subprocess, even if in the current process it does.
+
 ## Additional file descriptors
 
 The [`stdio`](api.md#optionsstdio) option can be used to pass some input to any [file descriptor](https://en.wikipedia.org/wiki/File_descriptor), as opposed to only [`stdin`](api.md#optionsstdin).

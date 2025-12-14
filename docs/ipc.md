@@ -12,6 +12,8 @@ When the [`ipc`](api.md#optionsipc) option is `true`, the current process and su
 
 The `ipc` option defaults to `true` when using [`execaNode()`](node.md#run-nodejs-files) or the [`node`](node.md#run-nodejs-files) option.
 
+Please note that unlike `node:child_process` [`spawn()`](https://nodejs.org/api/child_process.html#optionsstdio), the [`stdio` option](api.md#optionsstdio) does not support the `'ipc'` value. Instead, the [`ipc`](api.md#optionsipc) option must be set to `true`.
+
 The current process sends messages with [`subprocess.sendMessage(message)`](api.md#subprocesssendmessagemessage-sendmessageoptions) and receives them with [`subprocess.getOneMessage()`](api.md#subprocessgetonemessagegetonemessageoptions).
 
 The subprocess uses [`sendMessage(message)`](api.md#sendmessagemessage-sendmessageoptions) and [`getOneMessage()`](api.md#getonemessagegetonemessageoptions). Those are the same methods, but imported directly from the `'execa'` module.

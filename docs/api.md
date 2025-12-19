@@ -759,6 +759,9 @@ _Type:_ `object`
 
 This lists all options for [`execa()`](#execafile-arguments-options) and the [other methods](#methods).
 
+> [!IMPORTANT] Differences from `child_process.spawn` API
+> - `stdio: [..., 'ipc']` is deprecated and will produce a runtime error in version 10
+
 The following options [can specify different values](output.md#stdoutstderr-specific-options) for [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr): [`verbose`](#optionsverbose), [`lines`](#optionslines), [`stripFinalNewline`](#optionsstripfinalnewline), [`buffer`](#optionsbuffer), [`maxBuffer`](#optionsmaxbuffer).
 
 ### options.preferLocal
@@ -865,6 +868,10 @@ Write some input to the subprocess' [`stdin`](https://en.wikipedia.org/wiki/Stan
 
 See also the [`inputFile`](#optionsinputfile) and [`stdin`](#optionsstdin) options.
 
+> [!NOTE]
+> Be careful when combining `input` with `stdin: 'inherit'` or `stdio: 'inherit'`;
+> See [this section](input.md#combining-input-with-stdin-inherit) for details.
+
 [More info.](input.md#string-input)
 
 ### options.inputFile
@@ -876,6 +883,10 @@ Use a file as input to the subprocess' [`stdin`](https://en.wikipedia.org/wiki/S
 See also the [`input`](#optionsinput) and [`stdin`](#optionsstdin) options.
 
 [More info.](input.md#file-input)
+
+> [!NOTE]
+> Be careful when combining `inputFile` with `stdin: 'inherit'` or `stdio: 'inherit'`;
+> See [this section](input.md#combining-input-with-stdin-inherit) for details.
 
 ### options.stdin
 
@@ -924,6 +935,9 @@ Like the [`stdin`](#optionsstdin), [`stdout`](#optionsstdout) and [`stderr`](#op
 A single string can be used [as a shortcut](output.md#shortcut).
 
 The array can have more than 3 items, to create [additional file descriptors](output.md#additional-file-descriptors) beyond [`stdin`](#optionsstdin)/[`stdout`](#optionsstdout)/[`stderr`](#optionsstderr).
+
+> [!IMPORTANT] Differences from `child_process.spawn` API
+> - `stdio: [..., 'ipc']` is deprecated and will produce a runtime error in version 10
 
 More info on [available values](output.md), [streaming](streams.md) and [transforms](transform.md).
 

@@ -58,6 +58,10 @@ If the input is already available as a string, it can be passed directly to the 
 await execa({input: 'stdinInput'})`npm run scaffold`;
 ```
 
+> [!NOTE]
+> Be careful when combining `input` with `stdin: 'inherit'` or `stdio: 'inherit'`;
+> See [this section](#combining-input-with-stdin-inherit) for details.
+
 The [`stdin`](api.md#optionsstdin) option can also be used, although the string must be wrapped in two arrays for [syntax reasons](output.md#multiple-targets).
 
 ```js
@@ -82,6 +86,10 @@ await execa({stdin: {file: 'input.txt'}})`npm run scaffold`;
 await execa({stdin: new URL('file:///path/to/input.txt')})`npm run scaffold`;
 ```
 
+> [!NOTE]
+> Be careful when combining `inputFile` with `stdin: 'inherit'` or `stdio: 'inherit'`;
+> See [this section](#combining-input-with-stdin-inherit) for details.
+
 ## Terminal input
 
 The parent process' input can be re-used in the subprocess by passing `'inherit'`. This is especially useful to receive interactive input in command line applications.
@@ -89,6 +97,10 @@ The parent process' input can be re-used in the subprocess by passing `'inherit'
 ```js
 await execa({stdin: 'inherit'})`npm run scaffold`;
 ```
+
+> [!NOTE]
+> Be careful when combining `input` with `stdin: 'inherit'` or `stdio: 'inherit'`;
+> See [this section](#combining-input-with-stdin-inherit) for details.
 
 ## Any input type
 
@@ -114,6 +126,9 @@ const ipcInput = await getOneMessage();
 
 ## Additional file descriptors
 
+> [!IMPORTANT] Differences from `child_process.spawn` API
+> - `stdio: [..., 'ipc']` is deprecated and will produce a runtime error in version 10
+
 The [`stdio`](api.md#optionsstdio) option can be used to pass some input to any [file descriptor](https://en.wikipedia.org/wiki/File_descriptor), as opposed to only [`stdin`](api.md#optionsstdin).
 
 ```js
@@ -122,6 +137,19 @@ await execa({
 	stdio: ['pipe', 'pipe', 'pipe', new Uint8Array([/* ... */])],
 })`npm run build`;
 ```
+
+## Combining `input` with `stdin: 'inherit'` 
+
+> [!WARNING]
+> If `input` and `stdin: 'inherit'` (or `stdio: 'inherit'` or `stdio: ['inherit', ...]`) are combined,
+> the child will not inherit the parent's `stdin` and `execa` will pipe both `input` and the parent's
+> `stdin` to the child's `stdin`.
+>
+> Therefore the child's `stdin` will not be a TTY and will not close before the parent's `process.stdin`
+> in this case.
+>
+> Version 10 will drop the behavior of piping the parent's `process.stdin` to the child, hence its `stdin`
+> will close once `input` has been piped.
 
 <hr>
 

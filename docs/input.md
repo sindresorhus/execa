@@ -122,7 +122,7 @@ The following example redirects `stdin` from both the [terminal](#terminal-input
 await execa({stdin: ['inherit', {file: 'input.txt'}]})`npm run scaffold`;
 ```
 
-__Loss of TTY control:__ Please note that when a file descriptor is configured with a combination of 'inherit' and other values, this file descriptor will never refer to a TTY in the subprocess, even if in the current process it does.
+__Loss of TTY control:__ Please note that when a file descriptor is configured with a combination of `'inherit'` and other values, this file descriptor will never refer to a TTY in the subprocess, even if in the current process it does.
 
 ## Additional file descriptors
 

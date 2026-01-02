@@ -86,7 +86,7 @@ await sendMessage({kind: 'stop', timestamp: new Date()});
 
 ## Multiple targets
 
-The output can be redirected to multiple targets by setting the [`stdout`](api.md#optionsstdout) or [`stderr`](api.md#optionsstderr) option to an array of values. This also allows specifying multiple inputs with the [`stdin`](api.md#optionsstdin) option.
+The output can be redirected to multiple targets by setting the [`stdout`](api.md#optionsstdout) or [`stderr`](api.md#optionsstderr) option to an array of values.
 
 The following example redirects `stdout` to both the [terminal](#terminal-output) and an `output.txt` [file](#file-output), while also retrieving its value [programmatically](#stdout-and-stderr).
 

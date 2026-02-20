@@ -26,6 +26,8 @@ export type NoStreamStdioOption<FdNumber extends string> =
 	| number
 	| Readable
 	| Writable
+	| ReadableStream
+	| WritableStream
 	| Unless<IsStandardStream<FdNumber>, undefined>
 	| readonly [NoStreamStdioOption<FdNumber>];
 

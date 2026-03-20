@@ -36,7 +36,7 @@ Alternatively, [`subprocess.iterable()`](api.md#subprocessiterablereadableoption
 The iteration waits for the subprocess to end (even when using [`break`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/break) or [`return`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return)). It throws if the subprocess [fails](api.md#result). This means you do not need to `await` the subprocess' [promise](execution.md#result).
 
 ```js
-for await (const line of execa`npm run build`.iterable())) {
+for await (const line of execa`npm run build`.iterable()) {
 	/* ... */
 }
 ```
@@ -49,6 +49,121 @@ By default, the subprocess' [`stdout`](https://en.wikipedia.org/wiki/Standard_st
 for await (const stderrLine of execa`npm run build`.iterable({from: 'stderr'})) {
 	/* ... */
 }
+```
+
+## Custom delimiters
+
+By default, lines are split using newline characters (`\n` or `\r\n`). To use a custom delimiter instead, combine the [`lines: false`](api.md#optionslines) option with a [transform](transform.md) that splits on your desired delimiter.
+
+### Array output with custom delimiter
+
+```js
+import {execa} from 'execa';
+
+// Split output by null character (useful for filenames with spaces)
+const splitByNull = function * (chunk) {
+	if (typeof chunk !== 'string') {
+		yield chunk;
+		return;
+	}
+
+	const parts = chunk.split('\0');
+	for (const part of parts) {
+		if (part.length > 0) {
+			yield part;
+		}
+	}
+};
+
+const {stdout: filenames} = await execa({
+	stdout: {transform: splitByNull, objectMode: true},
+})`find . -print0`;
+// filenames is now an array of strings, split by null character
+console.log(filenames); // ['.', './file1.txt', './file2.txt', ...]
+```
+
+### Progressive iteration with custom delimiter
+
+```js
+import {execa} from 'execa';
+
+// Custom transform that splits by a specific delimiter
+const createDelimiterTransform = delimiter => function * (chunk) {
+	if (typeof chunk !== 'string') {
+		yield chunk;
+		return;
+	}
+
+	// Keep track of partial chunks between iterations
+	if (!this.buffer) {
+		this.buffer = '';
+	}
+
+	this.buffer += chunk;
+	const parts = this.buffer.split(delimiter);
+
+	// Yield all complete parts except the last one
+	for (let i = 0; i < parts.length - 1; i++) {
+		yield parts[i];
+	}
+
+	// Keep the last (potentially incomplete) part in the buffer
+	this.buffer = parts[parts.length - 1];
+};
+
+// Usage example: processing CSV-like output with semicolon delimiter
+const subprocess = execa({
+	stdout: {transform: createDelimiterTransform(';'), objectMode: true},
+})`some-command-outputting-semicolon-separated-values`;
+
+for await (const value of subprocess) {
+	console.log('Got value:', value);
+}
+```
+
+### Common delimiter examples
+
+```js
+import {execa} from 'execa';
+
+// Comma-separated values
+const csvTransform = function * (chunk) {
+	if (typeof chunk !== 'string') {
+		yield chunk;
+		return;
+	}
+	for (const value of chunk.split(',')) {
+		if (value.trim()) yield value.trim();
+	}
+};
+
+// Tab-separated values
+const tsvTransform = function * (chunk) {
+	if (typeof chunk !== 'string') {
+		yield chunk;
+		return;
+	}
+	for (const value of chunk.split('\t')) {
+		if (value) yield value;
+	}
+};
+
+// Double-newline (paragraph) separator
+const paragraphTransform = function * (chunk) {
+	if (typeof chunk !== 'string') {
+		yield chunk;
+		return;
+	}
+	for (const para of chunk.split('\n\n')) {
+		if (para.trim()) yield para.trim();
+	}
+};
+
+// Example: parse comma-separated output
+const {stdout: items} = await execa({
+	stdout: {transform: csvTransform, objectMode: true},
+})`echo "apple,banana,cherry,date"`;
+console.log(items); // ['apple', 'banana', 'cherry', 'date']
 ```
 
 ## Newlines

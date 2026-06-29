@@ -92,6 +92,18 @@ const writable = execa`npm run scaffold`.writable();
 const duplex = execa`npm run scaffold`.duplex();
 ```
 
+### Convert to web streams
+
+The [`subprocess.readableStream()`](api.md#subprocessreadablestreamreadableoptions), [`subprocess.writableStream()`](api.md#subprocesswritablestreamwritableoptions) and [`subprocess.transformStream()`](api.md#subprocesstransformstreamduplexoptions) methods are the same as [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions) and [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions), but return web streams instead of Node.js streams.
+
+```js
+const readableStream = execa`npm run scaffold`.readableStream();
+
+const writableStream = execa`npm run scaffold`.writableStream();
+
+const {readable, writable} = execa`npm run scaffold`.transformStream();
+```
+
 ### Different file descriptor
 
 By default, [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions) and [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions) methods use [`stdin`](api.md#subprocessstdin) and [`stdout`](api.md#subprocessstdout). This can be changed using the [`from`](api.md#readableoptionsfrom) and [`to`](api.md#writableoptionsto) options.

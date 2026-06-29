@@ -96,6 +96,21 @@ type ExecaCustomSubprocess<OptionsType extends Options> = {
 	Converts the subprocess to a duplex stream.
 	*/
 	duplex(duplexOptions?: DuplexOptions): Duplex;
+
+	/**
+	Converts the subprocess to a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+	*/
+	readableStream(readableOptions?: ReadableOptions): ReadableStream;
+
+	/**
+	Converts the subprocess to a web [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+	*/
+	writableStream(writableOptions?: WritableOptions): WritableStream;
+
+	/**
+	Converts the subprocess to a web [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) and [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+	*/
+	transformStream(duplexOptions?: DuplexOptions): {readable: ReadableStream; writable: WritableStream};
 }
 & IpcMethods<HasIpc<OptionsType>, OptionsType['serialization']>
 & PipableSubprocess;

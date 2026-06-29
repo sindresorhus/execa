@@ -101,6 +101,31 @@ test('child_process.spawn() early errors can use .readable()', testEarlyErrorCon
 test('child_process.spawn() early errors can use .writable()', testEarlyErrorConvertor, 'writable');
 test('child_process.spawn() early errors can use .duplex()', testEarlyErrorConvertor, 'duplex');
 
+test('child_process.spawn() early errors can use .readableStream()', async t => {
+	const subprocess = getEarlyErrorSubprocess();
+	const stream = subprocess.readableStream();
+	t.true(stream instanceof ReadableStream);
+	await stream.cancel();
+	await t.throwsAsync(subprocess);
+});
+
+test('child_process.spawn() early errors can use .writableStream()', async t => {
+	const subprocess = getEarlyErrorSubprocess();
+	const stream = subprocess.writableStream();
+	t.true(stream instanceof WritableStream);
+	await stream.abort();
+	await t.throwsAsync(subprocess);
+});
+
+test('child_process.spawn() early errors can use .transformStream()', async t => {
+	const subprocess = getEarlyErrorSubprocess();
+	const {readable, writable} = subprocess.transformStream();
+	t.true(readable instanceof ReadableStream);
+	t.true(writable instanceof WritableStream);
+	await Promise.all([readable.cancel(), writable.abort()]);
+	await t.throwsAsync(subprocess);
+});
+
 const testEarlyErrorStream = async (t, getStreamProperty, options) => {
 	const subprocess = getEarlyErrorSubprocess(options);
 	const stream = getStreamProperty(subprocess);

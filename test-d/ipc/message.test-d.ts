@@ -62,15 +62,15 @@ expectAssignable<Message>(null);
 expectAssignable<Message<'advanced'>>(null);
 expectAssignable<Message<'json'>>(null);
 
-await sendMessage(Number.NaN);
-expectAssignable<Message>(Number.NaN);
-expectAssignable<Message<'advanced'>>(Number.NaN);
-expectAssignable<Message<'json'>>(Number.NaN);
+await sendMessage(NaN);
+expectAssignable<Message>(NaN);
+expectAssignable<Message<'advanced'>>(NaN);
+expectAssignable<Message<'json'>>(NaN);
 
-await sendMessage(Number.POSITIVE_INFINITY);
-expectAssignable<Message>(Number.POSITIVE_INFINITY);
-expectAssignable<Message<'advanced'>>(Number.POSITIVE_INFINITY);
-expectAssignable<Message<'json'>>(Number.POSITIVE_INFINITY);
+await sendMessage(Infinity);
+expectAssignable<Message>(Infinity);
+expectAssignable<Message<'advanced'>>(Infinity);
+expectAssignable<Message<'json'>>(Infinity);
 
 await sendMessage(new Map());
 expectAssignable<Message>(new Map());

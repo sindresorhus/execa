@@ -50,11 +50,11 @@ export type SubprocessAsyncIterable<
 	BinaryOption extends boolean | undefined,
 	EncodingOption extends Options['encoding'],
 > = AsyncIterableIterator<
-EncodingOption extends BinaryEncodingOption
-	? Uint8Array
-	: BinaryOption extends true
+	EncodingOption extends BinaryEncodingOption
 		? Uint8Array
-		: string
+		: BinaryOption extends true
+			? Uint8Array
+			: string
 >;
 
 export {};

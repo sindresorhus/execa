@@ -13,10 +13,10 @@ type ResultAllProperty<
 	OptionsType extends CommonOptions,
 > = AllOption extends true
 	? ResultStdio<
-	AllMainFd<OptionsType>,
-	AllObjectFd<OptionsType>,
-	AllLinesFd<OptionsType>,
-	OptionsType
+		AllMainFd<OptionsType>,
+		AllObjectFd<OptionsType>,
+		AllLinesFd<OptionsType>,
+		OptionsType
 	>
 	: undefined;
 

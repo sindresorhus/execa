@@ -118,7 +118,7 @@ addAbortListener(cancelSignal, async () => {
 });
 ```
 
-However, if any operation is still ongoing, the subprocess will keep running. It can be forcefully ended using [`process.exit(exitCode)`](https://nodejs.org/api/process.html#processexitcode) instead of [`process.exitCode`](https://nodejs.org/api/process.html#processexitcode_1).
+However, if any operation is still ongoing, the subprocess will keep running. It can be forcefully ended using [`process.exit(exitCode)`](https://nodejs.org/api/process.html#processexitcode) instead of [`process.exitCode`](https://nodejs.org/api/process.html#processexitcode-1).
 
 If the subprocess is still alive after 5 seconds, it is forcefully terminated with [`SIGKILL`](#sigkill). This can be [configured or disabled](#forceful-termination) using the [`forceKillAfterDelay`](api.md#optionsforcekillafterdelay) option.
 

@@ -8,11 +8,14 @@ import {getOutputLine, getOutputLines, testTimestamp} from '../helpers/verbose.j
 setFixtureDirectory();
 
 test('Prints stdout one line at a time', async t => {
+	t.plan(1);
+
 	const subprocess = nestedInstance('noop-progressive.js', [foobarString], {verbose: 'full'});
 
 	for await (const chunk of on(subprocess.stderr, 'data')) {
 		const outputLine = getOutputLine(chunk.toString().trim());
 		if (outputLine !== undefined) {
+			// eslint-disable-next-line ava/no-conditional-assertion -- `t.plan()` ensures this always executes
 			t.is(outputLine, `${testTimestamp} [0]   ${foobarString}`);
 			break;
 		}

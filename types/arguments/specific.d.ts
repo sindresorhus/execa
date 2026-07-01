@@ -3,9 +3,7 @@ import type {FromOption} from './fd-options.js';
 // Options which can be fd-specific like `{verbose: {stdout: 'none', stderr: 'full'}}`
 export type FdGenericOption<OptionType> = OptionType | GenericOptionObject<OptionType>;
 
-type GenericOptionObject<OptionType> = {
-	readonly [FdName in GenericFromOption]?: OptionType
-};
+type GenericOptionObject<OptionType> = Readonly<Partial<Record<GenericFromOption, OptionType>>>;
 
 type GenericFromOption = FromOption | 'ipc';
 

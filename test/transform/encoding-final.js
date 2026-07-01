@@ -41,7 +41,7 @@ const compareValues = (t, value, encoding) => {
 };
 
 // This string gives different outputs with each encoding type
-const STRING_TO_ENCODE = '\u1000.';
+const STRING_TO_ENCODE = '\u{1000}.';
 const BUFFER_TO_ENCODE = Buffer.from(STRING_TO_ENCODE);
 
 test('can pass encoding "buffer" to stdout', checkEncoding, 'buffer', 1, execa);

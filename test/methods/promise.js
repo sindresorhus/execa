@@ -16,7 +16,7 @@ test('finally function is executed on success', async t => {
 	const {stdout} = await execa('noop.js', ['foo']).finally(() => {
 		isCalled = true;
 	});
-	t.is(isCalled, true);
+	t.true(isCalled);
 	t.is(stdout, 'foo');
 });
 
@@ -25,7 +25,7 @@ test('finally function is executed on failure', async t => {
 	const {stdout, stderr} = await t.throwsAsync(execa('exit.js', ['2']).finally(() => {
 		isError = true;
 	}));
-	t.is(isError, true);
+	t.true(isError);
 	t.is(typeof stdout, 'string');
 	t.is(typeof stderr, 'string');
 });

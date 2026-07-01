@@ -13,9 +13,7 @@ test('exitCode is 0 on success', async t => {
 });
 
 const testExitCode = async (t, expectedExitCode) => {
-	const {exitCode, originalMessage, shortMessage, message} = await t.throwsAsync(
-		execa('exit.js', [`${expectedExitCode}`]),
-	);
+	const {exitCode, originalMessage, shortMessage, message} = await t.throwsAsync(execa('exit.js', [`${expectedExitCode}`]));
 	t.is(exitCode, expectedExitCode);
 	t.is(originalMessage, undefined);
 	t.is(shortMessage, `Command failed with exit code ${expectedExitCode}: exit.js ${expectedExitCode}`);

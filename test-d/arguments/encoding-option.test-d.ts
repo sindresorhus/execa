@@ -3,7 +3,7 @@ import {execa, execaSync} from '../../index.js';
 
 await execa('unicorns', {encoding: 'utf8'});
 execaSync('unicorns', {encoding: 'utf8'});
-/* eslint-disable unicorn/text-encoding-identifier-case */
+/* eslint-disable unicorn/text-encoding-identifier-case -- intentionally testing invalid encoding casing */
 expectError(await execa('unicorns', {encoding: 'utf-8'}));
 expectError(execaSync('unicorns', {encoding: 'utf-8'}));
 expectError(await execa('unicorns', {encoding: 'UTF8'}));

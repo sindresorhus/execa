@@ -14,7 +14,7 @@ const echoMessages = async () => {
 };
 
 process.on('error', () => {});
-// eslint-disable-next-line unicorn/prefer-top-level-await
+
 const promise = echoMessages();
 process.emit('error', new Error(foobarString));
 await promise;

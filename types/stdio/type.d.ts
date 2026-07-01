@@ -47,20 +47,13 @@ type CommonStdioOption<
 	IsExtra extends boolean,
 	IsArray extends boolean,
 > =
-	| SimpleStdioOption<IsSync, IsExtra, IsArray>
-	| URL
-	| {readonly file: string; readonly append?: boolean}
-	| GeneratorTransform<IsSync>
-	| GeneratorTransformFull<IsSync>
-	| Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9>
-	| Unless<Or<IsSync, IsArray>, 'ipc'>
-	| Unless<IsSync, DuplexTransform | WebTransform | TransformStream>;
+	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync> | GeneratorTransformFull<IsSync> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<Or<IsSync, IsArray>, 'ipc'> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | {readonly file: string; readonly append?: boolean};
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
 type IterableObject<IsArray extends boolean> = Iterable<unknown>
-& object
-& {readonly BYTES_PER_ELEMENT?: never}
-& AndUnless<IsArray, {readonly lastIndexOf?: never}>;
+	& object
+	& AndUnless<IsArray, {readonly lastIndexOf?: never}>
+	& {readonly BYTES_PER_ELEMENT?: never};
 
 // `process.stdin|stdout|stderr` are `Duplex` with a `fd` property.
 // This ensures they can only be passed to `stdin`/`stdout`/`stderr`, based on their direction.
@@ -116,8 +109,8 @@ type StdoutStderrSingleOption<
 	IsExtra extends boolean,
 	IsArray extends boolean,
 > =
-  | CommonStdioOption<IsSync, IsExtra, IsArray>
-  | OutputStdioOption<IsSync, IsArray>;
+	| CommonStdioOption<IsSync, IsExtra, IsArray>
+	| OutputStdioOption<IsSync, IsArray>;
 
 // `options.stdout|stderr`
 export type StdoutStderrOptionCommon<

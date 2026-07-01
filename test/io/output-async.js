@@ -41,9 +41,7 @@ test.serial('process.std* listeners are cleaned up on success with a single inpu
 test.serial('process.std* listeners are cleaned up on success with multiple inputs', testListenersCleanup, true);
 
 test.serial('Can spawn many subprocesses in parallel', async t => {
-	const results = await Promise.all(
-		Array.from({length: PARALLEL_COUNT}, () => execa('noop.js', [foobarString])),
-	);
+	const results = await Promise.all(Array.from({length: PARALLEL_COUNT}, () => execa('noop.js', [foobarString])));
 	t.true(results.every(({stdout}) => stdout === foobarString));
 });
 
@@ -55,9 +53,7 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 	}
 
 	try {
-		const results = await Promise.all(
-			Array.from({length: PARALLEL_COUNT}, () => execa('empty.js', getComplexStdio(isMultiple))),
-		);
+		const results = await Promise.all(Array.from({length: PARALLEL_COUNT}, () => execa('empty.js', getComplexStdio(isMultiple))));
 		t.true(results.every(({exitCode}) => exitCode === 0));
 	} finally {
 		await setImmediate();
@@ -74,10 +70,10 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 test.serial('No warning with maxListeners 1 and ["pipe", "inherit"]', testMaxListeners, false, 1);
 test.serial('No warning with maxListeners default and ["pipe", "inherit"]', testMaxListeners, false, defaultMaxListeners);
 test.serial('No warning with maxListeners 100 and ["pipe", "inherit"]', testMaxListeners, false, 100);
-test.serial('No warning with maxListeners Infinity and ["pipe", "inherit"]', testMaxListeners, false, Number.POSITIVE_INFINITY);
+test.serial('No warning with maxListeners Infinity and ["pipe", "inherit"]', testMaxListeners, false, Infinity);
 test.serial('No warning with maxListeners 0 and ["pipe", "inherit"]', testMaxListeners, false, 0);
 test.serial('No warning with maxListeners 1 and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, 1);
 test.serial('No warning with maxListeners default and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, defaultMaxListeners);
 test.serial('No warning with maxListeners 100 and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, 100);
-test.serial('No warning with maxListeners Infinity and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, Number.POSITIVE_INFINITY);
+test.serial('No warning with maxListeners Infinity and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, Infinity);
 test.serial('No warning with maxListeners 0 and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, 0);

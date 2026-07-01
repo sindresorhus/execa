@@ -25,8 +25,8 @@ expectError(execaSync('unicorns', {preferLocal: 'false'}));
 
 await execa('unicorns', {localDir: '.'});
 execaSync('unicorns', {localDir: '.'});
-await execa('unicorns', {localDir: '.' as string});
-execaSync('unicorns', {localDir: '.' as string});
+await execa('unicorns', {localDir: '.'});
+execaSync('unicorns', {localDir: '.'});
 await execa('unicorns', {localDir: fileUrl});
 execaSync('unicorns', {localDir: fileUrl});
 expectError(await execa('unicorns', {localDir: false}));
@@ -41,8 +41,8 @@ expectError(execaSync('unicorns', {node: 'true'}));
 
 await execa('unicorns', {nodePath: './node'});
 execaSync('unicorns', {nodePath: './node'});
-await execa('unicorns', {nodePath: './node' as string});
-execaSync('unicorns', {nodePath: './node' as string});
+await execa('unicorns', {nodePath: './node'});
+execaSync('unicorns', {nodePath: './node'});
 await execa('unicorns', {nodePath: fileUrl});
 execaSync('unicorns', {nodePath: fileUrl});
 expectError(await execa('unicorns', {nodePath: false}));
@@ -57,8 +57,8 @@ expectError(execaSync('unicorns', {nodeOptions: [false] as const}));
 
 await execa('unicorns', {input: ''});
 execaSync('unicorns', {input: ''});
-await execa('unicorns', {input: '' as string});
-execaSync('unicorns', {input: '' as string});
+await execa('unicorns', {input: ''});
+execaSync('unicorns', {input: ''});
 await execa('unicorns', {input: new Uint8Array()});
 execaSync('unicorns', {input: new Uint8Array()});
 await execa('unicorns', {input: process.stdin});
@@ -68,8 +68,8 @@ expectError(execaSync('unicorns', {input: false}));
 
 await execa('unicorns', {inputFile: ''});
 execaSync('unicorns', {inputFile: ''});
-await execa('unicorns', {inputFile: '' as string});
-execaSync('unicorns', {inputFile: '' as string});
+await execa('unicorns', {inputFile: ''});
+execaSync('unicorns', {inputFile: ''});
 await execa('unicorns', {inputFile: fileUrl});
 execaSync('unicorns', {inputFile: fileUrl});
 expectError(await execa('unicorns', {inputFile: false}));
@@ -105,14 +105,14 @@ expectError(execaSync('unicorns', {extendEnv: 'false'}));
 
 await execa('unicorns', {cwd: '.'});
 execaSync('unicorns', {cwd: '.'});
-await execa('unicorns', {cwd: '.' as string});
-execaSync('unicorns', {cwd: '.' as string});
+await execa('unicorns', {cwd: '.'});
+execaSync('unicorns', {cwd: '.'});
 await execa('unicorns', {cwd: fileUrl});
 execaSync('unicorns', {cwd: fileUrl});
 expectError(await execa('unicorns', {cwd: false}));
 expectError(execaSync('unicorns', {cwd: false}));
 
-/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention -- `PATH` is a real environment variable name */
 await execa('unicorns', {env: {PATH: ''}});
 execaSync('unicorns', {env: {PATH: ''}});
 const env: Record<string, string> = {PATH: ''};
@@ -124,22 +124,22 @@ expectError(execaSync('unicorns', {env: false}));
 
 await execa('unicorns', {argv0: ''});
 execaSync('unicorns', {argv0: ''});
-await execa('unicorns', {argv0: '' as string});
-execaSync('unicorns', {argv0: '' as string});
+await execa('unicorns', {argv0: ''});
+execaSync('unicorns', {argv0: ''});
 expectError(await execa('unicorns', {argv0: false}));
 expectError(execaSync('unicorns', {argv0: false}));
 
 await execa('unicorns', {uid: 0});
 execaSync('unicorns', {uid: 0});
-await execa('unicorns', {uid: 0 as number});
-execaSync('unicorns', {uid: 0 as number});
+await execa('unicorns', {uid: 0});
+execaSync('unicorns', {uid: 0});
 expectError(await execa('unicorns', {uid: '0'}));
 expectError(execaSync('unicorns', {uid: '0'}));
 
 await execa('unicorns', {gid: 0});
 execaSync('unicorns', {gid: 0});
-await execa('unicorns', {gid: 0 as number});
-execaSync('unicorns', {gid: 0 as number});
+await execa('unicorns', {gid: 0});
+execaSync('unicorns', {gid: 0});
 expectError(await execa('unicorns', {gid: '0'}));
 expectError(execaSync('unicorns', {gid: '0'}));
 
@@ -149,8 +149,8 @@ await execa('unicorns', {shell: true as boolean});
 execaSync('unicorns', {shell: true as boolean});
 await execa('unicorns', {shell: '/bin/sh'});
 execaSync('unicorns', {shell: '/bin/sh'});
-await execa('unicorns', {shell: '/bin/sh' as string});
-execaSync('unicorns', {shell: '/bin/sh' as string});
+await execa('unicorns', {shell: '/bin/sh'});
+execaSync('unicorns', {shell: '/bin/sh'});
 await execa('unicorns', {shell: fileUrl});
 execaSync('unicorns', {shell: fileUrl});
 expectError(await execa('unicorns', {shell: {}}));
@@ -158,15 +158,15 @@ expectError(execaSync('unicorns', {shell: {}}));
 
 await execa('unicorns', {timeout: 1000});
 execaSync('unicorns', {timeout: 1000});
-await execa('unicorns', {timeout: 1000 as number});
-execaSync('unicorns', {timeout: 1000 as number});
+await execa('unicorns', {timeout: 1000});
+execaSync('unicorns', {timeout: 1000});
 expectError(await execa('unicorns', {timeout: '1000'}));
 expectError(execaSync('unicorns', {timeout: '1000'}));
 
 await execa('unicorns', {maxBuffer: 1000});
 execaSync('unicorns', {maxBuffer: 1000});
-await execa('unicorns', {maxBuffer: 1000 as number});
-execaSync('unicorns', {maxBuffer: 1000 as number});
+await execa('unicorns', {maxBuffer: 1000});
+execaSync('unicorns', {maxBuffer: 1000});
 expectError(await execa('unicorns', {maxBuffer: '1000'}));
 expectError(execaSync('unicorns', {maxBuffer: '1000'}));
 
@@ -176,8 +176,8 @@ expectError(await execa('unicorns', {killSignal: 'SIGTERM' as string}));
 expectError(execaSync('unicorns', {killSignal: 'SIGTERM' as string}));
 await execa('unicorns', {killSignal: 9});
 execaSync('unicorns', {killSignal: 9});
-await execa('unicorns', {killSignal: 9 as number});
-execaSync('unicorns', {killSignal: 9 as number});
+await execa('unicorns', {killSignal: 9});
+execaSync('unicorns', {killSignal: 9});
 expectError(await execa('unicorns', {killSignal: false}));
 expectError(execaSync('unicorns', {killSignal: false}));
 expectError(await execa('unicorns', {killSignal: 'Sigterm'}));

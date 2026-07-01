@@ -79,10 +79,8 @@ test('Sets empty error.ipcOutput, sync', t => {
 });
 
 test.serial('Can retrieve initial IPC messages under heavy load', async t => {
-	await Promise.all(
-		Array.from({length: PARALLEL_COUNT}, async (_, index) => {
-			const {ipcOutput} = await execa('ipc-send-argv.js', [`${index}`], {ipc: true});
-			t.deepEqual(ipcOutput, [`${index}`]);
-		}),
-	);
+	await Promise.all(Array.from({length: PARALLEL_COUNT}, async (_, index) => {
+		const {ipcOutput} = await execa('ipc-send-argv.js', [`${index}`], {ipc: true});
+		t.deepEqual(ipcOutput, [`${index}`]);
+	}));
 });

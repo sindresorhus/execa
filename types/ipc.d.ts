@@ -136,9 +136,9 @@ export type IpcMethods<
 
 // Whether IPC is enabled, based on the `ipc`, `ipcInput` and `gracefulCancel` options
 export type HasIpc<OptionsType extends Options> = HasIpcOption<
-OptionsType['ipc'],
-'ipcInput' extends keyof OptionsType ? OptionsType['ipcInput'] : undefined,
-'gracefulCancel' extends keyof OptionsType ? OptionsType['gracefulCancel'] : undefined
+	OptionsType['ipc'],
+	'ipcInput' extends keyof OptionsType ? OptionsType['ipcInput'] : undefined,
+	'gracefulCancel' extends keyof OptionsType ? OptionsType['gracefulCancel'] : undefined
 >;
 
 type HasIpcOption<

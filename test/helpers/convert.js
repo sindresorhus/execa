@@ -3,7 +3,7 @@ import {finished} from 'node:stream/promises';
 import getStream from 'get-stream';
 import isPlainObj from 'is-plain-obj';
 import {execa} from '../../index.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString} from './input.js';
 
 export const arrayFromAsync = async (asyncIterable, lines = []) => {
 	for await (const line of asyncIterable) {

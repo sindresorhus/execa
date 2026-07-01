@@ -1,5 +1,5 @@
-import {getStdio} from '../helpers/stdio.js';
-import {noopGenerator} from '../helpers/generator.js';
+import {getStdio} from './stdio.js';
+import {noopGenerator} from './generator.js';
 
 export const endOptionStream = ({stream}) => {
 	stream.end();

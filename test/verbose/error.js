@@ -1,6 +1,6 @@
 import test from 'ava';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString, foobarRed} from '../helpers/input.js';
 import {nestedSubprocess} from '../helpers/nested.js';
 import {
 	QUOTE,
@@ -26,8 +26,6 @@ import {
 } from '../helpers/verbose.js';
 
 setFixtureDirectory();
-
-const redFoobarString = `\u001B[31m${foobarString}\u001B[39m`;
 
 const testPrintError = async (t, verbose, isSync) => {
 	const stderr = await runErrorSubprocess(t, verbose, isSync, getStdioForFd3Option(verbose));
@@ -152,7 +150,7 @@ test('Does not escape internal characters from error', async t => {
 });
 
 test('Escapes and strips color sequences from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', [redFoobarString], {parentFixture: 'nested-fail.js', verbose: 'short'}));
+	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', [foobarRed], {parentFixture: 'nested-fail.js', verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}\\u001b[31m${foobarString}\\u001b[39m${QUOTE}`,
 		`${testTimestamp} [0] × ${foobarString}`,
@@ -160,7 +158,7 @@ test('Escapes and strips color sequences from error', async t => {
 });
 
 test('Escapes control characters from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', ['\u0001'], {parentFixture: 'nested-fail.js', verbose: 'short'}));
+	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', ['\u{1}'], {parentFixture: 'nested-fail.js', verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}\\u0001${QUOTE}`,
 		`${testTimestamp} [0] × \\u0001`,

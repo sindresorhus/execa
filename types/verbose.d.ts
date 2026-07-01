@@ -3,10 +3,10 @@ import type {Options, SyncOptions} from './arguments/options.js';
 import type {Result, SyncResult} from './return/result.js';
 
 export type VerboseOption = FdGenericOption<
-| 'none'
-| 'short'
-| 'full'
-| VerboseFunction
+	| 'none'
+	| 'short'
+	| 'full'
+	| VerboseFunction
 >;
 
 type VerboseFunction = (verboseLine: string, verboseObject: MinimalVerboseObject) => string | void;

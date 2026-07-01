@@ -4,6 +4,7 @@ import {inspect} from 'node:util';
 const textEncoder = new TextEncoder();
 
 export const foobarString = 'foobar';
+export const foobarRed = `\u001B[31m${foobarString}\u001B[39m`;
 export const foobarArray = ['foo', 'bar'];
 export const foobarUint8Array = textEncoder.encode(foobarString);
 export const foobarArrayBuffer = foobarUint8Array.buffer;

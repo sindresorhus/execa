@@ -1,7 +1,6 @@
 import test from 'ava';
-import {red} from 'yoctocolors';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString, foobarRed} from '../helpers/input.js';
 import {nestedSubprocess} from '../helpers/nested.js';
 import {
 	QUOTE,
@@ -150,7 +149,7 @@ test('Does not escape internal characters from error', async t => {
 });
 
 test('Escapes and strips color sequences from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', [red(foobarString)], {parentFixture: 'nested-fail.js', verbose: 'short'}, {env: {FORCE_COLOR: '1'}}));
+	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', [foobarRed], {parentFixture: 'nested-fail.js', verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}\\u001b[31m${foobarString}\\u001b[39m${QUOTE}`,
 		`${testTimestamp} [0] × ${foobarString}`,

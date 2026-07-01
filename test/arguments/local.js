@@ -1,3 +1,4 @@
+import {existsSync} from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
@@ -10,52 +11,52 @@ process.env.FOO = 'foo';
 
 const isWindows = process.platform === 'win32';
 const ENOENT_REGEXP = isWindows ? /failed with exit code 1/ : /spawn.* ENOENT/;
+const AVA_BINARY_NAMES = isWindows ? ['ava.cmd', 'ava.exe', 'ava.bat', 'ava.ps1', 'ava'] : ['ava'];
 
-const getPathWithoutLocalDirectory = () => {
+const getPathWithoutCommand = commandNames => {
 	const newPath = process.env[PATH_KEY]
 		.split(path.delimiter)
-		.filter(pathDirectory => !BIN_DIR_REGEXP.test(pathDirectory)).join(path.delimiter);
+		.filter(pathDirectory => commandNames.every(commandName => !existsSync(path.join(pathDirectory, commandName))))
+		.join(path.delimiter);
 	return {[PATH_KEY]: newPath};
 };
 
-const BIN_DIR_REGEXP = /node_modules[\\/]\.bin/;
-
-const pathWitoutLocalDirectory = getPathWithoutLocalDirectory();
+const pathWithoutAva = getPathWithoutCommand(AVA_BINARY_NAMES);
 
 test('preferLocal: true', async t => {
-	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: pathWitoutLocalDirectory}));
+	await t.notThrowsAsync(execa('ava', ['--version'], {preferLocal: true, env: pathWithoutAva}));
 });
 
 test('preferLocal: false', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: pathWitoutLocalDirectory}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {preferLocal: false, env: pathWithoutAva}), {message: ENOENT_REGEXP});
 });
 
 test('preferLocal: undefined', async t => {
-	await t.throwsAsync(execa('ava', ['--version'], {env: pathWitoutLocalDirectory}), {message: ENOENT_REGEXP});
+	await t.throwsAsync(execa('ava', ['--version'], {env: pathWithoutAva}), {message: ENOENT_REGEXP});
 });
 
 test('preferLocal: undefined with $', async t => {
-	await t.notThrowsAsync($('ava', ['--version'], {env: pathWitoutLocalDirectory}));
+	await t.notThrowsAsync($('ava', ['--version'], {env: pathWithoutAva}));
 });
 
 test('preferLocal: undefined with $.sync', t => {
-	t.notThrows(() => $.sync('ava', ['--version'], {env: pathWitoutLocalDirectory}));
+	t.notThrows(() => $.sync('ava', ['--version'], {env: pathWithoutAva}));
 });
 
 test('preferLocal: undefined with execa.pipe`...`', async t => {
-	await t.throwsAsync(() => execa('node', ['--version']).pipe({env: pathWitoutLocalDirectory})`ava --version`);
+	await t.throwsAsync(() => execa('node', ['--version']).pipe({env: pathWithoutAva})`ava --version`);
 });
 
 test('preferLocal: undefined with $.pipe`...`', async t => {
-	await t.notThrows(() => $('node', ['--version']).pipe({env: pathWitoutLocalDirectory})`ava --version`);
+	await t.notThrows(() => $('node', ['--version']).pipe({env: pathWithoutAva})`ava --version`);
 });
 
 test('preferLocal: undefined with execa.pipe()', async t => {
-	await t.throwsAsync(() => execa('node', ['--version']).pipe('ava', ['--version'], {env: pathWitoutLocalDirectory}));
+	await t.throwsAsync(() => execa('node', ['--version']).pipe('ava', ['--version'], {env: pathWithoutAva}));
 });
 
 test('preferLocal: undefined with $.pipe()', async t => {
-	await t.notThrows(() => $('node', ['--version']).pipe('ava', ['--version'], {env: pathWitoutLocalDirectory}));
+	await t.notThrows(() => $('node', ['--version']).pipe('ava', ['--version'], {env: pathWithoutAva}));
 });
 
 test('localDir option', async t => {

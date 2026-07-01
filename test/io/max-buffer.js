@@ -129,6 +129,26 @@ test('maxBuffer does not affect other file descriptors with fd-specific options'
 	t.false(isMaxBuffer);
 });
 
+test('maxBuffer.fd3 is invalid without stdio[3], even with ipc', t => {
+	const {message} = t.throws(() => {
+		execa('ipc-send-twice.js', {ipc: true, maxBuffer: {fd3: 1}});
+	});
+	t.true(message.includes('"maxBuffer.fd3" is invalid: that file descriptor does not exist.'));
+});
+
+test('maxBuffer.fd3 and maxBuffer.ipc are distinct', async t => {
+	const {isMaxBuffer, ipcOutput} = await execa('ipc-send-twice.js', {
+		ipc: true,
+		stdio: ['ignore', 'pipe', 'pipe', 'pipe'],
+		maxBuffer: {
+			fd3: 1,
+			ipc: 2,
+		},
+	});
+	t.false(isMaxBuffer);
+	t.deepEqual(ipcOutput, foobarArray);
+});
+
 test('maxBuffer.stdout is used for other file descriptors with fd-specific options, sync', async t => {
 	const length = 1;
 	const {shortMessage, stderr} = await runMaxBuffer(t, execaSync, 2, {maxBuffer: {stdout: length}});

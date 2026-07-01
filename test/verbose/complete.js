@@ -11,6 +11,7 @@ import {
 	getCompletionLines,
 	testTimestamp,
 	getVerboseOption,
+	getStdioForFd3Option,
 	stdoutNoneOption,
 	stdoutShortOption,
 	stdoutFullOption,
@@ -28,7 +29,7 @@ import {
 setFixtureDirectory();
 
 const testPrintCompletion = async (t, verbose, isSync) => {
-	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose, isSync});
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose, ...getStdioForFd3Option(verbose), isSync});
 	t.is(getCompletionLine(stderr), `${testTimestamp} [0] √ (done in 0ms)`);
 };
 
@@ -54,24 +55,24 @@ test('Prints completion, verbose "short", fd-specific ipc, sync', testPrintCompl
 test('Prints completion, verbose "full", fd-specific ipc, sync', testPrintCompletion, ipcFullOption, true);
 
 const testNoPrintCompletion = async (t, verbose, isSync) => {
-	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose, isSync});
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose, ...getStdioForFd3Option(verbose), isSync});
 	t.is(stderr, '');
 };
 
 test('Does not print completion, verbose "none"', testNoPrintCompletion, 'none', false);
-test('Does not print completion, verbose default"', testNoPrintCompletion, undefined, false);
+test('Does not print completion, verbose default', testNoPrintCompletion, undefined, false);
 test('Does not print completion, verbose "none", fd-specific stdout', testNoPrintCompletion, stdoutNoneOption, false);
 test('Does not print completion, verbose "none", fd-specific stderr', testNoPrintCompletion, stderrNoneOption, false);
 test('Does not print completion, verbose "none", fd-specific fd3', testNoPrintCompletion, fd3NoneOption, false);
 test('Does not print completion, verbose "none", fd-specific ipc', testNoPrintCompletion, ipcNoneOption, false);
-test('Does not print completion, verbose default", fd-specific', testNoPrintCompletion, {}, false);
+test('Does not print completion, verbose default, fd-specific', testNoPrintCompletion, {}, false);
 test('Does not print completion, verbose "none", sync', testNoPrintCompletion, 'none', true);
-test('Does not print completion, verbose default", sync', testNoPrintCompletion, undefined, true);
+test('Does not print completion, verbose default, sync', testNoPrintCompletion, undefined, true);
 test('Does not print completion, verbose "none", fd-specific stdout, sync', testNoPrintCompletion, stdoutNoneOption, true);
 test('Does not print completion, verbose "none", fd-specific stderr, sync', testNoPrintCompletion, stderrNoneOption, true);
 test('Does not print completion, verbose "none", fd-specific fd3, sync', testNoPrintCompletion, fd3NoneOption, true);
 test('Does not print completion, verbose "none", fd-specific ipc, sync', testNoPrintCompletion, ipcNoneOption, true);
-test('Does not print completion, verbose default", fd-specific, sync', testNoPrintCompletion, {}, true);
+test('Does not print completion, verbose default, fd-specific, sync', testNoPrintCompletion, {}, true);
 
 const testPrintCompletionError = async (t, isSync) => {
 	const stderr = await runErrorSubprocess(t, 'short', isSync);

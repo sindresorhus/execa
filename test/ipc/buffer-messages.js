@@ -3,6 +3,7 @@ import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
+import {fullStdio} from '../helpers/stdio.js';
 
 setFixtureDirectory();
 
@@ -21,6 +22,18 @@ const testResultNoBuffer = async (t, options) => {
 
 test('Sets empty result.ipcOutput if buffer is false', testResultNoBuffer, {buffer: false});
 test('Sets empty result.ipcOutput if buffer is false, fd-specific buffer', testResultNoBuffer, {buffer: {ipc: false}});
+
+test('buffer.fd3 is invalid without stdio[3], even with ipc', t => {
+	const {message} = t.throws(() => {
+		execa('ipc-send-twice.js', {ipc: true, buffer: {fd3: false}});
+	});
+	t.true(message.includes('"buffer.fd3" is invalid: that file descriptor does not exist.'));
+});
+
+test('buffer.fd3 does not affect result.ipcOutput', async t => {
+	const {ipcOutput} = await execa('ipc-send-twice.js', {ipc: true, buffer: {fd3: false}, ...fullStdio});
+	t.deepEqual(ipcOutput, foobarArray);
+});
 
 test('Can use IPC methods when buffer is false', async t => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer: false});

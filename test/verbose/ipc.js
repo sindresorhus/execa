@@ -1,9 +1,12 @@
 import {on} from 'node:events';
 import {inspect} from 'node:util';
 import test from 'ava';
+import {red} from 'yoctocolors';
+import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString, foobarRed, foobarObject} from '../helpers/input.js';
+import {foobarString, foobarObject} from '../helpers/input.js';
 import {nestedSubprocess, nestedInstance} from '../helpers/nested.js';
+import {fullStdio} from '../helpers/stdio.js';
 import {
 	getIpcLine,
 	getIpcLines,
@@ -22,6 +25,19 @@ const testPrintIpc = async (t, verbose) => {
 
 test('Prints IPC, verbose "full"', testPrintIpc, 'full');
 test('Prints IPC, verbose "full", fd-specific', testPrintIpc, ipcFullOption);
+
+test('verbose.fd3 is invalid without stdio[3], even with ipc', t => {
+	const {message} = t.throws(() => {
+		execa('ipc-send.js', {ipc: true, verbose: {fd3: 'full'}});
+	});
+	t.true(message.includes('"verbose.fd3" is invalid: that file descriptor does not exist.'));
+});
+
+test('verbose.fd3 does not affect IPC', async t => {
+	const {nestedResult, stderr} = await nestedSubprocess('ipc-send.js', {ipc: true, verbose: {fd3: 'full'}, ...fullStdio});
+	t.deepEqual(nestedResult.ipcOutput, [foobarString]);
+	t.is(getIpcLine(stderr), undefined);
+});
 
 const testNoPrintIpc = async (t, verbose) => {
 	const {stderr} = await nestedSubprocess('ipc-send.js', {ipc: true, verbose});
@@ -83,7 +99,7 @@ test('Does not escape internal characters from IPC', async t => {
 });
 
 test('Strips color sequences from IPC', async t => {
-	const {stderr} = await nestedSubprocess('ipc-send.js', [foobarRed], {ipc: true, verbose: 'full'});
+	const {stderr} = await nestedSubprocess('ipc-send.js', [red(foobarString)], {ipc: true, verbose: 'full'}, {env: {FORCE_COLOR: '1', NO_COLOR: undefined}});
 	t.is(getIpcLine(stderr), `${testTimestamp} [0] * ${foobarString}`);
 });
 

@@ -21,7 +21,7 @@ test('Logs on stderr not stdout, verbose "short", sync', testNoStdout, 'short', 
 test('Logs on stderr not stdout, verbose "full", sync', testNoStdout, 'full', true);
 
 const testColor = async (t, expectedResult, forceColor) => {
-	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short'}, {env: {FORCE_COLOR: forceColor}});
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short'}, {env: {FORCE_COLOR: forceColor, NO_COLOR: undefined}});
 	t.is(stderr !== stripVTControlCharacters(stderr), expectedResult);
 };
 

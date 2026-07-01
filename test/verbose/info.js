@@ -85,8 +85,8 @@ test('Prints early spawn errors, sync', async t => {
 	const {stderr} = await nestedSubprocess('empty.js', {...earlyErrorOptionsSync, verbose: 'full', isSync: true});
 	t.deepEqual(getNormalizedLines(stderr), [
 		`${testTimestamp} [0] $ empty.js`,
-		`${testTimestamp} [0] × Command failed with ERR_OUT_OF_RANGE: empty.js`,
-		`${testTimestamp} [0] × The value of "options.maxBuffer" is out of range. It must be a positive number. Received false`,
+		`${testTimestamp} [0] × Command failed with ERR_INVALID_ARG_TYPE: empty.js`,
+		`${testTimestamp} [0] × The "options.windowsHide" property must be of type boolean. Received type string ('true')`,
 		`${testTimestamp} [0] × (done in 0ms)`,
 	]);
 });

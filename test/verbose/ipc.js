@@ -1,9 +1,8 @@
 import {on} from 'node:events';
 import {inspect} from 'node:util';
 import test from 'ava';
-import {red} from 'yoctocolors';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString, foobarObject} from '../helpers/input.js';
+import {foobarString, foobarRed, foobarObject} from '../helpers/input.js';
 import {nestedSubprocess, nestedInstance} from '../helpers/nested.js';
 import {
 	getIpcLine,
@@ -84,7 +83,7 @@ test('Does not escape internal characters from IPC', async t => {
 });
 
 test('Strips color sequences from IPC', async t => {
-	const {stderr} = await nestedSubprocess('ipc-send.js', [red(foobarString)], {ipc: true, verbose: 'full'}, {env: {FORCE_COLOR: '1'}});
+	const {stderr} = await nestedSubprocess('ipc-send.js', [foobarRed], {ipc: true, verbose: 'full'});
 	t.is(getIpcLine(stderr), `${testTimestamp} [0] * ${foobarString}`);
 });
 

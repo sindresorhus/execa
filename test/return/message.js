@@ -91,8 +91,8 @@ test('error.message newlines are consistent - no newline', testErrorMessageConsi
 test('error.message newlines are consistent - newline', testErrorMessageConsistent, 'stdout\n');
 
 test('Original error.message is kept', async t => {
-	const {originalMessage} = await t.throwsAsync(execa('noop.js', {uid: true}));
-	t.is(originalMessage, 'The "options.uid" property must be int32. Received type boolean (true)');
+	const {originalMessage} = await t.throwsAsync(execa('noop.js', {windowsHide: 'true'}));
+	t.is(originalMessage, 'The "options.windowsHide" property must be of type boolean. Received type string (\'true\')');
 });
 
 const testIpcOutput = async (t, doubles, ipcInput, returnedMessage) => {

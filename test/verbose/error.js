@@ -1,6 +1,6 @@
 import test from 'ava';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString, foobarRed} from '../helpers/input.js';
+import {foobarString} from '../helpers/input.js';
 import {nestedSubprocess} from '../helpers/nested.js';
 import {
 	QUOTE,
@@ -10,6 +10,7 @@ import {
 	getErrorLines,
 	testTimestamp,
 	getVerboseOption,
+	getStdioForFd3Option,
 	stdoutNoneOption,
 	stdoutShortOption,
 	stdoutFullOption,
@@ -26,8 +27,10 @@ import {
 
 setFixtureDirectory();
 
+const redFoobarString = `\u001B[31m${foobarString}\u001B[39m`;
+
 const testPrintError = async (t, verbose, isSync) => {
-	const stderr = await runErrorSubprocess(t, verbose, isSync);
+	const stderr = await runErrorSubprocess(t, verbose, isSync, getStdioForFd3Option(verbose));
 	t.is(getErrorLine(stderr), `${testTimestamp} [0] × Command failed with exit code 2: noop-fail.js 1 ${foobarString}`);
 };
 
@@ -53,7 +56,7 @@ test('Prints error, verbose "short", fd-specific ipc, sync', testPrintError, ipc
 test('Prints error, verbose "full", fd-specific ipc, sync', testPrintError, ipcFullOption, true);
 
 const testNoPrintError = async (t, verbose, isSync) => {
-	const stderr = await runErrorSubprocess(t, verbose, isSync, false);
+	const stderr = await runErrorSubprocess(t, verbose, isSync, {expectExitCode: false, ...getStdioForFd3Option(verbose)});
 	t.is(getErrorLine(stderr), undefined);
 };
 
@@ -149,7 +152,7 @@ test('Does not escape internal characters from error', async t => {
 });
 
 test('Escapes and strips color sequences from error', async t => {
-	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', [foobarRed], {parentFixture: 'nested-fail.js', verbose: 'short'}));
+	const {stderr} = await t.throwsAsync(nestedSubprocess('noop-forever.js', [redFoobarString], {parentFixture: 'nested-fail.js', verbose: 'short'}));
 	t.deepEqual(getErrorLines(stderr), [
 		`${testTimestamp} [0] × Command was killed with SIGTERM (Termination): noop-forever.js ${QUOTE}\\u001b[31m${foobarString}\\u001b[39m${QUOTE}`,
 		`${testTimestamp} [0] × ${foobarString}`,

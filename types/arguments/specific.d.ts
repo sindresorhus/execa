@@ -29,26 +29,28 @@ type FdSpecificObjectOption<
 type FdNumberToFromOption<
 	FdNumber extends string,
 	GenericOptionKeys extends GenericFromOption,
-> = FdNumber extends '1'
-	? 'stdout' extends GenericOptionKeys
-		? 'stdout'
-		: 'fd1' extends GenericOptionKeys
-			? 'fd1'
-			: 'all' extends GenericOptionKeys
-				? 'all'
-				: never
-	: FdNumber extends '2'
-		? 'stderr' extends GenericOptionKeys
-			? 'stderr'
-			: 'fd2' extends GenericOptionKeys
-				? 'fd2'
+> = FdNumber extends 'ipc'
+	? 'ipc' extends GenericOptionKeys
+		? 'ipc'
+		: never
+	: FdNumber extends '1'
+		? 'stdout' extends GenericOptionKeys
+			? 'stdout'
+			: 'fd1' extends GenericOptionKeys
+				? 'fd1'
 				: 'all' extends GenericOptionKeys
 					? 'all'
 					: never
-		: `fd${FdNumber}` extends GenericOptionKeys
-			? `fd${FdNumber}`
-			: 'ipc' extends GenericOptionKeys
-				? 'ipc'
+		: FdNumber extends '2'
+			? 'stderr' extends GenericOptionKeys
+				? 'stderr'
+				: 'fd2' extends GenericOptionKeys
+					? 'fd2'
+					: 'all' extends GenericOptionKeys
+						? 'all'
+						: never
+			: `fd${FdNumber}` extends GenericOptionKeys
+				? `fd${FdNumber}`
 				: never;
 
 export {};

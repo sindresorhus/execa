@@ -45,6 +45,10 @@ expectType<string>(noBufferFd3Result.all);
 expectType<undefined>(noBufferFd3Result.stdio[3]);
 expectType<string>(noBufferFd3Result.stdio[4]);
 
+const noBufferIpcResult = await execa('unicorns', {buffer: {ipc: false}, ipc: true, stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
+expectType<string>(noBufferIpcResult.stdio[3]);
+expectType<[]>(noBufferIpcResult.ipcOutput);
+
 const noBufferStdoutResultSync = execaSync('unicorns', {all: true, buffer: {stdout: false}});
 expectType<undefined>(noBufferStdoutResultSync.stdout);
 expectType<undefined>(noBufferStdoutResultSync.stdio[1]);
@@ -88,3 +92,6 @@ expectType<string>(noBufferFd3ResultSync.stdio[2]);
 expectType<string>(noBufferFd3ResultSync.all);
 expectType<undefined>(noBufferFd3ResultSync.stdio[3]);
 expectType<string>(noBufferFd3ResultSync.stdio[4]);
+
+const noBufferIpcStdioResultSync = execaSync('unicorns', {buffer: {ipc: false}, stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
+expectType<string>(noBufferIpcStdioResultSync.stdio[3]);

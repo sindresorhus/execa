@@ -3,12 +3,14 @@ import {stripVTControlCharacters} from 'node:util';
 import {replaceSymbols} from 'figures';
 import {foobarString} from './input.js';
 import {nestedSubprocess} from './nested.js';
+import {fullStdio} from './stdio.js';
 
 const isWindows = platform === 'win32';
 export const QUOTE = isWindows ? '"' : '\'';
 
-export const runErrorSubprocess = async (t, verbose, isSync = false, expectExitCode = true) => {
-	const {stderr, nestedResult} = await nestedSubprocess('noop-fail.js', ['1', foobarString], {verbose, isSync});
+export const runErrorSubprocess = async (t, verbose, isSync = false, options = {}) => {
+	const {expectExitCode = true, ...subprocessOptions} = options;
+	const {stderr, nestedResult} = await nestedSubprocess('noop-fail.js', ['1', foobarString], {verbose, isSync, ...subprocessOptions});
 	t.true(nestedResult instanceof Error);
 	if (expectExitCode) {
 		t.true(stderr.includes('exit code 2'));
@@ -44,6 +46,7 @@ export const runVerboseSubprocess = ({
 	...options
 }) => nestedSubprocess('noop-verbose.js', [output], {
 	ipc: !isSync,
+	...getStdioForFd3Option(fdNumber, secondFdNumber),
 	optionsFixture,
 	optionsInput: {
 		type,
@@ -56,6 +59,10 @@ export const runVerboseSubprocess = ({
 	isSync,
 	...options,
 });
+
+export const getStdioForFd3Option = (...values) => values.some(value => hasFd3Option(value)) ? fullStdio : {};
+
+const hasFd3Option = value => value === 'fd3' || (typeof value === 'object' && value !== null && Object.hasOwn(value, 'fd3'));
 
 export const getCommandLine = stderr => getCommandLines(stderr)[0];
 export const getCommandLines = stderr => getNormalizedLines(stderr).filter(line => isCommandLine(line));

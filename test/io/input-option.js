@@ -9,6 +9,7 @@ import {
 	runScriptSync,
 } from '../helpers/run.js';
 import {
+	foobarString,
 	foobarUint8Array,
 	foobarBuffer,
 	foobarArrayBuffer,
@@ -31,6 +32,20 @@ test('input option can be a Uint8Array - sync', testInput, foobarUint8Array, run
 test('input option can be a Buffer - sync', testInput, foobarBuffer, runExecaSync);
 test('input option can be used with $', testInput, 'foobar', runScript);
 test('input option can be used with $.sync', testInput, 'foobar', runScriptSync);
+
+const testInputIgnoresInheritedStdin = async (t, optionName, stdioOption, isSync) => {
+	const {stdout} = await execa('nested-input-inherit.js', [optionName, JSON.stringify(stdioOption), `${isSync}`], {input: foobarString});
+	t.is(stdout, foobarString);
+};
+
+test('input option ignores stdin "inherit"', testInputIgnoresInheritedStdin, 'stdin', 'inherit', false);
+test('input option ignores stdin ["inherit"]', testInputIgnoresInheritedStdin, 'stdin', ['inherit'], false);
+test('input option ignores stdio "inherit"', testInputIgnoresInheritedStdin, 'stdio', 'inherit', false);
+test('input option ignores stdio[0] "inherit"', testInputIgnoresInheritedStdin, 'stdio', ['inherit', 'inherit', 'pipe'], false);
+test.serial('input option ignores stdin "inherit" - sync', testInputIgnoresInheritedStdin, 'stdin', 'inherit', true);
+test.serial('input option ignores stdin ["inherit"] - sync', testInputIgnoresInheritedStdin, 'stdin', ['inherit'], true);
+test.serial('input option ignores stdio "inherit" - sync', testInputIgnoresInheritedStdin, 'stdio', 'inherit', true);
+test.serial('input option ignores stdio[0] "inherit" - sync', testInputIgnoresInheritedStdin, 'stdio', ['inherit', 'inherit', 'pipe'], true);
 
 const testInvalidInput = async (t, input, execaMethod) => {
 	t.throws(() => {

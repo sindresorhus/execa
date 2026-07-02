@@ -27,10 +27,6 @@ const testInvalidValueSync = (t, fdNumber, stdioOption) => {
 	t.true(message.includes(`cannot be "${stdioOption}" with synchronous methods`));
 };
 
-test('stdin cannot be "ipc", sync', testInvalidValueSync, 0, 'ipc');
-test('stdout cannot be "ipc", sync', testInvalidValueSync, 1, 'ipc');
-test('stderr cannot be "ipc", sync', testInvalidValueSync, 2, 'ipc');
-test('stdio[*] cannot be "ipc", sync', testInvalidValueSync, 3, 'ipc');
 test('stdin cannot be "overlapped", sync', testInvalidValueSync, 0, 'overlapped');
 test('stdout cannot be "overlapped", sync', testInvalidValueSync, 1, 'overlapped');
 test('stderr cannot be "overlapped", sync', testInvalidValueSync, 2, 'overlapped');
@@ -50,11 +46,25 @@ test('Cannot pass "ignore" and another value to stdin - sync', testInvalidArrayV
 test('Cannot pass "ignore" and another value to stdout - sync', testInvalidArrayValue, 'ignore', 1, execaSync);
 test('Cannot pass "ignore" and another value to stderr - sync', testInvalidArrayValue, 'ignore', 2, execaSync);
 test('Cannot pass "ignore" and another value to stdio[*] - sync', testInvalidArrayValue, 'ignore', 3, execaSync);
-test('Cannot pass "ipc" and another value to stdin', testInvalidArrayValue, 'ipc', 0, execa);
-test('Cannot pass "ipc" and another value to stdout', testInvalidArrayValue, 'ipc', 1, execa);
-test('Cannot pass "ipc" and another value to stderr', testInvalidArrayValue, 'ipc', 2, execa);
-test('Cannot pass "ipc" and another value to stdio[*]', testInvalidArrayValue, 'ipc', 3, execa);
-test('Cannot pass "ipc" and another value to stdin - sync', testInvalidArrayValue, 'ipc', 0, execaSync);
-test('Cannot pass "ipc" and another value to stdout - sync', testInvalidArrayValue, 'ipc', 1, execaSync);
-test('Cannot pass "ipc" and another value to stderr - sync', testInvalidArrayValue, 'ipc', 2, execaSync);
-test('Cannot pass "ipc" and another value to stdio[*] - sync', testInvalidArrayValue, 'ipc', 3, execaSync);
+
+// The `stdio: 'ipc'` value (raw `child_process` syntax) was replaced by the `ipc: true` option
+const testIpcStdioOption = (t, fdNumber, stdioOption, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', getStdio(fdNumber, stdioOption));
+	}, {message: /The `ipc: true` option must be used instead/});
+};
+
+test('stdin cannot be "ipc"', testIpcStdioOption, 0, 'ipc', execa);
+test('stdout cannot be "ipc"', testIpcStdioOption, 1, 'ipc', execa);
+test('stderr cannot be "ipc"', testIpcStdioOption, 2, 'ipc', execa);
+test('stdio[*] cannot be "ipc"', testIpcStdioOption, 3, 'ipc', execa);
+test('stdin cannot be "ipc" - sync', testIpcStdioOption, 0, 'ipc', execaSync);
+test('stdout cannot be "ipc" - sync', testIpcStdioOption, 1, 'ipc', execaSync);
+test('stderr cannot be "ipc" - sync', testIpcStdioOption, 2, 'ipc', execaSync);
+test('stdio[*] cannot be "ipc" - sync', testIpcStdioOption, 3, 'ipc', execaSync);
+test('stdio cannot be "ipc"', testIpcStdioOption, 'stdio', 'ipc', execa);
+test('stdio cannot be "ipc" - sync', testIpcStdioOption, 'stdio', 'ipc', execaSync);
+test('stdio[*] cannot be ["ipc"]', testIpcStdioOption, 3, ['ipc'], execa);
+test('stdio[*] cannot be ["ipc"] - sync', testIpcStdioOption, 3, ['ipc'], execaSync);
+test('Cannot pass "ipc" and another value to stdio[*]', testIpcStdioOption, 3, ['pipe', 'ipc'], execa);
+test('Cannot pass "ipc" and another value to stdio[*] - sync', testIpcStdioOption, 3, ['pipe', 'ipc'], execaSync);

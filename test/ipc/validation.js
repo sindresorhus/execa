@@ -2,11 +2,8 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
-import {getStdio} from '../helpers/stdio.js';
 
 setFixtureDirectory();
-
-const stdioIpc = getStdio(3, 'ipc');
 
 const testRequiredIpcSubprocess = async (t, methodName, options) => {
 	const subprocess = execa('empty.js', options);
@@ -17,13 +14,10 @@ const testRequiredIpcSubprocess = async (t, methodName, options) => {
 
 test('Cannot use subprocess.sendMessage() without ipc option', testRequiredIpcSubprocess, 'sendMessage', {});
 test('Cannot use subprocess.sendMessage() with ipc: false', testRequiredIpcSubprocess, 'sendMessage', {ipc: false});
-test('Cannot use subprocess.sendMessage() with stdio: [..., "ipc"]', testRequiredIpcSubprocess, 'sendMessage', stdioIpc);
 test('Cannot use subprocess.getOneMessage() without ipc option', testRequiredIpcSubprocess, 'getOneMessage', {});
 test('Cannot use subprocess.getOneMessage() with ipc: false', testRequiredIpcSubprocess, 'getOneMessage', {ipc: false});
-test('Cannot use subprocess.getOneMessage() with stdio: [..., "ipc"]', testRequiredIpcSubprocess, 'getOneMessage', stdioIpc);
 test('Cannot use subprocess.getEachMessage() without ipc option', testRequiredIpcSubprocess, 'getEachMessage', {});
 test('Cannot use subprocess.getEachMessage() with ipc: false', testRequiredIpcSubprocess, 'getEachMessage', {ipc: false});
-test('Cannot use subprocess.getEachMessage() with stdio: [..., "ipc"]', testRequiredIpcSubprocess, 'getEachMessage', stdioIpc);
 
 const testRequiredIpcExports = async (t, methodName, options) => {
 	const {message} = await t.throwsAsync(execa('ipc-any.js', [methodName], options));

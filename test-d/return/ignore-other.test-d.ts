@@ -57,26 +57,6 @@ expectType<string>(inheritStderrErrorSync.stdout);
 expectType<undefined>(inheritStderrErrorSync.stderr);
 expectType<string>(inheritStderrErrorSync.all);
 
-const ipcStdoutResult = await execa('unicorns', {stdout: 'ipc', all: true});
-expectType<undefined>(ipcStdoutResult.stdout);
-expectType<string>(ipcStdoutResult.stderr);
-expectType<string>(ipcStdoutResult.all);
-
-const ipcStderrResult = await execa('unicorns', {stderr: 'ipc', all: true});
-expectType<string>(ipcStderrResult.stdout);
-expectType<undefined>(ipcStderrResult.stderr);
-expectType<string>(ipcStderrResult.all);
-
-const ipcStdoutError = new Error('.') as ExecaError<{stdout: 'ipc'; all: true}>;
-expectType<undefined>(ipcStdoutError.stdout);
-expectType<string>(ipcStdoutError.stderr);
-expectType<string>(ipcStdoutError.all);
-
-const ipcStderrError = new Error('.') as ExecaError<{stderr: 'ipc'; all: true}>;
-expectType<string>(ipcStderrError.stdout);
-expectType<undefined>(ipcStderrError.stderr);
-expectType<string>(ipcStderrError.all);
-
 const streamStdoutResult = await execa('unicorns', {stdout: process.stdout, all: true});
 expectType<undefined>(streamStdoutResult.stdout);
 expectType<string>(streamStdoutResult.stderr);

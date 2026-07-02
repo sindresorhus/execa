@@ -3,7 +3,6 @@ import type {ReadableStream, WritableStream, TransformStream} from 'node:stream/
 import type {
 	Not,
 	And,
-	Or,
 	Unless,
 	AndUnless,
 } from '../utils.js';
@@ -22,7 +21,6 @@ export type StandardStreams = readonly ['stdin', 'stdout', 'stderr'];
 export type NoStreamStdioOption<FdNumber extends string> =
 	| 'ignore'
 	| 'inherit'
-	| 'ipc'
 	| number
 	| Readable
 	| Writable
@@ -47,7 +45,7 @@ type CommonStdioOption<
 	IsExtra extends boolean,
 	IsArray extends boolean,
 > =
-	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync> | GeneratorTransformFull<IsSync> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<Or<IsSync, IsArray>, 'ipc'> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | {readonly file: string; readonly append?: boolean};
+	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync> | GeneratorTransformFull<IsSync> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | {readonly file: string; readonly append?: boolean};
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
 type IterableObject<IsArray extends boolean> = Iterable<unknown>

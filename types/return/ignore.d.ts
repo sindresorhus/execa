@@ -10,9 +10,13 @@ export type IgnoresResultOutput<
 	OptionsType extends CommonOptions,
 > = FdSpecificOption<OptionsType['buffer'], FdNumber> extends false
 	? true
-	: IsInputFd<FdNumber, OptionsType> extends true
-		? true
-		: IgnoresSubprocessOutput<FdNumber, OptionsType>;
+	: IgnoresResultOutputDirection<IsInputFd<FdNumber, OptionsType>, FdNumber, OptionsType>;
+
+type IgnoresResultOutputDirection<
+	IsInput extends boolean,
+	FdNumber extends string,
+	OptionsType extends CommonOptions,
+> = IsInput extends true ? true : IgnoresSubprocessOutput<FdNumber, OptionsType>;
 
 // Whether `subprocess.stdout|stderr|all` is `undefined|null`
 export type IgnoresSubprocessOutput<

@@ -104,6 +104,14 @@ const writable = execa`npm run scaffold`.writable({to: 'fd3'});
 const duplex = execa`npm run scaffold`.duplex({from: 'stderr', to: 'fd3'});
 ```
 
+Writing to an additional file descriptor like `'fd3'` requires marking it as [input](input.md#additional-file-descriptors), since it otherwise defaults to output.
+
+```js
+const subprocess = execa({stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]})`npm run scaffold`;
+
+const writable = subprocess.writable({to: 'fd3'});
+```
+
 ### Error handling
 
 When using [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions) or [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions), the stream waits for the subprocess to end, and emits an [`error`](https://nodejs.org/api/stream.html#event-error) event if the subprocess [fails](errors.md). This differs from [`subprocess.stdin`](api.md#subprocessstdin), [`subprocess.stdout`](api.md#subprocessstdout) and [`subprocess.stderr`](api.md#subprocessstderr)'s behavior.

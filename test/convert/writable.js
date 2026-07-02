@@ -26,7 +26,7 @@ import {
 	foobarObject,
 	foobarObjectString,
 } from '../helpers/input.js';
-import {prematureClose, fullReadableStdio} from '../helpers/stdio.js';
+import {getStdio, prematureClose, fullReadableStdio} from '../helpers/stdio.js';
 import {
 	throwingGenerator,
 	serializeGenerator,
@@ -63,6 +63,8 @@ const testWritableDefault = async (t, fdNumber, to, options) => {
 
 test('.writable() can use stdin', testWritableDefault, 0, 'stdin', {});
 test('.writable() can use stdio[*]', testWritableDefault, 3, 'fd3', fullReadableStdio());
+test('.writable() can use stdio[*] with { value: "pipe", input: true }', testWritableDefault, 3, 'fd3', getStdio(3, {value: 'pipe', input: true}));
+test('.writable() can use stdio[*] with [{ value: "pipe", input: true }, "pipe"]', testWritableDefault, 3, 'fd3', getStdio(3, [{value: 'pipe', input: true}, 'pipe']));
 test('.writable() uses stdin by default', testWritableDefault, 0, undefined, {});
 
 test('.writable() hangs until ended', async t => {

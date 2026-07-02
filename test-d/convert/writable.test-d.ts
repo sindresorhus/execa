@@ -20,3 +20,6 @@ expectError(subprocess.writable({preserveNewlines: false}));
 
 expectError(subprocess.writable('stdin'));
 expectError(subprocess.writable({other: 'stdin'}));
+
+const inputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]});
+inputPipeSubprocess.writable({to: 'fd3'});

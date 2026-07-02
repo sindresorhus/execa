@@ -24,7 +24,12 @@ import {
 } from '../helpers/convert.js';
 import {foobarString} from '../helpers/input.js';
 import {majorNodeVersion} from '../helpers/node-version.js';
-import {prematureClose, fullStdio, fullReadableStdio} from '../helpers/stdio.js';
+import {
+	getStdio,
+	prematureClose,
+	fullStdio,
+	fullReadableStdio,
+} from '../helpers/stdio.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
 
 setFixtureDirectory();
@@ -77,6 +82,7 @@ const testWritableDuplexDefault = async (t, fdNumber, to, options) => {
 
 test('.duplex() can use stdin', testWritableDuplexDefault, 0, 'stdin', {});
 test('.duplex() can use input stdio[*]', testWritableDuplexDefault, 3, 'fd3', fullReadableStdio());
+test('.duplex() can use input stdio[*] with { value: "pipe", input: true }', testWritableDuplexDefault, 3, 'fd3', getStdio(3, {value: 'pipe', input: true}));
 test('.duplex() uses stdin by default', testWritableDuplexDefault, 0, undefined, {});
 
 test('.duplex() abort -> subprocess fail', async t => {

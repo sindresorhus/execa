@@ -21,7 +21,7 @@ test('cannot pass encoding: false', testInvalidEncoding, false, UNKNOWN_ENCODING
 test('cannot pass encoding: Symbol', testInvalidEncoding, Symbol('test'), UNKNOWN_ENCODING_MESSAGE, execa);
 test('cannot pass encoding: null', testInvalidEncoding, null, getCorrectEncodingMessage('buffer'), execa);
 test('cannot pass encoding: null, sync', testInvalidEncoding, null, getCorrectEncodingMessage('buffer'), execaSync);
-/* eslint-disable unicorn/text-encoding-identifier-case */
+/* eslint-disable unicorn/text-encoding-identifier-case -- intentionally testing invalid encoding casing */
 test('cannot pass encoding: utf-8', testInvalidEncoding, 'utf-8', getCorrectEncodingMessage('utf8'), execa);
 test('cannot pass encoding: utf-8, sync', testInvalidEncoding, 'utf-8', getCorrectEncodingMessage('utf8'), execaSync);
 test('cannot pass encoding: UTF-8', testInvalidEncoding, 'UTF-8', getCorrectEncodingMessage('utf8'), execa);

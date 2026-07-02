@@ -15,14 +15,12 @@ test('Can exchange IPC messages', async t => {
 });
 
 test.serial('Can exchange IPC messages under heavy load', async t => {
-	await Promise.all(
-		Array.from({length: PARALLEL_COUNT}, async (_, index) => {
-			const subprocess = execa('ipc-echo.js', {ipc: true});
-			await subprocess.sendMessage(index);
-			t.is(await subprocess.getOneMessage(), index);
-			await subprocess;
-		}),
-	);
+	await Promise.all(Array.from({length: PARALLEL_COUNT}, async (_, index) => {
+		const subprocess = execa('ipc-echo.js', {ipc: true});
+		await subprocess.sendMessage(index);
+		t.is(await subprocess.getOneMessage(), index);
+		await subprocess;
+	}));
 });
 
 test('The "serialization" option defaults to "advanced"', async t => {
@@ -87,7 +85,6 @@ test('Disconnects IPC on subprocess.sendMessage() error', async t => {
 
 // EPIPE happens based on timing conditions, so we must repeat it until it happens
 const findEpipeError = async t => {
-	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		// eslint-disable-next-line no-await-in-loop
 		const error = await t.throwsAsync(getEpipeError());
@@ -99,7 +96,7 @@ const findEpipeError = async t => {
 
 const getEpipeError = async () => {
 	const subprocess = execa('delay.js', ['0'], {ipc: true});
-	// eslint-disable-next-line no-constant-condition
+
 	while (true) {
 		// eslint-disable-next-line no-await-in-loop
 		await subprocess.sendMessage('.');

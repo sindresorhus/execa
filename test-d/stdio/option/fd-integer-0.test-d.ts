@@ -38,8 +38,8 @@ expectAssignable<StdinSyncOption>([0]);
 
 expectNotAssignable<StdinOption>(0.5);
 expectNotAssignable<StdinSyncOption>(-1);
-expectNotAssignable<StdinOption>(Number.POSITIVE_INFINITY);
-expectNotAssignable<StdinSyncOption>(Number.NaN);
+expectNotAssignable<StdinOption>(Infinity);
+expectNotAssignable<StdinSyncOption>(NaN);
 
 expectNotAssignable<StdoutStderrOption>(0);
 expectNotAssignable<StdoutStderrSyncOption>(0);
@@ -48,5 +48,5 @@ expectNotAssignable<StdoutStderrSyncOption>([0]);
 
 expectNotAssignable<StdoutStderrOption>(0.5);
 expectNotAssignable<StdoutStderrSyncOption>(-1);
-expectNotAssignable<StdoutStderrOption>(Number.POSITIVE_INFINITY);
-expectNotAssignable<StdoutStderrSyncOption>(Number.NaN);
+expectNotAssignable<StdoutStderrOption>(Infinity);
+expectNotAssignable<StdoutStderrSyncOption>(NaN);

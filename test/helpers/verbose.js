@@ -85,7 +85,7 @@ const splitLines = stderr => stderr.split('\n');
 
 const normalizeStderr = stderr => replaceSymbols(normalizeDuration(normalizeTimestamp(stripVTControlCharacters(stderr))), {useFallback: true});
 export const testTimestamp = '[00:00:00.000]';
-const normalizeTimestamp = stderr => stderr.replaceAll(/^\[\d{2}:\d{2}:\d{2}.\d{3}]/gm, testTimestamp);
+const normalizeTimestamp = stderr => stderr.replaceAll(/^\[\d{2}:\d{2}:\d{2}.\d{3}\]/gm, () => testTimestamp);
 const normalizeDuration = stderr => stderr.replaceAll(/\(done in [^)]+\)/g, '(done in 0ms)');
 
 export const getVerboseOption = (isVerbose, verbose = 'short') => ({verbose: isVerbose ? verbose : 'none'});

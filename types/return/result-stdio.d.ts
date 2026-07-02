@@ -11,8 +11,8 @@ type MapResultStdio<
 	OptionsType extends CommonOptions,
 > = {
 	-readonly [FdNumber in keyof StdioOptionsArrayType]: ResultStdioNotAll<
-	FdNumber extends string ? FdNumber : string,
-	OptionsType
+		FdNumber extends string ? FdNumber : string,
+		OptionsType
 	>
 };
 

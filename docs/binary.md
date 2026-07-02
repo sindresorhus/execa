@@ -30,7 +30,7 @@ console.log(stdout.byteLength);
 
 ## Encoding
 
-When the output is binary, the [`encoding`](api.md#optionsencoding) option can also be set to [`'hex'`](https://en.wikipedia.org/wiki/Hexadecimal), [`'base64'`](https://en.wikipedia.org/wiki/Base64) or [`'base64url'`](https://en.wikipedia.org/wiki/Base64#URL_applications). The output will be a string then.
+When the output is binary, the [`encoding`](api.md#optionsencoding) option can also be set to [`'hex'`](https://en.wikipedia.org/wiki/Hexadecimal), [`'base64'`](https://en.wikipedia.org/wiki/Base64) or [`'base64url'`](https://en.wikipedia.org/wiki/Base64#RFC_4648). The output will be a string then.
 
 ```js
 const {stdout} = await execa({encoding: 'hex'})`zip -r - input.txt`;

@@ -184,9 +184,7 @@ export type SuccessResult<
 	OptionsType extends CommonOptions = CommonOptions,
 > = InstanceType<typeof CommonResult<IsSync, OptionsType>> & OmitErrorIfReject<OptionsType['reject']>;
 
-type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = {
-	[ErrorProperty in ErrorProperties]: RejectOption extends false ? unknown : never
-};
+type OmitErrorIfReject<RejectOption extends CommonOptions['reject']> = Record<ErrorProperties, RejectOption extends false ? unknown : never>;
 
 /**
 Result of a subprocess successful execution.

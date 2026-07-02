@@ -22,6 +22,7 @@ const testMultibyteCharacters = async (t, objectMode, addNoopTransform, execaMet
 	if (objectMode) {
 		t.deepEqual(stdout, foobarArray);
 	} else {
+		// eslint-disable-next-line n/prefer-global/buffer, unicorn/prefer-uint8array-base64 -- `Uint8Array#toBase64()` is not available on the minimum supported Node.js version
 		t.is(stdout, Buffer.from(foobarArray.join('')).toString('base64'));
 	}
 };

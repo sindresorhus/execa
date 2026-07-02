@@ -1,7 +1,6 @@
 import test from 'ava';
-import {red} from 'yoctocolors';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString, foobarUtf16Uint8Array} from '../helpers/input.js';
+import {foobarString, foobarRed, foobarUtf16Uint8Array} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {nestedSubprocess} from '../helpers/nested.js';
 import {
@@ -106,12 +105,12 @@ test('Does not escape internal characters from stdout', async t => {
 });
 
 test('Strips color sequences from stdout', async t => {
-	const {stderr} = await nestedSubprocess('noop.js', [red(foobarString)], {verbose: 'full'}, {env: {FORCE_COLOR: '1', NO_COLOR: undefined}});
+	const {stderr} = await nestedSubprocess('noop.js', [foobarRed], {verbose: 'full'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}`);
 });
 
 test('Escapes control characters from stdout', async t => {
-	const {stderr} = await nestedSubprocess('noop.js', ['\u0001'], {verbose: 'full'});
+	const {stderr} = await nestedSubprocess('noop.js', ['\u{1}'], {verbose: 'full'});
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   \\u0001`);
 });
 

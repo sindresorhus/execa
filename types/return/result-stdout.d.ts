@@ -17,10 +17,10 @@ export type ResultStdio<
 	LinesFdNumber extends string,
 	OptionsType extends CommonOptions,
 > = ResultStdioProperty<
-ObjectFdNumber,
-LinesFdNumber,
-IgnoresResultOutput<MainFdNumber, OptionsType>,
-OptionsType
+	ObjectFdNumber,
+	LinesFdNumber,
+	IgnoresResultOutput<MainFdNumber, OptionsType>,
+	OptionsType
 >;
 
 type ResultStdioProperty<
@@ -31,9 +31,9 @@ type ResultStdioProperty<
 > = StreamOutputIgnored extends true
 	? undefined
 	: ResultStdioItem<
-	IsObjectFd<ObjectFdNumber, OptionsType>,
-	FdSpecificOption<OptionsType['lines'], LinesFdNumber>,
-	OptionsType['encoding']
+		IsObjectFd<ObjectFdNumber, OptionsType>,
+		FdSpecificOption<OptionsType['lines'], LinesFdNumber>,
+		OptionsType['encoding']
 	>;
 
 type ResultStdioItem<

@@ -55,13 +55,11 @@ test('Throwing from exports.getOneMessage() filter disconnects', async t => {
 });
 
 test.serial('Can retrieve initial IPC messages under heavy load', async t => {
-	await Promise.all(
-		Array.from({length: PARALLEL_COUNT}, async (_, index) => {
-			const subprocess = execa('ipc-send-argv.js', [`${index}`], {ipc: true, buffer: false});
-			t.is(await subprocess.getOneMessage(), `${index}`);
-			await subprocess;
-		}),
-	);
+	await Promise.all(Array.from({length: PARALLEL_COUNT}, async (_, index) => {
+		const subprocess = execa('ipc-send-argv.js', [`${index}`], {ipc: true, buffer: false});
+		t.is(await subprocess.getOneMessage(), `${index}`);
+		await subprocess;
+	}));
 });
 
 const testTwice = async (t, buffer, filter) => {

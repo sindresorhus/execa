@@ -97,11 +97,11 @@ test('error.isTerminated is true if subprocess was killed indirectly', async t =
 	// `subprocess.kill()` is emulated by Node.js on Windows
 	if (isWindows) {
 		const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /failed with exit code 1/});
-		t.is(isTerminated, false);
+		t.false(isTerminated);
 		t.is(signal, undefined);
 	} else {
 		const {isTerminated, signal} = await t.throwsAsync(subprocess, {message: /was killed with SIGINT/});
-		t.is(isTerminated, true);
+		t.true(isTerminated);
 		t.is(signal, 'SIGINT');
 	}
 });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import {getCancelSignal, getOneMessage, sendMessage} from 'execa';
 import {onAbortedSignal} from '../helpers/graceful.js';
+import {getCancelSignal, getOneMessage, sendMessage} from 'execa';
 
 const message = await getOneMessage();
 const cancelSignal = await getCancelSignal();

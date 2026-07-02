@@ -1,10 +1,9 @@
 import {on} from 'node:events';
 import {inspect} from 'node:util';
 import test from 'ava';
-import {red} from 'yoctocolors';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString, foobarObject} from '../helpers/input.js';
+import {foobarString, foobarRed, foobarObject} from '../helpers/input.js';
 import {nestedSubprocess, nestedInstance} from '../helpers/nested.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {
@@ -99,20 +98,23 @@ test('Does not escape internal characters from IPC', async t => {
 });
 
 test('Strips color sequences from IPC', async t => {
-	const {stderr} = await nestedSubprocess('ipc-send.js', [red(foobarString)], {ipc: true, verbose: 'full'}, {env: {FORCE_COLOR: '1', NO_COLOR: undefined}});
+	const {stderr} = await nestedSubprocess('ipc-send.js', [foobarRed], {ipc: true, verbose: 'full'});
 	t.is(getIpcLine(stderr), `${testTimestamp} [0] * ${foobarString}`);
 });
 
 test('Escapes control characters from IPC', async t => {
-	const {stderr} = await nestedSubprocess('ipc-send.js', ['\u0001'], {ipc: true, verbose: 'full'});
+	const {stderr} = await nestedSubprocess('ipc-send.js', ['\u{1}'], {ipc: true, verbose: 'full'});
 	t.is(getIpcLine(stderr), `${testTimestamp} [0] * \\u0001`);
 });
 
 test('Prints IPC progressively', async t => {
+	t.plan(2);
+
 	const subprocess = nestedInstance('ipc-send-forever.js', {ipc: true, verbose: 'full'});
 	for await (const chunk of on(subprocess.stderr, 'data')) {
 		const ipcLine = getIpcLine(chunk.toString());
 		if (ipcLine !== undefined) {
+			// eslint-disable-next-line ava/no-conditional-assertion -- `t.plan()` ensures this always executes
 			t.is(ipcLine, `${testTimestamp} [0] * ${foobarString}`);
 			break;
 		}

@@ -5,6 +5,7 @@ import logProcessErrors from 'log-process-errors';
 import pathKey from 'path-key';
 
 // Make tests fail if any warning (such as a deprecation warning) is emitted
+// eslint-disable-next-line unicorn/no-top-level-side-effects -- must run as soon as this helper is imported
 logProcessErrors({
 	onError(error, event) {
 		if (event === 'warning') {

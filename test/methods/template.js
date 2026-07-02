@@ -75,6 +75,7 @@ test('$ splits expressions - "  " (2 spaces)', testScriptStdout, () => $`echo.js
 test('$ concatenates tokens - "  " (2 spaces)', testScriptStdout, () => $`echo.js   a  `, 'a');
 test('$ concatenates expressions - "  " (2 spaces)', testScriptStdout, () => $`echo.js   ${'a'}  `, 'a');
 test('$ handles tokens - "   " (3 spaces)', testScriptStdout, () => $`echo.js   `, '');
+// eslint-disable-next-line unicorn/prefer-string-repeat
 test('$ handles expressions - "   " (3 spaces)', testScriptStdout, () => $`echo.js ${'   '}`, '   ');
 test('$ splits tokens - "  " (3 spaces)', testScriptStdout, () => $`echo.js a   b`, 'a\nb');
 test('$ splits expressions - "   " (3 spaces)', testScriptStdout, () => $`echo.js ${'a'}   ${'b'}`, 'a\nb');
@@ -114,25 +115,25 @@ test('$ concatenates tokens - \\n (escape)', testScriptStdout, () => $`echo.js \
 test('$ concatenates expressions - \\n (escape)', testScriptStdout, () => $`echo.js \n${'a'}\n b`, '\na\n\nb');
 test('$ handles tokens - \\r (no escape)', testScriptStdout, () => escapedCall('echo.js \r '), '');
 test('$ splits tokens - \\r (no escape)', testScriptStdout, () => escapedCall('echo.js a\rb'), 'a\nb');
-test('$ splits expressions - \\r (no escape)', testScriptStdout, () => escapedCall(`echo.js ${'a'}\r${'b'}`), 'a\nb');
+test('$ splits expressions - \\r (no escape)', testScriptStdout, () => escapedCall('echo.js a\rb'), 'a\nb');
 test('$ concatenates tokens - \\r (no escape)', testScriptStdout, () => escapedCall('echo.js \ra\r b'), 'a\nb');
-test('$ concatenates expressions - \\r (no escape)', testScriptStdout, () => escapedCall(`echo.js \r${'a'}\r b`), 'a\nb');
+test('$ concatenates expressions - \\r (no escape)', testScriptStdout, () => escapedCall('echo.js \ra\r b'), 'a\nb');
 test('$ splits tokens - \\r (escape)', testScriptStdout, () => $`echo.js a\r b`, 'a\r\nb');
 test('$ splits expressions - \\r (escape)', testScriptStdout, () => $`echo.js ${'a'}\r ${'b'}`, 'a\r\nb');
 test('$ concatenates tokens - \\r (escape)', testScriptStdout, () => $`echo.js \ra\r b`, '\ra\r\nb');
 test('$ concatenates expressions - \\r (escape)', testScriptStdout, () => $`echo.js \r${'a'}\r b`, '\ra\r\nb');
 test('$ handles tokens - \\r\\n (no escape)', testScriptStdout, () => escapedCall('echo.js \r\n '), '');
 test('$ splits tokens - \\r\\n (no escape)', testScriptStdout, () => escapedCall('echo.js a\r\nb'), 'a\nb');
-test('$ splits expressions - \\r\\n (no escape)', testScriptStdout, () => escapedCall(`echo.js ${'a'}\r\n${'b'}`), 'a\nb');
+test('$ splits expressions - \\r\\n (no escape)', testScriptStdout, () => escapedCall('echo.js a\r\nb'), 'a\nb');
 test('$ concatenates tokens - \\r\\n (no escape)', testScriptStdout, () => escapedCall('echo.js \r\na\r\n b'), 'a\nb');
-test('$ concatenates expressions - \\r\\n (no escape)', testScriptStdout, () => escapedCall(`echo.js \r\n${'a'}\r\n b`), 'a\nb');
+test('$ concatenates expressions - \\r\\n (no escape)', testScriptStdout, () => escapedCall('echo.js \r\na\r\n b'), 'a\nb');
 test('$ handles tokens - \\r\\n (escape)', testScriptStdout, () => $`echo.js \r\n `, '\r\n');
 test('$ handles expressions - \\r\\n (escape)', testScriptStdout, () => $`echo.js ${'\r\n'} `, '\r\n');
 test('$ splits tokens - \\r\\n (escape)', testScriptStdout, () => $`echo.js a\r\n b`, 'a\r\n\nb');
 test('$ splits expressions - \\r\\n (escape)', testScriptStdout, () => $`echo.js ${'a'}\r\n ${'b'}`, 'a\r\n\nb');
 test('$ concatenates tokens - \\r\\n (escape)', testScriptStdout, () => $`echo.js \r\na\r\n b`, '\r\na\r\n\nb');
 test('$ concatenates expressions - \\r\\n (escape)', testScriptStdout, () => $`echo.js \r\n${'a'}\r\n b`, '\r\na\r\n\nb');
-/* eslint-disable no-irregular-whitespace */
+/* eslint-disable no-irregular-whitespace -- intentionally testing a literal form feed character */
 test('$ handles expressions - \\f (no escape)', testScriptStdout, () => $`echo.js ${''}`, '\f');
 test('$ splits tokens - \\f (no escape)', testScriptStdout, () => $`echo.js ab`, 'a\fb');
 test('$ splits expressions - \\f (no escape)', testScriptStdout, () => $`echo.js ${'a'}${'b'}`, 'a\fb');
@@ -169,12 +170,12 @@ test('$ splits tokens - \\v', testScriptStdout, () => $`echo.js a\vb`, 'a\vb');
 test('$ splits expressions - \\v', testScriptStdout, () => $`echo.js ${'a'}\v${'b'}`, 'a\vb');
 test('$ concatenates tokens - \\v', testScriptStdout, () => $`echo.js \va\v b`, '\va\v\nb');
 test('$ concatenates expressions - \\v', testScriptStdout, () => $`echo.js \v${'a'}\v b`, '\va\v\nb');
-test('$ handles tokens - \\u2028', testScriptStdout, () => $`echo.js \u2028`, '\u2028');
-test('$ handles expressions - \\u2028', testScriptStdout, () => $`echo.js ${'\u2028'}`, '\u2028');
-test('$ splits tokens - \\u2028', testScriptStdout, () => $`echo.js a\u2028b`, 'a\u2028b');
-test('$ splits expressions - \\u2028', testScriptStdout, () => $`echo.js ${'a'}\u2028${'b'}`, 'a\u2028b');
-test('$ concatenates tokens - \\u2028', testScriptStdout, () => $`echo.js \u2028a\u2028 b`, '\u2028a\u2028\nb');
-test('$ concatenates expressions - \\u2028', testScriptStdout, () => $`echo.js \u2028${'a'}\u2028 b`, '\u2028a\u2028\nb');
+test('$ handles tokens - \\u2028', testScriptStdout, () => $`echo.js \u2028`, '\u{2028}');
+test('$ handles expressions - \\u2028', testScriptStdout, () => $`echo.js ${'\u{2028}'}`, '\u{2028}');
+test('$ splits tokens - \\u2028', testScriptStdout, () => $`echo.js a\u2028b`, 'a\u{2028}b');
+test('$ splits expressions - \\u2028', testScriptStdout, () => $`echo.js ${'a'}\u2028${'b'}`, 'a\u{2028}b');
+test('$ concatenates tokens - \\u2028', testScriptStdout, () => $`echo.js \u2028a\u2028 b`, '\u{2028}a\u{2028}\nb');
+test('$ concatenates expressions - \\u2028', testScriptStdout, () => $`echo.js \u2028${'a'}\u2028 b`, '\u{2028}a\u{2028}\nb');
 test('$ handles tokens - \\a', testScriptStdout, () => $`echo.js \a`, 'a');
 test('$ splits tokens - \\a', testScriptStdout, () => $`echo.js a\ab`, 'aab');
 test('$ splits expressions - \\a', testScriptStdout, () => $`echo.js ${'a'}\a${'b'}`, 'aab');
@@ -190,23 +191,23 @@ test('$ splits tokens - \\.', testScriptStdout, () => $`echo.js a\.b`, 'a.b');
 test('$ splits expressions - \\.', testScriptStdout, () => $`echo.js ${'a'}\.${'b'}`, 'a.b');
 test('$ concatenates tokens - \\.', testScriptStdout, () => $`echo.js \.a\. b`, '.a.\nb');
 test('$ concatenates expressions - \\.', testScriptStdout, () => $`echo.js \.${'a'}\. b`, '.a.\nb');
-/* eslint-disable unicorn/no-hex-escape */
+
 test('$ handles tokens - \\x63', testScriptStdout, () => $`echo.js \x63`, 'c');
 test('$ splits tokens - \\x63', testScriptStdout, () => $`echo.js a\x63b`, 'acb');
 test('$ splits expressions - \\x63', testScriptStdout, () => $`echo.js ${'a'}\x63${'b'}`, 'acb');
 test('$ concatenates tokens - \\x63', testScriptStdout, () => $`echo.js \x63a\x63 b`, 'cac\nb');
 test('$ concatenates expressions - \\x63', testScriptStdout, () => $`echo.js \x63${'a'}\x63 b`, 'cac\nb');
-/* eslint-enable unicorn/no-hex-escape */
+
 test('$ handles tokens - \\u0063', testScriptStdout, () => $`echo.js \u0063`, 'c');
 test('$ splits tokens - \\u0063', testScriptStdout, () => $`echo.js a\u0063b`, 'acb');
 test('$ splits expressions - \\u0063', testScriptStdout, () => $`echo.js ${'a'}\u0063${'b'}`, 'acb');
 test('$ concatenates tokens - \\u0063', testScriptStdout, () => $`echo.js \u0063a\u0063 b`, 'cac\nb');
 test('$ concatenates expressions - \\u0063', testScriptStdout, () => $`echo.js \u0063${'a'}\u0063 b`, 'cac\nb');
-test('$ handles tokens - \\u{1}', testScriptStdout, () => $`echo.js \u{1}`, '\u0001');
-test('$ splits tokens - \\u{1}', testScriptStdout, () => $`echo.js a\u{1}b`, 'a\u0001b');
-test('$ splits expressions - \\u{1}', testScriptStdout, () => $`echo.js ${'a'}\u{1}${'b'}`, 'a\u0001b');
-test('$ concatenates tokens - \\u{1}', testScriptStdout, () => $`echo.js \u{1}a\u{1} b`, '\u0001a\u0001\nb');
-test('$ concatenates expressions - \\u{1}', testScriptStdout, () => $`echo.js \u{1}${'a'}\u{1} b`, '\u0001a\u0001\nb');
+test('$ handles tokens - \\u{1}', testScriptStdout, () => $`echo.js \u{1}`, '\u{1}');
+test('$ splits tokens - \\u{1}', testScriptStdout, () => $`echo.js a\u{1}b`, 'a\u{1}b');
+test('$ splits expressions - \\u{1}', testScriptStdout, () => $`echo.js ${'a'}\u{1}${'b'}`, 'a\u{1}b');
+test('$ concatenates tokens - \\u{1}', testScriptStdout, () => $`echo.js \u{1}a\u{1} b`, '\u{1}a\u{1}\nb');
+test('$ concatenates expressions - \\u{1}', testScriptStdout, () => $`echo.js \u{1}${'a'}\u{1} b`, '\u{1}a\u{1}\nb');
 test('$ handles tokens - \\u{63}', testScriptStdout, () => $`echo.js \u{63}`, 'c');
 test('$ splits tokens - \\u{63}', testScriptStdout, () => $`echo.js a\u{63}b`, 'acb');
 test('$ splits expressions - \\u{63}', testScriptStdout, () => $`echo.js ${'a'}\u{63}${'b'}`, 'acb');
@@ -288,11 +289,10 @@ test('$ handles invalid escape sequence - \\ug', testInvalidSequence, () => $`ec
 test('$ handles invalid escape sequence - \\u{', testInvalidSequence, () => $`echo.js \u{`);
 test('$ handles invalid escape sequence - \\u{0000', testInvalidSequence, () => $`echo.js \u{0000`);
 test('$ handles invalid escape sequence - \\u{g}', testInvalidSequence, () => $`echo.js \u{g}`);
-/* eslint-disable unicorn/no-hex-escape */
+
 test('$ handles invalid escape sequence - \\x', testInvalidSequence, () => $`echo.js \x`);
 test('$ handles invalid escape sequence - \\x0', testInvalidSequence, () => $`echo.js \x0`);
 test('$ handles invalid escape sequence - \\xgg', testInvalidSequence, () => $`echo.js \xgg`);
-/* eslint-enable unicorn/no-hex-escape */
 
 const testEmptyScript = (t, getSubprocess) => {
 	t.throws(getSubprocess, {message: /Template script must not be empty/});

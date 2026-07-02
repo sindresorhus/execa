@@ -20,13 +20,13 @@ type CommonErrorProperty<
 
 // `result.*` defined only on failure, i.e. on `error.*`
 export type ErrorProperties =
-  | 'name'
-  | 'message'
-  | 'stack'
-  | 'cause'
-  | 'shortMessage'
-  | 'originalMessage'
-  | 'code';
+	| 'name'
+	| 'message'
+	| 'stack'
+	| 'cause'
+	| 'shortMessage'
+	| 'originalMessage'
+	| 'code';
 
 /**
 Result of a subprocess failed execution.

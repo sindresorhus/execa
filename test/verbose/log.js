@@ -30,8 +30,7 @@ test('Prints without colors if not supported', testColor, false, '0');
 
 test.serial('Prints lines in order when interleaved with subprocess stderr', async t => {
 	const results = await Promise.all(Array.from({length: PARALLEL_COUNT}, () =>
-		nestedSubprocess('noop-fd.js', ['2', `${foobarString}\n`], {verbose: 'full', stderr: 'inherit'}, {all: true}),
-	));
+		nestedSubprocess('noop-fd.js', ['2', `${foobarString}\n`], {verbose: 'full', stderr: 'inherit'}, {all: true})));
 	for (const {all} of results) {
 		t.deepEqual(
 			getNormalizedLines(all),

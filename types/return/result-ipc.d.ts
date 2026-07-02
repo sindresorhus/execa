@@ -11,9 +11,9 @@ export type ResultIpcOutput<
 > = IsSync extends true
 	? []
 	: ResultIpcAsync<
-	FdSpecificOption<OptionsType['buffer'], 'ipc'>,
-	HasIpc<StricterOptions<OptionsType, Options>>,
-	OptionsType['serialization']
+		FdSpecificOption<OptionsType['buffer'], 'ipc'>,
+		HasIpc<StricterOptions<OptionsType, Options>>,
+		OptionsType['serialization']
 	>;
 
 type ResultIpcAsync<

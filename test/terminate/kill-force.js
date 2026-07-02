@@ -45,7 +45,7 @@ const testInvalidForceKill = async (t, forceKillAfterDelay) => {
 	}, {instanceOf: TypeError, message: /non-negative integer/});
 };
 
-test('`forceKillAfterDelay` should not be NaN', testInvalidForceKill, Number.NaN);
+test('`forceKillAfterDelay` should not be NaN', testInvalidForceKill, NaN);
 test('`forceKillAfterDelay` should not be negative', testInvalidForceKill, -1);
 
 // `SIGTERM` cannot be caught on Windows, and it always aborts the subprocess (like `SIGKILL` on Unix).

@@ -1,6 +1,6 @@
 import test from 'ava';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString, foobarRed} from '../helpers/input.js';
 import {nestedSubprocess} from '../helpers/nested.js';
 import {
 	QUOTE,
@@ -26,8 +26,6 @@ import {
 } from '../helpers/verbose.js';
 
 setFixtureDirectory();
-
-const redFoobarString = `\u001B[31m${foobarString}\u001B[39m`;
 
 const testPrintCommand = async (t, verbose, worker, isSync) => {
 	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {
@@ -159,11 +157,11 @@ test('Does not escape internal characters from command', async t => {
 });
 
 test('Escapes color sequences from command', async t => {
-	const {stderr} = await nestedSubprocess('noop.js', [redFoobarString], {verbose: 'short'});
+	const {stderr} = await nestedSubprocess('noop.js', [foobarRed], {verbose: 'short'});
 	t.true(getCommandLine(stderr).includes(`${QUOTE}\\u001b[31m${foobarString}\\u001b[39m${QUOTE}`));
 });
 
 test('Escapes control characters from command', async t => {
-	const {stderr} = await nestedSubprocess('noop.js', ['\u0001'], {verbose: 'short'});
+	const {stderr} = await nestedSubprocess('noop.js', ['\u{1}'], {verbose: 'short'});
 	t.is(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${QUOTE}\\u0001${QUOTE}`);
 });

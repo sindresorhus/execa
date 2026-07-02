@@ -195,5 +195,6 @@ test('parseCommandString() can get empty strings', t => {
 });
 
 test('parseCommandString() can get only whitespaces', t => {
+	// eslint-disable-next-line unicorn/prefer-string-repeat
 	t.deepEqual(parseCommandString('   '), []);
 });

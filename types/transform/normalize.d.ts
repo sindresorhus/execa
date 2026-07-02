@@ -6,11 +6,11 @@ import type {Unless} from '../utils.js';
 // @todo Use `string`, `Uint8Array` or `unknown` for both the argument and the return type, based on whether `encoding: 'buffer'` and `objectMode: true` are used.
 // See https://github.com/sindresorhus/execa/issues/694
 export type GeneratorTransform<IsSync extends boolean> = (chunk: unknown) =>
-| Unless<IsSync, AsyncGenerator<unknown, void, void>>
-| Generator<unknown, void, void>;
+	| Unless<IsSync, AsyncGenerator<unknown, void, void>>
+	| Generator<unknown, void, void>;
 type GeneratorFinal<IsSync extends boolean> = () =>
-| Unless<IsSync, AsyncGenerator<unknown, void, void>>
-| Generator<unknown, void, void>;
+	| Unless<IsSync, AsyncGenerator<unknown, void, void>>
+	| Generator<unknown, void, void>;
 
 export type TransformCommon = {
 	/**
@@ -24,7 +24,7 @@ A transform or an array of transforms can be passed to the `stdin`, `stdout`, `s
 
 A transform is either a generator function or a plain object with the following members.
 */
-export type GeneratorTransformFull<IsSync extends boolean> = {
+export type GeneratorTransformFull<IsSync extends boolean> = TransformCommon & {
 	/**
 	Map or filter the input or output of the subprocess.
 	*/
@@ -44,16 +44,16 @@ export type GeneratorTransformFull<IsSync extends boolean> = {
 	If `true`, keep newlines in each `line` argument. Also, this allows multiple `yield`s to produces a single line.
 	*/
 	readonly preserveNewlines?: boolean;
-} & TransformCommon;
+};
 
 // `options.std*: Duplex`
-export type DuplexTransform = {
+export type DuplexTransform = TransformCommon & {
 	readonly transform: Duplex;
-} & TransformCommon;
+};
 
 // `options.std*: TransformStream`
-export type WebTransform = {
+export type WebTransform = TransformCommon & {
 	readonly transform: TransformStream;
-} & TransformCommon;
+};
 
 export {};

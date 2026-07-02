@@ -3,7 +3,8 @@
 		"module": "nodenext",
 		"moduleResolution": "nodenext",
 		"target": "ES2022",
-		"strict": true
+		"strict": true,
+		"types": ["node"]
 	},
 	"files": [
 		"index.d.ts"

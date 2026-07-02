@@ -26,7 +26,6 @@ test('execaSync() throws error if ENOENT', t => {
 const testEarlyErrorShape = async (t, reject) => {
 	const subprocess = getEarlyErrorSubprocess({reject});
 	t.notThrows(() => {
-		// eslint-disable-next-line promise/prefer-await-to-then
 		subprocess.catch(() => {});
 		subprocess.unref();
 		subprocess.on('error', () => {});
@@ -65,12 +64,15 @@ if (!isWindows) {
 
 	if (arch() === 'x64') {
 		test('write to fast-exit subprocess', async t => {
-		// Try-catch here is necessary, because this test is not 100% accurate
-		// Sometimes subprocess can manage to accept input before exiting
+			t.plan(1);
+
+			// Try-catch here is necessary, because this test is not 100% accurate
+			// Sometimes subprocess can manage to accept input before exiting
 			try {
 				await execa(`fast-exit-${process.platform}`, [], {input: 'data'});
 				t.pass();
 			} catch (error) {
+				// eslint-disable-next-line ava/no-conditional-assertion -- either outcome is acceptable, see comment above
 				t.is(error.code, 'EPIPE');
 			}
 		});

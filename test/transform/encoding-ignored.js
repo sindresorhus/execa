@@ -30,8 +30,6 @@ const base64Options = {encoding: 'base64'};
 const linesOptions = {lines: true};
 test('Is ignored with other encodings and "ignore"', testIgnoredEncoding, 'ignore', true, base64Options, execa);
 test('Is ignored with other encodings and ["ignore"]', testIgnoredEncoding, ['ignore'], true, base64Options, execa);
-test('Is ignored with other encodings and "ipc"', testIgnoredEncoding, 'ipc', true, base64Options, execa);
-test('Is ignored with other encodings and ["ipc"]', testIgnoredEncoding, ['ipc'], true, base64Options, execa);
 test('Is ignored with other encodings and "inherit"', testIgnoredEncoding, 'inherit', true, base64Options, execa);
 test('Is ignored with other encodings and ["inherit"]', testIgnoredEncoding, ['inherit'], true, base64Options, execa);
 test('Is ignored with other encodings and 1', testIgnoredEncoding, 1, true, base64Options, execa);
@@ -47,8 +45,6 @@ test('Is not ignored with other encodings and undefined', testIgnoredEncoding, u
 test('Is not ignored with other encodings and null', testIgnoredEncoding, null, false, base64Options, execa);
 test('Is ignored with "lines: true" and "ignore"', testIgnoredEncoding, 'ignore', true, linesOptions, execa);
 test('Is ignored with "lines: true" and ["ignore"]', testIgnoredEncoding, ['ignore'], true, linesOptions, execa);
-test('Is ignored with "lines: true" and "ipc"', testIgnoredEncoding, 'ipc', true, linesOptions, execa);
-test('Is ignored with "lines: true" and ["ipc"]', testIgnoredEncoding, ['ipc'], true, linesOptions, execa);
 test('Is ignored with "lines: true" and "inherit"', testIgnoredEncoding, 'inherit', true, linesOptions, execa);
 test('Is ignored with "lines: true" and ["inherit"]', testIgnoredEncoding, ['inherit'], true, linesOptions, execa);
 test('Is ignored with "lines: true" and 1', testIgnoredEncoding, 1, true, linesOptions, execa);

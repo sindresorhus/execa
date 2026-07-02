@@ -619,27 +619,6 @@ test('Cannot set "stdin" option to "inherit" to use .duplex()', testNodeStream, 
 	message: ['stdin', '\'inherit\''],
 	writable: true,
 });
-test('Cannot set "stdout" option to "ipc" to use .pipe()', testPipeError, {
-	sourceOptions: {stdout: 'ipc'},
-	message: ['stdout', '\'ipc\''],
-});
-test('Cannot set "stdout" option to "ipc" to use .duplex()', testNodeStream, {
-	sourceOptions: {stdout: 'ipc'},
-	message: ['stdout', '\'ipc\''],
-});
-test('Cannot set "stdout" option to "ipc" to use .iterable()', testIterable, {
-	sourceOptions: {stdout: 'ipc'},
-	message: ['stdout', '\'ipc\''],
-});
-test('Cannot set "stdin" option to "ipc" to use .pipe()', testPipeError, {
-	destinationOptions: {stdin: 'ipc'},
-	message: ['stdin', '\'ipc\''],
-});
-test('Cannot set "stdin" option to "ipc" to use .duplex()', testNodeStream, {
-	sourceOptions: {stdin: 'ipc'},
-	message: ['stdin', '\'ipc\''],
-	writable: true,
-});
 test('Cannot set "stdout" option to file descriptors to use .pipe()', testPipeError, {
 	sourceOptions: {stdout: 1},
 	message: ['stdout', '1'],

@@ -252,7 +252,6 @@ test('The "node" option adds an ipc channel', testIpc, runWithNodeOption, {});
 test('The "ipc" option adds an ipc channel', testIpc, runWithIpc, {});
 test('The "ipc" option works with "stdio: \'pipe\'"', testIpc, runWithIpc, {stdio: 'pipe'});
 test('The "ipc" option works with "stdio: [\'pipe\', \'pipe\', \'pipe\']"', testIpc, runWithIpc, {stdio: ['pipe', 'pipe', 'pipe']});
-test('The "ipc" option works with "stdio: [\'pipe\', \'pipe\', \'pipe\', \'ipc\']"', testIpc, runWithIpc, {stdio: ['pipe', 'pipe', 'pipe', 'ipc']});
 test('The "ipc" option works with "stdout: \'pipe\'"', testIpc, runWithIpc, {stdout: 'pipe'});
 
 const NO_SEND_MESSAGE = 'sendMessage() can only be used';

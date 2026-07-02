@@ -3,8 +3,6 @@ import test from 'ava';
 import {
 	execa,
 	execaSync,
-	execaCommand,
-	execaCommandSync,
 	execaNode,
 	$,
 } from '../../index.js';
@@ -68,8 +66,6 @@ const testInvalidOptions = async (t, execaMethod) => {
 
 test('execa()\'s third argument must be a plain object', testInvalidOptions, execa);
 test('execaSync()\'s third argument must be a plain object', testInvalidOptions, execaSync);
-test('execaCommand()\'s third argument must be a plain object', testInvalidOptions, execaCommand);
-test('execaCommandSync()\'s third argument must be a plain object', testInvalidOptions, execaCommandSync);
 test('execaNode()\'s third argument must be a plain object', testInvalidOptions, execaNode);
 test('$\'s third argument must be a plain object', testInvalidOptions, $);
 test('$.sync\'s third argument must be a plain object', testInvalidOptions, $.sync);

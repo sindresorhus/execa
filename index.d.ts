@@ -13,7 +13,7 @@ export {ExecaError, ExecaSyncError} from './types/return/final-error.js';
 
 export {execa, type ExecaMethod} from './types/methods/main-async.js';
 export {execaSync, type ExecaSyncMethod} from './types/methods/main-sync.js';
-export {execaCommand, execaCommandSync, parseCommandString} from './types/methods/command.js';
+export {parseCommandString} from './types/methods/command.js';
 export {$, type ExecaScriptMethod, type ExecaScriptSyncMethod} from './types/methods/script.js';
 export {execaNode, type ExecaNodeMethod} from './types/methods/node.js';
 

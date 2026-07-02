@@ -2,8 +2,6 @@ import test from 'ava';
 import {
 	execa,
 	execaSync,
-	execaCommand,
-	execaCommandSync,
 	execaNode,
 	$,
 } from '../../index.js';
@@ -19,8 +17,6 @@ const testInvalidArguments = async (t, execaMethod) => {
 
 test('execa()\'s second argument must be valid', testInvalidArguments, execa);
 test('execaSync()\'s second argument must be valid', testInvalidArguments, execaSync);
-test('execaCommand()\'s second argument must be valid', testInvalidArguments, execaCommand);
-test('execaCommandSync()\'s second argument must be valid', testInvalidArguments, execaCommandSync);
 test('execaNode()\'s second argument must be valid', testInvalidArguments, execaNode);
 test('$\'s second argument must be valid', testInvalidArguments, $);
 test('$.sync\'s second argument must be valid', testInvalidArguments, $.sync);
@@ -33,8 +29,6 @@ const testInvalidArgumentsItems = async (t, execaMethod) => {
 
 test('execa()\'s second argument must not be objects', testInvalidArgumentsItems, execa);
 test('execaSync()\'s second argument must not be objects', testInvalidArgumentsItems, execaSync);
-test('execaCommand()\'s second argument must not be objects', testInvalidArgumentsItems, execaCommand);
-test('execaCommandSync()\'s second argument must not be objects', testInvalidArgumentsItems, execaCommandSync);
 test('execaNode()\'s second argument must not be objects', testInvalidArgumentsItems, execaNode);
 test('$\'s second argument must not be objects', testInvalidArgumentsItems, $);
 test('$.sync\'s second argument must not be objects', testInvalidArgumentsItems, $.sync);
@@ -47,8 +41,6 @@ const testNullByteArgument = async (t, execaMethod) => {
 
 test('execa()\'s second argument must not include \\0', testNullByteArgument, execa);
 test('execaSync()\'s second argument must not include \\0', testNullByteArgument, execaSync);
-test('execaCommand()\'s second argument must not include \\0', testNullByteArgument, execaCommand);
-test('execaCommandSync()\'s second argument must not include \\0', testNullByteArgument, execaCommandSync);
 test('execaNode()\'s second argument must not include \\0', testNullByteArgument, execaNode);
 test('$\'s second argument must not include \\0', testNullByteArgument, $);
 test('$.sync\'s second argument must not include \\0', testNullByteArgument, $.sync);

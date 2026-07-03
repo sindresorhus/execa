@@ -15,6 +15,16 @@ In general, [shells](https://en.wikipedia.org/wiki/Shell_(computing)) should be 
 
 In almost all cases, plain JavaScript is a better alternative to shells. The [following page](bash.md) shows how to convert Bash into JavaScript.
 
+## When a shell is not needed
+
+On Windows, a shell is often used to work around limitations of the OS. This is not needed with Execa. In particular, `shell: true` is not required to:
+- run `.cmd` and `.bat` files, such as `npm.cmd`
+- [resolve a command](windows.md#file-extensions) by name using `PATHEXT`
+- run [shebang](windows.md#shebang) scripts
+- [escape](windows.md#escaping) file paths and arguments
+
+A shell is only needed to use shell-specific syntax, such as pipes `|`, redirections `>`, globbing `*` or environment variable expansion `$VAR`.
+
 ## Specific shell
 
 ```js

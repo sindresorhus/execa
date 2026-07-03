@@ -916,14 +916,14 @@ More info on [available values](output.md), [streaming](streams.md) and [transfo
 ### options.stdio
 
 _TypeScript:_ [`Options['stdio']`](typescript.md) or [`SyncOptions['stdio']`](typescript.md)\
-_Type:_ `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream}>` (or a tuple of those types)\
+_Type:_ `string | Array<string | number | stream.Readable | stream.Writable | ReadableStream | WritableStream | TransformStream | URL | {file: string} | Uint8Array | Iterable<string> | Iterable<Uint8Array> | Iterable<unknown> | AsyncIterable<string | Uint8Array | unknown> | GeneratorFunction<string | Uint8Array | unknown> | AsyncGeneratorFunction<string | Uint8Array | unknown> | {transform: GeneratorFunction | AsyncGeneratorFunction | Duplex | TransformStream} | {value: 'pipe'; input?: boolean}>` (or a tuple of those types)\
 _Default:_ `pipe`
 
 Like the [`stdin`](#optionsstdin), [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr) options but for all [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.
 
 A single string can be used [as a shortcut](output.md#shortcut).
 
-The array can have more than 3 items, to create [additional file descriptors](output.md#additional-file-descriptors) beyond [`stdin`](#optionsstdin)/[`stdout`](#optionsstdout)/[`stderr`](#optionsstderr).
+The array can have more than 3 items, to create [additional file descriptors](output.md#additional-file-descriptors) beyond [`stdin`](#optionsstdin)/[`stdout`](#optionsstdout)/[`stderr`](#optionsstderr). Passing `'pipe'` to an additional file descriptor defaults it to output. To use it for [input](input.md#additional-file-descriptors) instead, pass `{value: 'pipe', input: true}`.
 
 More info on [available values](output.md), [streaming](streams.md) and [transforms](transform.md).
 

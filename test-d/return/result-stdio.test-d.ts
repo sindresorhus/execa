@@ -111,6 +111,32 @@ expectType<string>(fd3Result.stdio[3]);
 const inputFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['pipe', new Readable()]]});
 expectType<undefined>(inputFd3Result.stdio[3]);
 
+const inputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]});
+expectType<undefined>(inputPipeFd3Result.stdio[3]);
+
+const outputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe'}]});
+expectType<string>(outputPipeFd3Result.stdio[3]);
+
+const input = true as boolean;
+const booleanInputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input}]});
+expectType<string | undefined>(booleanInputPipeFd3Result.stdio[3]);
+
+const optionalInputPipe: {readonly value: 'pipe'; readonly input?: boolean} = {value: 'pipe', input};
+const optionalInputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', optionalInputPipe]});
+expectType<string | undefined>(optionalInputPipeFd3Result.stdio[3]);
+
+const optionalTrueInputPipe: {readonly value: 'pipe'; readonly input?: true} = {value: 'pipe', input: true};
+const optionalTrueInputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', optionalTrueInputPipe]});
+expectType<string | undefined>(optionalTrueInputPipeFd3Result.stdio[3]);
+
+const stdoutInputPipeResult = await execa('unicorns', {stdout: {value: 'pipe', input: true}});
+expectType<string>(stdoutInputPipeResult.stdout);
+expectType<string>(stdoutInputPipeResult.stdio[1]);
+
+const stderrInputPipeResult = await execa('unicorns', {stderr: {value: 'pipe', input: true}});
+expectType<string>(stderrInputPipeResult.stderr);
+expectType<string>(stderrInputPipeResult.stdio[2]);
+
 const outputFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['pipe', new Writable()]]});
 expectType<string>(outputFd3Result.stdio[3]);
 

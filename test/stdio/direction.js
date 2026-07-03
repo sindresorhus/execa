@@ -49,3 +49,59 @@ const testAmbiguousMultiple = async (t, fdNumber) => {
 
 test('stdin ambiguous direction is influenced by other values', testAmbiguousMultiple, 0);
 test('stdio[*] ambiguous direction is influenced by other values', testAmbiguousMultiple, 3);
+
+const testDirectionInputPipe = async (t, stdioOption) => {
+	const subprocess = execa('stdin-fd.js', ['3'], getStdio(3, stdioOption));
+	subprocess.stdio[3].end(foobarString);
+	const {stdout} = await subprocess;
+	t.is(stdout, foobarString);
+};
+
+test('stdio[*] { value: "pipe", input: true } sets the direction to input', testDirectionInputPipe, {value: 'pipe', input: true});
+test('stdio[*] { value: "overlapped", input: true } sets the direction to input', testDirectionInputPipe, {value: 'overlapped', input: true});
+
+test('stdio[*] { value: "pipe", input: true } cannot be used in sync mode', t => {
+	t.throws(() => {
+		execaSync('empty.js', getStdio(3, {value: 'pipe', input: true}));
+	}, {message: /can be an input pipe with synchronous methods/});
+});
+
+test('stdio[*] { value: "pipe", input: true } cannot be used in sync mode with buffer false', t => {
+	t.throws(() => {
+		execaSync('empty.js', {...getStdio(3, {value: 'pipe', input: true}), buffer: false});
+	}, {message: /can be an input pipe with synchronous methods/});
+});
+
+const testDirectionOutputPipe = async (t, stdioOption, execaMethod) => {
+	const {stdio} = await execaMethod('noop-fd.js', ['3', foobarString], getStdio(3, stdioOption));
+	t.is(stdio[3], foobarString);
+};
+
+test('stdio[*] { value: "pipe" } keeps the default output direction', testDirectionOutputPipe, {value: 'pipe'}, execa);
+test('stdio[*] { value: "pipe" } keeps the default output direction - sync', testDirectionOutputPipe, {value: 'pipe'}, execaSync);
+test('stdio[*] { value: "pipe", input: false } keeps the default output direction', testDirectionOutputPipe, {value: 'pipe', input: false}, execa);
+test('stdio[*] { value: "pipe", input: false } keeps the default output direction - sync', testDirectionOutputPipe, {value: 'pipe', input: false}, execaSync);
+
+const testDirectionConflict = (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', getStdio(3, [{value: 'pipe', input: true}, 1]));
+	}, {message: /readable and writable/});
+};
+
+test('Cannot pass { value: "pipe", input: true } with a writable value to stdio[*]', testDirectionConflict, execa);
+test('Cannot pass { value: "pipe", input: true } with a writable value to stdio[*] - sync', testDirectionConflict, execaSync);
+
+const testInputBoolean = (t, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', getStdio(3, {value: 'pipe', input: 'yes'}));
+	}, {message: /`stdio\[3\]\.input` option must use a boolean/});
+};
+
+test('stdio[*].input must be a boolean', testInputBoolean, execa);
+test('stdio[*].input must be a boolean - sync', testInputBoolean, execaSync);
+
+test('stdout.input must be a boolean with buffer false - sync', t => {
+	t.throws(() => {
+		execaSync('empty.js', {stdout: {value: 'pipe', input: 'yes'}, buffer: false});
+	}, {message: /`stdout\.input` option must use a boolean/});
+});

@@ -39,13 +39,21 @@ type SimpleStdioOption<
 	| Unless<IsArray, 'ignore'>
 	| Unless<IsSync, 'overlapped'>;
 
+export type NativePipeStdioOption<
+	IsSync extends boolean,
+	IsExtra extends boolean,
+> = {
+	readonly value: 'pipe' | Unless<IsSync, 'overlapped'>;
+	readonly input?: Unless<And<IsSync, IsExtra>, boolean> | false;
+};
+
 // Values available in both `options.stdin|stdio` and `options.stdout|stderr|stdio`
 type CommonStdioOption<
 	IsSync extends boolean,
 	IsExtra extends boolean,
 	IsArray extends boolean,
 > =
-	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync> | GeneratorTransformFull<IsSync> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | {readonly file: string; readonly append?: boolean};
+	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync> | GeneratorTransformFull<IsSync> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | NativePipeStdioOption<IsSync, IsExtra> | {readonly file: string; readonly append?: boolean};
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
 type IterableObject<IsArray extends boolean> = Iterable<unknown>

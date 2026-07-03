@@ -135,6 +135,19 @@ await execa({
 })`npm run build`;
 ```
 
+When passing `'pipe'` to an additional file descriptor, Execa cannot tell whether it is meant for input or output, so it defaults to output. To use it for input instead, such as when [streaming](streams.md#different-file-descriptor) to it, pass `{value: 'pipe', input: true}`.
+
+```js
+import {pipeline} from 'node:stream/promises';
+
+// Stream input to the file descriptor number 3
+const subprocess = execa({
+	stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}],
+})`npm run build`;
+
+await pipeline(inputStream, subprocess.writable({to: 'fd3'}));
+```
+
 <hr>
 
 [**Next**: 📢 Output](output.md)\

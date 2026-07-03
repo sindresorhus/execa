@@ -269,6 +269,11 @@ test('.duplex() "to" option cannot be an output file descriptor', testNodeStream
 	to: 'fd3',
 	message: 'must be a writable stream',
 });
+test('.duplex() "to" option on an output file descriptor suggests the input-pipe syntax', testNodeStream, {
+	sourceOptions: fullStdio,
+	to: 'fd3',
+	message: '{value: \'pipe\', input: true}',
+});
 test('.pipe() "to" option cannot be "all"', testPipeError, {
 	destinationOptions: fullStdio,
 	to: 'all',

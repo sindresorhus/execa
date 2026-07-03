@@ -267,6 +267,21 @@ test('do not buffer stdout when `buffer` set to `false`, fd-specific, sync', tes
 test('do not buffer stderr when `buffer` set to `false`, sync', testNoMaxBufferSync, 2, false);
 test('do not buffer stderr when `buffer` set to `false`, fd-specific, sync', testNoMaxBufferSync, 2, {stderr: false});
 
+const testNoMaxBufferSyncObjectPipe = (t, fdNumber, fdName, stdioOption) => {
+	const {isMaxBuffer, stdio} = execaSync('max-buffer.js', [`${fdNumber}`, `${maxBuffer + 1}`], {
+		[fdName]: stdioOption,
+		buffer: false,
+		maxBuffer,
+	});
+	t.false(isMaxBuffer);
+	t.is(stdio[fdNumber], undefined);
+};
+
+test('do not buffer stdout object pipe when `buffer` set to `false`, sync', testNoMaxBufferSyncObjectPipe, 1, 'stdout', {value: 'pipe'});
+test('do not buffer stdout object pipe with input false when `buffer` set to `false`, sync', testNoMaxBufferSyncObjectPipe, 1, 'stdout', {value: 'pipe', input: false});
+test('do not buffer stdout object pipe with input true when `buffer` set to `false`, sync', testNoMaxBufferSyncObjectPipe, 1, 'stdout', {value: 'pipe', input: true});
+test('do not buffer stderr object pipe with input true when `buffer` set to `false`, sync', testNoMaxBufferSyncObjectPipe, 2, 'stderr', {value: 'pipe', input: true});
+
 const testMaxBufferAbort = async (t, fdNumber) => {
 	const subprocess = getMaxBufferSubprocess(execa, fdNumber);
 	const [{isMaxBuffer, shortMessage}] = await Promise.all([

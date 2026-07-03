@@ -41,6 +41,13 @@ expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})`unicorns`);
 expectAssignable<{stdout: Uint8Array}>(await $({})({encoding: 'buffer'})`unicorns`);
 expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})({})`unicorns`);
 
+const uint8ArrayGenerator = function * (chunk: Uint8Array) {
+	yield chunk;
+};
+
+expectError($({encoding: 'utf8', stdout: uint8ArrayGenerator}));
+$({encoding: 'buffer', stdout: uint8ArrayGenerator});
+
 expectType<Result<{}>>(await $`${'unicorns'}`);
 expectType<Result<{}>>(await $`unicorns ${'foo'}`);
 expectType<Result<{}>>(await $`unicorns ${'foo'} ${'bar'}`);

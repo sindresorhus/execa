@@ -1,5 +1,5 @@
 type DefaultEncodingOption = 'utf8';
-type TextEncodingOption =
+export type TextEncodingOption =
 	| DefaultEncodingOption
 	| 'utf16le';
 

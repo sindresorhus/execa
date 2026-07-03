@@ -1288,7 +1288,7 @@ If `true`, iterate over arbitrary chunks of `Uint8Array`s instead of line `strin
 _Type:_ `boolean`\
 _Default:_ `false`
 
-If `true`, keep newlines in each `line` argument. Also, this allows multiple `yield`s to produces a single line.
+If `true`, keep newlines in each `line` argument. Also, this allows multiple `yield`s to produce a single line.
 
 [More info.](lines.md#transforms)
 

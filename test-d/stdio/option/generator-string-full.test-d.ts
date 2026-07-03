@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectError, expectAssignable} from 'tsd';
 import {
 	execa,
 	execaSync,
@@ -14,35 +14,35 @@ const stringGeneratorFull = {
 	},
 } as const;
 
-expectError(await execa('unicorns', {stdin: stringGeneratorFull}));
-expectError(execaSync('unicorns', {stdin: stringGeneratorFull}));
-expectError(await execa('unicorns', {stdin: [stringGeneratorFull]}));
-expectError(execaSync('unicorns', {stdin: [stringGeneratorFull]}));
+await execa('unicorns', {stdin: stringGeneratorFull});
+execaSync('unicorns', {stdin: stringGeneratorFull});
+await execa('unicorns', {stdin: [stringGeneratorFull]});
+execaSync('unicorns', {stdin: [stringGeneratorFull]});
 
-expectError(await execa('unicorns', {stdout: stringGeneratorFull}));
-expectError(execaSync('unicorns', {stdout: stringGeneratorFull}));
-expectError(await execa('unicorns', {stdout: [stringGeneratorFull]}));
-expectError(execaSync('unicorns', {stdout: [stringGeneratorFull]}));
+await execa('unicorns', {stdout: stringGeneratorFull});
+execaSync('unicorns', {stdout: stringGeneratorFull});
+await execa('unicorns', {stdout: [stringGeneratorFull]});
+execaSync('unicorns', {stdout: [stringGeneratorFull]});
 
-expectError(await execa('unicorns', {stderr: stringGeneratorFull}));
-expectError(execaSync('unicorns', {stderr: stringGeneratorFull}));
-expectError(await execa('unicorns', {stderr: [stringGeneratorFull]}));
-expectError(execaSync('unicorns', {stderr: [stringGeneratorFull]}));
+await execa('unicorns', {stderr: stringGeneratorFull});
+execaSync('unicorns', {stderr: stringGeneratorFull});
+await execa('unicorns', {stderr: [stringGeneratorFull]});
+execaSync('unicorns', {stderr: [stringGeneratorFull]});
 
 expectError(await execa('unicorns', {stdio: stringGeneratorFull}));
 expectError(execaSync('unicorns', {stdio: stringGeneratorFull}));
 
-expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', stringGeneratorFull]}));
-expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', stringGeneratorFull]}));
-expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGeneratorFull]]}));
-expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGeneratorFull]]}));
+await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', stringGeneratorFull]});
+execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', stringGeneratorFull]});
+await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGeneratorFull]]});
+execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGeneratorFull]]});
 
-expectNotAssignable<StdinOption>(stringGeneratorFull);
-expectNotAssignable<StdinSyncOption>(stringGeneratorFull);
-expectNotAssignable<StdinOption>([stringGeneratorFull]);
-expectNotAssignable<StdinSyncOption>([stringGeneratorFull]);
+expectAssignable<StdinOption>(stringGeneratorFull);
+expectAssignable<StdinSyncOption>(stringGeneratorFull);
+expectAssignable<StdinOption>([stringGeneratorFull]);
+expectAssignable<StdinSyncOption>([stringGeneratorFull]);
 
-expectNotAssignable<StdoutStderrOption>(stringGeneratorFull);
-expectNotAssignable<StdoutStderrSyncOption>(stringGeneratorFull);
-expectNotAssignable<StdoutStderrOption>([stringGeneratorFull]);
-expectNotAssignable<StdoutStderrSyncOption>([stringGeneratorFull]);
+expectAssignable<StdoutStderrOption>(stringGeneratorFull);
+expectAssignable<StdoutStderrSyncOption>(stringGeneratorFull);
+expectAssignable<StdoutStderrOption>([stringGeneratorFull]);
+expectAssignable<StdoutStderrSyncOption>([stringGeneratorFull]);

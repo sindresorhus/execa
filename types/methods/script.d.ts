@@ -65,7 +65,7 @@ export type ExecaScriptMethod<OptionsType extends CommonOptions = CommonOptions>
 
 // `$(options)` binding
 type ExecaScriptBind<OptionsType extends CommonOptions> =
-	<NewOptionsType extends CommonOptions = {}>(options: NewOptionsType)
+	<NewOptionsType extends Options = {}>(options: NewOptionsType)
 	=> ExecaScriptMethod<OptionsType & NewOptionsType>;
 
 // `$`command`` template syntax

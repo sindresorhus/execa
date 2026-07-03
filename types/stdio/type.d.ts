@@ -52,8 +52,11 @@ type CommonStdioOption<
 	IsSync extends boolean,
 	IsExtra extends boolean,
 	IsArray extends boolean,
+	ObjectModeChunk = unknown,
+	TransformChunk = string,
 > =
-	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync> | GeneratorTransformFull<IsSync> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | NativePipeStdioOption<IsSync, IsExtra> | {readonly file: string; readonly append?: boolean};
+	// TypeScript cannot contextually type inline full generator transform objects through this broad stdio union because the union also includes `{transform: Duplex | TransformStream}` wrapper objects. Users should annotate `chunk` when assigning an inline object directly to `StdinOption`, `StdoutStderrOption`, `Options['stdout']`, etc. Keep `GeneratorTransformFull` mode branches narrow, but do not add a broad full-object fallback here to try to recover contextual typing.
+	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync, TransformChunk> | GeneratorTransformFull<IsSync, ObjectModeChunk, TransformChunk> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | NativePipeStdioOption<IsSync, IsExtra> | {readonly file: string; readonly append?: boolean};
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
 type IterableObject<IsArray extends boolean> = Iterable<unknown>
@@ -92,17 +95,20 @@ type StdinSingleOption<
 	IsSync extends boolean,
 	IsExtra extends boolean,
 	IsArray extends boolean,
+	TransformChunk = string,
 > =
-	| CommonStdioOption<IsSync, IsExtra, IsArray>
+	| CommonStdioOption<IsSync, IsExtra, IsArray, unknown, TransformChunk>
 	| InputStdioOption<IsSync, IsExtra, IsArray>;
 
 // `options.stdin`
 export type StdinOptionCommon<
 	IsSync extends boolean = boolean,
 	IsExtra extends boolean = boolean,
-> =
-	| StdinSingleOption<IsSync, IsExtra, false>
-	| ReadonlyArray<StdinSingleOption<IsSync, IsExtra, true>>;
+	TransformChunk = string,
+> = TransformChunk extends unknown
+	? | StdinSingleOption<IsSync, IsExtra, false, TransformChunk>
+	| ReadonlyArray<StdinSingleOption<IsSync, IsExtra, true, TransformChunk>>
+	: never;
 
 // `options.stdin`, async
 export type StdinOption = StdinOptionCommon<false, false>;
@@ -114,17 +120,21 @@ type StdoutStderrSingleOption<
 	IsSync extends boolean,
 	IsExtra extends boolean,
 	IsArray extends boolean,
+	TransformChunk = string,
 > =
-	| CommonStdioOption<IsSync, IsExtra, IsArray>
+	| CommonStdioOption<IsSync, IsExtra, IsArray, TransformChunk, TransformChunk>
 	| OutputStdioOption<IsSync, IsArray>;
 
 // `options.stdout|stderr`
+// In `objectMode`, the `chunk` argument of every array item is typed as `string`, even though only the first transform in the pipeline receives subprocess lines. The array index cannot be used to infer the pipeline position, since non-transform items are filtered out and transforms are reordered at runtime.
 export type StdoutStderrOptionCommon<
 	IsSync extends boolean = boolean,
 	IsExtra extends boolean = boolean,
-> =
-	| StdoutStderrSingleOption<IsSync, IsExtra, false>
-	| ReadonlyArray<StdoutStderrSingleOption<IsSync, IsExtra, true>>;
+	TransformChunk = string,
+> = TransformChunk extends unknown
+	? | StdoutStderrSingleOption<IsSync, IsExtra, false, TransformChunk>
+	| ReadonlyArray<StdoutStderrSingleOption<IsSync, IsExtra, true, TransformChunk>>
+	: never;
 
 // `options.stdout|stderr`, async
 export type StdoutStderrOption = StdoutStderrOptionCommon<false, false>;
@@ -132,18 +142,19 @@ export type StdoutStderrOption = StdoutStderrOptionCommon<false, false>;
 export type StdoutStderrSyncOption = StdoutStderrOptionCommon<true, false>;
 
 // `options.stdio[3+]`
-type StdioExtraOptionCommon<IsSync extends boolean> =
-	| StdinOptionCommon<IsSync, true>
-	| StdoutStderrOptionCommon<IsSync, true>;
+type StdioExtraOptionCommon<IsSync extends boolean, TransformChunk = string> =
+	| StdinOptionCommon<IsSync, true, TransformChunk>
+	| StdoutStderrOptionCommon<IsSync, true, TransformChunk>;
 
 // `options.stdin|stdout|stderr|stdio` array items
 type StdioSingleOption<
 	IsSync extends boolean = boolean,
 	IsExtra extends boolean = boolean,
 	IsArray extends boolean = boolean,
+	TransformChunk = string,
 > =
-	| StdinSingleOption<IsSync, IsExtra, IsArray>
-	| StdoutStderrSingleOption<IsSync, IsExtra, IsArray>;
+	| StdinSingleOption<IsSync, IsExtra, IsArray, TransformChunk>
+	| StdoutStderrSingleOption<IsSync, IsExtra, IsArray, TransformChunk>;
 
 // Get `options.stdin|stdout|stderr|stdio` items if it is an array, else keep as is
 export type StdioSingleOptionItems<StdioOptionType> = StdioOptionType extends readonly StdioSingleOption[]
@@ -151,21 +162,22 @@ export type StdioSingleOptionItems<StdioOptionType> = StdioOptionType extends re
 	: StdioOptionType;
 
 // `options.stdin|stdout|stderr|stdio`
-export type StdioOptionCommon<IsSync extends boolean = boolean> =
-	| StdinOptionCommon<IsSync>
-	| StdoutStderrOptionCommon<IsSync>;
+export type StdioOptionCommon<IsSync extends boolean = boolean, TransformChunk = string> =
+	| StdinOptionCommon<IsSync, boolean, TransformChunk>
+	| StdoutStderrOptionCommon<IsSync, boolean, TransformChunk>;
 
 // `options.stdio` when it is an array
-export type StdioOptionsArray<IsSync extends boolean = boolean> = readonly [
-	StdinOptionCommon<IsSync, false>,
-	StdoutStderrOptionCommon<IsSync, false>,
-	StdoutStderrOptionCommon<IsSync, false>,
-	...ReadonlyArray<StdioExtraOptionCommon<IsSync>>,
+export type StdioOptionsArray<IsSync extends boolean = boolean, TransformChunk = string> = readonly [
+	StdinOptionCommon<IsSync, false, TransformChunk>,
+	StdoutStderrOptionCommon<IsSync, false, TransformChunk>,
+	StdoutStderrOptionCommon<IsSync, false, TransformChunk>,
+	...ReadonlyArray<StdioExtraOptionCommon<IsSync, TransformChunk>>,
 ];
 
 // `options.stdio`
-export type StdioOptionsProperty<IsSync extends boolean = boolean> =
-	| SimpleStdioOption<IsSync, false, false>
-	| StdioOptionsArray<IsSync>;
+export type StdioOptionsProperty<IsSync extends boolean = boolean, TransformChunk = string> = TransformChunk extends unknown
+	? | SimpleStdioOption<IsSync, false, false>
+	| StdioOptionsArray<IsSync, TransformChunk>
+	: never;
 
 export {};

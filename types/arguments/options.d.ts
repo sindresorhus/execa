@@ -5,9 +5,14 @@ import type {Message} from '../ipc.js';
 import type {StdinOptionCommon, StdoutStderrOptionCommon, StdioOptionsProperty} from '../stdio/type.js';
 import type {VerboseOption} from '../verbose.js';
 import type {FdGenericOption} from './specific.js';
-import type {EncodingOption} from './encoding-option.js';
+import type {BinaryEncodingOption, EncodingOption, TextEncodingOption} from './encoding-option.js';
 
-export type CommonOptions<IsSync extends boolean = boolean> = {
+type ChunkForEncoding<Encoding extends EncodingOption> = Encoding extends BinaryEncodingOption ? Uint8Array : string;
+
+export type CommonOptions<
+	IsSync extends boolean = boolean,
+	Encoding extends EncodingOption = EncodingOption,
+> = {
 	/**
 	Prefer locally installed binaries when looking for a binary to execute.
 
@@ -107,7 +112,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default `'inherit'` with `$`, `'pipe'` otherwise
 	*/
-	readonly stdin?: StdinOptionCommon<IsSync>;
+	readonly stdin?: StdinOptionCommon<IsSync, boolean, ChunkForEncoding<Encoding>>;
 
 	/**
 	How to setup the subprocess' [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)). This can be `'pipe'`, `'overlapped'`, `'ignore`, `'inherit'`, a file descriptor integer, a Node.js `Writable` stream, a web `WritableStream`, a `{ file: 'path' }` object, a file URL, a generator function, a `Duplex` or a web `TransformStream`.
@@ -116,7 +121,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'pipe'
 	*/
-	readonly stdout?: StdoutStderrOptionCommon<IsSync>;
+	readonly stdout?: StdoutStderrOptionCommon<IsSync, boolean, ChunkForEncoding<Encoding>>;
 
 	/**
 	How to setup the subprocess' [standard error](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)). This can be `'pipe'`, `'overlapped'`, `'ignore`, `'inherit'`, a file descriptor integer, a Node.js `Writable` stream, a web `WritableStream`, a `{ file: 'path' }` object, a file URL, a generator function, a `Duplex` or a web `TransformStream`.
@@ -125,7 +130,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'pipe'
 	*/
-	readonly stderr?: StdoutStderrOptionCommon<IsSync>;
+	readonly stderr?: StdoutStderrOptionCommon<IsSync, boolean, ChunkForEncoding<Encoding>>;
 
 	/**
 	Like the `stdin`, `stdout` and `stderr` options but for all [file descriptors](https://en.wikipedia.org/wiki/File_descriptor) at once. For example, `{stdio: ['ignore', 'pipe', 'pipe']}` is the same as `{stdin: 'ignore', stdout: 'pipe', stderr: 'pipe'}`.
@@ -136,7 +141,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'pipe'
 	*/
-	readonly stdio?: StdioOptionsProperty<IsSync>;
+	readonly stdio?: StdioOptionsProperty<IsSync, ChunkForEncoding<Encoding>>;
 
 	/**
 	Add a `subprocess.all` stream and a `result.all` property. They contain the combined/interleaved output of the subprocess' `stdout` and `stderr`.
@@ -156,7 +161,7 @@ export type CommonOptions<IsSync extends boolean = boolean> = {
 
 	@default 'utf8'
 	*/
-	readonly encoding?: EncodingOption;
+	readonly encoding?: Encoding;
 
 	/**
 	Set `result.stdout`, `result.stderr`, `result.all` and `result.stdio` as arrays of strings, splitting the subprocess' output into lines.
@@ -375,7 +380,12 @@ await execa({verbose: 'full'})`npm run build`;
 await execa({verbose: {stdout: 'none', stderr: 'full'}})`npm run build`;
 ```
 */
-export type Options = CommonOptions<false>;
+type TextOptions<IsSync extends boolean> = CommonOptions<IsSync, TextEncodingOption | undefined>;
+type BinaryOptions<IsSync extends boolean> = Omit<CommonOptions<IsSync, BinaryEncodingOption>, 'encoding'> & {
+	readonly encoding: BinaryEncodingOption;
+};
+
+export type Options = TextOptions<false> | BinaryOptions<false>;
 
 /**
 Subprocess options, with synchronous methods.
@@ -392,7 +402,7 @@ execaSync({verbose: 'full'})`npm run build`;
 execaSync({verbose: {stdout: 'none', stderr: 'full'}})`npm run build`;
 ```
 */
-export type SyncOptions = CommonOptions<true>;
+export type SyncOptions = TextOptions<true> | BinaryOptions<true>;
 
 export type StricterOptions<
 	WideOptions extends CommonOptions,

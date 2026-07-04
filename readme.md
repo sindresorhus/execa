@@ -4,7 +4,7 @@
 </picture>
 <br>
 
-[![Coverage Status](https://codecov.io/gh/sindresorhus/execa/branch/main/graph/badge.svg)](https://codecov.io/gh/sindresorhus/execa)
+[![Coverage Status](https://codecov.io/gh/sindresorhus/execa/branch/main/graph/badge.svg)](https://app.codecov.io/gh/sindresorhus/execa)
 
 > Process execution for humans
 
@@ -67,7 +67,7 @@ Execa runs commands in your script, application or library. Unlike shells, it is
 - [Script](#script) interface.
 - [No escaping](docs/escaping.md) nor quoting needed. No risk of shell injection.
 - Execute [locally installed binaries](#local-binaries) without `npx`.
-- Improved [Windows support](docs/windows.md): [shebangs](docs/windows.md#shebang), [`PATHEXT`](https://ss64.com/nt/path.html#pathext), [graceful termination](#graceful-termination), [and more](https://github.com/moxystudio/node-cross-spawn?tab=readme-ov-file#why).
+- Improved [Windows support](docs/windows.md): [shebangs](docs/windows.md#shebang), [`PATHEXT`](https://ss64.com/nt/path.html#pathext), [graceful termination](#graceful-termination), [and more](docs/windows.md).
 - [Detailed errors](#detailed-error), [verbose mode](#verbose-mode) and [custom logging](#custom-logging), for [debugging](docs/debugging.md).
 - [Pipe multiple subprocesses](#pipe-multiple-subprocesses) better than in shells: retrieve [intermediate results](docs/pipe.md#result), use multiple [sources](docs/pipe.md#multiple-sources-1-destination)/[destinations](docs/pipe.md#1-source-multiple-destinations), [unpipe](docs/pipe.md#unpipe).
 - [Split](#split-into-text-lines) the output into text lines, or [iterate](#iterate-over-text-lines) progressively over them.

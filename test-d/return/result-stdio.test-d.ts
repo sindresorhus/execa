@@ -114,6 +114,12 @@ expectType<undefined>(inputFd3Result.stdio[3]);
 const inputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]});
 expectType<undefined>(inputPipeFd3Result.stdio[3]);
 
+const inputInheritFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'inherit', input: true}]});
+expectType<undefined>(inputInheritFd3Result.stdio[3]);
+
+const inputFdFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 3, input: true}]});
+expectType<undefined>(inputFdFd3Result.stdio[3]);
+
 const outputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe'}]});
 expectType<string>(outputPipeFd3Result.stdio[3]);
 

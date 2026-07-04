@@ -1,3 +1,4 @@
+import {Writable} from 'node:stream';
 import {expectError, expectAssignable} from 'tsd';
 import {
 	execa,
@@ -11,6 +12,9 @@ import {
 const inputPipe = {value: 'pipe', input: true} as const;
 const input = true as boolean;
 const booleanInputPipe = {value: 'pipe', input} as const;
+const transform = function * (line: string) {
+	yield line;
+};
 
 await execa('unicorns', {stdin: inputPipe});
 execaSync('unicorns', {stdin: inputPipe});
@@ -30,6 +34,17 @@ expectError(execaSync('unicorns', {stdin: {value: 'overlapped', input: true}}));
 
 expectError(await execa('unicorns', {stdin: {value: 'other', input: true}}));
 expectError(await execa('unicorns', {stdin: {value: 'pipe', input: 'true'}}));
+
+// The `{value, input}` form works with any direction-ambiguous value, not just `'pipe'`/`'overlapped'`.
+await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'inherit', input: true}]});
+await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: new URL('file:///test'), input: true}]});
+await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: {file: './example'}, input: true}]});
+await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: transform, input: true}]});
+expectAssignable<StdinOption>({value: 'inherit', input: true});
+expectAssignable<StdinOption>({value: {file: './example'}, input: true});
+
+// A value with a fixed direction cannot be marked as input.
+expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: new Writable(), input: true}]}));
 
 expectAssignable<StdinOption>(inputPipe);
 expectAssignable<StdinOption>(booleanInputPipe);

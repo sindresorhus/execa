@@ -25,7 +25,8 @@ export type NoStreamStdioOption<FdNumber extends string> =
 	| Readable
 	| Writable
 	| Unless<IsStandardStream<FdNumber>, undefined>
-	| readonly [NoStreamStdioOption<FdNumber>];
+	| readonly [NoStreamStdioOption<FdNumber>]
+	| {readonly value: 'inherit' | number; readonly input?: boolean};
 
 // `options.stdio` when it is not an array
 type SimpleStdioOption<
@@ -39,13 +40,35 @@ type SimpleStdioOption<
 	| Unless<IsArray, 'ignore'>
 	| Unless<IsSync, 'overlapped'>;
 
-export type NativePipeStdioOption<
+// The `{value, input}` object form wraps a direction-ambiguous value and sets its direction explicitly.
+export type AmbiguousStdioOption<
 	IsSync extends boolean,
 	IsExtra extends boolean,
+	IsArray extends boolean,
+	ObjectModeChunk = unknown,
+	TransformChunk = string,
 > = {
-	readonly value: 'pipe' | Unless<IsSync, 'overlapped'>;
+	readonly value: AmbiguousStdioValue<IsSync, IsArray, ObjectModeChunk, TransformChunk>;
 	readonly input?: Unless<And<IsSync, IsExtra>, boolean> | false;
 };
+
+// Values whose direction is ambiguous on additional file descriptors, so they default to output unless `input` is set.
+// This excludes values with a fixed direction (readable/writable streams, iterables, standard file descriptors).
+type AmbiguousStdioValue<
+	IsSync extends boolean,
+	IsArray extends boolean,
+	ObjectModeChunk,
+	TransformChunk,
+> =
+	| 'pipe'
+	| 'inherit'
+	| Unless<IsSync, 'overlapped'>
+	| URL
+	| GeneratorTransform<IsSync, TransformChunk>
+	| GeneratorTransformFull<IsSync, ObjectModeChunk, TransformChunk>
+	| Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9>
+	| Unless<IsSync, DuplexTransform | WebTransform | TransformStream>
+	| {readonly file: string; readonly append?: boolean};
 
 // Values available in both `options.stdin|stdio` and `options.stdout|stderr|stdio`
 type CommonStdioOption<
@@ -56,7 +79,7 @@ type CommonStdioOption<
 	TransformChunk = string,
 > =
 	// TypeScript cannot contextually type inline full generator transform objects through this broad stdio union because the union also includes `{transform: Duplex | TransformStream}` wrapper objects. Users should annotate `chunk` when assigning an inline object directly to `StdinOption`, `StdoutStderrOption`, `Options['stdout']`, etc. Keep `GeneratorTransformFull` mode branches narrow, but do not add a broad full-object fallback here to try to recover contextual typing.
-	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync, TransformChunk> | GeneratorTransformFull<IsSync, ObjectModeChunk, TransformChunk> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | NativePipeStdioOption<IsSync, IsExtra> | {readonly file: string; readonly append?: boolean};
+	SimpleStdioOption<IsSync, IsExtra, IsArray> | URL | GeneratorTransform<IsSync, TransformChunk> | GeneratorTransformFull<IsSync, ObjectModeChunk, TransformChunk> | Unless<And<Not<IsSync>, IsArray>, 3 | 4 | 5 | 6 | 7 | 8 | 9> | Unless<IsSync, DuplexTransform | WebTransform | TransformStream> | AmbiguousStdioOption<IsSync, IsExtra, IsArray, ObjectModeChunk, TransformChunk> | {readonly file: string; readonly append?: boolean};
 
 // Synchronous iterables excluding strings, Uint8Arrays and Arrays
 type IterableObject<IsArray extends boolean> = Iterable<unknown>

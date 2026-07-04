@@ -1,19 +1,19 @@
 import type {CommonOptions} from '../arguments/options.js';
 import type {Intersects} from '../utils.js';
-import type {StdioSingleOptionItems, InputStdioOption, NativePipeStdioOption} from './type.js';
+import type {StdioSingleOptionItems, InputStdioOption, AmbiguousStdioOption} from './type.js';
 import type {FdStdioArrayOption} from './option.js';
 
-type AnyNativePipeStdioOption = NativePipeStdioOption<boolean, false>;
+type AnyAmbiguousStdioOption = AmbiguousStdioOption<boolean, false, boolean>;
 
-type InputNativePipeStdioOption = AnyNativePipeStdioOption & {
+type InputAmbiguousStdioOption = AnyAmbiguousStdioOption & {
 	readonly input: true;
 };
 
-type NativePipeInputValue<StdioOptionType> = StdioOptionType extends AnyNativePipeStdioOption
-	? NativePipeInputProperty<StdioOptionType>
+type AmbiguousStdioInputValue<StdioOptionType> = StdioOptionType extends AnyAmbiguousStdioOption
+	? AmbiguousStdioInputProperty<StdioOptionType>
 	: never;
 
-type NativePipeInputProperty<StdioOptionType> = 'input' extends keyof StdioOptionType
+type AmbiguousStdioInputProperty<StdioOptionType> = 'input' extends keyof StdioOptionType
 	? StdioOptionType extends {readonly input?: infer Input} ? Input : never
 	: never;
 
@@ -33,12 +33,12 @@ type IsInputFdOption<
 	StdioOptionType,
 > = Intersects<
 	StdioOptionType,
-	FdNumber extends '1' | '2' ? InputStdioOption : InputStdioOption | InputNativePipeStdioOption
+	FdNumber extends '1' | '2' ? InputStdioOption : InputStdioOption | InputAmbiguousStdioOption
 > extends true
 	? true
 	: FdNumber extends '1' | '2'
 		? false
-		: true extends NativePipeInputValue<StdioOptionType>
+		: true extends AmbiguousStdioInputValue<StdioOptionType>
 			? boolean
 			: false;
 

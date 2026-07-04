@@ -46,6 +46,15 @@ expectType<Writable>(inputPipeSubprocess.stdio[3]);
 const outputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe'}]});
 expectType<Readable>(outputPipeSubprocess.stdio[3]);
 
+const inputInheritSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'inherit', input: true}]});
+expectType<null>(inputInheritSubprocess.stdio[3]);
+
+const inputFdSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 3, input: true}]});
+expectType<null>(inputFdSubprocess.stdio[3]);
+
+const inputFileSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: {file: './example'}, input: true}]});
+expectType<Writable>(inputFileSubprocess.stdio[3]);
+
 const input = true as boolean;
 const booleanInputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input}]});
 expectType<Readable | Writable>(booleanInputPipeSubprocess.stdio[3]);

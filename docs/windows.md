@@ -24,6 +24,19 @@ await execa`node ./script.js`;
 
 Although Windows does not natively support shebangs, Execa adds support for them.
 
+## File extensions
+
+On Windows, executables have a file extension, such as `.exe`, `.cmd`, `.bat` or `.com`. When the file is passed without any extension, Execa resolves it using the [`PATHEXT`](https://ss64.com/nt/path.html#pathext) environment variable, just like the OS does when looking up commands.
+
+```js
+import {execa} from 'execa';
+
+// Runs `npm.cmd`
+await execa`npm run build`;
+```
+
+This means `.cmd` and `.bat` files can be run directly. Unlike Node.js, Execa does not require a [shell](shell.md) (nor a `cmd.exe /c` prefix) for this. Relative paths (such as `./folder/executable`) and files whose path contains spaces also work without a shell, just like on Unix. This is thanks to [`cross-spawn`](https://github.com/moxystudio/node-cross-spawn?tab=readme-ov-file#why).
+
 ## Signals
 
 Only few [signals](termination.md#other-signals) work on Windows with Node.js: [`SIGTERM`](termination.md#sigterm), [`SIGKILL`](termination.md#sigkill), [`SIGINT`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGINT) and [`SIGQUIT`](termination.md#sigquit). Also, sending signals from other processes is [not supported](termination.md#signal-name-and-description). Finally, the [`forceKillAfterDelay`](api.md#optionsforcekillafterdelay) option [is a noop](termination.md#forceful-termination) on Windows.

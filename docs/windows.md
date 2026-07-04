@@ -77,7 +77,7 @@ if (isWindows) {
 
 ## Console window
 
-If the [`windowsHide`](api.md#optionswindowshide) option is `false`, the subprocess is run in a new console window. This is necessary to make [`SIGINT` work](https://github.com/nodejs/node/issues/29837) on Windows, and to prevent subprocesses not being cleaned up in [some specific situations](https://github.com/sindresorhus/execa/issues/433).
+If the [`windowsHide`](api.md#optionswindowshide) option is `false`, the subprocess is run in a new console window. This is necessary to make [`SIGINT` work](https://github.com/nodejs/node/issues/29837) on Windows, and to [clean up](termination.md#current-process-exit) subprocesses which spawn their own subprocesses, such as when [running an npm script through a shell](https://github.com/sindresorhus/execa/issues/433).
 
 ## UID and GID
 

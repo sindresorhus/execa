@@ -192,6 +192,8 @@ If the current process exits, the subprocess is automatically [terminated](#defa
 - The subprocess is run in the background using the [`detached`](api.md#optionsdetached) option.
 - The current process was terminated abruptly, for example, with [`SIGKILL`](#sigkill) as opposed to [`SIGTERM`](#sigterm) or a successful exit.
 
+On Windows, only the subprocess is terminated, not the other processes it might have spawned. To also terminate those, the [`windowsHide: false`](windows.md#console-window) option can be used.
+
 ## Signal termination
 
 [`subprocess.kill()`](api.md#subprocesskillsignal-error) sends a [signal](https://en.wikipedia.org/wiki/Signal_(IPC)) to the subprocess. This is an inter-process message handled by the OS. Most (but [not all](https://github.com/ehmicky/human-signals#action)) signals terminate the subprocess.

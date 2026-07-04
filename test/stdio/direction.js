@@ -60,6 +60,36 @@ const testDirectionInputPipe = async (t, stdioOption) => {
 test('stdio[*] { value: "pipe", input: true } sets the direction to input', testDirectionInputPipe, {value: 'pipe', input: true});
 test('stdio[*] { value: "overlapped", input: true } sets the direction to input', testDirectionInputPipe, {value: 'overlapped', input: true});
 
+const uppercaseGenerator = function * (line) {
+	yield line.toUpperCase();
+};
+
+test('stdio[*] { value: generator, input: true } sets the direction to input', async t => {
+	const subprocess = execa('stdin-fd.js', ['3'], getStdio(3, {value: uppercaseGenerator, input: true}));
+	subprocess.stdio[3].end(foobarString);
+	const {stdout} = await subprocess;
+	t.is(stdout, foobarString.toUpperCase());
+});
+
+test('stdio[*] { value: {file}, input: true } sets the direction to input', async t => {
+	const filePath = tempfile();
+	await writeFile(filePath, foobarString);
+	const {stdout} = await execa('stdin-fd.js', ['3'], getStdio(3, {value: {file: filePath}, input: true}));
+	t.is(stdout, foobarString);
+	await rm(filePath);
+});
+
+const testInputFixedDirection = (t, stdioOption, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', getStdio(3, {value: stdioOption, input: true}));
+	}, {message: /cannot be used with a writable value/});
+};
+
+test('stdio[*] { value: WritableStream, input: true } is invalid', testInputFixedDirection, new WritableStream(), execa);
+test('stdio[*] { value: WritableStream, input: true } is invalid - sync', testInputFixedDirection, new WritableStream(), execaSync);
+test('stdio[*] { value: process.stdout, input: true } is invalid', testInputFixedDirection, process.stdout, execa);
+test('stdio[*] { value: process.stdout, input: true } is invalid - sync', testInputFixedDirection, process.stdout, execaSync);
+
 test('stdio[*] { value: "pipe", input: true } cannot be used in sync mode', t => {
 	t.throws(() => {
 		execaSync('empty.js', getStdio(3, {value: 'pipe', input: true}));

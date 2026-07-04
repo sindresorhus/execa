@@ -48,9 +48,17 @@ const testIterable = async (t, stdioOption, fdNumber, execaMethod) => {
 	t.is(stdout, 'foobar');
 };
 
+const testIpcDataIterable = async (t, fdNumber, execaMethod) => {
+	const {stdout} = await execaMethod('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [['ipc']]));
+	t.is(stdout, 'ipc');
+};
+
 test.serial('stdin option can be an array of strings', testIterable, [foobarArray], 0, execa);
 test.serial('stdin option can be an array of strings - sync', testIterable, [foobarArray], 0, execaSync);
 test.serial('stdio[*] option can be an array of strings', testIterable, [foobarArray], 3, execa);
+test.serial('stdin option can be an array with "ipc" as input data', testIpcDataIterable, 0, execa);
+test.serial('stdin option can be an array with "ipc" as input data - sync', testIpcDataIterable, 0, execaSync);
+test.serial('stdio[*] option can be an array with "ipc" as input data', testIpcDataIterable, 3, execa);
 test.serial('stdin option can be an array of Uint8Arrays', testIterable, [binaryArray], 0, execa);
 test.serial('stdin option can be an array of Uint8Arrays - sync', testIterable, [binaryArray], 0, execaSync);
 test.serial('stdio[*] option can be an array of Uint8Arrays', testIterable, [binaryArray], 3, execa);

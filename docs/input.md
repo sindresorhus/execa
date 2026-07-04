@@ -135,7 +135,7 @@ await execa({
 })`npm run build`;
 ```
 
-When passing `'pipe'` to an additional file descriptor, Execa cannot tell whether it is meant for input or output, so it defaults to output. To use it for input instead, such as when [streaming](streams.md#different-file-descriptor) to it, pass `{value: 'pipe', input: true}`.
+Some values have an ambiguous direction on an additional file descriptor: Execa cannot tell whether they are meant for input or output, so they default to output. This applies to `'pipe'`, `'inherit'`, [files](output.md#file-output) and [transforms](transform.md). To use one for input instead, such as when [streaming](streams.md#different-file-descriptor) to it, wrap it as `{value, input: true}`.
 
 ```js
 import {pipeline} from 'node:stream/promises';

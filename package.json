@@ -52,16 +52,17 @@
 	],
 	"dependencies": {
 		"@sindresorhus/merge-streams": "^4.0.0",
-		"cross-spawn": "^7.0.6",
 		"figures": "^6.1.0",
 		"get-stream": "^9.0.1",
 		"human-signals": "^8.0.1",
 		"is-plain-obj": "^4.1.0",
 		"is-stream": "^4.0.1",
 		"npm-run-path": "^6.0.0",
+		"path-key": "^4.0.0",
 		"pretty-ms": "^9.3.0",
 		"signal-exit": "^4.1.0",
 		"strip-final-newline": "^4.0.0",
+		"which": "^7.0.0",
 		"yoctocolors": "^2.1.2"
 	},
 	"devDependencies": {
@@ -73,11 +74,9 @@
 		"is-running": "^2.1.0",
 		"log-process-errors": "^12.0.1",
 		"path-exists": "^5.0.0",
-		"path-key": "^4.0.0",
 		"tempfile": "^6.0.1",
 		"tsd": "^0.33.0",
 		"typescript": "^6.0.3",
-		"which": "^7.0.0",
 		"xo": "^3.0.2"
 	},
 	"c8": {

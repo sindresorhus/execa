@@ -35,7 +35,7 @@ import {execa} from 'execa';
 await execa`npm run build`;
 ```
 
-This means `.cmd` and `.bat` files can be run directly. Unlike Node.js, Execa does not require a [shell](shell.md) (nor a `cmd.exe /c` prefix) for this. Relative paths (such as `./folder/executable`) and files whose path contains spaces also work without a shell, just like on Unix. This is thanks to [`cross-spawn`](https://github.com/moxystudio/node-cross-spawn?tab=readme-ov-file#why).
+This means `.cmd` and `.bat` files can be run directly. Unlike Node.js, Execa does not require a [shell](shell.md) (nor a `cmd.exe /c` prefix) for this. Relative paths (such as `./folder/executable`) and files whose path contains spaces also work without a shell, just like on Unix. Execa handles this automatically.
 
 ## Signals
 

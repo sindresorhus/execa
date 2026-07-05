@@ -1,10 +1,12 @@
 import {createWriteStream} from 'node:fs';
+import type {Readable} from 'node:stream';
 import {expectType, expectNotType, expectError} from 'tsd';
 import {
 	execa,
 	execaSync,
 	$,
 	type Result,
+	type Message,
 } from '../index.js';
 
 const fileUrl = new URL('file:///test');
@@ -252,3 +254,31 @@ expectType<undefined>(ignoreShortcutScriptPipeResult.stdout);
 
 const unicornsResult = execaSync('unicorns');
 expectError(unicornsResult.pipe);
+
+// The `.pipe()` return value forwards the destination subprocess' iteration, stream conversion and IPC methods.
+for await (const pipeLine of subprocess.pipe`stdin`) {
+	expectType<string>(pipeLine);
+}
+
+for await (const pipeLine of subprocess.pipe`stdin`.iterable()) {
+	expectType<string>(pipeLine);
+}
+
+for await (const pipeLine of subprocess.pipe(bufferSubprocess)) {
+	expectType<Uint8Array>(pipeLine);
+}
+
+expectType<Readable>(subprocess.pipe`stdin`.readable());
+
+expectType<Readable>(subprocess.pipe({all: true})`stdin`.all);
+expectType<undefined>(subprocess.pipe`stdin`.all);
+
+expectType<undefined>(subprocess.pipe`stdin`.sendMessage);
+const ipcPipeResult = subprocess.pipe({ipc: true})`stdin`;
+expectType<Promise<void>>(ipcPipeResult.sendMessage('message'));
+expectType<Promise<Message<'advanced'>>>(ipcPipeResult.getOneMessage());
+expectType<AsyncIterableIterator<Message<'advanced'>>>(ipcPipeResult.getEachMessage());
+
+// `writable()` and `duplex()` write to the destination's `stdin`, which is already piped from the source, so they are not forwarded.
+expectError(subprocess.pipe`stdin`.writable());
+expectError(subprocess.pipe`stdin`.duplex());

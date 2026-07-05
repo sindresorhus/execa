@@ -253,6 +253,8 @@ _Returns_: [`Promise<Result>`](#result)
 
 This follows the same syntax as [`execa(file, arguments?, options?)`](#execafile-arguments-options) except both [regular options](#options-1) and [pipe-specific options](#pipeoptions) can be specified.
 
+Like a subprocess, the return value can be [iterated](lines.md#progressive-splitting), [converted to a stream](streams.md#converting-a-subprocess-to-a-stream), or used for [IPC](ipc.md) with the destination subprocess.
+
 [More info.](pipe.md#array-syntax)
 
 ### subprocess.pipe\`command\`

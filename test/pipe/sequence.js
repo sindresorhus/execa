@@ -1,6 +1,7 @@
 import {once} from 'node:events';
 import process from 'node:process';
 import {PassThrough} from 'node:stream';
+import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -11,6 +12,38 @@ import {prematureClose} from '../helpers/stdio.js';
 setFixtureDirectory();
 
 const isLinux = process.platform === 'linux';
+const timeoutSymbol = Symbol('timeout');
+
+const assertUnhandledRejection = async (t, pipePromise, unhandledRejectionPromise) => {
+	const result = await Promise.race([
+		unhandledRejectionPromise,
+		setTimeout(500, timeoutSymbol),
+	]);
+
+	t.not(result, timeoutSymbol);
+
+	if (result === timeoutSymbol) {
+		return;
+	}
+
+	const [reason, unhandledPromise] = result;
+	t.is(unhandledPromise, pipePromise);
+	t.regex(reason.message, /Command failed with exit code 2/);
+};
+
+const assertUnhandledPipePromise = async (t, {destinationOptions = {}, inspectPipePromise} = {}) => {
+	const source = execa('fail.js');
+	const destination = execa('fail.js', destinationOptions);
+	const pipePromise = source.pipe(destination);
+	const unhandledRejectionPromise = once(process, 'unhandledRejection');
+	await inspectPipePromise?.(pipePromise);
+	await assertUnhandledRejection(t, pipePromise, unhandledRejectionPromise);
+	await Promise.all([
+		t.throwsAsync(source),
+		t.throwsAsync(destination),
+	]);
+	await t.throwsAsync(pipePromise);
+};
 
 test('Source stream abort -> destination success', async t => {
 	const source = execa('noop-repeat.js');
@@ -267,15 +300,48 @@ test('Does not need to await individual promises', async t => {
 	await t.throwsAsync(source.pipe(destination));
 });
 
-test('Need to await .pipe() return value', async t => {
+test.serial('Need to await .pipe() return value', async t => {
+	await assertUnhandledPipePromise(t);
+});
+
+test.serial('Need to await .pipe() return value, "all" option', async t => {
+	await assertUnhandledPipePromise(t, {destinationOptions: {all: true}});
+});
+
+test.serial('Need to await .pipe() return value after inspecting lazy .all', async t => {
+	await assertUnhandledPipePromise(t, {
+		destinationOptions: {all: true},
+		inspectPipePromise(pipePromise) {
+			const descriptor = Object.getOwnPropertyDescriptor(pipePromise, 'all');
+			t.is(typeof descriptor.get, 'function');
+		},
+	});
+});
+
+test.serial('Need to await .pipe() return value after getOneMessage()', async t => {
 	const source = execa('fail.js');
-	const destination = execa('fail.js');
+	const destination = execa('ipc-send-twice.js', {ipc: true});
 	const pipePromise = source.pipe(destination);
-	await Promise.all([
-		once(process, 'unhandledRejection'),
-		t.throwsAsync(source),
-		t.throwsAsync(destination),
-	]);
+	const unhandledRejectionPromise = once(process, 'unhandledRejection');
+
+	t.is(await pipePromise.getOneMessage(), 'foo');
+	await assertUnhandledRejection(t, pipePromise, unhandledRejectionPromise);
+	await t.throwsAsync(source);
+	await destination;
+	await t.throwsAsync(pipePromise);
+});
+
+test.serial('Need to await .pipe() return value after paused getEachMessage()', async t => {
+	const source = execa('fail.js');
+	const destination = execa('ipc-send-twice.js', {ipc: true});
+	const pipePromise = source.pipe(destination);
+	const unhandledRejectionPromise = once(process, 'unhandledRejection');
+	const iterator = pipePromise.getEachMessage();
+
+	t.deepEqual(await iterator.next(), {done: false, value: 'foo'});
+	await assertUnhandledRejection(t, pipePromise, unhandledRejectionPromise);
+	await t.throwsAsync(source);
+	await destination;
 	await t.throwsAsync(pipePromise);
 });
 

@@ -15,9 +15,39 @@ import type {SubprocessStdioStream} from './stdout.js';
 import type {SubprocessStdioArray} from './stdio.js';
 import type {SubprocessAll} from './all.js';
 
+// Read-side iteration, stream conversion and `all` methods.
+// These are shared between a subprocess and the return value of `subprocess.pipe()`, which forwards them from its destination subprocess.
+// `writable()` and `duplex()` are not included: they write to `stdin`, which the pipe already feeds from its source.
+export type SubprocessResultMethods<OptionsType extends Options = Options> = {
+	/**
+	Stream combining/interleaving `subprocess.stdout` and `subprocess.stderr`.
+
+	This requires the `all` option to be `true`.
+
+	This is `undefined` if `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+	*/
+	all: SubprocessAll<OptionsType>;
+
+	/**
+	Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
+	*/
+	[Symbol.asyncIterator](): SubprocessAsyncIterable<undefined, OptionsType['encoding']>;
+
+	/**
+	Same as `subprocess[Symbol.asyncIterator]` except options can be provided.
+	*/
+	iterable<IterableOptions extends ReadableOptions = {}>(readableOptions?: IterableOptions): SubprocessAsyncIterable<IterableOptions['binary'], OptionsType['encoding']>;
+
+	/**
+	Converts the subprocess to a readable stream.
+	*/
+	readable(readableOptions?: ReadableOptions): Readable;
+};
+
 type ExecaCustomSubprocess<OptionsType extends Options> =
 	& IpcMethods<HasIpc<OptionsType>, OptionsType['serialization']>
 	& PipableSubprocess
+	& SubprocessResultMethods<OptionsType>
 	& {
 		/**
 		Process identifier ([PID](https://en.wikipedia.org/wiki/Process_identifier)).
@@ -48,15 +78,6 @@ type ExecaCustomSubprocess<OptionsType extends Options> =
 		stderr: SubprocessStdioStream<'2', OptionsType>;
 
 		/**
-		Stream combining/interleaving `subprocess.stdout` and `subprocess.stderr`.
-
-		This requires the `all` option to be `true`.
-
-		This is `undefined` if `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
-		*/
-		all: SubprocessAll<OptionsType>;
-
-		/**
 		The subprocess `stdin`, `stdout`, `stderr` and other files descriptors as an array of streams.
 
 		Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`, or if the `buffer` option is `false`.
@@ -74,21 +95,6 @@ type ExecaCustomSubprocess<OptionsType extends Options> =
 		*/
 		kill(signal?: keyof SignalConstants | number, error?: Error): boolean;
 		kill(error?: Error): boolean;
-
-		/**
-		Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
-		*/
-		[Symbol.asyncIterator](): SubprocessAsyncIterable<undefined, OptionsType['encoding']>;
-
-		/**
-		Same as `subprocess[Symbol.asyncIterator]` except options can be provided.
-		*/
-		iterable<IterableOptions extends ReadableOptions = {}>(readableOptions?: IterableOptions): SubprocessAsyncIterable<IterableOptions['binary'], OptionsType['encoding']>;
-
-		/**
-		Converts the subprocess to a readable stream.
-		*/
-		readable(readableOptions?: ReadableOptions): Readable;
 
 		/**
 		Converts the subprocess to a writable stream.

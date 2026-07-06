@@ -352,7 +352,9 @@ if (isLinux) {
 		const pipePromise = source.pipe(destination);
 		t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(source));
 		t.like(await destination, {stdout: 'y'});
-		t.like(await t.throwsAsync(source), {exitCode: 1, stderr: 'yes: standard output: Connection reset by peer'});
+		const sourceError = await t.throwsAsync(source);
+		t.is(sourceError.exitCode, 1);
+		t.regex(sourceError.stderr, /^yes: standard output: (?:Broken pipe|Connection reset by peer)$/);
 
 		t.false(source.stdout.readableEnded);
 		t.is(source.stdout.errored, null);

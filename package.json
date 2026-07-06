@@ -62,7 +62,7 @@
 		"pretty-ms": "^9.3.0",
 		"signal-exit": "^4.1.0",
 		"strip-final-newline": "^4.0.0",
-		"which": "^7.0.0",
+		"which-command": "^0.1.0",
 		"yoctocolors": "^2.1.2"
 	},
 	"devDependencies": {

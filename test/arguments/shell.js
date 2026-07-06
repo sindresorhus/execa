@@ -1,7 +1,7 @@
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
 import test from 'ava';
-import which from 'which';
+import {whichCommand} from 'which-command';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {identity} from '../helpers/stdio.js';
@@ -18,7 +18,7 @@ test('can use `options.shell: true`', async t => {
 
 const testShellPath = async (t, mapPath) => {
 	const shellPath = isWindows ? 'cmd.exe' : 'bash';
-	const shell = mapPath(await which(shellPath));
+	const shell = mapPath(await whichCommand(shellPath));
 	const {stdout} = await execa('node test/fixtures/noop.js foo', {shell});
 	t.is(stdout, 'foo');
 };

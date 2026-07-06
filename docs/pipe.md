@@ -66,6 +66,16 @@ const sourceResult = destinationResult.pipedFrom[0];
 console.log(sourceResult.stdout); // Full output of `npm run build`
 ```
 
+## Iterate, stream and IPC
+
+Just like a regular subprocess, the value returned by `subprocess.pipe()` can be [iterated](lines.md#progressive-splitting) over its output lines, [converted to a readable stream](streams.md#converting-a-subprocess-to-a-stream), or used to exchange [IPC messages](ipc.md) with the destination subprocess.
+
+```js
+for await (const line of execa`npm run build`.pipe`sort`) {
+	console.log(line);
+}
+```
+
 ## Errors
 
 When either subprocess fails, `subprocess.pipe()` is rejected with that subprocess' error. If the destination subprocess fails, [`error.pipedFrom`](api.md#resultpipedfrom) includes the source subprocess' result, which is useful for debugging.

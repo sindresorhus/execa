@@ -1168,6 +1168,21 @@ Kill the subprocess when the current process exits.
 
 [More info.](termination.md#current-process-exit)
 
+### options.killDescendants
+
+_Type:_ `boolean`\
+_Default:_ `false`
+
+When the subprocess is terminated by Execa, also terminate all of its descendant processes, instead of only the subprocess itself.
+
+This is useful when the subprocess spawns its own processes, such as when using the [`shell`](#optionsshell) option.
+
+On Unix, this spawns the subprocess in its own [process group](https://en.wikipedia.org/wiki/Process_group). On Windows, this uses [`taskkill`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill).
+
+This is best-effort: descendant processes that create their own process group or session are not terminated.
+
+[More info.](termination.md#killing-descendant-processes)
+
 ### options.uid
 
 _Type:_ `number`\

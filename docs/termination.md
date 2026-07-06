@@ -192,7 +192,26 @@ If the current process exits, the subprocess is automatically [terminated](#defa
 - The subprocess is run in the background using the [`detached`](api.md#optionsdetached) option.
 - The current process was terminated abruptly, for example, with [`SIGKILL`](#sigkill) as opposed to [`SIGTERM`](#sigterm) or a successful exit.
 
-On Windows, only the subprocess is terminated, not the other processes it might have spawned. To also terminate those, the [`windowsHide: false`](windows.md#console-window) option can be used.
+By default, only the subprocess is terminated, not the other processes it might have spawned. The [`killDescendants`](#killing-descendant-processes) option can be used to also terminate those.
+
+## Killing descendant processes
+
+By default, [terminating](#signal-termination) a subprocess only sends a signal to that subprocess, not to any process it might have spawned itself. For example, terminating a subprocess started with the [`shell`](api.md#optionsshell) option only terminates the shell, not the command it is running.
+
+The [`killDescendants`](api.md#optionskilldescendants) option terminates the whole process tree instead: the subprocess and all of its descendants. This applies to every way Execa terminates a subprocess, including [`subprocess.kill()`](#signal-termination), the [`cancelSignal`](#canceling), [`timeout`](#timeout), [`maxBuffer`](output.md#big-output) and [`cleanup`](#current-process-exit) options, and the [`forceKillAfterDelay`](#forceful-termination) escalation.
+
+```js
+// Without `killDescendants`, only the shell is terminated, and `sleep` keeps running
+const subprocess = execa({shell: true, killDescendants: true})`sleep 60`;
+subprocess.kill();
+await subprocess;
+```
+
+On Unix, this spawns the subprocess in its own [process group](https://en.wikipedia.org/wiki/Process_group), then sends the signal to that group. On Windows, this uses [`taskkill`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill), which terminates the process tree tracked by the OS.
+
+This is best-effort. On Unix, descendant processes that create their own process group or session (for example, daemons calling [`setsid()`](https://man7.org/linux/man-pages/man2/setsid.2.html)) escape termination. On Unix, because the subprocess runs in its own process group, it is also detached from the terminal, so pressing `CTRL-C` no longer forwards [`SIGINT`](#sigint) to it.
+
+This option cannot be used with [synchronous methods](execution.md#synchronous-execution).
 
 ## Signal termination
 

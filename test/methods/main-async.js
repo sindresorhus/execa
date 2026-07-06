@@ -1,4 +1,5 @@
 import process from 'node:process';
+import {ChildProcess} from 'node:child_process';
 import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
@@ -39,5 +40,40 @@ if (isWindows) {
 test('execa() returns a promise with pid', async t => {
 	const subprocess = execa('noop.js', ['foo']);
 	t.is(typeof subprocess.pid, 'number');
+	await subprocess;
+});
+
+test('execa() returns a promise with nodeChildProcess', async t => {
+	const subprocess = execa('noop.js', ['foo']);
+	t.true(subprocess instanceof Promise);
+	t.false(subprocess instanceof ChildProcess);
+	t.true(subprocess.nodeChildProcess instanceof ChildProcess);
+	t.is(subprocess.pid, subprocess.nodeChildProcess.pid);
+	t.is(subprocess.stdout, subprocess.nodeChildProcess.stdout);
+	t.is(subprocess.on, undefined);
+	t.is(subprocess.once, undefined);
+	t.is(subprocess.send, undefined);
+	t.is(subprocess.ref, undefined);
+	t.is(subprocess.unref, undefined);
+	t.is(subprocess.disconnect, undefined);
+	t.is(subprocess.channel, undefined);
+	t.is(subprocess.connected, undefined);
+	t.is(subprocess.exitCode, undefined);
+	t.is(subprocess.signalCode, undefined);
+	t.is(subprocess.killed, undefined);
+	t.is(subprocess.spawnargs, undefined);
+	t.is(subprocess.spawnfile, undefined);
+	t.is(subprocess[Symbol.dispose], undefined);
+	await subprocess;
+});
+
+test('nodeChildProcess does not include Execa-specific APIs', async t => {
+	const subprocess = execa('noop.js', ['foo'], {all: true});
+	t.false(Object.hasOwn(subprocess.nodeChildProcess, 'all'));
+	t.is(subprocess.nodeChildProcess.readable, undefined);
+	t.is(subprocess.nodeChildProcess.writable, undefined);
+	t.is(subprocess.nodeChildProcess.duplex, undefined);
+	t.is(subprocess.nodeChildProcess.iterable, undefined);
+	t.is(subprocess.nodeChildProcess[Symbol.asyncIterator], undefined);
 	await subprocess;
 });

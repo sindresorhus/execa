@@ -44,7 +44,7 @@ test('subprocess.getEachMessage() after disconnection', testPostDisconnection, '
 
 const testPostDisconnectionSubprocess = async (t, methodName) => {
 	const subprocess = execa('ipc-disconnect.js', [methodName], {ipc: true});
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 	const {message} = await t.throwsAsync(subprocess);
 	t.true(message.includes(`${methodName}() cannot be used`));
 };

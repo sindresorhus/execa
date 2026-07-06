@@ -69,7 +69,7 @@ test('error.isCanceled is false when kill method is used', async t => {
 test('calling abort is considered a signal termination', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
-	await once(subprocess, 'spawn');
+	await once(subprocess.nodeChildProcess, 'spawn');
 	abortController.abort();
 	const {isCanceled, isGracefullyCanceled, isTerminated, signal} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
@@ -92,7 +92,7 @@ test('calling abort does not emit the "error" event', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
 	let error;
-	subprocess.once('error', errorArgument => {
+	subprocess.nodeChildProcess.once('error', errorArgument => {
 		error = errorArgument;
 	});
 	abortController.abort();

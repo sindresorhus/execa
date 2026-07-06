@@ -181,11 +181,13 @@ const testStdinAbort = async (t, methodName) => {
 
 	const error = await t.throwsAsync(finishedStream(stream));
 	t.like(error, prematureClose);
-	assertProcessNormalExit(t, error);
 	assertWritableAborted(t, subprocess.stdin);
 	t.true(subprocess.stdout.readableEnded);
 	t.true(subprocess.stderr.readableEnded);
-	await assertSubprocessError(t, subprocess, error);
+	const subprocessError = await t.throwsAsync(subprocess);
+	t.like(subprocessError, prematureClose);
+	t.like(subprocessError.cause, prematureClose);
+	assertProcessNormalExit(t, subprocessError);
 };
 
 test('subprocess.stdin abort -> .writable() error + subprocess fail', testStdinAbort, 'writable');

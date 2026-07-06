@@ -4,11 +4,9 @@ import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
 setFixtureDirectory();
 
-test('promise methods are not enumerable', t => {
+test('subprocess properties are enumerable', t => {
 	const descriptors = Object.getOwnPropertyDescriptors(execa('noop.js'));
-	t.false(descriptors.then.enumerable);
-	t.false(descriptors.catch.enumerable);
-	t.false(descriptors.finally.enumerable);
+	t.true(descriptors.nodeChildProcess.enumerable);
 });
 
 test('finally function is executed on success', async t => {

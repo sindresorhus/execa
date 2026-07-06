@@ -50,7 +50,7 @@ const BIG_PAYLOAD_SIZE = '.'.repeat(1e6);
 test('Handles backpressure', async t => {
 	const subprocess = execa('ipc-iterate.js', {ipc: true});
 	await subprocess.sendMessage(BIG_PAYLOAD_SIZE);
-	t.true(subprocess.send(foobarString));
+	t.true(subprocess.nodeChildProcess.send(foobarString));
 	t.is(await subprocess.getOneMessage(), BIG_PAYLOAD_SIZE);
 	const {ipcOutput} = await subprocess;
 	t.deepEqual(ipcOutput, [BIG_PAYLOAD_SIZE]);
@@ -124,7 +124,7 @@ test('Does not hold message events on I/O errors', async t => {
 	const subprocess = execa('ipc-echo.js', {ipc: true});
 	const error = mockSendIoError(subprocess);
 	const promise = subprocess.sendMessage('.');
-	subprocess.emit('message', '.');
+	subprocess.nodeChildProcess.emit('message', '.');
 	t.is(await t.throwsAsync(promise), error);
 
 	const {exitCode, isTerminated, message, ipcOutput} = await t.throwsAsync(subprocess);

@@ -113,7 +113,7 @@ test('subprocess.sendMessage() "strict" fails if the subprocess uses once()', as
 
 test('exports.sendMessage() "strict" fails if the current process uses once() and buffer false', async t => {
 	const subprocess = execa('ipc-send-strict.js', {ipc: true, buffer: {ipc: false}});
-	const [message] = await once(subprocess, 'message');
+	const [message] = await once(subprocess.nodeChildProcess, 'message');
 	t.deepEqual(message, {
 		id: 0n,
 		type: 'execa:ipc:request',

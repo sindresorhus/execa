@@ -17,7 +17,7 @@ const testSendHoldParent = async (t, getMessage, buffer, filter) => {
 	await Promise.all([
 		...messages.map(message => subprocess.sendMessage(message)),
 		subprocess.sendMessage(foobarString),
-		subprocess.emit('message', '.'),
+		subprocess.nodeChildProcess.emit('message', '.'),
 	]);
 	t.is(await getMessage(subprocess, {filter}), '.');
 
@@ -52,7 +52,7 @@ const testSendHoldParentSerial = async (t, getMessage, buffer, filter) => {
 	t.is(await subprocess.getOneMessage({filter}), 0);
 
 	const promise = subprocess.sendMessage(1);
-	subprocess.emit('message', '.');
+	subprocess.nodeChildProcess.emit('message', '.');
 	await promise;
 
 	const messages = Array.from({length: PARALLEL_COUNT}, (_, index) => index + 2);

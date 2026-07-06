@@ -114,7 +114,7 @@ test('result.isTerminated is false if not killed', async t => {
 test('result.isTerminated is false if not killed and subprocess.kill() was called', async t => {
 	const subprocess = execa('noop.js');
 	subprocess.kill(0);
-	t.true(subprocess.killed);
+	t.true(subprocess.nodeChildProcess.killed);
 	const {isTerminated} = await subprocess;
 	t.false(isTerminated);
 });

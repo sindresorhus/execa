@@ -80,7 +80,7 @@ test('process.once("message") keeps the subprocess alive, after getOneMessage()'
 test('process.once("disconnect") keeps the subprocess alive', async t => {
 	const subprocess = execa('ipc-once-disconnect.js', {ipc: true});
 	t.is(await subprocess.getOneMessage(), '.');
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 
 	const {ipcOutput, stdout} = await subprocess;
 	t.deepEqual(ipcOutput, ['.']);
@@ -91,7 +91,7 @@ test('process.once("disconnect") keeps the subprocess alive, after sendMessage()
 	const subprocess = execa('ipc-once-disconnect-send.js', {ipc: true});
 	t.is(await subprocess.getOneMessage(), '.');
 	t.is(await subprocess.getOneMessage(), '.');
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 
 	const {ipcOutput, stdout} = await subprocess;
 	t.deepEqual(ipcOutput, ['.', '.']);
@@ -102,7 +102,7 @@ test('process.once("disconnect") does not keep the subprocess alive, after getOn
 	const subprocess = execa('ipc-once-disconnect-get.js', {ipc: true});
 	await subprocess.sendMessage('.');
 	t.is(await subprocess.getOneMessage(), '.');
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 
 	const {ipcOutput, stdout} = await subprocess;
 	t.deepEqual(ipcOutput, ['.']);
@@ -111,8 +111,8 @@ test('process.once("disconnect") does not keep the subprocess alive, after getOn
 
 test('Can call subprocess.disconnect() right away', async t => {
 	const subprocess = execa('ipc-send.js', {ipc: true});
-	subprocess.disconnect();
-	t.is(subprocess.channel, null);
+	subprocess.nodeChildProcess.disconnect();
+	t.is(subprocess.nodeChildProcess.channel, null);
 
 	await t.throwsAsync(subprocess.getOneMessage(), {
 		message: /subprocess.getOneMessage\(\) could not complete/,

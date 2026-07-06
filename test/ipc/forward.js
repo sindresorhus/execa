@@ -11,7 +11,7 @@ const testParentErrorOne = async (t, filter, buffer) => {
 
 	const promise = subprocess.getOneMessage({filter});
 	const cause = new Error(foobarString);
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 	t.is(await promise, foobarString);
 
 	const error = await t.throwsAsync(subprocess);
@@ -49,7 +49,7 @@ const testParentErrorEach = async (t, buffer) => {
 
 	const promise = iterateAllMessages(subprocess);
 	const cause = new Error(foobarString);
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 
 	const error = await t.throwsAsync(subprocess);
 	t.is(error, await t.throwsAsync(promise));
@@ -83,7 +83,7 @@ test('"error" event does not interrupt result.ipcOutput', async t => {
 	const subprocess = execa('ipc-echo-twice.js', {ipcInput: foobarString});
 
 	const cause = new Error(foobarString);
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 	t.is(await subprocess.getOneMessage(), foobarString);
 	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);

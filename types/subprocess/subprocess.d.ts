@@ -121,22 +121,28 @@ type ExecaCustomSubprocess<OptionsType extends Options> =
 		Converts the subprocess to a [`{readable, writable}`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) pair of web streams.
 		*/
 		transformStream(duplexOptions?: DuplexOptions): ReadableWritablePair;
+
+		/**
+		Underlying Node.js [`ChildProcess`](https://nodejs.org/api/child_process.html#class-childprocess) instance.
+
+		This is an escape hatch for Node.js-specific APIs not documented by Execa, such as `.on()`, `.send()`, `.disconnect()`, `.ref()` or `.unref()`.
+		*/
+		nodeChildProcess: ChildProcess;
 	};
 
 /**
-[`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with additional methods and properties.
+Subprocess with Execa-specific methods and properties. It is also a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
 */
 export type Subprocess<OptionsType extends Options = Options> =
-	& Omit<ChildProcess, keyof ExecaCustomSubprocess<OptionsType>>
-	& ExecaCustomSubprocess<OptionsType>;
+	& ExecaCustomSubprocess<OptionsType>
+	& Promise<Result<OptionsType>>;
 
 /**
 The return value of all asynchronous methods is both:
-- the subprocess.
+- the subprocess with Execa-specific methods and properties.
 - a `Promise` either resolving with its successful `result`, or rejecting with its `error`.
 */
 export type ResultPromise<OptionsType extends Options = Options> =
-	& Subprocess<OptionsType>
-	& Promise<Result<OptionsType>>;
+	Subprocess<OptionsType>;
 
 export {};

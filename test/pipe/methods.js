@@ -66,6 +66,10 @@ test('The .pipe() return value has a .readable() method', async t => {
 	t.is(await text(pipeSimple().readable()), simpleFull);
 });
 
+test('The .pipe() return value has a .readableStream() method', async t => {
+	t.is(await text(pipeSimple().readableStream()), simpleFull);
+});
+
 test('The .pipe() return value .readable() can be called multiple times', async t => {
 	const piped = pipeSimple();
 	const [output, secondOutput] = await Promise.all([
@@ -91,6 +95,8 @@ test('The .pipe() return value does not have a .writable() method', async t => {
 	const piped = pipeSimple();
 	t.is(piped.writable, undefined);
 	t.is(piped.duplex, undefined);
+	t.is(piped.writableStream, undefined);
+	t.is(piped.transformStream, undefined);
 	await piped;
 });
 
@@ -373,6 +379,12 @@ test('The .pipe() return value .readable() waits for source failure', async t =>
 	const piped = execa('fail.js').pipe('stdin.js');
 
 	await t.throwsAsync(text(piped.readable()), {message: /Command failed with exit code 2/});
+});
+
+test('The .pipe() return value .readableStream() waits for source failure', async t => {
+	const piped = execa('fail.js').pipe('stdin.js');
+
+	await t.throwsAsync(text(piped.readableStream()), {message: /Command failed with exit code 2/});
 });
 
 test('The .pipe() return value .all waits for source failure', async t => {

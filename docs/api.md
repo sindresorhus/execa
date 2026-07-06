@@ -498,6 +498,33 @@ Converts the subprocess to a duplex stream.
 
 [More info.](streams.md#converting-a-subprocess-to-a-stream)
 
+### subprocess.readableStream(readableOptions?)
+
+`readableOptions`: [`ReadableOptions`](#readableoptions)\
+_Returns_: [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) web stream
+
+Converts the subprocess to a readable web stream.
+
+[More info.](streams.md#converting-a-subprocess-to-a-web-stream)
+
+### subprocess.writableStream(writableOptions?)
+
+`writableOptions`: [`WritableOptions`](#writableoptions)\
+_Returns_: [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream) web stream
+
+Converts the subprocess to a writable web stream.
+
+[More info.](streams.md#converting-a-subprocess-to-a-web-stream)
+
+### subprocess.transformStream(duplexOptions?)
+
+`duplexOptions`: [`ReadableOptions | WritableOptions`](#readableoptions)\
+_Returns_: [`{readable: ReadableStream, writable: WritableStream}`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream)
+
+Converts the subprocess to a [`{readable, writable}`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) pair of web streams.
+
+[More info.](streams.md#converting-a-subprocess-to-a-web-stream)
+
 ## Result
 
 _TypeScript:_ [`Result`](typescript.md) or [`SyncResult`](typescript.md)\

@@ -103,6 +103,16 @@ test('child_process.spawn() early errors can use .readable()', testEarlyErrorCon
 test('child_process.spawn() early errors can use .writable()', testEarlyErrorConvertor, 'writable');
 test('child_process.spawn() early errors can use .duplex()', testEarlyErrorConvertor, 'duplex');
 
+const testEarlyErrorWebConvertor = async (t, streamMethod) => {
+	const subprocess = getEarlyErrorSubprocess();
+	subprocess[streamMethod]();
+	await t.throwsAsync(subprocess);
+};
+
+test('child_process.spawn() early errors can use .readableStream()', testEarlyErrorWebConvertor, 'readableStream');
+test('child_process.spawn() early errors can use .writableStream()', testEarlyErrorWebConvertor, 'writableStream');
+test('child_process.spawn() early errors can use .transformStream()', testEarlyErrorWebConvertor, 'transformStream');
+
 const testEarlyErrorStream = async (t, getStreamProperty, options) => {
 	const subprocess = getEarlyErrorSubprocess(options);
 	const stream = getStreamProperty(subprocess);

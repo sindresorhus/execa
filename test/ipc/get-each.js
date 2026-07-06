@@ -143,7 +143,7 @@ test('Disconnecting in the current process stops exports.getEachMessage()', asyn
 	const subprocess = execa('ipc-iterate-print.js', {ipc: true});
 	t.is(await subprocess.getOneMessage(), foobarString);
 	await subprocess.sendMessage('.');
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 
 	const {stdout} = await subprocess;
 	t.is(stdout, '.');
@@ -172,25 +172,25 @@ test('Exiting the subprocess stops subprocess.getEachMessage()', async t => {
 const testCleanupListeners = async (t, buffer) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 
-	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('message'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('disconnect'), 1);
 
 	const promise = iterateAllMessages(subprocess);
-	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('message'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('disconnect'), 1);
 	t.deepEqual(await promise, [foobarString]);
 
-	t.is(subprocess.listenerCount('message'), 0);
-	t.is(subprocess.listenerCount('disconnect'), 0);
+	t.is(subprocess.nodeChildProcess.listenerCount('message'), 0);
+	t.is(subprocess.nodeChildProcess.listenerCount('disconnect'), 0);
 };
 
 test('Cleans up subprocess.getEachMessage() listeners, buffer false', testCleanupListeners, false);
 test('Cleans up subprocess.getEachMessage() listeners, buffer true', testCleanupListeners, true);
 
 const sendContinuousMessages = async subprocess => {
-	while (subprocess.connected) {
+	while (subprocess.nodeChildProcess.connected) {
 		for (let index = 0; index < 10; index += 1) {
-			subprocess.emit('message', foobarString);
+			subprocess.nodeChildProcess.emit('message', foobarString);
 		}
 
 		// eslint-disable-next-line no-await-in-loop
@@ -202,7 +202,7 @@ test.serial('Handles buffered messages when disconnecting', async t => {
 	const subprocess = execa('ipc-send-fail.js', {ipc: true, buffer: false});
 
 	const promise = subprocess.getOneMessage();
-	subprocess.emit('message', foobarString);
+	subprocess.nodeChildProcess.emit('message', foobarString);
 	t.is(await promise, foobarString);
 	sendContinuousMessages(subprocess);
 

@@ -89,7 +89,7 @@ test('Graceful cancelSignal can be aborted twice', async t => {
 test('Graceful cancelSignal cannot be manually aborted after disconnection', async t => {
 	const controller = new AbortController();
 	const subprocess = execa('empty.js', {cancelSignal: controller.signal, gracefulCancel: true});
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 	controller.abort(foobarString);
 	const {isCanceled, isGracefullyCanceled, isTerminated, exitCode, ipcOutput, originalMessage} = await t.throwsAsync(subprocess);
 	t.false(isCanceled);
@@ -105,7 +105,7 @@ test('Graceful cancelSignal can disconnect after being manually aborted', async 
 	const subprocess = execa('graceful-disconnect.js', {cancelSignal: controller.signal, gracefulCancel: true});
 	controller.abort(foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 	const {isCanceled, isGracefullyCanceled, isTerminated, exitCode, ipcOutput} = await t.throwsAsync(subprocess);
 	t.true(isCanceled);
 	t.true(isGracefullyCanceled);
@@ -118,7 +118,7 @@ test('Graceful cancelSignal is automatically aborted on disconnection', async t 
 	const controller = new AbortController();
 	const subprocess = execa('graceful-send-print.js', {cancelSignal: controller.signal, gracefulCancel: true});
 	t.false(await subprocess.getOneMessage());
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 	const {isCanceled, isGracefullyCanceled, ipcOutput, stdout} = await subprocess;
 	t.false(isCanceled);
 	t.false(isGracefullyCanceled);
@@ -129,7 +129,7 @@ test('Graceful cancelSignal is automatically aborted on disconnection', async t 
 test('getCancelSignal() aborts if already disconnected', async t => {
 	const controller = new AbortController();
 	const subprocess = execa('graceful-print.js', {cancelSignal: controller.signal, gracefulCancel: true});
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 	const {isCanceled, isGracefullyCanceled, ipcOutput, stdout} = await subprocess;
 	t.false(isCanceled);
 	t.false(isGracefullyCanceled);

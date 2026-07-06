@@ -13,7 +13,7 @@ setFixtureDirectory();
 
 const testUnusualError = async (t, error, expectedOriginalMessage = String(error)) => {
 	const subprocess = execa('empty.js');
-	subprocess.emit('error', error);
+	subprocess.nodeChildProcess.emit('error', error);
 	const {originalMessage, shortMessage, message} = await t.throwsAsync(subprocess);
 	t.is(originalMessage, expectedOriginalMessage === '' ? undefined : expectedOriginalMessage);
 	t.true(shortMessage.includes(expectedOriginalMessage));
@@ -34,13 +34,13 @@ test('error instance can be undefined', testUnusualError, undefined, 'undefined'
 
 test('error instance can be a plain object', async t => {
 	const subprocess = execa('empty.js');
-	subprocess.emit('error', {message: foobarString});
+	subprocess.nodeChildProcess.emit('error', {message: foobarString});
 	await t.throwsAsync(subprocess, {message: new RegExp(foobarString)});
 });
 
 const runAndFail = (t, fixtureName, argument, error) => {
 	const subprocess = execa(fixtureName, [argument]);
-	subprocess.emit('error', error);
+	subprocess.nodeChildProcess.emit('error', error);
 	return t.throwsAsync(subprocess);
 };
 
@@ -91,7 +91,7 @@ test('error.cause is not set if error.timedOut', async t => {
 test('error.cause is set on error event', async t => {
 	const subprocess = execa('empty.js');
 	const error = new Error(foobarString);
-	subprocess.emit('error', error);
+	subprocess.nodeChildProcess.emit('error', error);
 	const {cause} = await t.throwsAsync(subprocess);
 	t.is(cause, error);
 });

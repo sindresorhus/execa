@@ -1,10 +1,38 @@
+import type {ChildProcess} from 'node:child_process';
 import {expectType, expectError, expectAssignable} from 'tsd';
-import {execa, type Subprocess} from '../../index.js';
+import {execa, type Result, type Subprocess} from '../../index.js';
 
 const subprocess = execa('unicorns');
 expectAssignable<Subprocess>(subprocess);
+expectType<Result<{}>>(await subprocess);
 
 expectType<number | undefined>(subprocess.pid);
+expectType<ChildProcess>(subprocess.nodeChildProcess);
+subprocess.nodeChildProcess.on('exit', () => undefined);
+subprocess.nodeChildProcess.once('exit', () => undefined);
+subprocess.nodeChildProcess.ref();
+subprocess.nodeChildProcess.unref();
+subprocess.nodeChildProcess.send('message');
+subprocess.nodeChildProcess.disconnect();
+expectType<boolean>(subprocess.nodeChildProcess.connected);
+expectType<number | null>(subprocess.nodeChildProcess.exitCode);
+expectType<NodeJS.Signals | null>(subprocess.nodeChildProcess.signalCode);
+expectType<boolean>(subprocess.nodeChildProcess.killed);
+expectType<string[]>(subprocess.nodeChildProcess.spawnargs);
+expectType<string>(subprocess.nodeChildProcess.spawnfile);
+expectError(subprocess.on('exit', () => undefined));
+expectError(subprocess.once('exit', () => undefined));
+expectError(subprocess.ref());
+expectError(subprocess.unref());
+expectError(subprocess.send('message'));
+expectError(subprocess.disconnect());
+expectError(subprocess.connected);
+expectError(subprocess.channel);
+expectError(subprocess.exitCode);
+expectError(subprocess.signalCode);
+expectError(subprocess.killed);
+expectError(subprocess.spawnargs);
+expectError(subprocess.spawnfile);
 
 expectType<boolean>(subprocess.kill());
 subprocess.kill('SIGKILL');
@@ -27,4 +55,4 @@ expectError(subprocess.kill('SIGKILL', {}));
 expectError(subprocess.kill(null, new Error('test')));
 
 const ipcSubprocess = execa('unicorns', {ipc: true});
-expectAssignable<Subprocess>(subprocess);
+expectAssignable<Subprocess>(ipcSubprocess);

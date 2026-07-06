@@ -73,6 +73,25 @@ test('spawnAndKill detached SIGKILL', spawnAndKill, ['SIGKILL', false, true, fal
 test('spawnAndKill cleanup detached SIGTERM', spawnAndKill, ['SIGTERM', true, true, false]);
 test('spawnAndKill cleanup detached SIGKILL', spawnAndKill, ['SIGKILL', true, true, false]);
 
+if (!isWindows) {
+	test('spawnAndKill cleanup uses killSignal', async t => {
+		const subprocess = execa('ipc-send-pid.js', ['true', 'false', 'no-killable'], {stdio: 'ignore', ipc: true});
+
+		const pid = await subprocess.getOneMessage();
+		t.true(Number.isInteger(pid));
+		t.true(isRunning(pid));
+
+		process.kill(subprocess.pid, 'SIGTERM');
+
+		await t.throwsAsync(subprocess);
+		await Promise.race([
+			setTimeout(1e4, undefined, {ref: false}),
+			pollForSubprocessExit(pid),
+		]);
+		t.false(isRunning(pid));
+	});
+}
+
 // See #128
 test('removes exit handler on exit', async t => {
 	// @todo this relies on `signal-exit` internals

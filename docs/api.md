@@ -211,7 +211,7 @@ This can only be called inside a subprocess. This requires the [`gracefulCancel`
 ## Return value
 
 _TypeScript:_ [`ResultPromise`](typescript.md)\
-_Type:_ `Promise<object> | Subprocess`
+_Type:_ `Subprocess`
 
 The return value of all [asynchronous methods](#methods) is both:
 - the [subprocess](#subprocess).
@@ -223,7 +223,9 @@ The return value of all [asynchronous methods](#methods) is both:
 
 _TypeScript:_ [`Subprocess`](typescript.md)
 
-[`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with the following methods and properties.
+Promise with the following Execa-specific methods and properties.
+
+The underlying Node.js [`ChildProcess`](https://nodejs.org/api/child_process.html#class-childprocess) instance is available as [`subprocess.nodeChildProcess`](#subprocessnodechildprocess). This is an escape hatch for Node.js-specific APIs that Execa does not document, such as `.on()`, `.send()`, `.disconnect()`, `.ref()` and `.unref()`.
 
 ### subprocess\[Symbol.asyncIterator\]()
 
@@ -334,6 +336,14 @@ Process identifier ([PID](https://en.wikipedia.org/wiki/Process_identifier)).
 This is `undefined` if the subprocess failed to spawn.
 
 [More info.](termination.md#inter-process-termination)
+
+### subprocess.nodeChildProcess
+
+_Type:_ [`ChildProcess`](https://nodejs.org/api/child_process.html#class-childprocess)
+
+Underlying Node.js child process instance.
+
+This is intended as an escape hatch for Node.js-specific APIs that Execa does not document.
 
 ### subprocess.sendMessage(message, sendMessageOptions)
 

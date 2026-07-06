@@ -27,8 +27,8 @@ const testEarlyErrorShape = async (t, reject) => {
 	const subprocess = getEarlyErrorSubprocess({reject});
 	t.notThrows(() => {
 		subprocess.catch(() => {});
-		subprocess.unref();
-		subprocess.on('error', () => {});
+		subprocess.nodeChildProcess.unref();
+		subprocess.nodeChildProcess.on('error', () => {});
 	});
 };
 
@@ -112,6 +112,40 @@ const testEarlyErrorWebConvertor = async (t, streamMethod) => {
 test('child_process.spawn() early errors can use .readableStream()', testEarlyErrorWebConvertor, 'readableStream');
 test('child_process.spawn() early errors can use .writableStream()', testEarlyErrorWebConvertor, 'writableStream');
 test('child_process.spawn() early errors can use .transformStream()', testEarlyErrorWebConvertor, 'transformStream');
+
+const testEarlyErrorIpc = async (t, runIpcMethod) => {
+	const subprocess = getEarlyErrorSubprocess({ipc: true});
+	t.throws(() => {
+		runIpcMethod(subprocess);
+	}, {message: /cannot be used: the subprocess has already exited or disconnected/});
+	await t.throwsAsync(subprocess, expectedEarlyError);
+};
+
+test('child_process.spawn() early errors can use .sendMessage()', testEarlyErrorIpc, subprocess => subprocess.sendMessage('.'));
+test('child_process.spawn() early errors can use .getOneMessage()', testEarlyErrorIpc, subprocess => subprocess.getOneMessage());
+test('child_process.spawn() early errors can use .getEachMessage()', testEarlyErrorIpc, subprocess => subprocess.getEachMessage());
+
+test('child_process.spawn() early errors can use .iterable()', async t => {
+	const subprocess = getEarlyErrorSubprocess();
+	const lines = [];
+	for await (const line of subprocess.iterable()) {
+		lines.push(line);
+	}
+
+	t.deepEqual(lines, []);
+	await t.throwsAsync(subprocess);
+});
+
+test('child_process.spawn() early errors can use Symbol.asyncIterator', async t => {
+	const subprocess = getEarlyErrorSubprocess();
+	const lines = [];
+	for await (const line of subprocess) {
+		lines.push(line);
+	}
+
+	t.deepEqual(lines, []);
+	await t.throwsAsync(subprocess);
+});
 
 const testEarlyErrorStream = async (t, getStreamProperty, options) => {
 	const subprocess = getEarlyErrorSubprocess(options);

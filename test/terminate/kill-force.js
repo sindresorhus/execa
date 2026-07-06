@@ -111,7 +111,7 @@ if (isWindows) {
 	test('`forceKillAfterDelay` works with the "cancelSignal" option', async t => {
 		const abortController = new AbortController();
 		const subprocess = spawnNoKillableSimple({cancelSignal: abortController.signal});
-		await once(subprocess, 'spawn');
+		await once(subprocess.nodeChildProcess, 'spawn');
 		abortController.abort('');
 		const {isTerminated, signal, isCanceled, isGracefullyCanceled, isForcefullyTerminated, shortMessage} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);
@@ -145,10 +145,10 @@ if (isWindows) {
 
 	test('`forceKillAfterDelay` works with the "error" event', async t => {
 		const subprocess = spawnNoKillableSimple();
-		await once(subprocess, 'spawn');
+		await once(subprocess.nodeChildProcess, 'spawn');
 		const error = new Error(foobarString);
 		error.code = 'ECODE';
-		subprocess.emit('error', error);
+		subprocess.nodeChildProcess.emit('error', error);
 		subprocess.kill();
 		const {isTerminated, signal, isForcefullyTerminated, shortMessage, originalMessage, cause} = await t.throwsAsync(subprocess);
 		t.true(isTerminated);

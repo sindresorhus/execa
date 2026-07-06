@@ -32,7 +32,8 @@ export const alwaysPass = () => true;
 // So we mock them.
 export const mockSendIoError = anyProcess => {
 	const error = new Error(foobarString);
-	anyProcess.send = () => {
+	const target = anyProcess.nodeChildProcess ?? anyProcess;
+	target.send = () => {
 		throw error;
 	};
 

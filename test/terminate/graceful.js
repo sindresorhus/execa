@@ -47,7 +47,7 @@ test('Does not disconnect during I/O errors when sending the abort reason', asyn
 	const error = mockSendIoError(subprocess);
 	controller.abort(foobarString);
 	await setTimeout(0);
-	t.true(subprocess.connected);
+	t.true(subprocess.nodeChildProcess.connected);
 	subprocess.kill();
 	const {isCanceled, isGracefullyCanceled, signal, ipcOutput, cause} = await t.throwsAsync(subprocess);
 	t.false(isCanceled);
@@ -97,7 +97,7 @@ test('Fail when sending non-serializable abort reason', async t => {
 	const subprocess = execa('ipc-echo.js', {cancelSignal: controller.signal, gracefulCancel: true, forceKillAfterDelay: false});
 	controller.abort(() => {});
 	await setTimeout(0);
-	t.true(subprocess.connected);
+	t.true(subprocess.nodeChildProcess.connected);
 	await subprocess.sendMessage(foobarString);
 	const {isCanceled, isGracefullyCanceled, isTerminated, exitCode, cause, ipcOutput} = await t.throwsAsync(subprocess);
 	t.false(isCanceled);

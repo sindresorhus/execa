@@ -127,7 +127,7 @@ await timedExeca`npm run test`;
 
 ### Subprocess
 
-The subprocess is returned as soon as it is spawned. It is a [`child_process` instance](https://nodejs.org/api/child_process.html#child_process_class_childprocess) with [additional methods and properties](api.md#subprocess).
+The subprocess is returned as soon as it is spawned. It is a `Promise` with [Execa-specific methods and properties](api.md#subprocess). The underlying Node.js [`ChildProcess`](https://nodejs.org/api/child_process.html#class-childprocess) is available as [`subprocess.nodeChildProcess`](api.md#subprocessnodechildprocess).
 
 ```js
 const subprocess = execa`npm run build`;
@@ -136,7 +136,7 @@ console.log(subprocess.pid);
 
 ### Result
 
-The subprocess is also a `Promise` that resolves with the [`result`](api.md#result).
+The subprocess resolves with the [`result`](api.md#result).
 
 ```js
 const {stdout} = await execa`npm run build`;

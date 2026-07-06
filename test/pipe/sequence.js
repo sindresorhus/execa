@@ -285,9 +285,9 @@ test('Simultaneous error on source and destination', async t => {
 	const pipePromise = source.pipe(destination);
 
 	const sourceCause = new Error(foobarString);
-	source.emit('error', sourceCause);
+	source.nodeChildProcess.emit('error', sourceCause);
 	const destinationCause = new Error('other');
-	destination.emit('error', destinationCause);
+	destination.nodeChildProcess.emit('error', destinationCause);
 
 	t.is(await t.throwsAsync(pipePromise), await t.throwsAsync(destination));
 	t.like(await t.throwsAsync(source), {cause: {originalMessage: sourceCause.originalMessage}});

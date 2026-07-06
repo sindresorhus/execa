@@ -89,7 +89,7 @@ test('Cannot call .kill(true, error)', testInvalidKillArgument, true, new Error(
 test('subprocess errors are handled before spawn', async t => {
 	const subprocess = execa('forever.js');
 	const cause = new Error('test');
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 	subprocess.kill();
 	const error = await t.throwsAsync(subprocess);
 	t.is(error.cause, cause);
@@ -100,9 +100,9 @@ test('subprocess errors are handled before spawn', async t => {
 
 test('subprocess errors are handled after spawn', async t => {
 	const subprocess = execa('forever.js');
-	await once(subprocess, 'spawn');
+	await once(subprocess.nodeChildProcess, 'spawn');
 	const cause = new Error('test');
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 	subprocess.kill();
 	const error = await t.throwsAsync(subprocess);
 	t.is(error.cause, cause);
@@ -114,12 +114,12 @@ test('subprocess errors are handled after spawn', async t => {
 test('subprocess double errors are handled after spawn', async t => {
 	const abortController = new AbortController();
 	const subprocess = execa('forever.js', {cancelSignal: abortController.signal});
-	await once(subprocess, 'spawn');
+	await once(subprocess.nodeChildProcess, 'spawn');
 	const cause = new Error('test');
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 	await setImmediate();
 	abortController.abort();
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 	const error = await t.throwsAsync(subprocess);
 	t.is(error.cause, cause);
 	t.is(error.exitCode, undefined);
@@ -129,9 +129,9 @@ test('subprocess double errors are handled after spawn', async t => {
 
 test('subprocess errors use killSignal', async t => {
 	const subprocess = execa('forever.js', {killSignal: 'SIGINT'});
-	await once(subprocess, 'spawn');
+	await once(subprocess.nodeChildProcess, 'spawn');
 	const cause = new Error('test');
-	subprocess.emit('error', cause);
+	subprocess.nodeChildProcess.emit('error', cause);
 	subprocess.kill();
 	const error = await t.throwsAsync(subprocess);
 	t.is(error.cause, cause);

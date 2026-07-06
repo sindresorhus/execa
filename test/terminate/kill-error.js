@@ -78,6 +78,6 @@ test('.kill(error) does not emit the "error" event', async t => {
 	const subprocess = execa('forever.js');
 	const cause = new Error('test');
 	subprocess.kill(cause);
-	const error = await Promise.race([t.throwsAsync(subprocess), once(subprocess, 'error')]);
+	const error = await Promise.race([t.throwsAsync(subprocess), once(subprocess.nodeChildProcess, 'error')]);
 	t.is(error.cause, cause);
 });

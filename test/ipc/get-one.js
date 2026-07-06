@@ -79,18 +79,18 @@ test('subprocess.getOneMessage() can be called twice at the same time, buffer tr
 const testCleanupListeners = async (t, buffer, filter) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
 
-	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('message'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('disconnect'), 1);
 
 	const promise = subprocess.getOneMessage({filter});
-	t.is(subprocess.listenerCount('message'), 1);
-	t.is(subprocess.listenerCount('disconnect'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('message'), 1);
+	t.is(subprocess.nodeChildProcess.listenerCount('disconnect'), 1);
 
 	t.is(await promise, foobarString);
 	await subprocess;
 
-	t.is(subprocess.listenerCount('message'), 0);
-	t.is(subprocess.listenerCount('disconnect'), 0);
+	t.is(subprocess.nodeChildProcess.listenerCount('message'), 0);
+	t.is(subprocess.nodeChildProcess.listenerCount('disconnect'), 0);
 };
 
 test('Cleans up subprocess.getOneMessage() listeners, buffer false', testCleanupListeners, false, undefined);
@@ -103,7 +103,7 @@ const testParentDisconnect = async (t, buffer, filter) => {
 	await subprocess.sendMessage(foobarString);
 	t.is(await subprocess.getOneMessage(), foobarString);
 
-	subprocess.disconnect();
+	subprocess.nodeChildProcess.disconnect();
 
 	const {exitCode, isTerminated, message} = await t.throwsAsync(subprocess);
 	t.is(exitCode, 1);

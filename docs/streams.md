@@ -118,6 +118,20 @@ When using [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), 
 
 This means you do not need to `await` the subprocess' [promise](execution.md#result). On the other hand, you (or the library using the stream) do need to both consume the stream, and handle its `error` event. This can be done by using [`await finished(stream)`](https://nodejs.org/api/stream.html#streamfinishedstream-options), [`await pipeline(..., stream, ...)`](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) or [`await text(stream)`](https://nodejs.org/api/webstreams.html#streamconsumerstextstream) which throw an exception when the stream errors.
 
+## Converting a subprocess to a web stream
+
+The [`subprocess.readableStream()`](api.md#subprocessreadablestreamreadableoptions), [`subprocess.writableStream()`](api.md#subprocesswritablestreamwritableoptions) and [`subprocess.transformStream()`](api.md#subprocesstransformstreamduplexoptions) methods are the [web streams](#web-streams) counterparts of [`subprocess.readable()`](api.md#subprocessreadablereadableoptions), [`subprocess.writable()`](api.md#subprocesswritablewritableoptions) and [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions). They behave the same way, including [error handling](#error-handling) and the [`from`](api.md#readableoptionsfrom)/[`to`](api.md#writableoptionsto) options, but return a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream), a [`WritableStream`](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream) and a [`{readable, writable}`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) pair instead of Node.js streams.
+
+This is useful when using a library or API that expects web streams as arguments. In every other situation, the [Node.js stream methods](#converting-a-subprocess-to-a-stream) can be used instead.
+
+```js
+const readableStream = execa`npm run scaffold`.readableStream();
+
+const writableStream = execa`npm run scaffold`.writableStream();
+
+const {readable, writable} = execa`npm run scaffold`.transformStream();
+```
+
 <hr>
 
 [**Next**: 📞 Inter-process communication](ipc.md)\

@@ -1,5 +1,6 @@
 import {createWriteStream} from 'node:fs';
 import type {Readable} from 'node:stream';
+import type {ReadableStream} from 'node:stream/web';
 import {expectType, expectNotType, expectError} from 'tsd';
 import {
 	execa,
@@ -269,6 +270,7 @@ for await (const pipeLine of subprocess.pipe(bufferSubprocess)) {
 }
 
 expectType<Readable>(subprocess.pipe`stdin`.readable());
+expectType<ReadableStream>(subprocess.pipe`stdin`.readableStream());
 
 expectType<Readable>(subprocess.pipe({all: true})`stdin`.all);
 expectType<undefined>(subprocess.pipe`stdin`.all);
@@ -279,6 +281,8 @@ expectType<Promise<void>>(ipcPipeResult.sendMessage('message'));
 expectType<Promise<Message<'advanced'>>>(ipcPipeResult.getOneMessage());
 expectType<AsyncIterableIterator<Message<'advanced'>>>(ipcPipeResult.getEachMessage());
 
-// `writable()` and `duplex()` write to the destination's `stdin`, which is already piped from the source, so they are not forwarded.
+// `writable()`, `duplex()`, `writableStream()` and `transformStream()` write to the destination's `stdin`, which is already piped from the source, so they are not forwarded.
 expectError(subprocess.pipe`stdin`.writable());
 expectError(subprocess.pipe`stdin`.duplex());
+expectError(subprocess.pipe`stdin`.writableStream());
+expectError(subprocess.pipe`stdin`.transformStream());

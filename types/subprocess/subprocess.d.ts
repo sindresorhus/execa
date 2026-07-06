@@ -1,6 +1,7 @@
 import type {ChildProcess} from 'node:child_process';
 import type {SignalConstants} from 'node:os';
 import type {Readable, Writable, Duplex} from 'node:stream';
+import type {ReadableStream, WritableStream, ReadableWritablePair} from 'node:stream/web';
 import type {Options} from '../arguments/options.js';
 import type {Result} from '../return/result.js';
 import type {PipableSubprocess} from '../pipe.js';
@@ -17,7 +18,7 @@ import type {SubprocessAll} from './all.js';
 
 // Read-side iteration, stream conversion and `all` methods.
 // These are shared between a subprocess and the return value of `subprocess.pipe()`, which forwards them from its destination subprocess.
-// `writable()` and `duplex()` are not included: they write to `stdin`, which the pipe already feeds from its source.
+// `writable()`, `duplex()`, `writableStream()` and `transformStream()` are not included: they write to `stdin`, which the pipe already feeds from its source.
 export type SubprocessResultMethods<OptionsType extends Options = Options> = {
 	/**
 	Stream combining/interleaving `subprocess.stdout` and `subprocess.stderr`.
@@ -42,6 +43,11 @@ export type SubprocessResultMethods<OptionsType extends Options = Options> = {
 	Converts the subprocess to a readable stream.
 	*/
 	readable(readableOptions?: ReadableOptions): Readable;
+
+	/**
+	Converts the subprocess to a readable [web stream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+	*/
+	readableStream(readableOptions?: ReadableOptions): ReadableStream;
 };
 
 type ExecaCustomSubprocess<OptionsType extends Options> =
@@ -105,6 +111,16 @@ type ExecaCustomSubprocess<OptionsType extends Options> =
 		Converts the subprocess to a duplex stream.
 		*/
 		duplex(duplexOptions?: DuplexOptions): Duplex;
+
+		/**
+		Converts the subprocess to a writable [web stream](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream).
+		*/
+		writableStream(writableOptions?: WritableOptions): WritableStream;
+
+		/**
+		Converts the subprocess to a [`{readable, writable}`](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) pair of web streams.
+		*/
+		transformStream(duplexOptions?: DuplexOptions): ReadableWritablePair;
 	};
 
 /**

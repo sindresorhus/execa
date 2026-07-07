@@ -2,7 +2,7 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
-import {alwaysPass} from '../helpers/ipc.js';
+import {isAlwaysTrue} from '../helpers/ipc.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
@@ -73,8 +73,8 @@ const testTwice = async (t, buffer, filter) => {
 
 test('subprocess.getOneMessage() can be called twice at the same time, buffer false', testTwice, false, undefined);
 test('subprocess.getOneMessage() can be called twice at the same time, buffer true', testTwice, true, undefined);
-test('subprocess.getOneMessage() can be called twice at the same time, buffer false, filter', testTwice, false, alwaysPass);
-test('subprocess.getOneMessage() can be called twice at the same time, buffer true, filter', testTwice, true, alwaysPass);
+test('subprocess.getOneMessage() can be called twice at the same time, buffer false, filter', testTwice, false, isAlwaysTrue);
+test('subprocess.getOneMessage() can be called twice at the same time, buffer true, filter', testTwice, true, isAlwaysTrue);
 
 const testCleanupListeners = async (t, buffer, filter) => {
 	const subprocess = execa('ipc-send.js', {ipc: true, buffer});
@@ -95,8 +95,8 @@ const testCleanupListeners = async (t, buffer, filter) => {
 
 test('Cleans up subprocess.getOneMessage() listeners, buffer false', testCleanupListeners, false, undefined);
 test('Cleans up subprocess.getOneMessage() listeners, buffer true', testCleanupListeners, true, undefined);
-test('Cleans up subprocess.getOneMessage() listeners, buffer false, filter', testCleanupListeners, false, alwaysPass);
-test('Cleans up subprocess.getOneMessage() listeners, buffer true, filter', testCleanupListeners, true, alwaysPass);
+test('Cleans up subprocess.getOneMessage() listeners, buffer false, filter', testCleanupListeners, false, isAlwaysTrue);
+test('Cleans up subprocess.getOneMessage() listeners, buffer true, filter', testCleanupListeners, true, isAlwaysTrue);
 
 const testParentDisconnect = async (t, buffer, filter) => {
 	const subprocess = execa('ipc-get-send-get.js', [`${filter}`], {ipc: true, buffer});
@@ -127,5 +127,5 @@ const testSubprocessDisconnect = async (t, buffer, filter) => {
 
 test('Subprocess exit interrupts subprocess.getOneMessage(), buffer false', testSubprocessDisconnect, false, undefined);
 test('Subprocess exit interrupts subprocess.getOneMessage(), buffer true', testSubprocessDisconnect, true, undefined);
-test('Subprocess exit interrupts subprocess.getOneMessage(), buffer false, filter', testSubprocessDisconnect, false, alwaysPass);
-test('Subprocess exit interrupts subprocess.getOneMessage(), buffer true, filter', testSubprocessDisconnect, true, alwaysPass);
+test('Subprocess exit interrupts subprocess.getOneMessage(), buffer false, filter', testSubprocessDisconnect, false, isAlwaysTrue);
+test('Subprocess exit interrupts subprocess.getOneMessage(), buffer true, filter', testSubprocessDisconnect, true, isAlwaysTrue);

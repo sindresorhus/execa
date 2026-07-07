@@ -2,7 +2,7 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
-import {alwaysPass, subprocessGetOne, subprocessGetFirst} from '../helpers/ipc.js';
+import {isAlwaysTrue, subprocessGetOne, subprocessGetFirst} from '../helpers/ipc.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
@@ -30,8 +30,8 @@ const testSendHoldParent = async (t, getMessage, buffer, filter) => {
 
 test('Multiple parallel subprocess.sendMessage() + subprocess.getOneMessage(), buffer false', testSendHoldParent, subprocessGetOne, false, undefined);
 test('Multiple parallel subprocess.sendMessage() + subprocess.getOneMessage(), buffer true', testSendHoldParent, subprocessGetOne, true, undefined);
-test('Multiple parallel subprocess.sendMessage() + subprocess.getOneMessage(), buffer false, filter', testSendHoldParent, subprocessGetOne, false, alwaysPass);
-test('Multiple parallel subprocess.sendMessage() + subprocess.getOneMessage(), buffer true, filter', testSendHoldParent, subprocessGetOne, true, alwaysPass);
+test('Multiple parallel subprocess.sendMessage() + subprocess.getOneMessage(), buffer false, filter', testSendHoldParent, subprocessGetOne, false, isAlwaysTrue);
+test('Multiple parallel subprocess.sendMessage() + subprocess.getOneMessage(), buffer true, filter', testSendHoldParent, subprocessGetOne, true, isAlwaysTrue);
 test('Multiple parallel subprocess.sendMessage() + subprocess.getEachMessage(), buffer false', testSendHoldParent, subprocessGetFirst, false, undefined);
 test('Multiple parallel subprocess.sendMessage() + subprocess.getEachMessage(), buffer true', testSendHoldParent, subprocessGetFirst, true, undefined);
 
@@ -72,8 +72,8 @@ const testSendHoldParentSerial = async (t, getMessage, buffer, filter) => {
 
 test('Multiple serial subprocess.sendMessage() + subprocess.getOneMessage(), buffer false', testSendHoldParentSerial, subprocessGetOne, false, undefined);
 test('Multiple serial subprocess.sendMessage() + subprocess.getOneMessage(), buffer true', testSendHoldParentSerial, subprocessGetOne, true, undefined);
-test('Multiple serial subprocess.sendMessage() + subprocess.getOneMessage(), buffer false, filter', testSendHoldParentSerial, subprocessGetOne, false, alwaysPass);
-test('Multiple serial subprocess.sendMessage() + subprocess.getOneMessage(), buffer true, filter', testSendHoldParentSerial, subprocessGetOne, true, alwaysPass);
+test('Multiple serial subprocess.sendMessage() + subprocess.getOneMessage(), buffer false, filter', testSendHoldParentSerial, subprocessGetOne, false, isAlwaysTrue);
+test('Multiple serial subprocess.sendMessage() + subprocess.getOneMessage(), buffer true, filter', testSendHoldParentSerial, subprocessGetOne, true, isAlwaysTrue);
 test('Multiple serial subprocess.sendMessage() + subprocess.getEachMessage(), buffer false', testSendHoldParentSerial, subprocessGetFirst, false, undefined);
 test('Multiple serial subprocess.sendMessage() + subprocess.getEachMessage(), buffer true', testSendHoldParentSerial, subprocessGetFirst, true, undefined);
 

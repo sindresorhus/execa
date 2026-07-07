@@ -46,7 +46,9 @@ await execa('unicorns', {verbose: (verboseLine: string) => ''});
 execaSync('unicorns', {verbose: (verboseLine: string) => ''});
 await execa('unicorns', {verbose: (verboseLine: unknown) => ''});
 execaSync('unicorns', {verbose: (verboseLine: unknown) => ''});
+// eslint-disable-next-line unicorn/consistent-boolean-name -- `verboseLine` matches the real callback parameter name, mistyped on purpose to test the type error.
 expectError(await execa('unicorns', {verbose: (verboseLine: boolean) => ''}));
+// eslint-disable-next-line unicorn/consistent-boolean-name -- `verboseLine` matches the real callback parameter name, mistyped on purpose to test the type error.
 expectError(execaSync('unicorns', {verbose: (verboseLine: boolean) => ''}));
 expectError(await execa('unicorns', {verbose: (verboseLine: never) => ''}));
 expectError(execaSync('unicorns', {verbose: (verboseLine: never) => ''}));

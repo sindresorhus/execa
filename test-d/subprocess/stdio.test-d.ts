@@ -55,11 +55,11 @@ expectType<null>(inputFdSubprocess.stdio[3]);
 const inputFileSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: {file: './example'}, input: true}]});
 expectType<Writable>(inputFileSubprocess.stdio[3]);
 
-const input = true as boolean;
-const booleanInputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input}]});
+const isInput = true as boolean;
+const booleanInputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: isInput}]});
 expectType<Readable | Writable>(booleanInputPipeSubprocess.stdio[3]);
 
-const optionalInputPipe: {readonly value: 'pipe'; readonly input?: boolean} = {value: 'pipe', input};
+const optionalInputPipe: {readonly value: 'pipe'; readonly input?: boolean} = {value: 'pipe', input: isInput};
 const optionalInputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', optionalInputPipe]});
 expectType<Readable | Writable>(optionalInputPipeSubprocess.stdio[3]);
 

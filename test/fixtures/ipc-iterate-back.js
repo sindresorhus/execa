@@ -2,9 +2,9 @@
 import process from 'node:process';
 import {sendMessage, getOneMessage} from '../../index.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
-import {alwaysPass, getFirst} from '../helpers/ipc.js';
+import {isAlwaysTrue, getFirst} from '../helpers/ipc.js';
 
-const filter = process.argv[2] === 'true' ? alwaysPass : undefined;
+const filter = process.argv[2] === 'true' ? isAlwaysTrue : undefined;
 
 await sendMessage(await getOneMessage({filter}));
 

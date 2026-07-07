@@ -127,10 +127,7 @@ test('child_process.spawn() early errors can use .getEachMessage()', testEarlyEr
 
 test('child_process.spawn() early errors can use .iterable()', async t => {
 	const subprocess = getEarlyErrorSubprocess();
-	const lines = [];
-	for await (const line of subprocess.iterable()) {
-		lines.push(line);
-	}
+	const lines = await Array.fromAsync(subprocess.iterable());
 
 	t.deepEqual(lines, []);
 	await t.throwsAsync(subprocess);
@@ -138,10 +135,7 @@ test('child_process.spawn() early errors can use .iterable()', async t => {
 
 test('child_process.spawn() early errors can use Symbol.asyncIterator', async t => {
 	const subprocess = getEarlyErrorSubprocess();
-	const lines = [];
-	for await (const line of subprocess) {
-		lines.push(line);
-	}
+	const lines = await Array.fromAsync(subprocess);
 
 	t.deepEqual(lines, []);
 	await t.throwsAsync(subprocess);

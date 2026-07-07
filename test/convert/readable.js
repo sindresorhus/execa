@@ -326,10 +326,7 @@ test('.readable() has the right highWaterMark', async t => {
 
 test('.readable() can iterate over lines', async t => {
 	const subprocess = execa('noop-fd.js', ['1', simpleFull]);
-	const lines = [];
-	for await (const line of subprocess.readable({binary: false, preserveNewlines: false})) {
-		lines.push(line);
-	}
+	const lines = await Array.fromAsync(subprocess.readable({binary: false, preserveNewlines: false}));
 
 	const expectedLines = ['aaa', 'bbb', 'ccc'];
 	t.deepEqual(lines, expectedLines);

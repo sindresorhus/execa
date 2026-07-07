@@ -23,7 +23,7 @@ test(testResultCommand, '');
 
 // eslint-disable-next-line max-params
 const testEscapedCommand = async (t, commandArguments, expectedUnix, expectedWindows, expectedUnixNoIcu = expectedUnix, expectedWindowsNoIcu = expectedWindows) => {
-	// eslint-disable-next-line no-use-extend-native/no-use-extend-native -- `RegExp.isMocked` is a static property added by `escape-no-icu.js`, not a native extension
+	// eslint-disable-next-line no-use-extend-native/no-use-extend-native, unicorn/no-nonstandard-builtin-properties -- `RegExp.isMocked` is a static property added by `escape-no-icu.js`, not a native extension
 	const expected = RegExp.isMocked
 		? (isWindows ? expectedWindowsNoIcu : expectedUnixNoIcu)
 		: (isWindows ? expectedWindows : expectedUnix);

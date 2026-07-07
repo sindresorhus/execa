@@ -330,6 +330,19 @@ export type CommonOptions<
 	readonly cleanup?: Unless<IsSync, boolean>;
 
 	/**
+	When the subprocess is terminated by Execa, also terminate all of its descendant processes, instead of only the subprocess itself.
+
+	This is useful when the subprocess spawns its own processes, such as when using the `shell` option.
+
+	On Unix, this spawns the subprocess in its own [process group](https://en.wikipedia.org/wiki/Process_group). On Windows, this uses [`taskkill`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill).
+
+	This is best-effort: descendant processes that create their own process group or session are not terminated.
+
+	@default false
+	*/
+	readonly killDescendants?: Unless<IsSync, boolean>;
+
+	/**
 	Sets the [user identifier](https://en.wikipedia.org/wiki/User_identifier) of the subprocess.
 
 	@default current user identifier

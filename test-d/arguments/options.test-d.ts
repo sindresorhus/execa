@@ -275,6 +275,13 @@ expectError(execaSync('unicorns', {detached: true as boolean}));
 expectError(await execa('unicorns', {detached: 'true'}));
 expectError(execaSync('unicorns', {detached: 'true'}));
 
+await execa('unicorns', {killDescendants: true});
+expectError(execaSync('unicorns', {killDescendants: true}));
+await execa('unicorns', {killDescendants: true as boolean});
+expectError(execaSync('unicorns', {killDescendants: true as boolean}));
+expectError(await execa('unicorns', {killDescendants: 'true'}));
+expectError(execaSync('unicorns', {killDescendants: 'true'}));
+
 await execa('unicorns', {cancelSignal: AbortSignal.abort()});
 expectError(execaSync('unicorns', {cancelSignal: AbortSignal.abort()}));
 expectError(await execa('unicorns', {cancelSignal: false}));

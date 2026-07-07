@@ -8,6 +8,7 @@ import {
 	type StdoutStderrSyncOption,
 } from '../../../index.js';
 
+// eslint-disable-next-line unicorn/consistent-boolean-name -- `line` matches the naming convention used by every other generator test file, mistyped on purpose to test the type error.
 const booleanGenerator = function * (line: boolean) {
 	yield line;
 };

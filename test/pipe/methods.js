@@ -36,28 +36,19 @@ const cleanupSubprocesses = async (...subprocesses) => {
 };
 
 const getPipeMessages = async piped => {
-	const messages = [];
-	for await (const message of piped.getEachMessage()) {
-		messages.push(message);
-	}
+	const messages = await Array.fromAsync(piped.getEachMessage());
 
 	return messages;
 };
 
 test('The .pipe() return value can be iterated', async t => {
-	const lines = [];
-	for await (const line of pipeSimple()) {
-		lines.push(line);
-	}
+	const lines = await Array.fromAsync(pipeSimple());
 
 	t.deepEqual(lines, noNewlinesChunks);
 });
 
 test('The .pipe() return value has an .iterable() method', async t => {
-	const lines = [];
-	for await (const line of pipeSimple().iterable()) {
-		lines.push(line);
-	}
+	const lines = await Array.fromAsync(pipeSimple().iterable());
 
 	t.deepEqual(lines, noNewlinesChunks);
 });
@@ -82,10 +73,7 @@ test('The .pipe() return value .readable() can be called multiple times', async 
 });
 
 test('The .pipe() return value .readable() keeps conversion options', async t => {
-	const chunks = [];
-	for await (const chunk of pipeSimple().readable({binary: false, preserveNewlines: false})) {
-		chunks.push(chunk);
-	}
+	const chunks = await Array.fromAsync(pipeSimple().readable({binary: false, preserveNewlines: false}));
 
 	t.deepEqual(chunks, noNewlinesChunks);
 	t.is(chunks.join(''), noNewlinesFull);
@@ -139,10 +127,7 @@ test('The .pipe() return value .readable() can read destination stderr', async t
 
 test('The .pipe() return value .iterable() can read destination stderr', async t => {
 	const piped = pipeDistinctBoth();
-	const lines = [];
-	for await (const line of piped.iterable({from: 'stderr'})) {
-		lines.push(line);
-	}
+	const lines = await Array.fromAsync(piped.iterable({from: 'stderr'}));
 
 	t.deepEqual(lines, ['aaa', 'bbb', 'ccc:stderr']);
 	await piped;
@@ -231,9 +216,9 @@ test('The .pipe() return value .getEachMessage() cancels every pending reader', 
 	await Promise.all(readerPromises.map(async readerPromise => assertSettles(t, readerPromise)));
 });
 
-const assertCanceledPipeMessageReader = async (t, getReader, abortBeforePipe = false) => {
+const assertCanceledPipeMessageReader = async (t, getReader, shouldAbortBeforePipe = false) => {
 	const abortController = new AbortController();
-	if (abortBeforePipe) {
+	if (shouldAbortBeforePipe) {
 		abortController.abort();
 	}
 
@@ -246,7 +231,7 @@ const assertCanceledPipeMessageReader = async (t, getReader, abortBeforePipe = f
 	const piped = source.pipe(destination, {unpipeSignal: abortController.signal});
 	const readerPromise = t.throwsAsync(getReader(piped), {message: /Pipe canceled/});
 
-	if (!abortBeforePipe) {
+	if (!shouldAbortBeforePipe) {
 		abortController.abort();
 	}
 
@@ -353,10 +338,7 @@ test('The .pipe() return value can exchange IPC messages', async t => {
 });
 
 test('A chained .pipe() return value can be iterated', async t => {
-	const lines = [];
-	for await (const line of execa('noop-fd.js', ['1', simpleFull]).pipe('stdin.js').pipe('stdin.js')) {
-		lines.push(line);
-	}
+	const lines = await Array.fromAsync(execa('noop-fd.js', ['1', simpleFull]).pipe('stdin.js').pipe('stdin.js'));
 
 	t.deepEqual(lines, noNewlinesChunks);
 });
@@ -393,9 +375,9 @@ test('The .pipe() return value .all waits for source failure', async t => {
 	await t.throwsAsync(text(piped.all), {message: /Command failed with exit code 2/});
 });
 
-const assertCanceledPipeReader = async (t, getReader, abortBeforePipe = false) => {
+const assertCanceledPipeReader = async (t, getReader, shouldAbortBeforePipe = false) => {
 	const abortController = new AbortController();
-	if (abortBeforePipe) {
+	if (shouldAbortBeforePipe) {
 		abortController.abort();
 	}
 
@@ -408,7 +390,7 @@ const assertCanceledPipeReader = async (t, getReader, abortBeforePipe = false) =
 	const piped = source.pipe(destination, {unpipeSignal: abortController.signal});
 	const readerPromise = t.throwsAsync(getReader(piped), {message: /Pipe canceled/});
 
-	if (!abortBeforePipe) {
+	if (!shouldAbortBeforePipe) {
 		abortController.abort();
 	}
 

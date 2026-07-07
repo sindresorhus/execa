@@ -63,6 +63,7 @@ test('execa() returns a promise with nodeChildProcess', async t => {
 	t.is(subprocess.killed, undefined);
 	t.is(subprocess.spawnargs, undefined);
 	t.is(subprocess.spawnfile, undefined);
+	// eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- `Symbol.dispose` is a standard well-known symbol, not yet recognized by this rule.
 	t.is(subprocess[Symbol.dispose], undefined);
 	await subprocess;
 });

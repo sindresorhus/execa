@@ -27,8 +27,8 @@ test('Prints stdout one line at a time', async t => {
 test.serial('Prints stdout progressively, interleaved', async t => {
 	const subprocess = nestedInstance('noop-repeat.js', ['1', `${foobarString}\n`], {parentFixture: 'nested-double.js', verbose: 'full'});
 
-	let firstSubprocessPrinted = false;
-	let secondSubprocessPrinted = false;
+	let isFirstSubprocessPrinted = false;
+	let isSecondSubprocessPrinted = false;
 	for await (const chunk of on(subprocess.stderr, 'data')) {
 		const outputLine = getOutputLine(chunk.toString().trim());
 		if (outputLine === undefined) {
@@ -37,13 +37,13 @@ test.serial('Prints stdout progressively, interleaved', async t => {
 
 		if (outputLine.includes(foobarString)) {
 			t.is(outputLine, `${testTimestamp} [0]   ${foobarString}`);
-			firstSubprocessPrinted ||= true;
+			isFirstSubprocessPrinted ||= true;
 		} else {
 			t.is(outputLine, `${testTimestamp} [1]   ${foobarString.toUpperCase()}`);
-			secondSubprocessPrinted ||= true;
+			isSecondSubprocessPrinted ||= true;
 		}
 
-		if (firstSubprocessPrinted && secondSubprocessPrinted) {
+		if (isFirstSubprocessPrinted && isSecondSubprocessPrinted) {
 			break;
 		}
 	}

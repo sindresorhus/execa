@@ -2,7 +2,7 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
-import {alwaysPass} from '../helpers/ipc.js';
+import {isAlwaysTrue} from '../helpers/ipc.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
 
 setFixtureDirectory();
@@ -23,8 +23,8 @@ const testSeriesParent = async (t, buffer, filter) => {
 
 test('subprocess.getOneMessage() can be called multiple times in a row, buffer false', testSeriesParent, false, undefined);
 test('subprocess.getOneMessage() can be called multiple times in a row, buffer true', testSeriesParent, true, undefined);
-test('subprocess.getOneMessage() can be called multiple times in a row, buffer false, filter', testSeriesParent, false, alwaysPass);
-test('subprocess.getOneMessage() can be called multiple times in a row, buffer true, filter', testSeriesParent, true, alwaysPass);
+test('subprocess.getOneMessage() can be called multiple times in a row, buffer false, filter', testSeriesParent, false, isAlwaysTrue);
+test('subprocess.getOneMessage() can be called multiple times in a row, buffer true, filter', testSeriesParent, true, isAlwaysTrue);
 
 const testSeriesSubprocess = async (t, filter) => {
 	const subprocess = execa('ipc-print-many.js', [`${PARALLEL_COUNT}`, `${filter}`], {ipc: true});

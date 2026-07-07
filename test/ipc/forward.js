@@ -2,7 +2,7 @@ import test from 'ava';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
-import {iterateAllMessages, alwaysPass} from '../helpers/ipc.js';
+import {iterateAllMessages, isAlwaysTrue} from '../helpers/ipc.js';
 
 setFixtureDirectory();
 
@@ -25,8 +25,8 @@ const testParentErrorOne = async (t, filter, buffer) => {
 
 test('"error" event does not interrupt subprocess.getOneMessage(), buffer false', testParentErrorOne, undefined, false);
 test('"error" event does not interrupt subprocess.getOneMessage(), buffer true', testParentErrorOne, undefined, true);
-test('"error" event does not interrupt subprocess.getOneMessage(), buffer false, filter', testParentErrorOne, alwaysPass, false);
-test('"error" event does not interrupt subprocess.getOneMessage(), buffer true, filter', testParentErrorOne, alwaysPass, true);
+test('"error" event does not interrupt subprocess.getOneMessage(), buffer false, filter', testParentErrorOne, isAlwaysTrue, false);
+test('"error" event does not interrupt subprocess.getOneMessage(), buffer true, filter', testParentErrorOne, isAlwaysTrue, true);
 
 const testSubprocessErrorOne = async (t, filter, buffer) => {
 	const subprocess = execa('ipc-process-error.js', [`${filter}`], {ipc: true, buffer});

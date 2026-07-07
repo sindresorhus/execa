@@ -10,8 +10,8 @@ import {
 } from '../../../index.js';
 
 const inputPipe = {value: 'pipe', input: true} as const;
-const input = true as boolean;
-const booleanInputPipe = {value: 'pipe', input} as const;
+const isInput = true as boolean;
+const booleanInputPipe = {value: 'pipe', input: isInput} as const;
 const transform = function * (line: string) {
 	yield line;
 };

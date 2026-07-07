@@ -44,15 +44,15 @@ test('stderr cannot be a WritableStream - sync', testWebStreamSync, WritableStre
 test('stdio[*] cannot be a WritableStream - sync', testWebStreamSync, WritableStream, 3, 'stdio[3]');
 
 const testLongWritableStream = async (t, fdNumber) => {
-	let result = false;
+	let isResult = false;
 	const writableStream = new WritableStream({
 		async close() {
 			await setImmediate();
-			result = true;
+			isResult = true;
 		},
 	});
 	await execa('empty.js', getStdio(fdNumber, writableStream));
-	t.true(result);
+	t.true(isResult);
 };
 
 test('stdout waits for WritableStream completion', testLongWritableStream, 1);

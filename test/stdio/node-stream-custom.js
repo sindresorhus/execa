@@ -63,17 +63,17 @@ test('stderr cannot be [Writable, "pipe"] without a file descriptor, sync', test
 test('stdio[*] cannot be [Writable, "pipe"] without a file descriptor, sync', testLazyFileWritableSync, 3);
 
 test('Waits for custom streams destroy on subprocess errors', async t => {
-	let waitedForDestroy = false;
+	let isWaitedForDestroy = false;
 	const stream = new Writable({
 		destroy: callbackify(async error => {
 			await setImmediate();
-			waitedForDestroy = true;
+			isWaitedForDestroy = true;
 			return error;
 		}),
 	});
 	const {timedOut} = await t.throwsAsync(execa('forever.js', {stdout: [stream, 'pipe'], timeout: 1}));
 	t.true(timedOut);
-	t.true(waitedForDestroy);
+	t.true(isWaitedForDestroy);
 });
 
 test('Handles custom streams destroy errors on subprocess success', async t => {

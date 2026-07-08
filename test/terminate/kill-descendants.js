@@ -1,8 +1,12 @@
+import childProcess from 'node:child_process';
+import {syncBuiltinESMExports} from 'node:module';
+import path from 'node:path/win32';
 import process from 'node:process';
 import {setTimeout} from 'node:timers/promises';
 import test from 'ava';
 import isRunning from 'is-running';
 import {execa, execaSync} from '../../index.js';
+import {getTaskkillFile} from '../../lib/terminate/kill-descendants.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 
 setFixtureDirectory();
@@ -88,3 +92,124 @@ test('Cannot use "killDescendants" option, sync', t => {
 		execaSync('empty.js', {killDescendants: true});
 	}, {message: /The "killDescendants: true" option cannot be used/});
 });
+
+test.serial('taskkill is resolved from the Windows directory when available', t => {
+	const {SystemRoot, windir} = process.env;
+	t.teardown(() => {
+		restoreEnvironment('SystemRoot', SystemRoot);
+		restoreEnvironment('windir', windir);
+	});
+
+	process.env.SystemRoot = 'C:\\Windows';
+	process.env.windir = 'D:\\Windows';
+	t.is(getTaskkillFile(), path.join('C:\\Windows', 'System32', 'taskkill.exe'));
+
+	process.env.SystemRoot = 'C:/Windows';
+	t.is(getTaskkillFile(), path.join('C:/Windows', 'System32', 'taskkill.exe'));
+
+	process.env.SystemRoot = 'Windows';
+	t.is(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
+
+	process.env.SystemRoot = '\\Windows';
+	t.is(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
+
+	delete process.env.SystemRoot;
+	t.is(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
+
+	process.env.windir = 'Windows';
+	t.is(getTaskkillFile(), undefined);
+
+	process.env.windir = '\\Windows';
+	t.is(getTaskkillFile(), undefined);
+
+	process.env.windir = '\\\\server\\share\\Windows';
+	t.is(getTaskkillFile(), undefined);
+
+	process.env.windir = '';
+	t.is(getTaskkillFile(), undefined);
+
+	delete process.env.windir;
+	t.is(getTaskkillFile(), undefined);
+});
+
+test.serial('taskkill fallback uses direct subprocess kill when Windows directory is unavailable', async t => {
+	const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform');
+	const {SystemRoot, windir} = process.env;
+	t.teardown(() => {
+		Object.defineProperty(process, 'platform', platformDescriptor);
+		restoreEnvironment('SystemRoot', SystemRoot);
+		restoreEnvironment('windir', windir);
+	});
+
+	Object.defineProperty(process, 'platform', {value: 'win32'});
+	process.env.SystemRoot = 'Windows';
+	delete process.env.windir;
+
+	const {getKillFunction} = await import(`../../lib/terminate/kill-descendants.js?taskkill-fallback=${Date.now()}`);
+	let killedWith;
+	const subprocess = {
+		pid: 123,
+		kill(signal) {
+			killedWith = signal;
+			return true;
+		},
+	};
+
+	const kill = getKillFunction(subprocess, {killDescendants: true});
+	t.true(kill('SIGTERM'));
+	t.is(killedWith, 'SIGTERM');
+});
+
+test.serial('taskkill fallback uses direct subprocess kill when taskkill cannot be spawned', async t => {
+	const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform');
+	const originalExecFile = childProcess.execFile;
+	const {SystemRoot, windir} = process.env;
+	t.teardown(() => {
+		Object.defineProperty(process, 'platform', platformDescriptor);
+		childProcess.execFile = originalExecFile;
+		syncBuiltinESMExports();
+		restoreEnvironment('SystemRoot', SystemRoot);
+		restoreEnvironment('windir', windir);
+	});
+
+	Object.defineProperty(process, 'platform', {value: 'win32'});
+	process.env.SystemRoot = 'C:\\MissingWindows';
+	delete process.env.windir;
+
+	const taskkillFailure = Promise.withResolvers();
+	childProcess.execFile = (file, arguments_, callback) => {
+		t.is(file, path.join('C:\\MissingWindows', 'System32', 'taskkill.exe'));
+		t.deepEqual(arguments_, ['/pid', '123', '/T', '/F']);
+		queueMicrotask(() => {
+			callback(new Error('spawn failed'));
+			taskkillFailure.resolve();
+		});
+	};
+
+	syncBuiltinESMExports();
+
+	const {getKillFunction} = await import(`../../lib/terminate/kill-descendants.js?taskkill-spawn-fallback=${Date.now()}`);
+	let killedWith;
+	const subprocess = {
+		pid: 123,
+		kill(signal) {
+			killedWith = signal;
+			return true;
+		},
+	};
+
+	const kill = getKillFunction(subprocess, {killDescendants: true});
+	t.true(kill('SIGTERM'));
+	t.is(killedWith, undefined);
+
+	await taskkillFailure.promise;
+	t.is(killedWith, 'SIGTERM');
+});
+
+const restoreEnvironment = (name, value) => {
+	if (value === undefined) {
+		delete process.env[name];
+	} else {
+		process.env[name] = value;
+	}
+};

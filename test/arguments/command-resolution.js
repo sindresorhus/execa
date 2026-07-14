@@ -295,7 +295,7 @@ if (isWindows) {
 			env: {
 				Path: binaryDirectory,
 				PathExt: '.CMD',
-				[environmentName]: '1',
+				[environmentName]: '',
 			},
 		};
 		const {stdout} = await execa(command, options);
@@ -305,7 +305,7 @@ if (isWindows) {
 		t.is(stdoutSync, 'PATH');
 
 		delete options.env[environmentName];
-		process.env[environmentName] = '1';
+		process.env[environmentName] = '';
 		const {stdout: parentEnvironmentStdout} = await execa(command, options);
 		t.is(parentEnvironmentStdout, 'PATH');
 

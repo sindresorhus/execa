@@ -1,4 +1,9 @@
-import {cp, mkdir, unlink} from 'node:fs/promises';
+import {
+	cp,
+	mkdir,
+	unlink,
+	writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import test from 'ava';
@@ -227,7 +232,7 @@ if (isWindows) {
 
 		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
 		const originalValue = process.env[environmentName];
-		process.env[environmentName] = '1';
+		delete process.env[environmentName];
 		t.teardown(async () => {
 			if (originalValue === undefined) {
 				delete process.env[environmentName];
@@ -246,11 +251,57 @@ if (isWindows) {
 				PathExt: '.EXE',
 			},
 		};
+		const {stdout: currentDirectoryStdout} = await execa(command, ['--print', 'process.execPath'], options);
+		t.is(currentDirectoryStdout.toLowerCase(), currentDirectoryExecutable.toLowerCase());
+
+		const {stdout: currentDirectoryStdoutSync} = execaSync(command, ['--print', 'process.execPath'], options);
+		t.is(currentDirectoryStdoutSync.toLowerCase(), currentDirectoryExecutable.toLowerCase());
+
+		process.env[environmentName] = '1';
 		const {stdout} = await execa(command, ['--print', 'process.execPath'], options);
 		t.is(stdout.toLowerCase(), pathExecutable.toLowerCase());
 
 		const {stdout: stdoutSync} = execaSync(command, ['--print', 'process.execPath'], options);
 		t.is(stdoutSync.toLowerCase(), pathExecutable.toLowerCase());
+	});
+
+	test.serial('Uses the resolved batch file with NoDefaultCurrentDirectoryInExePath', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		const command = 'batch-current-directory';
+		const currentDirectoryBatchFile = path.join(FIXTURES_DIRECTORY, `${command}.cmd`);
+		const pathBatchFile = path.join(binaryDirectory, `${command}.cmd`);
+		await Promise.all([
+			writeFile(currentDirectoryBatchFile, '@echo current directory'),
+			writeFile(pathBatchFile, '@echo PATH'),
+		]);
+
+		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
+		const originalValue = process.env[environmentName];
+		process.env[environmentName] = '1';
+		t.teardown(async () => {
+			if (originalValue === undefined) {
+				delete process.env[environmentName];
+			} else {
+				process.env[environmentName] = originalValue;
+			}
+
+			await Promise.all([unlink(currentDirectoryBatchFile), unlink(pathBatchFile)]);
+		});
+
+		const options = {
+			cwd: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: binaryDirectory,
+				PathExt: '.CMD',
+			},
+		};
+		const {stdout} = await execa(command, options);
+		t.is(stdout, 'PATH');
+
+		const {stdout: stdoutSync} = execaSync(command, options);
+		t.is(stdoutSync, 'PATH');
 	});
 
 	test('Does not search PATH for drive-relative commands', async t => {

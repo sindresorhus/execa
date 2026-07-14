@@ -200,6 +200,36 @@ if (isWindows) {
 		const {stdout: stdoutSync} = execaSync(shimPath, [commandArgument]);
 		t.is(stdoutSync, commandArgument);
 	});
+
+	test.serial('Double-escapes metacharacters for preferLocal cmd-shims', async t => {
+		await setupCmdShim();
+		const commandArgument = 'a&whoami';
+		const originalPathExt = process.env.PATHEXT;
+		process.env.PATHEXT = '.EXE';
+		const options = {
+			preferLocal: true,
+			localDir: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: path.dirname(process.execPath),
+				PathExt: '.EXE;.CMD',
+			},
+		};
+
+		try {
+			const {stdout} = await execa('echo-cmd-shim', [commandArgument], options);
+			t.is(stdout, commandArgument);
+
+			const {stdout: stdoutSync} = execaSync('echo-cmd-shim', [commandArgument], options);
+			t.is(stdoutSync, commandArgument);
+		} finally {
+			if (originalPathExt === undefined) {
+				delete process.env.PATHEXT;
+			} else {
+				process.env.PATHEXT = originalPathExt;
+			}
+		}
+	});
 }
 
 // On Windows, `.cmd`/`.bat` files are run through `cmd.exe`, which interprets several

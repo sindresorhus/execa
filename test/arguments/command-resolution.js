@@ -172,6 +172,26 @@ if (isWindows) {
 		t.is(stdout, 'Hello World');
 	});
 
+	test('Runs a .com executable selected by PATHEXT', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		await cp(process.execPath, path.join(binaryDirectory, 'node-com.com'));
+		const options = {
+			preferLocal: true,
+			localDir: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: path.dirname(process.execPath),
+				PathExt: '.COM',
+			},
+		};
+		const {stdout} = await execa('node-com', ['--version'], options);
+		t.is(stdout, process.version);
+
+		const {stdout: stdoutSync} = execaSync('node-com', ['--version'], options);
+		t.is(stdoutSync, process.version);
+	});
+
 	// A `.cmd` file needs `cmd.exe`, so its forward-slash path must be normalized to
 	// backslashes, otherwise it fails with ENOENT.
 	test('Runs a .cmd file given as a relative POSIX-style subpath', async t => {
@@ -199,6 +219,35 @@ if (isWindows) {
 
 		const {stdout: stdoutSync} = execaSync(shimPath, [commandArgument]);
 		t.is(stdoutSync, commandArgument);
+	});
+
+	test('Double-escapes explicit batch files excluded from PATHEXT', async t => {
+		const commandArgument = '"& whoami &"';
+		const options = {
+			extendEnv: false,
+			env: {
+				Path: path.dirname(process.execPath),
+				PathExt: '.EXE',
+			},
+		};
+		const command = path.join(FIXTURES_DIRECTORY, 'echo-shim.cmd');
+		const {stdout} = await execa(command, [commandArgument], options);
+		t.is(stdout, commandArgument);
+
+		const {stdout: stdoutSync} = execaSync(command, [commandArgument], options);
+		t.is(stdoutSync, commandArgument);
+	});
+
+	test('Runs an explicit shebang script excluded from PATHEXT', async t => {
+		const command = path.join(FIXTURES_DIRECTORY, 'echo.js');
+		const options = {
+			extendEnv: false,
+			env: {
+				Path: path.dirname(process.execPath),
+				PathExt: '.EXE',
+			},
+		};
+		await testResolvesCommand(t, command, options);
 	});
 
 	test.serial('Double-escapes metacharacters for preferLocal cmd-shims', async t => {

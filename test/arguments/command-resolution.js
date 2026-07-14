@@ -265,7 +265,7 @@ if (isWindows) {
 		t.is(stdoutSync.toLowerCase(), pathExecutable.toLowerCase());
 	});
 
-	test.serial('Uses the resolved batch file with NoDefaultCurrentDirectoryInExePath', async t => {
+	test.serial('Uses the resolved batch file when current-directory search is disabled', async t => {
 		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
 		await mkdir(binaryDirectory, {recursive: true});
 		const command = 'batch-current-directory';
@@ -278,7 +278,7 @@ if (isWindows) {
 
 		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
 		const originalValue = process.env[environmentName];
-		process.env[environmentName] = '1';
+		delete process.env[environmentName];
 		t.teardown(async () => {
 			if (originalValue === undefined) {
 				delete process.env[environmentName];
@@ -295,6 +295,7 @@ if (isWindows) {
 			env: {
 				Path: binaryDirectory,
 				PathExt: '.CMD',
+				[environmentName]: '1',
 			},
 		};
 		const {stdout} = await execa(command, options);
@@ -302,6 +303,14 @@ if (isWindows) {
 
 		const {stdout: stdoutSync} = execaSync(command, options);
 		t.is(stdoutSync, 'PATH');
+
+		delete options.env[environmentName];
+		process.env[environmentName] = '1';
+		const {stdout: parentEnvironmentStdout} = await execa(command, options);
+		t.is(parentEnvironmentStdout, 'PATH');
+
+		const {stdout: parentEnvironmentStdoutSync} = execaSync(command, options);
+		t.is(parentEnvironmentStdoutSync, 'PATH');
 	});
 
 	test('Does not search PATH for drive-relative commands', async t => {

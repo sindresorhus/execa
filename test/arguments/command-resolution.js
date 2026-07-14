@@ -1,4 +1,4 @@
-import {cp, mkdir} from 'node:fs/promises';
+import {cp, mkdir, unlink} from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import test from 'ava';
@@ -166,30 +166,114 @@ test('Does not mutate arguments nor options', testNoMutation, {});
 test('Does not mutate arguments nor options with a shell', testNoMutation, {shell: true});
 
 if (isWindows) {
+	const nodeOnlyOptions = {
+		extendEnv: false,
+		env: {
+			Path: path.dirname(process.execPath),
+			PathExt: '.EXE',
+		},
+	};
+
 	// A bare command name without an extension is resolved using `PATHEXT`.
 	test('Resolves command extension using PATHEXT (sync)', t => {
 		const {stdout} = execaSync('hello');
 		t.is(stdout, 'Hello World');
 	});
 
-	test('Runs a .com executable selected by PATHEXT', async t => {
+	test('Uses PATHEXT extension order for direct executables', async t => {
 		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
 		await mkdir(binaryDirectory, {recursive: true});
-		await cp(process.execPath, path.join(binaryDirectory, 'node-com.com'));
+		const command = 'node-extension-order';
+		const executablePath = path.join(binaryDirectory, `${command}.exe`);
+		const comPath = path.join(binaryDirectory, `${command}.com`);
+		await Promise.all([
+			cp(process.execPath, executablePath),
+			cp(process.execPath, comPath),
+		]);
+		t.teardown(async () => {
+			await Promise.all([unlink(executablePath), unlink(comPath)]);
+		});
 		const options = {
 			preferLocal: true,
 			localDir: FIXTURES_DIRECTORY,
 			extendEnv: false,
 			env: {
 				Path: path.dirname(process.execPath),
-				PathExt: '.COM',
+				PathExt: '.EXE;.COM',
 			},
 		};
-		const {stdout} = await execa('node-com', ['--version'], options);
-		t.is(stdout, process.version);
+		const nodeExpression = 'JSON.stringify({executablePath: process.execPath, argv0: process.argv0})';
+		const {stdout} = await execa(command, ['--print', nodeExpression], options);
+		const {executablePath: actualExecutablePath, argv0} = JSON.parse(stdout);
+		t.is(actualExecutablePath.toLowerCase(), executablePath.toLowerCase());
+		t.is(argv0, command);
 
-		const {stdout: stdoutSync} = execaSync('node-com', ['--version'], options);
-		t.is(stdoutSync, process.version);
+		const {stdout: stdoutSync} = execaSync(command, ['--print', nodeExpression], options);
+		const {executablePath: actualExecutablePathSync, argv0: argv0Sync} = JSON.parse(stdoutSync);
+		t.is(actualExecutablePathSync.toLowerCase(), executablePath.toLowerCase());
+		t.is(argv0Sync, command);
+	});
+
+	test.serial('Respects NoDefaultCurrentDirectoryInExePath', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		const command = 'node-current-directory';
+		const currentDirectoryExecutable = path.join(FIXTURES_DIRECTORY, `${command}.exe`);
+		const pathExecutable = path.join(binaryDirectory, `${command}.exe`);
+		await Promise.all([
+			cp(process.execPath, currentDirectoryExecutable),
+			cp(process.execPath, pathExecutable),
+		]);
+
+		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
+		const originalValue = process.env[environmentName];
+		process.env[environmentName] = '1';
+		t.teardown(async () => {
+			if (originalValue === undefined) {
+				delete process.env[environmentName];
+			} else {
+				process.env[environmentName] = originalValue;
+			}
+
+			await Promise.all([unlink(currentDirectoryExecutable), unlink(pathExecutable)]);
+		});
+
+		const options = {
+			cwd: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: binaryDirectory,
+				PathExt: '.EXE',
+			},
+		};
+		const {stdout} = await execa(command, ['--print', 'process.execPath'], options);
+		t.is(stdout.toLowerCase(), pathExecutable.toLowerCase());
+
+		const {stdout: stdoutSync} = execaSync(command, ['--print', 'process.execPath'], options);
+		t.is(stdoutSync.toLowerCase(), pathExecutable.toLowerCase());
+	});
+
+	test('Does not search PATH for drive-relative commands', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		const commandName = 'node-drive-relative';
+		const pathExecutable = path.join(binaryDirectory, `${commandName}.exe`);
+		await cp(process.execPath, pathExecutable);
+		t.teardown(async () => {
+			await unlink(pathExecutable);
+		});
+		const drive = path.parse(FIXTURES_DIRECTORY).root.slice(0, 2);
+		const command = `${drive}${commandName}`;
+		const options = {
+			cwd: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: binaryDirectory,
+				PathExt: '.EXE',
+			},
+		};
+		await t.throwsAsync(execa(command, [], options));
+		t.throws(() => execaSync(command, [], options));
 	});
 
 	// A `.cmd` file needs `cmd.exe`, so its forward-slash path must be normalized to
@@ -223,31 +307,17 @@ if (isWindows) {
 
 	test('Double-escapes explicit batch files excluded from PATHEXT', async t => {
 		const commandArgument = '"& whoami &"';
-		const options = {
-			extendEnv: false,
-			env: {
-				Path: path.dirname(process.execPath),
-				PathExt: '.EXE',
-			},
-		};
 		const command = path.join(FIXTURES_DIRECTORY, 'echo-shim.cmd');
-		const {stdout} = await execa(command, [commandArgument], options);
+		const {stdout} = await execa(command, [commandArgument], nodeOnlyOptions);
 		t.is(stdout, commandArgument);
 
-		const {stdout: stdoutSync} = execaSync(command, [commandArgument], options);
+		const {stdout: stdoutSync} = execaSync(command, [commandArgument], nodeOnlyOptions);
 		t.is(stdoutSync, commandArgument);
 	});
 
 	test('Runs an explicit shebang script excluded from PATHEXT', async t => {
 		const command = path.join(FIXTURES_DIRECTORY, 'echo.js');
-		const options = {
-			extendEnv: false,
-			env: {
-				Path: path.dirname(process.execPath),
-				PathExt: '.EXE',
-			},
-		};
-		await testResolvesCommand(t, command, options);
+		await testResolvesCommand(t, command, nodeOnlyOptions);
 	});
 
 	test.serial('Double-escapes metacharacters for preferLocal cmd-shims', async t => {

@@ -21,7 +21,8 @@ test('timeout kills the subprocess if it times out, in sync mode', async t => {
 	t.true(isTerminated);
 	t.is(signal, 'SIGTERM');
 	t.true(timedOut);
-	t.is(originalMessage, 'spawnSync node ETIMEDOUT');
+	// On Windows, the command is spawned using the absolute path resolved via `PATHEXT`, so it appears in Node.js' own error message
+	t.regex(originalMessage, /^spawnSync .*node(?:\.[A-Za-z]+)? ETIMEDOUT$/);
 	t.is(shortMessage, `Command timed out after 1 milliseconds: node forever.js\n${originalMessage}`);
 	t.is(message, shortMessage);
 });

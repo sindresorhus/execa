@@ -1,4 +1,9 @@
-import {cp, mkdir} from 'node:fs/promises';
+import {
+	cp,
+	mkdir,
+	unlink,
+	writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import test from 'ava';
@@ -166,10 +171,169 @@ test('Does not mutate arguments nor options', testNoMutation, {});
 test('Does not mutate arguments nor options with a shell', testNoMutation, {shell: true});
 
 if (isWindows) {
+	const nodeOnlyOptions = {
+		extendEnv: false,
+		env: {
+			Path: path.dirname(process.execPath),
+			PathExt: '.EXE',
+		},
+	};
+
 	// A bare command name without an extension is resolved using `PATHEXT`.
 	test('Resolves command extension using PATHEXT (sync)', t => {
 		const {stdout} = execaSync('hello');
 		t.is(stdout, 'Hello World');
+	});
+
+	test('Uses PATHEXT extension order for direct executables', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		const command = 'node-extension-order';
+		const executablePath = path.join(binaryDirectory, `${command}.exe`);
+		const comPath = path.join(binaryDirectory, `${command}.com`);
+		await Promise.all([
+			cp(process.execPath, executablePath),
+			cp(process.execPath, comPath),
+		]);
+		t.teardown(async () => {
+			await Promise.all([unlink(executablePath), unlink(comPath)]);
+		});
+		const options = {
+			preferLocal: true,
+			localDir: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: path.dirname(process.execPath),
+				PathExt: '.EXE;.COM',
+			},
+		};
+		const nodeExpression = 'JSON.stringify({executablePath: process.execPath, argv0: process.argv0})';
+		const {stdout} = await execa(command, ['--print', nodeExpression], options);
+		const {executablePath: actualExecutablePath, argv0} = JSON.parse(stdout);
+		t.is(actualExecutablePath.toLowerCase(), executablePath.toLowerCase());
+		t.is(argv0, command);
+
+		const {stdout: stdoutSync} = execaSync(command, ['--print', nodeExpression], options);
+		const {executablePath: actualExecutablePathSync, argv0: argv0Sync} = JSON.parse(stdoutSync);
+		t.is(actualExecutablePathSync.toLowerCase(), executablePath.toLowerCase());
+		t.is(argv0Sync, command);
+	});
+
+	test.serial('Respects NoDefaultCurrentDirectoryInExePath', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		const command = 'node-current-directory';
+		const currentDirectoryExecutable = path.join(FIXTURES_DIRECTORY, `${command}.exe`);
+		const pathExecutable = path.join(binaryDirectory, `${command}.exe`);
+		await Promise.all([
+			cp(process.execPath, currentDirectoryExecutable),
+			cp(process.execPath, pathExecutable),
+		]);
+
+		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
+		const originalValue = process.env[environmentName];
+		delete process.env[environmentName];
+		t.teardown(async () => {
+			if (originalValue === undefined) {
+				delete process.env[environmentName];
+			} else {
+				process.env[environmentName] = originalValue;
+			}
+
+			await Promise.all([unlink(currentDirectoryExecutable), unlink(pathExecutable)]);
+		});
+
+		const options = {
+			cwd: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: binaryDirectory,
+				PathExt: '.EXE',
+			},
+		};
+		const {stdout: currentDirectoryStdout} = await execa(command, ['--print', 'process.execPath'], options);
+		t.is(currentDirectoryStdout.toLowerCase(), currentDirectoryExecutable.toLowerCase());
+
+		const {stdout: currentDirectoryStdoutSync} = execaSync(command, ['--print', 'process.execPath'], options);
+		t.is(currentDirectoryStdoutSync.toLowerCase(), currentDirectoryExecutable.toLowerCase());
+
+		process.env[environmentName] = '1';
+		const {stdout} = await execa(command, ['--print', 'process.execPath'], options);
+		t.is(stdout.toLowerCase(), pathExecutable.toLowerCase());
+
+		const {stdout: stdoutSync} = execaSync(command, ['--print', 'process.execPath'], options);
+		t.is(stdoutSync.toLowerCase(), pathExecutable.toLowerCase());
+	});
+
+	test.serial('Uses the resolved batch file when current-directory search is disabled', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		const command = 'batch-current-directory';
+		const currentDirectoryBatchFile = path.join(FIXTURES_DIRECTORY, `${command}.cmd`);
+		const pathBatchFile = path.join(binaryDirectory, `${command}.cmd`);
+		await Promise.all([
+			writeFile(currentDirectoryBatchFile, '@echo current directory'),
+			writeFile(pathBatchFile, '@echo PATH'),
+		]);
+
+		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
+		const originalValue = process.env[environmentName];
+		delete process.env[environmentName];
+		t.teardown(async () => {
+			if (originalValue === undefined) {
+				delete process.env[environmentName];
+			} else {
+				process.env[environmentName] = originalValue;
+			}
+
+			await Promise.all([unlink(currentDirectoryBatchFile), unlink(pathBatchFile)]);
+		});
+
+		const options = {
+			cwd: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: binaryDirectory,
+				PathExt: '.CMD',
+				[environmentName]: '',
+			},
+		};
+		const {stdout} = await execa(command, options);
+		t.is(stdout, 'PATH');
+
+		const {stdout: stdoutSync} = execaSync(command, options);
+		t.is(stdoutSync, 'PATH');
+
+		delete options.env[environmentName];
+		process.env[environmentName] = '';
+		const {stdout: parentEnvironmentStdout} = await execa(command, options);
+		t.is(parentEnvironmentStdout, 'PATH');
+
+		const {stdout: parentEnvironmentStdoutSync} = execaSync(command, options);
+		t.is(parentEnvironmentStdoutSync, 'PATH');
+	});
+
+	test('Does not search PATH for drive-relative commands', async t => {
+		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
+		await mkdir(binaryDirectory, {recursive: true});
+		const commandName = 'node-drive-relative';
+		const pathExecutable = path.join(binaryDirectory, `${commandName}.exe`);
+		await cp(process.execPath, pathExecutable);
+		t.teardown(async () => {
+			await unlink(pathExecutable);
+		});
+		const drive = path.parse(FIXTURES_DIRECTORY).root.slice(0, 2);
+		const command = `${drive}${commandName}`;
+		const options = {
+			cwd: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: binaryDirectory,
+				PathExt: '.EXE',
+			},
+		};
+		await t.throwsAsync(execa(command, [], options));
+		t.throws(() => execaSync(command, [], options));
 	});
 
 	// A `.cmd` file needs `cmd.exe`, so its forward-slash path must be normalized to
@@ -199,6 +363,51 @@ if (isWindows) {
 
 		const {stdout: stdoutSync} = execaSync(shimPath, [commandArgument]);
 		t.is(stdoutSync, commandArgument);
+	});
+
+	test('Double-escapes explicit batch files excluded from PATHEXT', async t => {
+		const commandArgument = '"& whoami &"';
+		const command = path.join(FIXTURES_DIRECTORY, 'echo-shim.cmd');
+		const {stdout} = await execa(command, [commandArgument], nodeOnlyOptions);
+		t.is(stdout, commandArgument);
+
+		const {stdout: stdoutSync} = execaSync(command, [commandArgument], nodeOnlyOptions);
+		t.is(stdoutSync, commandArgument);
+	});
+
+	test('Runs an explicit shebang script excluded from PATHEXT', async t => {
+		const command = path.join(FIXTURES_DIRECTORY, 'echo.js');
+		await testResolvesCommand(t, command, nodeOnlyOptions);
+	});
+
+	test.serial('Double-escapes metacharacters for preferLocal cmd-shims', async t => {
+		await setupCmdShim();
+		const commandArgument = 'a&whoami';
+		const originalPathExt = process.env.PATHEXT;
+		process.env.PATHEXT = '.EXE';
+		const options = {
+			preferLocal: true,
+			localDir: FIXTURES_DIRECTORY,
+			extendEnv: false,
+			env: {
+				Path: path.dirname(process.execPath),
+				PathExt: '.EXE;.CMD',
+			},
+		};
+
+		try {
+			const {stdout} = await execa('echo-cmd-shim', [commandArgument], options);
+			t.is(stdout, commandArgument);
+
+			const {stdout: stdoutSync} = execaSync('echo-cmd-shim', [commandArgument], options);
+			t.is(stdoutSync, commandArgument);
+		} finally {
+			if (originalPathExt === undefined) {
+				delete process.env.PATHEXT;
+			} else {
+				process.env.PATHEXT = originalPathExt;
+			}
+		}
 	});
 }
 

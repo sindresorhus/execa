@@ -115,7 +115,7 @@ test('exports.sendMessage() "strict" fails if the current process uses once() an
 	const subprocess = execa('ipc-send-strict.js', {ipc: true, buffer: {ipc: false}});
 	const [message] = await once(subprocess.nodeChildProcess, 'message');
 	t.deepEqual(message, {
-		id: 0n,
+		id: 0,
 		type: 'execa:ipc:request',
 		message: foobarString,
 		hasListeners: false,
@@ -230,5 +230,51 @@ test('Opposite sendMessage() "strict", not listening, buffer false', async t => 
 
 test('Ignores "strict" responses with an Object.prototype property as id', async t => {
 	const {ipcOutput} = await execa('ipc-send-strict-proto.js', {ipc: true});
+	t.deepEqual(ipcOutput, []);
+});
+
+const testStrictJson = async (t, buffer) => {
+	const subprocess = execa('ipc-echo.js', {ipc: true, serialization: 'json', buffer});
+	await subprocess.sendMessage(foobarString, {strict: true});
+	t.is(await subprocess.getOneMessage(), foobarString);
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, buffer ? [foobarString] : []);
+};
+
+test('subprocess.sendMessage() "strict" works with serialization "json", buffer false', testStrictJson, false);
+test('subprocess.sendMessage() "strict" works with serialization "json", buffer true', testStrictJson, true);
+
+test('exports.sendMessage() "strict" works with serialization "json"', async t => {
+	const subprocess = execa('ipc-send-strict-get.js', {ipc: true, serialization: 'json'});
+	await subprocess.sendMessage(foobarString, {strict: true});
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString, foobarString]);
+});
+
+test('subprocess.sendMessage() "strict" fails with serialization "json" if the subprocess is not listening', async t => {
+	const subprocess = execa('ipc-send.js', {ipc: true, serialization: 'json'});
+	const {message} = await t.throwsAsync(subprocess.sendMessage(foobarString, {strict: true}));
+	t.is(message, 'subprocess.sendMessage() failed: the subprocess exited without listening to incoming messages.');
+
+	const {ipcOutput} = await subprocess;
+	t.deepEqual(ipcOutput, [foobarString]);
+});
+
+const noop = () => {};
+
+// Messages received in the same batch are processed one after the other.
+// The deadlock must be detected on the message being processed, not on the first one received.
+// Without the detection, the subprocess would deadlock, so the `timeout` turns that hang into a failed assertion.
+test('Detects a "strict" deadlock on a later message of the same batch', async t => {
+	const subprocess = execa('ipc-echo-strict-deadlock.js', {ipc: true, buffer: {ipc: false}, timeout: 1e4});
+	await subprocess.sendMessage(foobarString);
+	subprocess.sendMessage(foobarString, {strict: true}).catch(noop);
+
+	const {exitCode, timedOut, stderr, ipcOutput} = await t.throwsAsync(subprocess);
+	t.false(timedOut);
+	t.is(exitCode, 1);
+	t.true(stderr.includes('Error: sendMessage() failed: the parent process is sending a message too, instead of listening to incoming messages.'));
 	t.deepEqual(ipcOutput, []);
 });

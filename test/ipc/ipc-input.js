@@ -19,11 +19,18 @@ test('Cannot use the "ipcInput" option with "ipc" false', t => {
 	}, {message: /unless the `ipc` option is `true`/});
 });
 
-test('Cannot use the "ipcInput" option with execaSync()', t => {
+// Any value can be sent over IPC, including falsy ones, so those must be reported as `ipcInput`, not as `ipc`
+const testInvalidSyncIpcInput = (t, ipcInput) => {
 	t.throws(() => {
-		execaSync('empty.js', {ipcInput: foobarString});
+		execaSync('empty.js', {ipcInput});
 	}, {message: /The "ipcInput" option cannot be used with synchronous/});
-});
+};
+
+test('Cannot use the "ipcInput" option with execaSync()', testInvalidSyncIpcInput, foobarString);
+test('Cannot use the "ipcInput" option with execaSync(), 0', testInvalidSyncIpcInput, 0);
+test('Cannot use the "ipcInput" option with execaSync(), empty string', testInvalidSyncIpcInput, '');
+test('Cannot use the "ipcInput" option with execaSync(), false', testInvalidSyncIpcInput, false);
+test('Cannot use the "ipcInput" option with execaSync(), null', testInvalidSyncIpcInput, null);
 
 test('Invalid "ipcInput" option v8 format', t => {
 	const {message, cause} = t.throws(() => {
@@ -40,6 +47,17 @@ test('Invalid "ipcInput" option JSON format', t => {
 	t.is(message, 'The `ipcInput` option is not serializable with JSON.');
 	t.is(cause.message, 'Do not know how to serialize a BigInt');
 });
+
+// `JSON.stringify()` returns `undefined`, instead of throwing, for values it cannot represent
+const testUnrepresentableJson = (t, ipcInput) => {
+	const {message} = t.throws(() => {
+		execa('empty.js', {ipcInput, serialization: 'json', ipc: true});
+	});
+	t.is(message, 'The `ipcInput` option is not serializable with JSON.');
+};
+
+test('Invalid "ipcInput" option JSON format, function', testUnrepresentableJson, () => {});
+test('Invalid "ipcInput" option JSON format, symbol', testUnrepresentableJson, Symbol('test'));
 
 // An invalid `serialization` option must not crash the `ipcInput` validation, which is keyed by it.
 // `Object.prototype` properties are the trickiest values, since those are found on any object.

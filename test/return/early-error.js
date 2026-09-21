@@ -1,8 +1,10 @@
 import {arch} from 'node:os';
 import process from 'node:process';
+import {finished} from 'node:stream/promises';
 import test from 'ava';
 import {execa, execaSync, $} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {foobarString, foobarUint8Array} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
 import {
 	earlyErrorOptions,
@@ -16,6 +18,14 @@ setFixtureDirectory();
 
 const isWindows = process.platform === 'win32';
 const ENOENT_REGEXP = isWindows ? /failed with exit code 1/ : /spawn.* ENOENT/;
+
+// A nonexistent command fails asynchronously, so it does not go through the early error path, but the subprocess still has no process to signal
+test('kill() does not signal the current process when the command does not exist', async t => {
+	const subprocess = execa('nonexistent-command-for-execa');
+	t.is(subprocess.pid, undefined);
+	t.is(subprocess.kill(), false);
+	t.is((await t.throwsAsync(subprocess)).code, 'ENOENT');
+});
 
 test('execaSync() throws error if ENOENT', t => {
 	t.throws(() => {
@@ -34,6 +44,26 @@ const testEarlyErrorShape = async (t, reject) => {
 
 test('child_process.spawn() early errors have correct shape', testEarlyErrorShape, true);
 test('child_process.spawn() early errors have correct shape - reject false', testEarlyErrorShape, false);
+
+// The subprocess never spawned, so there is no process to signal.
+// `ChildProcess.prototype.kill()` would signal the current process group instead, since its process id is `0`.
+// The handle is replaced by a stub, so that a regression is caught by an assertion instead of killing this test process.
+test('kill() does not signal the current process on early errors', async t => {
+	const subprocess = getEarlyErrorSubprocess({reject: false});
+	let isSignaled = false;
+	subprocess.nodeChildProcess._handle = {
+		kill() {
+			isSignaled = true;
+			return 0;
+		},
+	};
+
+	t.is(subprocess.kill(), false);
+	t.false(isSignaled);
+	const {failed, isCanceled} = await subprocess;
+	t.true(failed);
+	t.false(isCanceled);
+});
 
 test('child_process.spawn() early errors are propagated', async t => {
 	await t.throwsAsync(getEarlyErrorSubprocess(), expectedEarlyError);
@@ -112,6 +142,54 @@ const testEarlyErrorWebConvertor = async (t, streamMethod) => {
 test('child_process.spawn() early errors can use .readableStream()', testEarlyErrorWebConvertor, 'readableStream');
 test('child_process.spawn() early errors can use .writableStream()', testEarlyErrorWebConvertor, 'writableStream');
 test('child_process.spawn() early errors can use .transformStream()', testEarlyErrorWebConvertor, 'transformStream');
+
+// The subprocess never started, so those streams have no contents.
+// They must end right away, like `subprocess.stdout` and `.iterable()` do, instead of hanging forever.
+const testEarlyErrorReadableEnd = async (t, streamMethod) => {
+	const subprocess = getEarlyErrorSubprocess();
+	const chunks = await Array.fromAsync(subprocess[streamMethod]());
+
+	t.deepEqual(chunks, []);
+	await t.throwsAsync(subprocess);
+};
+
+test('child_process.spawn() early errors end .readable()', testEarlyErrorReadableEnd, 'readable');
+test('child_process.spawn() early errors end .duplex()', testEarlyErrorReadableEnd, 'duplex');
+test('child_process.spawn() early errors end .readableStream()', testEarlyErrorReadableEnd, 'readableStream');
+
+const testEarlyErrorWritableEnd = async (t, streamMethod) => {
+	const subprocess = getEarlyErrorSubprocess();
+	const stream = subprocess[streamMethod]();
+	stream.end(foobarString);
+	await finished(stream, {readable: false});
+
+	t.false(stream.writable);
+	await t.throwsAsync(subprocess);
+};
+
+test('child_process.spawn() early errors end .writable()', testEarlyErrorWritableEnd, 'writable');
+test('child_process.spawn() early errors end .duplex() writable side', testEarlyErrorWritableEnd, 'duplex');
+
+test('child_process.spawn() early errors end .writableStream()', async t => {
+	const subprocess = getEarlyErrorSubprocess();
+	const writer = subprocess.writableStream().getWriter();
+	await writer.write(foobarUint8Array);
+	await writer.close();
+
+	await t.throwsAsync(subprocess);
+});
+
+test('child_process.spawn() early errors end .transformStream()', async t => {
+	const subprocess = getEarlyErrorSubprocess();
+	const {readable, writable} = subprocess.transformStream();
+	const writer = writable.getWriter();
+	await writer.write(foobarUint8Array);
+	await writer.close();
+	const chunks = await Array.fromAsync(readable);
+
+	t.deepEqual(chunks, []);
+	await t.throwsAsync(subprocess);
+});
 
 const testEarlyErrorIpc = async (t, runIpcMethod) => {
 	const subprocess = getEarlyErrorSubprocess({ipc: true});

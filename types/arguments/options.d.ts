@@ -159,6 +159,8 @@ export type CommonOptions<
 
 	The output is available with `result.stdout`, `result.stderr` and `result.stdio`.
 
+	String input passed with the `input` or `stdin` option is always encoded with UTF-8, whatever this option is. With a text encoding, `stdin` transforms also decode their input with UTF-8.
+
 	@default 'utf8'
 	*/
 	readonly encoding?: Encoding;

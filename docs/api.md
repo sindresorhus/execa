@@ -988,6 +988,8 @@ If it outputs binary data instead, this should be either:
 
 The output is available with [`result.stdout`](#resultstdout), [`result.stderr`](#resultstderr) and [`result.stdio`](#resultstdio).
 
+String input passed with the [`input`](#optionsinput) or [`stdin`](#optionsstdin) option is always encoded with UTF-8, whatever this option is. With a text encoding, [`stdin` transforms](transform.md) also decode their input with UTF-8.
+
 [More info.](binary.md)
 
 ### options.lines

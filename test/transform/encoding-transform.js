@@ -7,9 +7,10 @@ import {
 	foobarString,
 	foobarUint8Array,
 	foobarBuffer,
+	foobarUtf16Uint8Array,
 	foobarObject,
 } from '../helpers/input.js';
-import {noopGenerator, getOutputGenerator} from '../helpers/generator.js';
+import {noopGenerator, getOutputGenerator, uppercaseGenerator} from '../helpers/generator.js';
 
 setFixtureDirectory();
 
@@ -91,6 +92,38 @@ test('First generator argument can be string with objectMode, "binary: true", sy
 test('First generator argument can be objects with objectMode, sync', testGeneratorFirstEncodingSync, foobarObject, 'utf8', 'Object', true, undefined);
 test('First generator argument can be objects with objectMode, "binary: false", sync', testGeneratorFirstEncodingSync, foobarObject, 'utf8', 'Object', true, false);
 test('First generator argument can be objects with objectMode, "binary: true", sync', testGeneratorFirstEncodingSync, foobarObject, 'utf8', 'Object', true, true);
+
+/*
+The `encoding` option also determines how binary `stdin` input is decoded before being passed to a transform.
+Unlike the tests above, this checks the chunk's value, not only its type.
+This must be the same with both asynchronous and synchronous methods.
+*/
+const getChunkGenerator = chunks => ({
+	* transform(chunk) {
+		chunks.push(chunk);
+		yield chunk;
+	},
+});
+
+const testStdinEncodingValue = async (t, encoding) => {
+	const chunks = [];
+	const subprocess = execa('stdin.js', {stdin: getChunkGenerator(chunks), encoding});
+	subprocess.stdin.end(foobarUtf16Uint8Array);
+	await subprocess;
+	t.deepEqual(chunks, [Buffer.from(foobarUtf16Uint8Array).toString(encoding)]);
+};
+
+test('First generator argument is decoded with encoding "utf8"', testStdinEncodingValue, 'utf8');
+test('First generator argument is decoded with encoding "utf16le"', testStdinEncodingValue, 'utf16le');
+
+const testStdinEncodingValueSync = (t, encoding) => {
+	const chunks = [];
+	execaSync('stdin.js', {stdin: [[foobarUtf16Uint8Array], getChunkGenerator(chunks)], encoding});
+	t.deepEqual(chunks, [Buffer.from(foobarUtf16Uint8Array).toString(encoding)]);
+};
+
+test('First generator argument is decoded with encoding "utf8", sync', testStdinEncodingValueSync, 'utf8');
+test('First generator argument is decoded with encoding "utf16le", sync', testStdinEncodingValueSync, 'utf16le');
 
 const testEncodingIgnored = async (t, encoding) => {
 	const input = Buffer.from(foobarString).toString(encoding);
@@ -175,3 +208,101 @@ test('The first generator with result.stdio[*] does not receive an object argume
 test('The first generator with result.stdout does not receive an object argument even in objectMode, sync', testFirstOutputGeneratorArgument, 1, execaSync);
 test('The first generator with result.stderr does not receive an object argument even in objectMode, sync', testFirstOutputGeneratorArgument, 2, execaSync);
 test('The first generator with result.stdio[*] does not receive an object argument even in objectMode, sync', testFirstOutputGeneratorArgument, 3, execaSync);
+
+// When the `encoding` option is binary, the whole pipeline is byte-oriented: a transform yielding a
+// string has it encoded as UTF-8, then those bytes are serialized using the `encoding` option.
+// This is the only coherent rule, since a yielded string like 'foobar' is neither valid hex nor valid base64.
+// A non-ASCII string is used, so UTF-8 and the binary encoding differ.
+const nonAsciiString = 'ré😀';
+const nonAsciiBuffer = Buffer.from(nonAsciiString, 'utf8');
+
+const testYieldStringBinaryEncoding = async (t, encoding, execaMethod) => {
+	const {stdout} = await execaMethod('noop.js', {
+		stdout: getOutputGenerator(nonAsciiString)(false, true),
+		encoding,
+	});
+	t.is(stdout, nonAsciiBuffer.toString(encoding));
+};
+
+test('Transforms yielding a string are UTF-8 encoded, latin1', testYieldStringBinaryEncoding, 'latin1', execa);
+test('Transforms yielding a string are UTF-8 encoded, latin1, sync', testYieldStringBinaryEncoding, 'latin1', execaSync);
+test('Transforms yielding a string are UTF-8 encoded, hex', testYieldStringBinaryEncoding, 'hex', execa);
+test('Transforms yielding a string are UTF-8 encoded, hex, sync', testYieldStringBinaryEncoding, 'hex', execaSync);
+test('Transforms yielding a string are UTF-8 encoded, base64', testYieldStringBinaryEncoding, 'base64', execa);
+test('Transforms yielding a string are UTF-8 encoded, base64, sync', testYieldStringBinaryEncoding, 'base64', execaSync);
+
+// A transform yielding the bytes it received must round-trip them unchanged
+const testYieldBytesBinaryEncoding = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('noop-fd.js', ['1', nonAsciiString], {
+		stdout: noopGenerator(false, true),
+		encoding: 'latin1',
+	});
+	t.is(stdout, nonAsciiBuffer.toString('latin1'));
+};
+
+test('Transforms yielding Uint8Array keep the bytes unchanged', testYieldBytesBinaryEncoding, execa);
+test('Transforms yielding Uint8Array keep the bytes unchanged, sync', testYieldBytesBinaryEncoding, execaSync);
+
+/*
+With a text encoding, a transform receives text decoded with it, so a string it yields must be encoded back with it.
+Otherwise that string would be encoded as UTF-8, then decoded with the `encoding` option, which corrupts it.
+*/
+const nonAsciiUtf16Uint8Array = new Uint8Array(Buffer.from(nonAsciiString, 'utf16le'));
+
+const testYieldStringTextEncoding = async (t, transform, expectedOutput, execaMethod) => {
+	const {stdout} = await execaMethod('noop.js', {
+		stdout: [getOutputGenerator(nonAsciiUtf16Uint8Array)(false, true), transform],
+		encoding: 'utf16le',
+	});
+	t.is(stdout, expectedOutput);
+};
+
+test('Transforms yielding a string are encoded with encoding "utf16le"', testYieldStringTextEncoding, noopGenerator(), nonAsciiString, execa);
+test('Transforms yielding a string are encoded with encoding "utf16le", sync', testYieldStringTextEncoding, noopGenerator(), nonAsciiString, execaSync);
+test('Transforms modifying a string are encoded with encoding "utf16le"', testYieldStringTextEncoding, uppercaseGenerator(), nonAsciiString.toUpperCase(), execa);
+test('Transforms modifying a string are encoded with encoding "utf16le", sync', testYieldStringTextEncoding, uppercaseGenerator(), nonAsciiString.toUpperCase(), execaSync);
+test('Transforms yielding a Uint8Array keep the bytes unchanged with encoding "utf16le"', testYieldStringTextEncoding, getOutputGenerator(nonAsciiUtf16Uint8Array)(false, true), nonAsciiString, execa);
+test('Transforms yielding a Uint8Array keep the bytes unchanged with encoding "utf16le", sync', testYieldStringTextEncoding, getOutputGenerator(nonAsciiUtf16Uint8Array)(false, true), nonAsciiString, execaSync);
+
+// A `stdin` transform also receives text decoded with the `encoding` option, so the same applies in that direction
+const testYieldStringTextEncodingInput = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('stdin.js', {
+		stdin: [[nonAsciiUtf16Uint8Array], noopGenerator()],
+		encoding: 'utf16le',
+	});
+	t.is(stdout, nonAsciiString);
+};
+
+test('Transforms yielding a string are encoded with encoding "utf16le", stdin', testYieldStringTextEncodingInput, execa);
+test('Transforms yielding a string are encoded with encoding "utf16le", stdin, sync', testYieldStringTextEncodingInput, execaSync);
+
+// When the `stdin` value is a string, the transform receives it as text, so it must not be encoded as UTF-8 either
+const testStringInputTextEncoding = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('stdin.js', {
+		stdin: [[nonAsciiString], noopGenerator()],
+		encoding: 'utf16le',
+	});
+	t.is(stdout, nonAsciiString);
+};
+
+test('String input is encoded with encoding "utf16le", stdin', testStringInputTextEncoding, execa);
+test('String input is encoded with encoding "utf16le", stdin, sync', testStringInputTextEncoding, execaSync);
+
+// A transform may also yield `Uint8Array`s with a text encoding. The newline re-added after each stripped line must then be encoded with that same encoding, otherwise the bytes become misaligned.
+const utf16leYieldGenerator = {
+	* transform(line) {
+		yield Buffer.from(line, 'utf16le');
+	},
+};
+
+const testYieldUtf16LeLines = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('stdin.js', {
+		stdin: [['aaa\nbbb\nccc\n'], utf16leYieldGenerator],
+		encoding: 'utf16le',
+		stripFinalNewline: false,
+	});
+	t.is(stdout, 'aaa\nbbb\nccc\n');
+};
+
+test('Transforms yielding Uint8Array re-add newlines with encoding "utf16le"', testYieldUtf16LeLines, execa);
+test('Transforms yielding Uint8Array re-add newlines with encoding "utf16le", sync', testYieldUtf16LeLines, execaSync);

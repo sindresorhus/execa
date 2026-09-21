@@ -1,3 +1,4 @@
+import {Buffer} from 'node:buffer';
 import {Writable} from 'node:stream';
 import test from 'ava';
 import {execa, execaSync} from '../../index.js';
@@ -16,6 +17,7 @@ import {
 	foobarUint16Array,
 	foobarDataView,
 } from '../helpers/input.js';
+import {noopGenerator} from '../helpers/generator.js';
 
 setFixtureDirectory();
 
@@ -67,3 +69,58 @@ test('input option cannot be 0 - sync', testInvalidInput, 0, execaSync);
 test('input option cannot be false - sync', testInvalidInput, false, execaSync);
 test('input option cannot be null - sync', testInvalidInput, null, execaSync);
 test('input option cannot be a non-Readable stream - sync', testInvalidInput, new Writable(), execaSync);
+
+/*
+String input is encoded with the `encoding` option, so it round-trips with subprocesses echoing it back.
+This must not depend on whether a `stdin` transform happens to be present.
+*/
+const nonAsciiString = '🦄🦄';
+
+const testStringEncoding = async (t, options, execaMethod) => {
+	const {stdout} = await execaMethod('stdin.js', {...options, input: nonAsciiString, encoding: 'utf16le'});
+	t.is(stdout, nonAsciiString);
+};
+
+test('input option string is encoded with encoding "utf16le" without transforms', testStringEncoding, {}, execa);
+test('input option string is encoded with encoding "utf16le" without transforms - sync', testStringEncoding, {}, execaSync);
+test('input option string is encoded with encoding "utf16le" with transforms', testStringEncoding, {stdin: noopGenerator()}, execa);
+test('input option string is encoded with encoding "utf16le" with transforms - sync', testStringEncoding, {stdin: noopGenerator()}, execaSync);
+
+/*
+Sources other than the `input` option also pass strings to the subprocess, which must be encoded with the `encoding` option too.
+*/
+const testIterableInputEncoding = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('stdin.js', {
+		stdin: [[`${nonAsciiString}aaa\n`], [`${nonAsciiString}bbb\n`]],
+		encoding: 'utf16le',
+		stripFinalNewline: false,
+	});
+	t.is(stdout, `${nonAsciiString}aaa\n${nonAsciiString}bbb\n`);
+};
+
+test('Iterable string input is encoded with encoding "utf16le"', testIterableInputEncoding, execa);
+test('Iterable string input is encoded with encoding "utf16le" - sync', testIterableInputEncoding, execaSync);
+
+const testAsyncIterableInputEncoding = async t => {
+	const chunks = async function * () {
+		yield nonAsciiString;
+	};
+
+	const {stdout} = await execa('stdin.js', {stdin: [chunks()], encoding: 'utf16le'});
+	t.is(stdout, nonAsciiString);
+};
+
+test('Async iterable string input is encoded with encoding "utf16le"', testAsyncIterableInputEncoding);
+
+/*
+The `encoding` option does not change how string input is encoded when it is a binary encoding: those describe how output bytes are serialized, so input keeps using UTF-8.
+*/
+const testBinaryEncodingInput = async (t, encoding, execaMethod) => {
+	const {stdout} = await execaMethod('stdin.js', {input: nonAsciiString, encoding});
+	t.is(stdout, Buffer.from(nonAsciiString).toString(encoding));
+};
+
+test('String input stays UTF-8 with encoding "latin1"', testBinaryEncodingInput, 'latin1', execa);
+test('String input stays UTF-8 with encoding "latin1" - sync', testBinaryEncodingInput, 'latin1', execaSync);
+test('String input stays UTF-8 with encoding "hex"', testBinaryEncodingInput, 'hex', execa);
+test('String input stays UTF-8 with encoding "hex" - sync', testBinaryEncodingInput, 'hex', execaSync);

@@ -61,6 +61,9 @@ const transform = function * (data) {
 await execa({stdout: {transform, binary: true}})`zip -r - input.txt`;
 ```
 
+> [!NOTE]
+> With the [`binary`](api.md#transformoptionsbinary) transform option, a `string` a transform yields is always converted to bytes using UTF-8, since the transform deals with raw bytes. Therefore, if the [`encoding`](api.md#optionsencoding) option is a different text encoding like `'utf16le'`, those bytes are then decoded with that encoding, which corrupts the text. Either `yield` an `Uint8Array` instead, or do not use the `binary` transform option.
+
 ## Streams
 
 [Streams produced](streams.md#converting-a-subprocess-to-a-stream) by [`subprocess.readable()`](api.md#subprocessreadablereadableoptions) and [`subprocess.duplex()`](api.md#subprocessduplexduplexoptions) are binary by default, which means they iterate over arbitrary [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) chunks. However, if the [`binary`](api.md#readableoptionsbinary) option is `false`, they iterate over line strings instead, and the stream is [in object mode](https://nodejs.org/api/stream.html#object-mode).

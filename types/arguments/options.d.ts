@@ -79,7 +79,7 @@ export type CommonOptions<
 
 	Unless the `extendEnv` option is `false`, the subprocess also uses the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
 
-	@default [process.env](https://nodejs.org/api/process.html#processenv)
+	@default {}
 	*/
 	readonly env?: Readonly<Partial<Record<string, string>>>;
 

@@ -878,7 +878,7 @@ This is also used to resolve the [`nodePath`](#optionsnodepath) option when it i
 ### options.env
 
 _Type:_ `object`\
-_Default:_ [`process.env`](https://nodejs.org/api/process.html#processenv)
+_Default:_ `{}`
 
 [Environment variables](https://en.wikipedia.org/wiki/Environment_variable).
 

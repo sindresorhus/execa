@@ -2,7 +2,7 @@ import {arch} from 'node:os';
 import process from 'node:process';
 import {finished} from 'node:stream/promises';
 import test from 'ava';
-import {execa, execaSync, $} from '../../index.js';
+import {execa, execaSync, $, ExecaError, ExecaSyncError} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUint8Array} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
@@ -234,3 +234,18 @@ test('child_process.spawn() early errors can use .stderr', testEarlyErrorStream,
 test('child_process.spawn() early errors can use .stdio[1]', testEarlyErrorStream, ({stdio}) => stdio[1]);
 test('child_process.spawn() early errors can use .stdio[3]', testEarlyErrorStream, ({stdio}) => stdio[3], fullStdio);
 test('child_process.spawn() early errors can use .all', testEarlyErrorStream, ({all}) => all, {all: true});
+
+// Reading the `inputFile` happens after the file descriptors are set up, so a missing file is reported as an early error, like with asynchronous methods
+test('inputFile which does not exist is an early error', async t => {
+	const error = await t.throwsAsync(execa('stdin.js', {inputFile: 'does_not_exist'}));
+	t.true(error instanceof ExecaError);
+	t.is(error.cause.code, 'ENOENT');
+});
+
+test('inputFile which does not exist is an early error, sync', t => {
+	const error = t.throws(() => {
+		execaSync('stdin.js', {inputFile: 'does_not_exist'});
+	});
+	t.true(error instanceof ExecaSyncError);
+	t.is(error.cause.code, 'ENOENT');
+});

@@ -102,3 +102,32 @@ test('result.escapedCommand - \\uE000', testEscapedCommand, ['\u{E000}'], '\'\\u
 test('result.escapedCommand - \\U1D172', testEscapedCommand, ['\u{1D172}'], '\'\u{1D172}\'', '"\u{1D172}"');
 test('result.escapedCommand - \\U1D173', testEscapedCommand, ['\u{1D173}'], '\'\\U1d173\'', '"\\U1d173"', '\'\u{1D173}\'', '"\u{1D173}"');
 test('result.escapedCommand - \\U10FFFD', testEscapedCommand, ['\u{10FFFD}'], '\'\\U10fffd\'', '"\\U10fffd"', '\'\u{10FFFD}\'', '"\u{10FFFD}"');
+
+/*
+`result.escapedCommand` is documented as safe to copy and paste in a terminal, so a shell must parse it back to the exact same arguments.
+Control characters are excluded, since those are intentionally escaped with a Bash-specific notation instead.
+*/
+if (!isWindows) {
+	const testShellRoundTrip = async (t, commandArguments) => {
+		const {escapedCommand} = await execa('print-arguments.js', commandArguments);
+		const {stdout} = await execa('/bin/sh', ['-c', escapedCommand]);
+		t.deepEqual(JSON.parse(stdout), commandArguments);
+	};
+
+	testShellRoundTrip.title = (message, commandArguments) => `result.escapedCommand can be pasted in a shell: ${JSON.stringify(commandArguments)}`;
+
+	test(testShellRoundTrip, ['foo', 'bar']);
+	test(testShellRoundTrip, ['foo bar']);
+	test(testShellRoundTrip, ['\'foo\'', '"bar"']);
+	test(testShellRoundTrip, ['it\'s', 'a\'\'b']);
+	test(testShellRoundTrip, ['foo\\bar', '\\', '\\\\']);
+	// eslint-disable-next-line no-template-curly-in-string
+	test(testShellRoundTrip, ['$FOO', '${FOO}', '$(echo foo)']);
+	test(testShellRoundTrip, ['`echo foo`']);
+	test(testShellRoundTrip, ['foo;bar', 'foo&&bar', 'foo|bar', 'foo>bar']);
+	test(testShellRoundTrip, ['*', '?', '[a-z]', '{a,b}']);
+	test(testShellRoundTrip, ['~', '#foo', '!foo', '-foo', '--foo=bar']);
+	test(testShellRoundTrip, ['', 'foo']);
+	test(testShellRoundTrip, ['ã', '😀']);
+	test(testShellRoundTrip, ['\'"`$\\!*&;| ']);
+}

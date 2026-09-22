@@ -30,6 +30,25 @@ test('$ can use escaped newlines and character escaped tab indentations', testSc
 \tbar`, 'foo\tbar');
 test('$ can use escaped newlines and character escaped newlines', testScriptStdout, () => $`echo.js foo\
 \n\nbar`, 'foo\n\nbar');
+// An escaped newline is ignored, so it must not separate tokens, nor hide the whitespaces following it.
+// This must behave the same whether the tokens around it are expressions or not.
+test('$ can use escaped newlines between tokens', testScriptStdout, () => $`echo.js foo\
+bar`, 'foobar');
+test('$ can use escaped newlines between expressions', testScriptStdout, () => $`echo.js ${'foo'}\
+${'bar'}`, 'foobar');
+test('$ can use multiple escaped newlines between expressions', testScriptStdout, () => $`echo.js ${'foo'}\
+\
+${'bar'}`, 'foobar');
+test('$ can use escaped newlines and space indentations between expressions', testScriptStdout, () => $`echo.js ${'foo'}\
+ ${'bar'}`, 'foo\nbar');
+test('$ can use escaped newlines and tab indentations between expressions', testScriptStdout, () => $`echo.js ${'foo'}\
+	${'bar'}`, 'foo\nbar');
+test('$ can use escaped newlines and space indentations after an expression', testScriptStdout, () => $`echo.js ${'foo'}\
+ bar`, 'foo\nbar');
+test('$ can use escaped newlines and tab indentations after an expression', testScriptStdout, () => $`echo.js ${'foo'}\
+	bar`, 'foo\nbar');
+test('$ can use escaped newlines before an expression', testScriptStdout, () => $`echo.js foo\
+${'bar'}`, 'foobar');
 test('$ can use Windows newlines and tab indentations', testScriptStdout, () => escapedCall('echo.js foo\r\n\tbar'), 'foo\nbar');
 test('$ can use Windows newlines and space indentations', testScriptStdout, () => escapedCall('echo.js foo\r\n  bar'), 'foo\nbar');
 test('$ does not ignore comments in expressions', testScriptStdout, () => $`echo.js foo
@@ -238,6 +257,19 @@ test('$ splits tokens - \\u{0000063}', testScriptStdout, () => $`echo.js a\u{000
 test('$ splits expressions - \\u{0000063}', testScriptStdout, () => $`echo.js ${'a'}\u{0000063}${'b'}`, 'acb');
 test('$ concatenates tokens - \\u{0000063}', testScriptStdout, () => $`echo.js \u{0000063}a\u{0000063} b`, 'cac\nb');
 test('$ concatenates expressions - \\u{0000063}', testScriptStdout, () => $`echo.js \u{0000063}${'a'}\u{0000063} b`, 'cac\nb');
+
+// Code points above the BMP are a surrogate pair, i.e. two characters, in the template string but not in its raw version.
+// Miscounting them shifts every following character, which splits tokens at the wrong place and breaks the surrogate pair.
+test('$ handles tokens - \\u{1F600}', testScriptStdout, () => $`echo.js \u{1F600}`, '\u{1F600}');
+test('$ splits tokens - \\u{1F600}', testScriptStdout, () => $`echo.js a\u{1F600}b`, 'a\u{1F600}b');
+test('$ splits expressions - \\u{1F600}', testScriptStdout, () => $`echo.js ${'a'}\u{1F600}${'b'}`, 'a\u{1F600}b');
+test('$ concatenates tokens - \\u{1F600}', testScriptStdout, () => $`echo.js \u{1F600}a\u{1F600} b`, '\u{1F600}a\u{1F600}\nb');
+test('$ concatenates expressions - \\u{1F600}', testScriptStdout, () => $`echo.js \u{1F600}${'a'}\u{1F600} b`, '\u{1F600}a\u{1F600}\nb');
+test('$ handles multiple tokens - \\u{1F600}', testScriptStdout, () => $`echo.js \u{1F600}\u{1F600} b c`, '\u{1F600}\u{1F600}\nb\nc');
+test('$ handles the highest code point - \\u{10FFFF}', testScriptStdout, () => $`echo.js \u{10FFFF} b`, '\u{10FFFF}\nb');
+// The BMP boundary is the exact point where the character count changes
+test('$ handles the last BMP code point - \\u{FFFF}', testScriptStdout, () => $`echo.js \u{FFFF} b`, '\u{FFFF}\nb');
+test('$ handles the first astral code point - \\u{10000}', testScriptStdout, () => $`echo.js \u{10000} b`, '\u{10000}\nb');
 test('$ handles tokens - \\u{0063}}', testScriptStdout, () => $`echo.js \u{0063}}`, 'c}');
 test('$ splits tokens - \\u{0063}}', testScriptStdout, () => $`echo.js a\u{0063}}b`, 'ac}b');
 test('$ splits expressions - \\u{0063}}', testScriptStdout, () => $`echo.js ${'a'}\u{0063}}${'b'}`, 'ac}b');

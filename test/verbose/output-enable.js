@@ -35,6 +35,21 @@ test('Prints stderr, verbose "full", sync', testPrintOutput, 'full', 2, true);
 test('Prints stdout, verbose "full", fd-specific, sync', testPrintOutput, stdoutFullOption, 1, true);
 test('Prints stderr, verbose "full", fd-specific, sync', testPrintOutput, stderrFullOption, 2, true);
 
+// `subprocess.all` is created and piped into by Execa itself, which must not disable `verbose`
+const testPrintOutputAll = async (t, verbose, isSync) => {
+	const {stderr} = await nestedSubprocess('noop-both.js', [foobarString], {verbose, all: true, isSync});
+	// An fd-specific `verbose` prints a single file descriptor, while `'full'` prints both
+	const lineCount = verbose === 'full' ? 2 : 1;
+	t.deepEqual(getOutputLines(stderr), Array.from({length: lineCount}, () => `${testTimestamp} [0]   ${foobarString}`));
+};
+
+test('Prints stdout and stderr, verbose "full", all: true', testPrintOutputAll, 'full', false);
+test('Prints stdout, verbose "full", all: true, fd-specific', testPrintOutputAll, stdoutFullOption, false);
+test('Prints stderr, verbose "full", all: true, fd-specific', testPrintOutputAll, stderrFullOption, false);
+test('Prints stdout and stderr, verbose "full", all: true, sync', testPrintOutputAll, 'full', true);
+test('Prints stdout, verbose "full", all: true, fd-specific, sync', testPrintOutputAll, stdoutFullOption, true);
+test('Prints stderr, verbose "full", all: true, fd-specific, sync', testPrintOutputAll, stderrFullOption, true);
+
 const testNoPrintOutput = async (t, verbose, fdNumber, isSync) => {
 	const {stderr} = await nestedSubprocess('noop-fd.js', [`${fdNumber}`, foobarString], {verbose, ...fullStdio, isSync});
 	t.is(getOutputLine(stderr), undefined);

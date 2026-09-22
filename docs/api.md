@@ -417,7 +417,7 @@ Stream combining/interleaving [`subprocess.stdout`](#subprocessstdout) and [`sub
 
 This requires the [`all`](#optionsall) option to be `true`.
 
-This is `undefined` if [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr) options are set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output), or if the [`buffer`](#optionsbuffer) option is `false`.
+This is `undefined` if both [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr) options are set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output).
 
 More info on [interleaving](output.md#interleaved-output) and [streaming](streams.md#manual-streaming).
 
@@ -576,7 +576,7 @@ The output of the subprocess with [`result.stdout`](#resultstdout) and [`result.
 
 This requires the [`all`](#optionsall) option to be `true`.
 
-This is `undefined` if both [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr) options are set to only [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output), or if the [`buffer`](#optionsbuffer) option is `false`.
+This is `undefined` if both [`stdout`](#optionsstdout) and [`stderr`](#optionsstderr) options are set to only [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output), or if the [`buffer`](#optionsbuffer) option is `false` for both.
 
 This is an array if the [`lines`](#optionslines) option is `true`, or if either the `stdout` or `stderr` option is a [transform in object mode](transform.md#object-mode).
 

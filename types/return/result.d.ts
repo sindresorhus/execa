@@ -34,7 +34,7 @@ export declare abstract class CommonResult<
 
 	This requires the `all` option to be `true`.
 
-	This is `undefined` if both `stdout` and `stderr` options are set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+	This is `undefined` if both `stdout` and `stderr` options are set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false` for both.
 
 	This is an array if the `lines` option is `true`, or if either the `stdout` or `stderr` option is a transform in object mode.
 	*/

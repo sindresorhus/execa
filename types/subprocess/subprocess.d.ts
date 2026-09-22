@@ -25,7 +25,7 @@ export type SubprocessResultMethods<OptionsType extends Options = Options> = {
 
 	This requires the `all` option to be `true`.
 
-	This is `undefined` if `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+	This is `undefined` if both `stdout` and `stderr` options are set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
 	*/
 	all: SubprocessAll<OptionsType>;
 

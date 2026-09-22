@@ -123,6 +123,22 @@ test('buffer: false does not return output, stdout [undefined], sync', testNoOut
 test('buffer: false does not return output, stdout [null], sync', testNoOutput, [null], false, execaSync);
 test('buffer: false does not return output, stdout ["pipe", undefined], sync', testNoOutput, ['pipe', undefined], false, execaSync);
 
+/*
+With `buffer: false`, additional file descriptors must still be passed to the subprocess.
+With synchronous methods, `ignore` is used to avoid buffering, but that only redirects `stdout`/`stderr` to `/dev/null`.
+For other file descriptors, it does not pass them at all, which would make the subprocess fail when writing to them.
+*/
+const testNoOutputFdStays = async (t, buffer, execaMethod) => {
+	const {stdio, failed} = await execaMethod('noop-fd.js', ['3', foobarString], {...fullStdio, buffer});
+	t.false(failed);
+	t.is(stdio[3], undefined);
+};
+
+test('buffer: false keeps stdio[*] open', testNoOutputFdStays, false, execa);
+test('buffer: false keeps stdio[*] open, fd-specific', testNoOutputFdStays, {fd3: false}, execa);
+test('buffer: false keeps stdio[*] open, sync', testNoOutputFdStays, false, execaSync);
+test('buffer: false keeps stdio[*] open, fd-specific, sync', testNoOutputFdStays, {fd3: false}, execaSync);
+
 const testNoOutputFail = async (t, execaMethod) => {
 	const {exitCode, stdout} = await execaMethod('fail.js', {buffer: false, reject: false});
 	t.is(exitCode, 2);
@@ -149,6 +165,28 @@ test('buffer: {}, all: true, sync', testNoOutputAll, {}, true, true, execaSync);
 test('buffer: {stdout: false}, all: true, sync', testNoOutputAll, {stdout: false}, false, true, execaSync);
 test('buffer: {stderr: false}, all: true, sync', testNoOutputAll, {stderr: false}, true, false, execaSync);
 test('buffer: {all: false}, all: true, sync', testNoOutputAll, {all: false}, false, false, execaSync);
+
+// `result.all` only contains the buffered file descriptors, so its `stripFinalNewline` must only follow those
+const testNoOutputAllStripFinalNewline = async (t, buffer, stripFinalNewline, execaMethod) => {
+	const {all} = await execaMethod('noop-both.js', {all: true, buffer, stripFinalNewline});
+	t.is(all, `${foobarString}\n`);
+};
+
+test('buffer: {stderr: false} only follows the buffered "stripFinalNewline" in result.all', testNoOutputAllStripFinalNewline, {stderr: false}, {stdout: false, stderr: true}, execa);
+test('buffer: {stdout: false} only follows the buffered "stripFinalNewline" in result.all', testNoOutputAllStripFinalNewline, {stdout: false}, {stdout: true, stderr: false}, execa);
+test('buffer: {stderr: false} only follows the buffered "stripFinalNewline" in result.all, sync', testNoOutputAllStripFinalNewline, {stderr: false}, {stdout: false, stderr: true}, execaSync);
+test('buffer: {stdout: false} only follows the buffered "stripFinalNewline" in result.all, sync', testNoOutputAllStripFinalNewline, {stdout: false}, {stdout: true, stderr: false}, execaSync);
+
+// `result.all` requires the `all` option, even when only one of the two file descriptors is buffered
+const testNoAllWithoutOption = async (t, buffer, execaMethod) => {
+	const {all} = await execaMethod('noop-both.js', {buffer, stripFinalNewline: false});
+	t.is(all, undefined);
+};
+
+test('buffer: {stdout: false} does not set result.all', testNoAllWithoutOption, {stdout: false}, execa);
+test('buffer: {stderr: false} does not set result.all', testNoAllWithoutOption, {stderr: false}, execa);
+test('buffer: {stdout: false} does not set result.all, sync', testNoAllWithoutOption, {stdout: false}, execaSync);
+test('buffer: {stderr: false} does not set result.all, sync', testNoAllWithoutOption, {stderr: false}, execaSync);
 
 const testTransform = async (t, objectMode, execaMethod) => {
 	const lines = [];
@@ -195,3 +233,27 @@ test('buffer: false > emits end event on stdio[*] when promise is rejected', tes
 test('buffer: true > emits end event on stdout when promise is rejected', testStreamEnd, 1, true);
 test('buffer: true > emits end event on stderr when promise is rejected', testStreamEnd, 2, true);
 test('buffer: true > emits end event on stdio[*] when promise is rejected', testStreamEnd, 3, true);
+
+// When only one file descriptor is buffered, `result.all` is read from its own stream, not from `subprocess.all`.
+// `subprocess.all` still merges both file descriptors, so it must be drained. Otherwise, it fills up and applies backpressure on them, hanging the subprocess which is still writing to them.
+const LARGE_OUTPUT = 1e6;
+
+const testNoBufferAllBackpressure = async (t, fdNumber, buffer) => {
+	const {exitCode, all} = await execa('noop-fd-large.js', [`${fdNumber}`, `${LARGE_OUTPUT}`], {all: true, buffer});
+	t.is(exitCode, 0);
+	t.is(all.length, LARGE_OUTPUT);
+};
+
+// Without the fix, the subprocess hangs, so it is given a `timeout` to turn the hang into a failed assertion
+test('all: true does not hang on a large stdout with buffer: {stderr: false}', testNoBufferAllBackpressure, 1, {stderr: false});
+test('all: true does not hang on a large stderr with buffer: {stdout: false}', testNoBufferAllBackpressure, 2, {stdout: false});
+
+// `subprocess.all` must keep interleaving a file descriptor which is not buffered, even though Execa does not read it itself
+const testAllStreamWithNoBuffer = async (t, fdNumber, optionName) => {
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`, foobarString], {all: true, buffer: {[optionName]: false}});
+	const [, allContents] = await Promise.all([subprocess, getStream(subprocess.all)]);
+	t.is(allContents, foobarString);
+};
+
+test('subprocess.all includes an unbuffered stdout', testAllStreamWithNoBuffer, 1, 'stdout');
+test('subprocess.all includes an unbuffered stderr', testAllStreamWithNoBuffer, 2, 'stderr');

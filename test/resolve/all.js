@@ -175,3 +175,51 @@ test('can use all: true with stdout: ignore + stderr: ignore, sync', t => {
 	t.is(stderr, undefined);
 	t.is(all, undefined);
 });
+
+// `all` is split into lines when the `lines` option applies to either file descriptor, even when only one of them uses it
+const foobarTwoLines = `${foobarString}\n${foobarString}`;
+// The fixture writes the same two lines to both `stdout` and `stderr`
+const foobarTwoLinesArray = Array.from({length: 4}, () => `${foobarString}\n`);
+const testAllBothLines = async (t, lines, execaMethod) => {
+	const {all} = await execaMethod('noop-both.js', [foobarTwoLines], {all: true, lines, stripFinalNewline: false});
+	t.deepEqual(all, foobarTwoLinesArray);
+};
+
+test('result.all is split into lines when only stdout uses the lines option', testAllBothLines, {stdout: true}, execa);
+test('result.all is split into lines when only stderr uses the lines option', testAllBothLines, {stderr: true}, execa);
+test('result.all is split into lines when only stdout uses the lines option, sync', testAllBothLines, {stdout: true}, execaSync);
+test('result.all is split into lines when only stderr uses the lines option, sync', testAllBothLines, {stderr: true}, execaSync);
+
+// When only one file descriptor is interleaved into `all`, it must follow that one exactly, including its `stripFinalNewline` value
+const testAllOneFd = async (t, lines, execaMethod) => {
+	const {stderr, all} = await execaMethod('noop-both.js', [foobarString], {
+		all: true,
+		stdout: 'ignore',
+		lines,
+		stripFinalNewline: {stderr: false},
+	});
+	t.deepEqual(stderr, lines ? [`${foobarString}\n`] : `${foobarString}\n`);
+	t.deepEqual(all, stderr);
+};
+
+test('result.all follows stderr when stdout is ignored', testAllOneFd, false, execa);
+test('result.all follows stderr when stdout is ignored, lines', testAllOneFd, true, execa);
+test('result.all follows stderr when stdout is ignored, sync', testAllOneFd, false, execaSync);
+test('result.all follows stderr when stdout is ignored, lines, sync', testAllOneFd, true, execaSync);
+
+// `all` is split into lines as soon as the `lines` option applies to either file descriptor, even the one which is not interleaved into `all`
+const testAllOneFdOtherLines = async (t, linesFdName, ignoredFdName, stripFinalNewline, execaMethod) => {
+	const {all} = await execaMethod('noop-both.js', [foobarString], {
+		all: true,
+		[ignoredFdName]: 'ignore',
+		lines: {[linesFdName]: true},
+		stripFinalNewline,
+	});
+	t.deepEqual(all, [stripFinalNewline ? foobarString : `${foobarString}\n`]);
+};
+
+test('result.all is split into lines when only stdout uses the lines option and stderr is ignored', testAllOneFdOtherLines, 'stdout', 'stderr', true, execa);
+test('result.all is split into lines when only stdout uses the lines option and stderr is ignored, stripFinalNewline false', testAllOneFdOtherLines, 'stdout', 'stderr', false, execa);
+test('result.all is split into lines when only stderr uses the lines option and stdout is ignored', testAllOneFdOtherLines, 'stderr', 'stdout', true, execa);
+test('result.all is split into lines when only stdout uses the lines option and stderr is ignored, sync', testAllOneFdOtherLines, 'stdout', 'stderr', true, execaSync);
+test('result.all is split into lines when only stderr uses the lines option and stdout is ignored, sync', testAllOneFdOtherLines, 'stderr', 'stdout', true, execaSync);

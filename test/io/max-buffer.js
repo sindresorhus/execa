@@ -123,6 +123,8 @@ test('maxBuffer truncates file descriptors with fd-specific options, stdout, all
 test('maxBuffer truncates file descriptors with fd-specific options, stderr, all', testFdSpecific, 2, 'all', execa);
 test('maxBuffer truncates file descriptors with fd-specific options, fd3', testFdSpecific, 3, 'fd3', execa);
 test('maxBuffer.stdout is used for stdout with fd-specific options, stdout, sync', testFdSpecific, 1, 'stdout', execaSync);
+test('maxBuffer.stderr is used for stderr with fd-specific options, stderr, sync', testFdSpecific, 2, 'stderr', execaSync);
+test('maxBuffer.fd3 is used for stdio[*] with fd-specific options, fd3, sync', testFdSpecific, 3, 'fd3', execaSync);
 
 test('maxBuffer does not affect other file descriptors with fd-specific options', async t => {
 	const {isMaxBuffer} = await getMaxBufferSubprocess(execa, 2, {maxBuffer: {stdout: 1}});
@@ -153,6 +155,40 @@ test('maxBuffer.stdout is used for other file descriptors with fd-specific optio
 	const length = 1;
 	const {shortMessage, stderr} = await runMaxBuffer(t, execaSync, 2, {maxBuffer: {stdout: length}});
 	assertErrorMessage(t, shortMessage, {execaMethod: execaSync, fdNumber: 2, length});
+	t.is(stderr, getExpectedOutput(length));
+});
+
+// `spawnSync()`'s native `maxBuffer` is `maxBuffer.stdout`, so a lower limit on another file descriptor is only enforced from the output, after the subprocess exits
+test('maxBuffer.stderr is used when lower than maxBuffer.stdout, sync', t => {
+	const length = 3;
+	const error = t.throws(() => {
+		execaSync('noop-both.js', ['.'.repeat(maxBuffer + 1)], {maxBuffer: {stdout: 1e8, stderr: length}});
+	}, maxBufferCodeSync);
+	t.true(error.isMaxBuffer);
+	t.is(error.maxBufferInfo, undefined);
+	assertErrorMessage(t, error.shortMessage, {execaMethod: execaSync, fdNumber: 2, length});
+	t.is(error.stdout, getExpectedOutput(maxBuffer + 1));
+	t.is(error.stderr, getExpectedOutput(length));
+	t.is(error.signal, undefined);
+	t.is(error.exitCode, 0);
+});
+
+test('maxBuffer.stderr is used when lower than maxBuffer.stdout', async t => {
+	const length = 3;
+	const error = await t.throwsAsync(execa('noop-both.js', ['.'.repeat(maxBuffer + 1)], {maxBuffer: {stdout: 1e8, stderr: length}}));
+	t.true(error.isMaxBuffer);
+	assertErrorMessage(t, error.shortMessage, {fdNumber: 2, length});
+	t.is(error.stdout, getExpectedOutput(maxBuffer + 1));
+	t.is(error.stderr, getExpectedOutput(length));
+	t.is(error.signal, undefined);
+	t.is(error.exitCode, 0);
+});
+
+test('maxBuffer is not hit when under each file descriptor\'s value, sync', t => {
+	const length = 9;
+	const {isMaxBuffer, stdout, stderr} = execaSync('noop-both.js', ['.'.repeat(length)], {maxBuffer: {stdout: 1e8, stderr: 10}});
+	t.false(isMaxBuffer);
+	t.is(stdout, getExpectedOutput(length));
 	t.is(stderr, getExpectedOutput(length));
 });
 
@@ -198,6 +234,98 @@ test('maxBuffer.stdin is invalid, sync', testInvalidFd, 'stdin', execaSync);
 test('maxBuffer.fd0 is invalid, sync', testInvalidFd, 'fd0', execaSync);
 test('maxBuffer.other is invalid, sync', testInvalidFd, 'other', execaSync);
 test('maxBuffer.fd10 is invalid, sync', testInvalidFd, 'fd10', execaSync);
+
+// These tests need the subprocess to have written its output before the timeout kills it, which is only guaranteed if the timeout leaves room for the subprocess to start. On a busy machine, starting Node.js can take over a second.
+const SYNC_TIMEOUT = 1e4;
+
+// A file descriptor limit lower than `maxBuffer.stdout` does not stop the subprocess with synchronous methods, so the subprocess can still time out afterwards
+const testMaxBufferTimeoutSync = (t, fdNumber, fdName) => {
+	const length = 3;
+	const error = t.throws(() => {
+		execaSync('max-buffer-forever.js', [`${fdNumber}`, `${maxBuffer}`], {...fullStdio, timeout: SYNC_TIMEOUT, maxBuffer: {[fdName]: length}});
+	}, {code: 'ETIMEDOUT'});
+	t.true(error.timedOut);
+	t.false(error.isMaxBuffer);
+	t.is(error.maxBufferInfo, undefined);
+	t.false(Object.hasOwn(error.cause, 'maxBufferInfo'));
+	t.true(error.shortMessage.startsWith(`Command timed out after ${SYNC_TIMEOUT} milliseconds`));
+	t.is(error.stdio[fdNumber], getExpectedOutput(length));
+};
+
+test('timeout is reported instead of maxBuffer.stderr, sync', testMaxBufferTimeoutSync, 2, 'stderr');
+test('timeout is reported instead of maxBuffer.fd3, sync', testMaxBufferTimeoutSync, 3, 'fd3');
+
+test('timeout does not truncate output under maxBuffer.stderr, sync', t => {
+	const {timedOut, isMaxBuffer, stderr} = t.throws(() => {
+		execaSync('max-buffer-forever.js', ['2', `${maxBuffer}`], {timeout: SYNC_TIMEOUT, maxBuffer: {stderr: maxBuffer}});
+	}, {code: 'ETIMEDOUT'});
+	t.true(timedOut);
+	t.false(isMaxBuffer);
+	t.is(stderr, getExpectedOutput(maxBuffer));
+});
+
+// `maxBuffer.stdout` is enforced by `spawnSync()` itself, which stops the subprocess before it can time out
+test('maxBuffer.stdout is reported before timeout, sync', t => {
+	const length = 3;
+	const error = t.throws(() => {
+		execaSync('max-buffer-forever.js', ['1', `${maxBuffer}`], {timeout: SYNC_TIMEOUT, maxBuffer: {stdout: length}});
+	}, maxBufferCodeSync);
+	t.false(error.timedOut);
+	t.true(error.isMaxBuffer);
+	t.is(error.maxBufferInfo, undefined);
+	assertErrorMessage(t, error.shortMessage, {execaMethod: execaSync, length});
+	t.is(error.stdout, getExpectedOutput(length));
+});
+
+test('maxBuffer.stderr is reported with a non-zero exit code, sync', t => {
+	const length = 3;
+	const error = t.throws(() => {
+		execaSync('noop-both-fail.js', ['.'.repeat(maxBuffer)], {maxBuffer: {stdout: 1e8, stderr: length}});
+	});
+	t.true(error.isMaxBuffer);
+	t.is(error.maxBufferInfo, undefined);
+	assertErrorMessage(t, error.shortMessage, {execaMethod: execaSync, fdNumber: 2, length});
+	t.is(error.exitCode, 1);
+	t.is(error.stdout, getExpectedOutput(maxBuffer));
+	t.is(error.stderr, getExpectedOutput(length));
+});
+
+test('maxBuffer.stderr works with reject false, sync', t => {
+	const length = 3;
+	const {failed, isMaxBuffer, maxBufferInfo, shortMessage, stderr} = execaSync('noop-fd.js', ['2', '.'.repeat(maxBuffer)], {maxBuffer: {stdout: 1e8, stderr: length}, reject: false});
+	t.true(failed);
+	t.true(isMaxBuffer);
+	t.is(maxBufferInfo, undefined);
+	assertErrorMessage(t, shortMessage, {execaMethod: execaSync, fdNumber: 2, length});
+	t.is(stderr, getExpectedOutput(length));
+});
+
+test('maxBuffer.stderr works with lines, sync', t => {
+	const length = 3;
+	const {isMaxBuffer, stderr} = t.throws(() => {
+		execaSync('noop-both.js', ['.'.repeat(maxBuffer)], {maxBuffer: {stdout: 1e8, stderr: length}, lines: true});
+	}, maxBufferCodeSync);
+	t.true(isMaxBuffer);
+	t.deepEqual(stderr, [getExpectedOutput(length)]);
+});
+
+test('maxBuffer.stdout is an upper bound for maxBuffer.stderr, sync', t => {
+	const length = 3;
+	const {isMaxBuffer, shortMessage, stderr} = t.throws(() => {
+		execaSync('noop-fd.js', ['2', '.'.repeat(maxBuffer)], {maxBuffer: {stdout: length, stderr: 1e8}});
+	}, maxBufferCodeSync);
+	t.true(isMaxBuffer);
+	assertErrorMessage(t, shortMessage, {execaMethod: execaSync, fdNumber: 2, length});
+	t.is(stderr, getExpectedOutput(length));
+});
+
+test('maxBuffer.stderr is not reported on spawn errors, sync', t => {
+	const {code, isMaxBuffer} = t.throws(() => {
+		execaSync('non-existent-command', {maxBuffer: {stderr: 1}});
+	});
+	t.is(code, 'ENOENT');
+	t.false(isMaxBuffer);
+});
 
 const testMaxBufferEncoding = async (t, execaMethod, fdNumber) => {
 	const {shortMessage, stdio} = await runMaxBuffer(t, execaMethod, fdNumber, {encoding: 'buffer'});
@@ -321,3 +449,43 @@ test('maxBuffer is ignored with result.ipcOutput if buffer is false', async t =>
 	const {ipcOutput} = await execa('ipc-send-twice.js', {ipc: true, maxBuffer: {ipc: 1}, buffer: false});
 	t.deepEqual(ipcOutput, []);
 });
+
+/*
+`result.ipcOutput` is counted in messages, which are indivisible, so any `maxBuffer` value the count cannot land on exactly must still be enforced.
+The threshold is hit as soon as buffering one more message would exceed it, which is how the stream-based `maxBuffer` behaves too.
+*/
+const testIpcMaxBufferValue = async (t, maxBuffer, expectedOutput) => {
+	const {isMaxBuffer, ipcOutput} = await t.throwsAsync(execa('ipc-send-twice.js', {ipc: true, maxBuffer: {ipc: maxBuffer}}));
+	t.true(isMaxBuffer);
+	t.deepEqual(ipcOutput, expectedOutput);
+};
+
+test('maxBuffer works with result.ipcOutput, negative', testIpcMaxBufferValue, -1, []);
+test('maxBuffer works with result.ipcOutput, 0', testIpcMaxBufferValue, 0, []);
+test('maxBuffer works with result.ipcOutput, below 1', testIpcMaxBufferValue, 0.5, []);
+test('maxBuffer works with result.ipcOutput, 1', testIpcMaxBufferValue, 1, [foobarArray[0]]);
+test('maxBuffer works with result.ipcOutput, fractional', testIpcMaxBufferValue, 1.5, [foobarArray[0]]);
+
+const testIpcMaxBufferNotHit = async (t, maxBuffer) => {
+	const {isMaxBuffer, ipcOutput} = await execa('ipc-send-twice.js', {ipc: true, maxBuffer: {ipc: maxBuffer}});
+	t.false(isMaxBuffer);
+	t.deepEqual(ipcOutput, foobarArray);
+};
+
+test('maxBuffer is not hit with result.ipcOutput, exact count', testIpcMaxBufferNotHit, 2);
+test('maxBuffer is not hit with result.ipcOutput, fractional', testIpcMaxBufferNotHit, 2.5);
+
+// The same `maxBuffer` value must be interpreted the same way whether the output is buffered as messages or as characters
+const testIpcMaxBufferLikeStream = async (t, maxBuffer) => {
+	const [ipcResult, streamResult] = await Promise.all([
+		execa('ipc-send-twice.js', {ipc: true, maxBuffer: {ipc: maxBuffer}, reject: false}),
+		execa('noop-fd.js', ['1', 'ab'], {maxBuffer, reject: false}),
+	]);
+	t.is(ipcResult.isMaxBuffer, streamResult.isMaxBuffer);
+	t.is(ipcResult.ipcOutput.length, streamResult.stdout.length);
+};
+
+test('maxBuffer with result.ipcOutput matches stdout, 0.5', testIpcMaxBufferLikeStream, 0.5);
+test('maxBuffer with result.ipcOutput matches stdout, 1', testIpcMaxBufferLikeStream, 1);
+test('maxBuffer with result.ipcOutput matches stdout, 1.5', testIpcMaxBufferLikeStream, 1.5);
+test('maxBuffer with result.ipcOutput matches stdout, 2', testIpcMaxBufferLikeStream, 2);

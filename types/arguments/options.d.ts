@@ -192,6 +192,8 @@ export type CommonOptions<
 
 	By default, this applies to both `stdout` and `stderr`, but different values can also be passed.
 
+	With synchronous methods, this cannot be enforced per file descriptor while the subprocess runs, since `spawnSync()` only accepts a single value, which limits the total output of all file descriptors. The `maxBuffer.stdout` value is used for it. The other file descriptors' own values are enforced from the output, once the subprocess ended, and cannot be higher than `maxBuffer.stdout`.
+
 	When reached, `error.isMaxBuffer` becomes `true`.
 
 	@default 100_000_000

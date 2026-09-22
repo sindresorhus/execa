@@ -209,7 +209,7 @@ await subprocess;
 
 On Unix, this spawns the subprocess in its own [process group](https://en.wikipedia.org/wiki/Process_group), then sends the signal to that group. On Windows, this uses [`taskkill`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill), which terminates the process tree tracked by the OS.
 
-This is best-effort. On Unix, descendant processes that create their own process group or session (for example, daemons calling [`setsid()`](https://man7.org/linux/man-pages/man2/setsid.2.html)) escape termination. On Unix, because the subprocess runs in its own process group, it is also detached from the terminal, so pressing `CTRL-C` no longer forwards [`SIGINT`](#sigint) to it.
+This is best-effort. On Unix, descendant processes that create their own process group or session (for example, daemons calling [`setsid()`](https://man7.org/linux/man-pages/man2/setsid.2.html)) escape termination. On Unix, because the subprocess runs in its own process group, it is also detached from the terminal, so pressing `CTRL-C` no longer forwards [`SIGINT`](#sigint) to it. Finally, the OS can re-assign the subprocess' PID to an unrelated process once it exited. So, descendants are not signaled anymore once Execa is done with the subprocess, i.e. once its promise has settled. On Windows, this applies as soon as the subprocess exited, which also prevents the [`forceKillAfterDelay`](#forceful-termination) escalation from terminating its descendants.
 
 This option cannot be used with [synchronous methods](execution.md#synchronous-execution).
 

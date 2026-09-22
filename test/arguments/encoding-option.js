@@ -37,3 +37,12 @@ test('cannot pass encoding: UCS2', testInvalidEncoding, 'UCS2', getCorrectEncodi
 test('cannot pass encoding: ucs-2', testInvalidEncoding, 'ucs-2', getCorrectEncodingMessage('utf16le'), execa);
 test('cannot pass encoding: UCS-2', testInvalidEncoding, 'UCS-2', getCorrectEncodingMessage('utf16le'), execa);
 test('cannot pass encoding: binary', testInvalidEncoding, 'binary', getCorrectEncodingMessage('latin1'), execa);
+
+test('cannot pass encoding: constructor', testInvalidEncoding, 'constructor', UNKNOWN_ENCODING_MESSAGE, execa);
+test('cannot pass encoding: constructor, sync', testInvalidEncoding, 'constructor', UNKNOWN_ENCODING_MESSAGE, execaSync);
+test('cannot pass encoding: __proto__', testInvalidEncoding, '__proto__', UNKNOWN_ENCODING_MESSAGE, execa);
+test('cannot pass encoding: __proto__, sync', testInvalidEncoding, '__proto__', UNKNOWN_ENCODING_MESSAGE, execaSync);
+test('cannot pass encoding: CONSTRUCTOR', testInvalidEncoding, 'CONSTRUCTOR', UNKNOWN_ENCODING_MESSAGE, execa);
+test('cannot pass encoding: toString', testInvalidEncoding, 'toString', UNKNOWN_ENCODING_MESSAGE, execa);
+test('cannot pass encoding: valueOf', testInvalidEncoding, 'valueOf', UNKNOWN_ENCODING_MESSAGE, execa);
+test('cannot pass encoding: hasOwnProperty', testInvalidEncoding, 'hasOwnProperty', UNKNOWN_ENCODING_MESSAGE, execa);

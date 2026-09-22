@@ -227,3 +227,8 @@ test('Opposite sendMessage() "strict", not listening, buffer false', async t => 
 	t.true(stderr.includes('Error: sendMessage() failed: the parent process is sending a message too, instead of listening to incoming messages.'));
 	t.deepEqual(ipcOutput, []);
 });
+
+test('Ignores "strict" responses with an Object.prototype property as id', async t => {
+	const {ipcOutput} = await execa('ipc-send-strict-proto.js', {ipc: true});
+	t.deepEqual(ipcOutput, []);
+});

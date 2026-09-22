@@ -144,7 +144,13 @@ test('getCancelSignal() fails if no IPC', async t => {
 	t.false(isTerminated);
 	t.is(exitCode, 1);
 	t.deepEqual(ipcOutput, []);
-	t.true(stderr.includes('Error: `getCancelSignal()` cannot be used without setting the `cancelSignal` subprocess option.'));
+	t.true(stderr.includes('Error: `getCancelSignal()` cannot be used without setting the `gracefulCancel` option to `true`.'));
+});
+
+test('getCancelSignal() fails on every call if no IPC', async t => {
+	const {exitCode, stdout} = await execa('graceful-none-twice.js', {stripFinalNewline: false});
+	t.is(exitCode, 0);
+	t.is(stdout, 'threw\nthrew\n');
 });
 
 test.serial('getCancelSignal() hangs if cancelSignal without gracefulCancel', async t => {
@@ -213,4 +219,17 @@ test('error.isGracefullyCanceled is always false with execaSync()', t => {
 	const {isCanceled, isGracefullyCanceled} = execaSync('empty.js');
 	t.false(isCanceled);
 	t.false(isGracefullyCanceled);
+});
+
+// Execa wraps `gracefulCancel` messages with an internal type, which is only ever sent by the current process to its subprocess.
+// A subprocess must not be able to send it in the other direction, since this would abort the parent process' own `cancelSignal`, or silently drop the message.
+test('Subprocess messages with the internal graceful cancellation shape are kept', async t => {
+	const {ipcOutput} = await execa('ipc-send-cancel-shape.js', {ipc: true});
+	t.deepEqual(ipcOutput, [{type: 'execa:ipc:cancel', message: foobarString}]);
+});
+
+test('Graceful cancelSignal is not aborted by the subprocess\' own subprocess', async t => {
+	const controller = new AbortController();
+	const {ipcOutput} = await execa('graceful-nested.js', {cancelSignal: controller.signal, gracefulCancel: true});
+	t.deepEqual(ipcOutput, [false]);
 });

@@ -38,6 +38,16 @@ test('do not use process.env with `extendEnv: false` and no `env`, sync', testNo
 test('do not use process.env with `extendEnv: false` and `env: {}`', testNoEnvironment, execa, {env: {}});
 test('do not use process.env with `extendEnv: false`, no `env` and `preferLocal`', testNoEnvironment, execa, {preferLocal: true});
 
+// The `env` option is kept on a null-prototype object, so the properties it inherits are not passed to the subprocess
+const testInheritedEnv = async (t, execaMethod) => {
+	const env = Object.assign(Object.create({FOO: 'foo'}), {BAR: 'bar'});
+	const {stdout} = await execaMethod(process.execPath, [environmentFile], {env, extendEnv: false});
+	t.deepEqual(stdout.split('\n'), ['undefined', 'bar']);
+};
+
+test('The "env" option does not pass inherited properties', testInheritedEnv, execa);
+test('The "env" option does not pass inherited properties, sync', testInheritedEnv, execaSync);
+
 test('use extend environment with `extendEnv: true` and `shell: true`', async t => {
 	process.env.TEST = 'test';
 	const command = isWindows ? 'echo %TEST%' : 'echo $TEST';

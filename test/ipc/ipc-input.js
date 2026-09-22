@@ -41,6 +41,18 @@ test('Invalid "ipcInput" option JSON format', t => {
 	t.is(cause.message, 'Do not know how to serialize a BigInt');
 });
 
+// An invalid `serialization` option must not crash the `ipcInput` validation, which is keyed by it.
+// `Object.prototype` properties are the trickiest values, since those are found on any object.
+const testInvalidSerialization = async (t, serialization) => {
+	const {code} = await t.throwsAsync(execa('empty.js', {ipcInput: foobarString, serialization}));
+	t.is(code, 'ERR_INVALID_ARG_VALUE');
+};
+
+test('Invalid "serialization" option with the "ipcInput" option', testInvalidSerialization, 'invalid');
+test('Invalid "serialization" option with the "ipcInput" option, __proto__', testInvalidSerialization, '__proto__');
+test('Invalid "serialization" option with the "ipcInput" option, toString', testInvalidSerialization, 'toString');
+test('Invalid "serialization" option with the "ipcInput" option, constructor', testInvalidSerialization, 'constructor');
+
 test('Handles "ipcInput" option during sending', async t => {
 	const {message, cause} = await t.throwsAsync(execa('empty.js', {ipcInput: 0n}));
 	t.true(message.includes('subprocess.sendMessage()\'s argument type is invalid: the message cannot be serialized: 0.'));

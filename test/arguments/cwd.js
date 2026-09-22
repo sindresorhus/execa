@@ -50,24 +50,54 @@ test('The "cwd" option defaults to process.cwd() - sync', testErrorCwdDefault, e
 
 // Windows does not allow removing a directory used as `cwd` of a running subprocess
 if (!isWindows) {
-	const testCwdPreSpawn = async (t, execaMethod) => {
+	// Deletes the current directory, which makes `process.cwd()` throw
+	const chdirToMissingDirectory = async t => {
 		const currentCwd = process.cwd();
+		t.teardown(() => {
+			process.chdir(currentCwd);
+		});
+
 		const filePath = tempfile();
 		await mkdir(filePath);
 		process.chdir(filePath);
 		await rmdir(filePath);
+	};
 
-		try {
-			t.throws(() => {
-				execaMethod('empty.js');
-			}, {message: /The current directory does not exist/});
-		} finally {
-			process.chdir(currentCwd);
-		}
+	const testCwdPreSpawn = async (t, execaMethod) => {
+		await chdirToMissingDirectory(t);
+
+		t.throws(() => {
+			execaMethod('empty.js');
+		}, {message: /The current directory does not exist/});
 	};
 
 	test.serial('The "cwd" option default fails if current cwd is missing', testCwdPreSpawn, execa);
 	test.serial('The "cwd" option default fails if current cwd is missing - sync', testCwdPreSpawn, execaSync);
+
+	// The error message mentions the current directory, but computing it must not fail when it has been deleted.
+	// Otherwise, this would hide the subprocess' own error, and would throw even with the `reject: false` option.
+	const testCwdMissingError = async (t, execaMethod) => {
+		await chdirToMissingDirectory(t);
+
+		const {failed, code, message} = await execaMethod('does_not_exist', {cwd: FIXTURES_DIRECTORY, reject: false});
+		t.true(failed);
+		t.is(code, 'ENOENT');
+		t.true(message.includes('does_not_exist'));
+	};
+
+	test.serial('The subprocess error is kept if current cwd is missing', testCwdMissingError, execa);
+	test.serial('The subprocess error is kept if current cwd is missing - sync', testCwdMissingError, execaSync);
+
+	// The `cwd` option is valid, so the error message must not mention it at all
+	const testCwdMissingValidOption = async (t, execaMethod) => {
+		await chdirToMissingDirectory(t);
+
+		const {message} = await execaMethod('does_not_exist', {cwd: FIXTURES_DIRECTORY, reject: false});
+		t.false(message.includes('The "cwd" option'));
+	};
+
+	test.serial('The "cwd" option is not reported as invalid if current cwd is missing', testCwdMissingValidOption, execa);
+	test.serial('The "cwd" option is not reported as invalid if current cwd is missing - sync', testCwdMissingValidOption, execaSync);
 }
 
 const cwdNotExisting = {cwd: 'does_not_exist', expectedCode: 'ENOENT', expectedMessage: 'The "cwd" option is invalid'};

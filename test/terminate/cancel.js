@@ -201,6 +201,13 @@ test('Throws when using the former "signal" option name', t => {
 	}, {message: /renamed to "cancelSignal"/});
 });
 
+test('Throws when using the former "signal" option name, sync', t => {
+	const abortController = new AbortController();
+	t.throws(() => {
+		execaSync('empty.js', {signal: abortController.signal});
+	}, {message: /renamed to "cancelSignal"/});
+});
+
 test('Cannot use cancelSignal, sync', t => {
 	const abortController = new AbortController();
 	t.throws(() => {

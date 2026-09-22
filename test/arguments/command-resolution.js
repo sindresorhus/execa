@@ -152,6 +152,24 @@ test('Runs a shebang script with a space after the "#!"', async t => {
 	t.is(stdoutSync, 'foo');
 });
 
+/*
+Windows does not support shebangs natively, so Execa parses them itself, by reading the file's first bytes into a fixed-size buffer.
+A file which only contains a shebang line, without a trailing newline, is shorter than that buffer, which is zero-filled.
+Only the bytes actually read must be parsed, otherwise the interpreter would include those `\0` characters, which does not resolve to any file.
+The file is created by the test since Unix cannot execute it, so it must not be used by any other test.
+*/
+if (isWindows) {
+	test('Runs a shebang script shorter than the shebang buffer', async t => {
+		const filePath = path.join(FIXTURES_DIRECTORY, 'shebang-only.js');
+		await writeFile(filePath, '#!/usr/bin/env node');
+		t.teardown(() => unlink(filePath));
+
+		const {exitCode, stdout} = await execa('shebang-only.js');
+		t.is(exitCode, 0);
+		t.is(stdout, '');
+	});
+}
+
 // Neither the caller's arguments array nor its options object should be mutated,
 // whether or not a shell is used (each path clones the arguments internally).
 const testNoMutation = async (t, options) => {

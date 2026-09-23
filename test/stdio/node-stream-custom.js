@@ -62,6 +62,35 @@ test('stdout cannot be [Writable, "pipe"] without a file descriptor, sync', test
 test('stderr cannot be [Writable, "pipe"] without a file descriptor, sync', testLazyFileWritableSync, 2);
 test('stdio[*] cannot be [Writable, "pipe"] without a file descriptor, sync', testLazyFileWritableSync, 3);
 
+/*
+An output stream is written to, then handed back to the user.
+We must only wait for our writes to be flushed, not for the user to consume its readable side,
+otherwise the subprocess promise hangs until they do.
+*/
+const testUnconsumedOutputStream = async (t, fdNumber) => {
+	const stream = new PassThrough();
+	const {exitCode} = await execa('empty.js', {...getStdio(fdNumber, [stream, 'pipe']), timeout: 1e3});
+	t.is(exitCode, 0);
+};
+
+test('stdout does not wait for the user to consume the output stream', testUnconsumedOutputStream, 1);
+test('stderr does not wait for the user to consume the output stream', testUnconsumedOutputStream, 2);
+test('stdio[*] does not wait for the user to consume the output stream', testUnconsumedOutputStream, 3);
+
+test('stdout does not wait for the user to consume the output stream on subprocess errors', async t => {
+	const stream = new PassThrough();
+	const error = await t.throwsAsync(execa('fail.js', {...getStdio(1, [stream, 'pipe']), timeout: 1e3}));
+	t.false(error.timedOut);
+	t.is(error.exitCode, 2);
+});
+
+// The stream is handed back to the user with its data still readable
+test('output stream data is readable once the subprocess is done', async t => {
+	const stream = new PassThrough();
+	await execa('noop.js', [foobarString], {...getStdio(1, [stream, 'pipe'])});
+	t.is(await text(stream), `${foobarString}\n`);
+});
+
 test('Waits for custom streams destroy on subprocess errors', async t => {
 	let isWaitedForDestroy = false;
 	const stream = new Writable({

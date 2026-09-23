@@ -20,6 +20,17 @@ test('Cannot pass an empty array to stdout - sync', testEmptyArray, 1, 'stdout',
 test('Cannot pass an empty array to stderr - sync', testEmptyArray, 2, 'stderr', execaSync);
 test('Cannot pass an empty array to stdio[*] - sync', testEmptyArray, 3, 'stdio[3]', execaSync);
 
+const testEmptyArrayBufferFalse = (t, fdNumber, optionName, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', {...getStdio(fdNumber, []), buffer: false});
+	}, {message: `The \`${optionName}\` option must not be an empty array.`});
+};
+
+test('Cannot pass an empty array to stdout with buffer: false', testEmptyArrayBufferFalse, 1, 'stdout', execa);
+test('Cannot pass an empty array to stderr with buffer: false', testEmptyArrayBufferFalse, 2, 'stderr', execa);
+test('Cannot pass an empty array to stdout with buffer: false - sync', testEmptyArrayBufferFalse, 1, 'stdout', execaSync);
+test('Cannot pass an empty array to stderr with buffer: false - sync', testEmptyArrayBufferFalse, 2, 'stderr', execaSync);
+
 const testInvalidValueSync = (t, fdNumber, stdioOption) => {
 	const {message} = t.throws(() => {
 		execaSync('empty.js', getStdio(fdNumber, stdioOption));
@@ -72,3 +83,18 @@ test('Cannot pass "ipc" and another value to stdio[*]', testIpcStdioOption, 3, [
 test('Cannot pass "ipc" and another value to stdio[*] - sync', testIpcStdioOption, 3, ['pipe', 'ipc'], execaSync);
 test('Cannot pass {value: "ipc"} and another value to stdio[*]', testIpcStdioOption, 3, ['pipe', {value: 'ipc'}], execa);
 test('Cannot pass {value: "ipc"} and another value to stdio[*] - sync', testIpcStdioOption, 3, ['pipe', {value: 'ipc'}], execaSync);
+
+// A file descriptor must be a non-negative integer. Without this, `node:child_process` aborts the current process with a fatal assertion when spawning.
+const testInvalidFileDescriptor = (t, fdNumber, optionName, stdioOption, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', getStdio(fdNumber, stdioOption));
+	}, {message: `The \`${optionName}\` option must be a non-negative 32-bit integer: got ${stdioOption}.`});
+};
+
+test('Cannot pass a fractional file descriptor to stdin', testInvalidFileDescriptor, 0, 'stdin', 1.5, execa);
+test('Cannot pass NaN as a file descriptor to stdin', testInvalidFileDescriptor, 0, 'stdin', Number.NaN, execa);
+test('Cannot pass Infinity as a file descriptor to stdout', testInvalidFileDescriptor, 1, 'stdout', Number.POSITIVE_INFINITY, execa);
+test('Cannot pass a too large file descriptor to stderr', testInvalidFileDescriptor, 2, 'stderr', 2 ** 32, execa);
+test('Cannot pass a negative file descriptor to stdio[*]', testInvalidFileDescriptor, 3, 'stdio[3]', -1, execa);
+test('Cannot pass a fractional file descriptor to stdout', testInvalidFileDescriptor, 1, 'stdout', 1.5, execaSync);
+test('Cannot pass a negative file descriptor to stdin', testInvalidFileDescriptor, 0, 'stdin', -1, execaSync);

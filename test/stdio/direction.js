@@ -6,6 +6,7 @@ import {execa, execaSync} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
+import {noopReadable, noopWritable} from '../helpers/stream.js';
 
 setFixtureDirectory();
 
@@ -135,3 +136,58 @@ test('stdout.input must be a boolean with buffer false - sync', t => {
 		execaSync('empty.js', {stdout: {value: 'pipe', input: 'yes'}, buffer: false});
 	}, {message: /`stdout\.input` option must use a boolean/});
 });
+
+/*
+`stdin`/`stdout`/`stderr` have a fixed direction, so values that are intrinsically the other direction
+are invalid, like with additional file descriptors.
+Otherwise, asynchronous methods pipe in the wrong direction and crash, e.g. with `dest.end is not a function`.
+*/
+const testFixedDirection = (t, options, expectedMessage, execaMethod) => {
+	t.throws(() => {
+		execaMethod('empty.js', options);
+	}, {message: expectedMessage});
+};
+
+const readableOutputMessage = /a readable value is always an input, but `std(?:out|err)` is an output/;
+
+test('stdout cannot use a readable Node.js stream', testFixedDirection, {stdout: [noopReadable(), 'pipe']}, readableOutputMessage, execa);
+test('stdout cannot use a readable Node.js stream - sync', testFixedDirection, {stdout: [noopReadable(), 'pipe']}, readableOutputMessage, execaSync);
+test('stderr cannot use a readable Node.js stream', testFixedDirection, {stderr: [noopReadable(), 'pipe']}, readableOutputMessage, execa);
+test('stdout cannot use a readable web stream', testFixedDirection, {stdout: new ReadableStream()}, readableOutputMessage, execa);
+test('stdout cannot use a readable web stream - sync', testFixedDirection, {stdout: new ReadableStream()}, readableOutputMessage, execaSync);
+test('stdout { value: readable, input: true } is invalid', testFixedDirection, {stdout: {value: noopReadable(), input: true}}, readableOutputMessage, execa);
+
+test('stdin cannot use a writable Node.js stream', testFixedDirection, {stdin: [noopWritable(), 'pipe']}, /a writable value is always an output/, execa);
+test('stdin cannot use a writable Node.js stream - sync', testFixedDirection, {stdin: [noopWritable(), 'pipe']}, /a writable value is always an output/, execaSync);
+test('stdin cannot use a writable web stream', testFixedDirection, {stdin: new WritableStream()}, /a writable value is always an output/, execa);
+test('stdin cannot use a writable web stream - sync', testFixedDirection, {stdin: new WritableStream()}, /a writable value is always an output/, execaSync);
+
+test('stdout { value: writable, input: true } is invalid', testFixedDirection, {stdout: {value: noopWritable(), input: true}}, /cannot be used with a writable value/, execa);
+test('stdout { value: writable, input: true } is invalid - sync', testFixedDirection, {stdout: {value: noopWritable(), input: true}}, /cannot be used with a writable value/, execaSync);
+test('stdout { value: readable, input: true } is invalid - sync', testFixedDirection, {stdout: {value: noopReadable(), input: true}}, readableOutputMessage, execaSync);
+test('stderr cannot use a readable Node.js stream - sync', testFixedDirection, {stderr: [noopReadable(), 'pipe']}, readableOutputMessage, execaSync);
+test('stderr cannot use a readable web stream', testFixedDirection, {stderr: new ReadableStream()}, readableOutputMessage, execa);
+test('stderr cannot use a readable web stream - sync', testFixedDirection, {stderr: new ReadableStream()}, readableOutputMessage, execaSync);
+test('stderr { value: readable, input: true } is invalid', testFixedDirection, {stderr: {value: noopReadable(), input: true}}, readableOutputMessage, execa);
+test('stderr { value: readable, input: true } is invalid - sync', testFixedDirection, {stderr: {value: noopReadable(), input: true}}, readableOutputMessage, execaSync);
+test('stderr { value: web readable, input: true } is invalid', testFixedDirection, {stderr: {value: new ReadableStream(), input: true}}, readableOutputMessage, execa);
+test('stderr { value: web readable, input: true } is invalid - sync', testFixedDirection, {stderr: {value: new ReadableStream(), input: true}}, readableOutputMessage, execaSync);
+
+test('stdin { value: writable, input: true } is invalid', testFixedDirection, {stdin: {value: noopWritable(), input: true}}, /cannot be used with a writable value/, execa);
+test('stdin { value: writable, input: true } is invalid - sync', testFixedDirection, {stdin: {value: noopWritable(), input: true}}, /cannot be used with a writable value/, execaSync);
+test('stdin { value: writable web stream, input: true } is invalid', testFixedDirection, {stdin: {value: new WritableStream(), input: true}}, /cannot be used with a writable value/, execa);
+test('stdin { value: writable web stream, input: true } is invalid - sync', testFixedDirection, {stdin: {value: new WritableStream(), input: true}}, /cannot be used with a writable value/, execaSync);
+
+const writableStdinMessage = /a writable value is always an output/;
+
+test('stdin cannot use a writable Node.js stream after another value', testFixedDirection, {stdin: ['pipe', noopWritable()]}, writableStdinMessage, execa);
+test('stdin cannot use a writable Node.js stream after another value - sync', testFixedDirection, {stdin: ['pipe', noopWritable()]}, writableStdinMessage, execaSync);
+test('stdin cannot use a writable web stream in an array', testFixedDirection, {stdin: [new WritableStream(), 'pipe']}, writableStdinMessage, execa);
+test('stdin cannot use a writable web stream in an array - sync', testFixedDirection, {stdin: [new WritableStream(), 'pipe']}, writableStdinMessage, execaSync);
+test('stdin cannot use both readable and writable values', testFixedDirection, {stdin: [noopReadable(), noopWritable()]}, writableStdinMessage, execa);
+test('stdin cannot use both readable and writable values - sync', testFixedDirection, {stdin: [noopReadable(), noopWritable()]}, writableStdinMessage, execaSync);
+
+test('stdout cannot use a readable Node.js stream after another value', testFixedDirection, {stdout: ['pipe', noopReadable()]}, readableOutputMessage, execa);
+test('stdout cannot use a readable Node.js stream after another value - sync', testFixedDirection, {stdout: ['pipe', noopReadable()]}, readableOutputMessage, execaSync);
+test('stdout cannot use a readable web stream in an array', testFixedDirection, {stdout: [new ReadableStream(), 'pipe']}, readableOutputMessage, execa);
+test('stdout cannot use a readable web stream in an array - sync', testFixedDirection, {stdout: [new ReadableStream(), 'pipe']}, readableOutputMessage, execaSync);

@@ -96,3 +96,14 @@ test('ReadableStream with stdin is canceled on subprocess exit', async t => {
 	await t.throwsAsync(execa('stdin.js', {stdin: readableStream, timeout: 1}), {message: /timed out/});
 	await promise;
 });
+
+// A web stream can only be used once, but like Node.js streams, the same instance
+// passed to multiple file descriptors should send its data to each of them.
+const testSharedReadableStream = async (t, fixtureArguments, stdio) => {
+	const readableStream = Readable.toWeb(Readable.from('foobar'));
+	const {stdout} = await execa('stdin-fd.js', fixtureArguments, {stdio: stdio.map(value => value === 'shared' ? readableStream : value)});
+	t.is(stdout, 'foobar');
+};
+
+test('stdin can share a ReadableStream with stdio[*]', testSharedReadableStream, ['0'], ['shared', 'pipe', 'pipe', 'shared']);
+test('stdio[*] can share a ReadableStream with another stdio[*]', testSharedReadableStream, ['3'], ['pipe', 'pipe', 'pipe', 'shared', 'shared']);

@@ -45,6 +45,8 @@ await execa({stdout: output, stderr: output})`npm run build`;
 await execa({stdout: {file: 'output.txt', append: true}})`npm run build`;
 ```
 
+When several file descriptors target the same file, the first one decides whether it is appended to.
+
 ## Terminal output
 
 The parent process' output can be re-used in the subprocess by passing `'inherit'`. This is especially useful to print to the terminal in command line applications.

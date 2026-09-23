@@ -74,3 +74,16 @@ const testOverflowStreamArraySync = (t, fdNumber) => {
 test('stdout cannot use 4+ and another value, sync', testOverflowStreamArraySync, 1);
 test('stderr cannot use 4+ and another value, sync', testOverflowStreamArraySync, 2);
 test('stdio[*] cannot use 4+ and another value, sync', testOverflowStreamArraySync, 3);
+
+// `1` and 'inherit' are two spellings of the same target, which only becomes apparent once native values are normalized.
+// The output must be written to the inherited file descriptor only once, which the nested parent captures.
+// The nested parent's `stdout` has its final newline stripped by the outer `execa()` call.
+const testSameTargetOutput = async (t, stdioOption, isSync) => {
+	const {stdout} = await nestedSubprocess('noop.js', [foobarString], {stdout: stdioOption, isSync});
+	t.is(stdout, foobarString);
+};
+
+test('stdout output is not duplicated with [1, "inherit"]', testSameTargetOutput, [1, 'inherit'], false);
+test('stdout output is not duplicated with ["inherit", 1]', testSameTargetOutput, ['inherit', 1], false);
+test('stdout output is not duplicated with [1, "inherit"], sync', testSameTargetOutput, [1, 'inherit'], true);
+test('stdout output is not duplicated with ["inherit", 1], sync', testSameTargetOutput, ['inherit', 1], true);

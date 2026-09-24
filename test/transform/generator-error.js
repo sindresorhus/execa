@@ -1,8 +1,10 @@
 import {once} from 'node:events';
+import {readFile, rm} from 'node:fs/promises';
 import test from 'ava';
+import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {foobarString} from '../helpers/input.js';
-import {noopGenerator, infiniteGenerator, convertTransformToFinal} from '../helpers/generator.js';
+import {noopGenerator, infiniteGenerator, convertTransformToFinal, throwingGenerator} from '../helpers/generator.js';
 import {generatorsMap} from '../helpers/map.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getEarlyErrorSubprocess, expectedEarlyError} from '../helpers/early-error.js';
@@ -89,3 +91,22 @@ test('Generators are destroyed on early subprocess exit', async t => {
 	const error = await t.throwsAsync(getEarlyErrorSubprocess({stdout: infiniteGenerator()}));
 	t.like(error, expectedEarlyError);
 });
+
+// A transform failing on one file descriptor must not prevent the other ones from being redirected to their target
+const testTransformErrorOtherFd = async (t, execaMethod) => {
+	const filePath = tempfile();
+	const cause = new Error(foobarString);
+	const runSubprocess = () => execaMethod('noop-both.js', [foobarString], {
+		stdout: throwingGenerator(cause)(),
+		stderr: {file: filePath},
+	});
+
+	await (execaMethod === execa
+		? t.throwsAsync(runSubprocess())
+		: t.throws(runSubprocess));
+	t.is(await readFile(filePath, 'utf8'), `${foobarString}\n`);
+	await rm(filePath);
+};
+
+test('Transform errors on stdout do not skip the stderr file', testTransformErrorOtherFd, execa);
+test('Transform errors on stdout do not skip the stderr file, sync', testTransformErrorOtherFd, execaSync);

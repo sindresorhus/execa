@@ -92,3 +92,20 @@ test('Does not split lines when "binary" is undefined, encoding "hex", preserveN
 test('Does not split lines when "binary" is false, encoding "hex", preserveNewlines, sync', testBinaryOption, false, simpleChunks, simpleChunksUint8Array, simpleFullHex, false, false, 'hex', execaSync);
 test('Splits lines when "binary" is false, objectMode, preserveNewlines, sync', testBinaryOption, false, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false, 'utf8', execaSync);
 test('Splits lines when "binary" is undefined, objectMode, preserveNewlines, sync', testBinaryOption, undefined, simpleChunks, noNewlinesChunks, noNewlinesChunks, true, false, 'utf8', execaSync);
+
+// With a binary encoding, no line is split, so transforms must not run when the subprocess produced no output at all
+const bracketsGenerator = function * () {
+	yield '[]';
+};
+
+const testNoOutputBinary = async (t, execaMethod) => {
+	const {stdout} = await execaMethod('empty.js', {
+		stdout: [bracketsGenerator],
+		encoding: 'hex',
+		stripFinalNewline: false,
+	});
+	t.is(stdout, '');
+};
+
+test('Does not run transforms on empty output with a binary encoding', testNoOutputBinary, execa);
+test('Does not run transforms on empty output with a binary encoding, sync', testNoOutputBinary, execaSync);

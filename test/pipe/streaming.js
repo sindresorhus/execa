@@ -438,3 +438,13 @@ test('Can pipe same source to same destination twice', async t => {
 	t.deepEqual(destinationResult.pipedFrom, [sourceResult]);
 	t.deepEqual(sourceResult.pipedFrom, []);
 });
+
+// `to: 'fd3'` and higher requires the `stdio` option, which cannot be combined with the `stdin` option that piping sets by default
+test('Can pipe to an additional file descriptor of a destination with the "stdio" option', async t => {
+	const source = execa('noop.js', [foobarString]);
+	const {stdout} = await source.pipe('stdin-fd.js', ['3'], {
+		to: 'fd3',
+		stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}],
+	});
+	t.is(stdout, foobarString);
+});

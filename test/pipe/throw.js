@@ -36,3 +36,26 @@ test('Both arguments might be invalid', async t => {
 	await assertPipeError(t, pipePromise, 'an Execa subprocess');
 	t.like(await source, {stdout: undefined});
 });
+
+// The destination subprocess is spawned before the `to` option is validated, so its error must be handled.
+// This runs in another process, since that is where the unhandled rejection crashes it.
+test('Destination subprocess error is not unhandled when the "to" option is invalid', async t => {
+	const {stdout} = await execa('pipe-destination-error.js', ['fail.js']);
+	t.is(stdout, 'REACHED THE END');
+});
+
+test('Destination subprocess is terminated when the "to" option is invalid', async t => {
+	const {stdout} = await execa('pipe-destination-error.js', ['stdin.js'], {timeout: 10_000});
+	t.is(stdout, 'REACHED THE END');
+});
+
+test('Destination subprocess passed by the user is not terminated when the "to" option is invalid', async t => {
+	const source = execa('empty.js', {stdout: 'ignore'});
+	const destination = execa('stdin.js');
+	const pipePromise = source.pipe(destination, {to: 'fd9'});
+
+	await assertPipeError(t, pipePromise, 'fd9');
+	destination.stdin.end(foobarString);
+	const {stdout} = await destination;
+	t.is(stdout, foobarString);
+});

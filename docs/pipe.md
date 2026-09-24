@@ -141,9 +141,14 @@ await execa`npm run build`
 By default, the destination's [`stdin`](api.md#subprocessstdin) is used, but this can be changed using the [`to`](api.md#pipeoptionsto) piping option.
 
 ```js
-await execa`npm run build`
-	.pipe({to: 'fd3'})`./log-remotely.js`;
+await execa('npm', ['run', 'build'])
+	.pipe('./log-remotely.js', [], {
+		to: 'fd3',
+		stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}],
+	});
 ```
+
+Piping sets the destination's [`stdin`](api.md#optionsstdin) option to `'pipe'`, unless the [`stdio`](api.md#optionsstdio) option is used, since those two options cannot be combined. In that case, the file descriptor targeted by the `to` option must already be an input [pipe](output.md#multiple-targets): `'pipe'` for `stdin`, or [`{value: 'pipe', input: true}`](input.md#additional-file-descriptors) for an additional file descriptor.
 
 ## Unpipe
 

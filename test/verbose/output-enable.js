@@ -114,6 +114,11 @@ test('Escapes control characters from stdout', async t => {
 	t.is(getOutputLine(stderr), `${testTimestamp} [0]   \\u0001`);
 });
 
+test('Escapes tabs from stdout', async t => {
+	const {stderr} = await nestedSubprocess('noop.js', [`${foobarString}\t${foobarString}`], {verbose: 'full'});
+	t.is(getOutputLine(stderr), `${testTimestamp} [0]   ${foobarString}\\t${foobarString}`);
+});
+
 const testStdioSame = async (t, fdNumber) => {
 	const {nestedResult: {stdio}} = await nestedSubprocess('noop-fd.js', [`${fdNumber}`, foobarString], {verbose: 'full'});
 	t.is(stdio[fdNumber], foobarString);

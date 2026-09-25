@@ -1,4 +1,5 @@
 import test from 'ava';
+import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {runVerboseSubprocess} from '../helpers/verbose.js';
@@ -65,3 +66,37 @@ const testCommandThrowWrap = async (t, type, options, isSync) => {
 test('Propagate wrapped exception in "verbose" function, "output", spawn error', testCommandThrowWrap, 'output', earlyErrorOptions, false);
 test('Propagate wrapped exception in "verbose" function, "ipc", spawn error', testCommandThrowWrap, 'ipc', earlyErrorOptions, false);
 test('Propagate wrapped exception in "verbose" function, "output", spawn error, sync', testCommandThrowWrap, 'output', earlyErrorOptionsSync, true);
+
+// A throwing `verbose` function is a logging error: it must not discard IPC messages which have already been buffered
+const getThrowingVerbose = (type, thrownValue = new Error(foobarString)) => ({
+	verbose: (line, verboseObject) => {
+		if (verboseObject.type === type) {
+			throw thrownValue;
+		}
+	},
+});
+
+test('IPC output is kept when the "verbose" function throws, "ipc"', async t => {
+	const {cause, ipcOutput} = await t.throwsAsync(execa('ipc-send-twice.js', {ipc: true, ...getThrowingVerbose('ipc')}));
+	t.is(cause.message, foobarString);
+	t.deepEqual(ipcOutput, ['foo', 'bar']);
+});
+
+// A `verbose` function might throw a non-Error, or a falsy value. Neither must be mistaken for no error at all
+test('A non-Error thrown by the "verbose" function is propagated, "output"', async t => {
+	const {cause, stdout} = await t.throwsAsync(execa('noop.js', [foobarString], getThrowingVerbose('output', foobarString)));
+	t.is(cause, foobarString);
+	t.is(stdout, undefined);
+});
+
+test('A null value thrown by the "verbose" function is propagated, "output"', async t => {
+	const {cause, stdout} = await t.throwsAsync(execa('noop.js', [foobarString], getThrowingVerbose('output', null)));
+	t.is(cause, null);
+	t.is(stdout, undefined);
+});
+
+test('IPC output is kept when the "verbose" function throws a falsy value, "ipc"', async t => {
+	const {cause, ipcOutput} = await t.throwsAsync(execa('ipc-send-twice.js', {ipc: true, ...getThrowingVerbose('ipc', 0)}));
+	t.is(cause, 0);
+	t.deepEqual(ipcOutput, ['foo', 'bar']);
+});

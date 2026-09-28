@@ -1,4 +1,5 @@
-import test from 'ava';
+import assert from 'node:assert/strict';
+import test from 'node:test';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {noopGenerator, getOutputsGenerator, addNoopGenerator} from '../helpers/generator.js';
@@ -14,67 +15,67 @@ setFixtureDirectory();
 
 const foobarArray = ['fo', 'ob', 'ar', '..'];
 
-const testMultibyteCharacters = async (t, objectMode, addNoopTransform, execaMethod) => {
+const testMultibyteCharacters = async (objectMode, addNoopTransform, execaMethod) => {
 	const {stdout} = await execaMethod('noop.js', {
 		stdout: addNoopGenerator(getOutputsGenerator(foobarArray)(objectMode, true), addNoopTransform, objectMode),
 		encoding: 'base64',
 	});
 	if (objectMode) {
-		t.deepEqual(stdout, foobarArray);
+		assert.deepEqual(stdout, foobarArray);
 	} else {
 		// eslint-disable-next-line n/prefer-global/buffer -- `Uint8Array#toBase64()` is not available on the minimum supported Node.js version
-		t.is(stdout, Buffer.from(foobarArray.join('')).toString('base64'));
+		assert.equal(stdout, Buffer.from(foobarArray.join('')).toString('base64'));
 	}
 };
 
-test('Handle multibyte characters', testMultibyteCharacters, false, false, execa);
-test('Handle multibyte characters, noop transform', testMultibyteCharacters, false, true, execa);
-test('Handle multibyte characters, with objectMode', testMultibyteCharacters, true, false, execa);
-test('Handle multibyte characters, with objectMode, noop transform', testMultibyteCharacters, true, true, execa);
-test('Handle multibyte characters, sync', testMultibyteCharacters, false, false, execaSync);
-test('Handle multibyte characters, noop transform, sync', testMultibyteCharacters, false, true, execaSync);
-test('Handle multibyte characters, with objectMode, sync', testMultibyteCharacters, true, false, execaSync);
-test('Handle multibyte characters, with objectMode, noop transform, sync', testMultibyteCharacters, true, true, execaSync);
+test('Handle multibyte characters', () => testMultibyteCharacters(false, false, execa));
+test('Handle multibyte characters, noop transform', () => testMultibyteCharacters(false, true, execa));
+test('Handle multibyte characters, with objectMode', () => testMultibyteCharacters(true, false, execa));
+test('Handle multibyte characters, with objectMode, noop transform', () => testMultibyteCharacters(true, true, execa));
+test('Handle multibyte characters, sync', () => testMultibyteCharacters(false, false, execaSync));
+test('Handle multibyte characters, noop transform, sync', () => testMultibyteCharacters(false, true, execaSync));
+test('Handle multibyte characters, with objectMode, sync', () => testMultibyteCharacters(true, false, execaSync));
+test('Handle multibyte characters, with objectMode, noop transform, sync', () => testMultibyteCharacters(true, true, execaSync));
 
-const testMultibyte = async (t, objectMode, execaMethod) => {
+const testMultibyte = async (objectMode, execaMethod) => {
 	const {stdout} = await execaMethod('stdin.js', {
 		stdin: [
 			[multibyteUint8Array.slice(0, breakingLength), multibyteUint8Array.slice(breakingLength)],
 			noopGenerator(objectMode, true),
 		],
 	});
-	t.is(stdout, multibyteString);
+	assert.equal(stdout, multibyteString);
 };
 
-test('Generator handles multibyte characters with Uint8Array', testMultibyte, false, execa);
-test('Generator handles multibyte characters with Uint8Array, objectMode', testMultibyte, true, execa);
-test('Generator handles multibyte characters with Uint8Array, sync', testMultibyte, false, execaSync);
-test('Generator handles multibyte characters with Uint8Array, objectMode, sync', testMultibyte, true, execaSync);
+test('Generator handles multibyte characters with Uint8Array', () => testMultibyte(false, execa));
+test('Generator handles multibyte characters with Uint8Array, objectMode', () => testMultibyte(true, execa));
+test('Generator handles multibyte characters with Uint8Array, sync', () => testMultibyte(false, execaSync));
+test('Generator handles multibyte characters with Uint8Array, objectMode, sync', () => testMultibyte(true, execaSync));
 
-const testMultibytePartial = async (t, objectMode, execaMethod) => {
+const testMultibytePartial = async (objectMode, execaMethod) => {
 	const {stdout} = await execaMethod('stdin.js', {
 		stdin: [
 			[multibyteUint8Array.slice(0, breakingLength)],
 			noopGenerator(objectMode, true),
 		],
 	});
-	t.is(stdout, `${multibyteChar}${brokenSymbol}`);
+	assert.equal(stdout, `${multibyteChar}${brokenSymbol}`);
 };
 
-test('Generator handles partial multibyte characters with Uint8Array', testMultibytePartial, false, execa);
-test('Generator handles partial multibyte characters with Uint8Array, objectMode', testMultibytePartial, true, execa);
-test('Generator handles partial multibyte characters with Uint8Array, sync', testMultibytePartial, false, execaSync);
-test('Generator handles partial multibyte characters with Uint8Array, objectMode, sync', testMultibytePartial, true, execaSync);
+test('Generator handles partial multibyte characters with Uint8Array', () => testMultibytePartial(false, execa));
+test('Generator handles partial multibyte characters with Uint8Array, objectMode', () => testMultibytePartial(true, execa));
+test('Generator handles partial multibyte characters with Uint8Array, sync', () => testMultibytePartial(false, execaSync));
+test('Generator handles partial multibyte characters with Uint8Array, objectMode, sync', () => testMultibytePartial(true, execaSync));
 
-const testMultibytePartialOutput = async (t, execaMethod) => {
+const testMultibytePartialOutput = async execaMethod => {
 	const {stdout} = await execaMethod('noop.js', {
 		stdout: getOutputsGenerator([
 			multibyteUint8Array.slice(0, breakingLength),
 			multibyteUint8Array.slice(breakingLength),
 		])(false, true),
 	});
-	t.is(stdout, multibyteString);
+	assert.equal(stdout, multibyteString);
 };
 
-test('Generator handles output multibyte characters with Uint8Array', testMultibytePartialOutput, execa);
-test('Generator handles output multibyte characters with Uint8Array, sync', testMultibytePartialOutput, execaSync);
+test('Generator handles output multibyte characters with Uint8Array', () => testMultibytePartialOutput(execa));
+test('Generator handles output multibyte characters with Uint8Array, sync', () => testMultibytePartialOutput(execaSync));

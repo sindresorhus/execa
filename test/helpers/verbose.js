@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {platform} from 'node:process';
 import {stripVTControlCharacters} from 'node:util';
 import {replaceSymbols} from 'figures';
@@ -8,28 +9,28 @@ import {fullStdio} from './stdio.js';
 const isWindows = platform === 'win32';
 export const QUOTE = isWindows ? '"' : '\'';
 
-export const runErrorSubprocess = async (t, verbose, isSync = false, options = {}) => {
+export const runErrorSubprocess = async (verbose, isSync = false, options = {}) => {
 	const {expectExitCode = true, ...subprocessOptions} = options;
 	const {stderr, nestedResult} = await nestedSubprocess('noop-fail.js', ['1', foobarString], {verbose, isSync, ...subprocessOptions});
-	t.true(nestedResult instanceof Error);
+	assert.ok(nestedResult instanceof Error);
 	if (expectExitCode) {
-		t.true(stderr.includes('exit code 2'));
+		assert.ok(stderr.includes('exit code 2'));
 	}
 
 	return stderr;
 };
 
-export const runWarningSubprocess = async (t, isSync) => {
+export const runWarningSubprocess = async isSync => {
 	const {stderr, nestedResult} = await nestedSubprocess('noop-fail.js', ['1', foobarString], {verbose: 'short', reject: false, isSync});
-	t.true(nestedResult instanceof Error);
-	t.true(stderr.includes('exit code 2'));
+	assert.ok(nestedResult instanceof Error);
+	assert.ok(stderr.includes('exit code 2'));
 	return stderr;
 };
 
-export const runEarlyErrorSubprocess = async (t, isSync) => {
+export const runEarlyErrorSubprocess = async isSync => {
 	const {stderr, nestedResult} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short', cwd: true, isSync});
-	t.true(nestedResult instanceof Error);
-	t.true(nestedResult.message.startsWith('The "cwd" option must'));
+	assert.ok(nestedResult instanceof Error);
+	assert.ok(nestedResult.message.startsWith('The "cwd" option must'));
 	return stderr;
 };
 

@@ -1,26 +1,29 @@
-export const assertPipeError = async (t, pipePromise, message) => {
-	const error = await t.throwsAsync(pipePromise);
+import assert from 'node:assert/strict';
+import {assertRejects} from './assert.js';
 
-	t.is(error.command, 'source.pipe(destination)');
-	t.is(error.escapedCommand, error.command);
+export const assertPipeError = async (pipePromise, message) => {
+	const error = await assertRejects(pipePromise);
 
-	t.is(typeof error.cwd, 'string');
-	t.true(error.failed);
-	t.false(error.timedOut);
-	t.false(error.isCanceled);
-	t.false(error.isTerminated);
-	t.is(error.exitCode, undefined);
-	t.is(error.signal, undefined);
-	t.is(error.signalDescription, undefined);
-	t.is(error.stdout, undefined);
-	t.is(error.stderr, undefined);
-	t.is(error.all, undefined);
-	t.deepEqual(error.stdio, Array.from({length: error.stdio.length}));
-	t.deepEqual(error.pipedFrom, []);
+	assert.equal(error.command, 'source.pipe(destination)');
+	assert.equal(error.escapedCommand, error.command);
 
-	t.true(error.shortMessage.includes(`Command failed: ${error.command}`));
-	t.true(error.shortMessage.includes(error.originalMessage));
-	t.true(error.message.includes(error.shortMessage));
+	assert.equal(typeof error.cwd, 'string');
+	assert.equal(error.failed, true);
+	assert.equal(error.timedOut, false);
+	assert.equal(error.isCanceled, false);
+	assert.equal(error.isTerminated, false);
+	assert.equal(error.exitCode, undefined);
+	assert.equal(error.signal, undefined);
+	assert.equal(error.signalDescription, undefined);
+	assert.equal(error.stdout, undefined);
+	assert.equal(error.stderr, undefined);
+	assert.equal(error.all, undefined);
+	assert.deepEqual(error.stdio, Array.from({length: error.stdio.length}));
+	assert.deepEqual(error.pipedFrom, []);
 
-	t.true(error.originalMessage.includes(message));
+	assert.ok(error.shortMessage.includes(`Command failed: ${error.command}`));
+	assert.ok(error.shortMessage.includes(error.originalMessage));
+	assert.ok(error.message.includes(error.shortMessage));
+
+	assert.ok(error.originalMessage.includes(message));
 };

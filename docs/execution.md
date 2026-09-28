@@ -159,7 +159,7 @@ Synchronous execution is generally discouraged as it holds the CPU and prevents 
 - Piping multiple subprocesses: [`subprocess.pipe()`](api.md#subprocesspipefile-arguments-options).
 - [`subprocess.iterable()`](lines.md#progressive-splitting).
 - [IPC](ipc.md): [`sendMessage()`](api.md#sendmessagemessage-sendmessageoptions), [`getOneMessage()`](api.md#getonemessagegetonemessageoptions), [`getEachMessage()`](api.md#geteachmessagegeteachmessageoptions), [`result.ipcOutput`](output.md#any-output-type), [`ipc`](api.md#optionsipc) option, [`serialization`](api.md#optionsserialization) option, [`ipcInput`](input.md#any-input-type) option.
-- [`result.all`](api.md#resultall) is not interleaved.
+- [`result.all`](api.md#resultall) is not interleaved. Also, with the [`lines`](api.md#optionslines) option, a file descriptor that uses it keeps its own [`stripFinalNewline`](api.md#optionsstripfinalnewline) value in `result.all`.
 - [`detached`](api.md#optionsdetached) option.
 - The [`maxBuffer`](api.md#optionsmaxbuffer) option is always measured in bytes, not in characters, [lines](api.md#optionslines) nor [objects](transform.md#object-mode). Also, it ignores transforms and the [`encoding`](api.md#optionsencoding) option, and the `maxBuffer.stdout` value limits the total output of all file descriptors.
 

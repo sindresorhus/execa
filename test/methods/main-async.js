@@ -1,6 +1,7 @@
+import assert from 'node:assert/strict';
 import process from 'node:process';
 import {ChildProcess} from 'node:child_process';
-import test from 'ava';
+import test from 'node:test';
 import {execa} from '../../index.js';
 import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 
@@ -9,72 +10,72 @@ setFixtureDirectory();
 const isWindows = process.platform === 'win32';
 
 if (isWindows) {
-	test('execa() - cmd file', async t => {
+	test('execa() - cmd file', async () => {
 		const {stdout} = await execa('hello.cmd');
-		t.is(stdout, 'Hello World');
+		assert.equal(stdout, 'Hello World');
 	});
 
-	test('execa() - run cmd command', async t => {
+	test('execa() - run cmd command', async () => {
 		const {stdout} = await execa('cmd', ['/c', 'hello.cmd']);
-		t.is(stdout, 'Hello World');
+		assert.equal(stdout, 'Hello World');
 	});
 
 	// A bare command name without an extension is resolved using `PATHEXT`.
-	test('execa() - resolve command extension using PATHEXT', async t => {
+	test('execa() - resolve command extension using PATHEXT', async () => {
 		const {stdout} = await execa('hello');
-		t.is(stdout, 'Hello World');
+		assert.equal(stdout, 'Hello World');
 	});
 
-	test('execa() - run cmd file using a relative path', async t => {
+	test('execa() - run cmd file using a relative path', async () => {
 		const {stdout} = await execa('./hello.cmd', {cwd: FIXTURES_DIRECTORY});
-		t.is(stdout, 'Hello World');
+		assert.equal(stdout, 'Hello World');
 	});
 
 	// The fixture's filename contains a space and it starts with a shebang.
-	test('execa() - run file with a space in its path and a shebang', async t => {
+	test('execa() - run file with a space in its path and a shebang', async () => {
 		const {stdout} = await execa('command with space.js', ['foo']);
-		t.is(stdout, 'foo');
+		assert.equal(stdout, 'foo');
 	});
 }
 
-test('execa() returns a promise with pid', async t => {
+test('execa() returns a promise with pid', async () => {
 	const subprocess = execa('noop.js', ['foo']);
-	t.is(typeof subprocess.pid, 'number');
+	assert.equal(typeof subprocess.pid, 'number');
 	await subprocess;
 });
 
-test('execa() returns a promise with nodeChildProcess', async t => {
+test('execa() returns a promise with nodeChildProcess', async () => {
 	const subprocess = execa('noop.js', ['foo']);
-	t.true(subprocess instanceof Promise);
-	t.false(subprocess instanceof ChildProcess);
-	t.true(subprocess.nodeChildProcess instanceof ChildProcess);
-	t.is(subprocess.pid, subprocess.nodeChildProcess.pid);
-	t.is(subprocess.stdout, subprocess.nodeChildProcess.stdout);
-	t.is(subprocess.on, undefined);
-	t.is(subprocess.once, undefined);
-	t.is(subprocess.send, undefined);
-	t.is(subprocess.ref, undefined);
-	t.is(subprocess.unref, undefined);
-	t.is(subprocess.disconnect, undefined);
-	t.is(subprocess.channel, undefined);
-	t.is(subprocess.connected, undefined);
-	t.is(subprocess.exitCode, undefined);
-	t.is(subprocess.signalCode, undefined);
-	t.is(subprocess.killed, undefined);
-	t.is(subprocess.spawnargs, undefined);
-	t.is(subprocess.spawnfile, undefined);
-	// eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- `Symbol.dispose` is a standard well-known symbol, not yet recognized by this rule.
-	t.is(subprocess[Symbol.dispose], undefined);
+	assert.ok(subprocess instanceof Promise);
+	assert.ok(!(subprocess instanceof ChildProcess));
+	assert.ok(subprocess.nodeChildProcess instanceof ChildProcess);
+	assert.equal(subprocess.pid, subprocess.nodeChildProcess.pid);
+	assert.equal(subprocess.stdout, subprocess.nodeChildProcess.stdout);
+	assert.equal(subprocess.on, undefined);
+	assert.equal(subprocess.once, undefined);
+	assert.equal(subprocess.send, undefined);
+	assert.equal(subprocess.ref, undefined);
+	assert.equal(subprocess.unref, undefined);
+	assert.equal(subprocess.disconnect, undefined);
+	assert.equal(subprocess.channel, undefined);
+	assert.equal(subprocess.connected, undefined);
+	assert.equal(subprocess.exitCode, undefined);
+	assert.equal(subprocess.signalCode, undefined);
+	assert.equal(subprocess.killed, undefined);
+	assert.equal(subprocess.spawnargs, undefined);
+	assert.equal(subprocess.spawnfile, undefined);
+
+	assert.equal(subprocess[Symbol.dispose], undefined);
 	await subprocess;
 });
 
-test('nodeChildProcess does not include Execa-specific APIs', async t => {
+test('nodeChildProcess does not include Execa-specific APIs', async () => {
 	const subprocess = execa('noop.js', ['foo'], {all: true});
-	t.false(Object.hasOwn(subprocess.nodeChildProcess, 'all'));
-	t.is(subprocess.nodeChildProcess.readable, undefined);
-	t.is(subprocess.nodeChildProcess.writable, undefined);
-	t.is(subprocess.nodeChildProcess.duplex, undefined);
-	t.is(subprocess.nodeChildProcess.iterable, undefined);
-	t.is(subprocess.nodeChildProcess[Symbol.asyncIterator], undefined);
+	assert.ok(!Object.hasOwn(subprocess.nodeChildProcess, 'all'));
+	assert.equal(subprocess.nodeChildProcess.readable, undefined);
+	assert.equal(subprocess.nodeChildProcess.writable, undefined);
+	assert.equal(subprocess.nodeChildProcess.duplex, undefined);
+	assert.equal(subprocess.nodeChildProcess.iterable, undefined);
+	assert.equal(subprocess.nodeChildProcess[Symbol.asyncIterator], undefined);
 	await subprocess;
 });

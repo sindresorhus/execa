@@ -1,61 +1,63 @@
-import test from 'ava';
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {assertThrows, assertRejects} from '../helpers/assert.js';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getEarlyErrorSubprocess, getEarlyErrorSubprocessSync} from '../helpers/early-error.js';
 
 setFixtureDirectory();
 
-const assertDurationMs = (t, durationMs) => {
-	t.is(typeof durationMs, 'number');
-	t.true(Number.isFinite(durationMs));
-	t.not(durationMs, 0);
-	t.true(durationMs > 0);
+const assertDurationMs = durationMs => {
+	assert.equal(typeof durationMs, 'number');
+	assert.ok(Number.isFinite(durationMs));
+	assert.notEqual(durationMs, 0);
+	assert.ok(durationMs > 0);
 };
 
-test('result.durationMs', async t => {
+test('result.durationMs', async () => {
 	const {durationMs} = await execa('empty.js');
-	assertDurationMs(t, durationMs);
+	assertDurationMs(durationMs);
 });
 
-test('result.durationMs - sync', t => {
+test('result.durationMs - sync', () => {
 	const {durationMs} = execaSync('empty.js');
-	assertDurationMs(t, durationMs);
+	assertDurationMs(durationMs);
 });
 
-test('error.durationMs', async t => {
-	const {durationMs} = await t.throwsAsync(execa('fail.js'));
-	assertDurationMs(t, durationMs);
+test('error.durationMs', async () => {
+	const {durationMs} = await assertRejects(execa('fail.js'));
+	assertDurationMs(durationMs);
 });
 
-test('error.durationMs - sync', t => {
-	const {durationMs} = t.throws(() => {
+test('error.durationMs - sync', () => {
+	const {durationMs} = assertThrows(() => {
 		execaSync('fail.js');
 	});
-	assertDurationMs(t, durationMs);
+	assertDurationMs(durationMs);
 });
 
-test('error.durationMs - early validation', async t => {
-	const {durationMs} = await t.throwsAsync(getEarlyErrorSubprocess());
-	assertDurationMs(t, durationMs);
+test('error.durationMs - early validation', async () => {
+	const {durationMs} = await assertRejects(getEarlyErrorSubprocess());
+	assertDurationMs(durationMs);
 });
 
-test('error.durationMs - early validation, sync', t => {
-	const {durationMs} = t.throws(getEarlyErrorSubprocessSync);
-	assertDurationMs(t, durationMs);
+test('error.durationMs - early validation, sync', () => {
+	const {durationMs} = assertThrows(getEarlyErrorSubprocessSync);
+	assertDurationMs(durationMs);
 });
 
-test('error.durationMs - unpipeSignal', async t => {
-	const {durationMs} = await t.throwsAsync(execa('noop.js').pipe('stdin.js', {signal: AbortSignal.abort()}));
-	assertDurationMs(t, durationMs);
+test('error.durationMs - unpipeSignal', async () => {
+	const {durationMs} = await assertRejects(execa('noop.js').pipe('stdin.js', {signal: AbortSignal.abort()}));
+	assertDurationMs(durationMs);
 });
 
-test('error.durationMs - pipe validation', async t => {
-	const {durationMs} = await t.throwsAsync(execa('noop.js').pipe(false));
-	assertDurationMs(t, durationMs);
+test('error.durationMs - pipe validation', async () => {
+	const {durationMs} = await assertRejects(execa('noop.js').pipe(false));
+	assertDurationMs(durationMs);
 });
 
-test.serial('result.durationMs is accurate', async t => {
+test('result.durationMs is accurate', async () => {
 	const minDurationMs = 1e3;
 	const {durationMs} = await execa('delay.js', [minDurationMs]);
-	t.true(durationMs >= minDurationMs);
+	assert.ok(durationMs >= minDurationMs);
 });

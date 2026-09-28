@@ -1,49 +1,50 @@
-import test from 'ava';
+import assert from 'node:assert/strict';
+import test from 'node:test';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 
 setFixtureDirectory();
 
-const testIgnore = async (t, fdNumber, execaMethod) => {
+const testIgnore = async (fdNumber, execaMethod) => {
 	const result = await execaMethod('noop.js', getStdio(fdNumber, 'ignore'));
-	t.is(result.stdio[fdNumber], undefined);
+	assert.equal(result.stdio[fdNumber], undefined);
 };
 
-test('stdout is undefined if ignored', testIgnore, 1, execa);
-test('stderr is undefined if ignored', testIgnore, 2, execa);
-test('stdio[*] is undefined if ignored', testIgnore, 3, execa);
-test('stdout is undefined if ignored - sync', testIgnore, 1, execaSync);
-test('stderr is undefined if ignored - sync', testIgnore, 2, execaSync);
-test('stdio[*] is undefined if ignored - sync', testIgnore, 3, execaSync);
+test('stdout is undefined if ignored', () => testIgnore(1, execa));
+test('stderr is undefined if ignored', () => testIgnore(2, execa));
+test('stdio[*] is undefined if ignored', () => testIgnore(3, execa));
+test('stdout is undefined if ignored - sync', () => testIgnore(1, execaSync));
+test('stderr is undefined if ignored - sync', () => testIgnore(2, execaSync));
+test('stdio[*] is undefined if ignored - sync', () => testIgnore(3, execaSync));
 
-const testSubprocessEventsCleanup = async (t, fixtureName) => {
+const testSubprocessEventsCleanup = async fixtureName => {
 	const subprocess = execa(fixtureName, {reject: false});
-	t.deepEqual(subprocess.nodeChildProcess.eventNames().map(String).sort(), ['error', 'exit', 'spawn']);
+	assert.deepEqual(subprocess.nodeChildProcess.eventNames().map(String).sort(), ['error', 'exit', 'spawn']);
 	await subprocess;
-	t.deepEqual(subprocess.nodeChildProcess.eventNames(), []);
+	assert.deepEqual(subprocess.nodeChildProcess.eventNames(), []);
 };
 
-test('subprocess listeners are cleaned up on success', testSubprocessEventsCleanup, 'empty.js');
-test('subprocess listeners are cleaned up on failure', testSubprocessEventsCleanup, 'fail.js');
+test('subprocess listeners are cleaned up on success', () => testSubprocessEventsCleanup('empty.js'));
+test('subprocess listeners are cleaned up on failure', () => testSubprocessEventsCleanup('fail.js'));
 
-test('Aborting stdout should not abort stderr nor all', async t => {
+test('Aborting stdout should not abort stderr nor all', async () => {
 	const subprocess = execa('empty.js', {all: true});
 
 	subprocess.stdout.destroy();
-	t.false(subprocess.stdout.readable);
-	t.true(subprocess.stderr.readable);
-	t.true(subprocess.all.readable);
+	assert.equal(subprocess.stdout.readable, false);
+	assert.equal(subprocess.stderr.readable, true);
+	assert.equal(subprocess.all.readable, true);
 
 	await subprocess;
 
-	t.false(subprocess.stdout.readableEnded);
-	t.is(subprocess.stdout.errored, null);
-	t.true(subprocess.stdout.destroyed);
-	t.true(subprocess.stderr.readableEnded);
-	t.is(subprocess.stderr.errored, null);
-	t.true(subprocess.stderr.destroyed);
-	t.true(subprocess.all.readableEnded);
-	t.is(subprocess.all.errored, null);
-	t.true(subprocess.all.destroyed);
+	assert.equal(subprocess.stdout.readableEnded, false);
+	assert.equal(subprocess.stdout.errored, null);
+	assert.equal(subprocess.stdout.destroyed, true);
+	assert.equal(subprocess.stderr.readableEnded, true);
+	assert.equal(subprocess.stderr.errored, null);
+	assert.equal(subprocess.stderr.destroyed, true);
+	assert.equal(subprocess.all.readableEnded, true);
+	assert.equal(subprocess.all.errored, null);
+	assert.equal(subprocess.all.destroyed, true);
 });

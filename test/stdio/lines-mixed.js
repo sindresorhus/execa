@@ -1,5 +1,6 @@
+import assert from 'node:assert/strict';
 import {Writable} from 'node:stream';
-import test from 'ava';
+import test from 'node:test';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {assertStreamOutput, assertStreamDataEvents, assertIterableChunks} from '../helpers/convert.js';
 import {
@@ -11,28 +12,28 @@ import {
 
 setFixtureDirectory();
 
-const testAsyncIteration = async (t, expectedLines, stripFinalNewline) => {
+const testAsyncIteration = async (expectedLines, stripFinalNewline) => {
 	const subprocess = getSimpleChunkSubprocessAsync({stripFinalNewline});
-	t.false(subprocess.stdout.readableObjectMode);
-	await assertStreamOutput(t, subprocess.stdout, simpleFull);
+	assert.equal(subprocess.stdout.readableObjectMode, false);
+	await assertStreamOutput(subprocess.stdout, simpleFull);
 	const {stdout} = await subprocess;
-	t.deepEqual(stdout, expectedLines);
+	assert.deepEqual(stdout, expectedLines);
 };
 
-test('"lines: true" works with stream async iteration', testAsyncIteration, simpleLines, false);
-test('"lines: true" works with stream async iteration, stripFinalNewline', testAsyncIteration, noNewlinesChunks, true);
+test('"lines: true" works with stream async iteration', () => testAsyncIteration(simpleLines, false));
+test('"lines: true" works with stream async iteration, stripFinalNewline', () => testAsyncIteration(noNewlinesChunks, true));
 
-const testDataEvents = async (t, expectedLines, stripFinalNewline) => {
+const testDataEvents = async (expectedLines, stripFinalNewline) => {
 	const subprocess = getSimpleChunkSubprocessAsync({stripFinalNewline});
-	await assertStreamDataEvents(t, subprocess.stdout, simpleFull);
+	await assertStreamDataEvents(subprocess.stdout, simpleFull);
 	const {stdout} = await subprocess;
-	t.deepEqual(stdout, expectedLines);
+	assert.deepEqual(stdout, expectedLines);
 };
 
-test('"lines: true" works with stream "data" events', testDataEvents, simpleLines, false);
-test('"lines: true" works with stream "data" events, stripFinalNewline', testDataEvents, noNewlinesChunks, true);
+test('"lines: true" works with stream "data" events', () => testDataEvents(simpleLines, false));
+test('"lines: true" works with stream "data" events, stripFinalNewline', () => testDataEvents(noNewlinesChunks, true));
 
-const testWritableStream = async (t, expectedLines, stripFinalNewline) => {
+const testWritableStream = async (expectedLines, stripFinalNewline) => {
 	let output = '';
 	const writable = new Writable({
 		write(line, encoding, done) {
@@ -42,19 +43,19 @@ const testWritableStream = async (t, expectedLines, stripFinalNewline) => {
 		decodeStrings: false,
 	});
 	const {stdout} = await getSimpleChunkSubprocessAsync({stripFinalNewline, stdout: ['pipe', writable]});
-	t.deepEqual(output, simpleFull);
-	t.deepEqual(stdout, expectedLines);
+	assert.deepEqual(output, simpleFull);
+	assert.deepEqual(stdout, expectedLines);
 };
 
-test('"lines: true" works with writable streams targets', testWritableStream, simpleLines, false);
-test('"lines: true" works with writable streams targets, stripFinalNewline', testWritableStream, noNewlinesChunks, true);
+test('"lines: true" works with writable streams targets', () => testWritableStream(simpleLines, false));
+test('"lines: true" works with writable streams targets, stripFinalNewline', () => testWritableStream(noNewlinesChunks, true));
 
-const testIterable = async (t, expectedLines, stripFinalNewline) => {
+const testIterable = async (expectedLines, stripFinalNewline) => {
 	const subprocess = getSimpleChunkSubprocessAsync({stripFinalNewline});
-	await assertIterableChunks(t, subprocess, noNewlinesChunks);
+	await assertIterableChunks(subprocess, noNewlinesChunks);
 	const {stdout} = await subprocess;
-	t.deepEqual(stdout, expectedLines);
+	assert.deepEqual(stdout, expectedLines);
 };
 
-test('"lines: true" works with subprocess.iterable()', testIterable, simpleLines, false);
-test('"lines: true" works with subprocess.iterable(), stripFinalNewline', testIterable, noNewlinesChunks, true);
+test('"lines: true" works with subprocess.iterable()', () => testIterable(simpleLines, false));
+test('"lines: true" works with subprocess.iterable(), stripFinalNewline', () => testIterable(noNewlinesChunks, true));

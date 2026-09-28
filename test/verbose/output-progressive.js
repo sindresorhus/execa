@@ -1,30 +1,31 @@
 import {on} from 'node:events';
-import test from 'ava';
+import assert from 'node:assert/strict';
+import test from 'node:test';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
 import {nestedSubprocess, nestedInstance} from '../helpers/nested.js';
 import {getOutputLine, getOutputLines, testTimestamp} from '../helpers/verbose.js';
+import {assertRejects} from '../helpers/assert.js';
+/* eslint-disable node-test/no-conditional-assertion -- shared helper functions are called from conditional paths on purpose */
 
 setFixtureDirectory();
 
-test('Prints stdout one line at a time', async t => {
-	t.plan(1);
-
+test('Prints stdout one line at a time', async () => {
 	const subprocess = nestedInstance('noop-progressive.js', [foobarString], {verbose: 'full'});
 
+	let outputLine;
 	for await (const chunk of on(subprocess.stderr, 'data')) {
-		const outputLine = getOutputLine(chunk.toString().trim());
+		outputLine = getOutputLine(chunk.toString().trim());
 		if (outputLine !== undefined) {
-			// eslint-disable-next-line ava/no-conditional-assertion -- `t.plan()` ensures this always executes
-			t.is(outputLine, `${testTimestamp} [0]   ${foobarString}`);
 			break;
 		}
 	}
 
+	assert.equal(outputLine, `${testTimestamp} [0]   ${foobarString}`);
 	await subprocess;
 });
 
-test.serial('Prints stdout progressively, interleaved', async t => {
+test('Prints stdout progressively, interleaved', async () => {
 	const subprocess = nestedInstance('noop-repeat.js', ['1', `${foobarString}\n`], {parentFixture: 'nested-double.js', verbose: 'full'});
 
 	let isFirstSubprocessPrinted = false;
@@ -36,10 +37,10 @@ test.serial('Prints stdout progressively, interleaved', async t => {
 		}
 
 		if (outputLine.includes(foobarString)) {
-			t.is(outputLine, `${testTimestamp} [0]   ${foobarString}`);
+			assert.equal(outputLine, `${testTimestamp} [0]   ${foobarString}`);
 			isFirstSubprocessPrinted ||= true;
 		} else {
-			t.is(outputLine, `${testTimestamp} [1]   ${foobarString.toUpperCase()}`);
+			assert.equal(outputLine, `${testTimestamp} [1]   ${foobarString.toUpperCase()}`);
 			isSecondSubprocessPrinted ||= true;
 		}
 
@@ -49,13 +50,15 @@ test.serial('Prints stdout progressively, interleaved', async t => {
 	}
 
 	subprocess.kill();
-	await t.throwsAsync(subprocess);
+	await assertRejects(subprocess);
 });
 
-const testInterleaved = async (t, expectedLines, isSync) => {
+const testInterleaved = async (expectedLines, isSync) => {
 	const {stderr} = await nestedSubprocess('noop-132.js', {verbose: 'full', isSync});
-	t.deepEqual(getOutputLines(stderr), expectedLines.map(line => `${testTimestamp} [0]   ${line}`));
+	assert.deepEqual(getOutputLines(stderr), expectedLines.map(line => `${testTimestamp} [0]   ${line}`));
 };
 
-test('Prints stdout + stderr interleaved', testInterleaved, [1, 2, 3], false);
-test('Prints stdout + stderr not interleaved, sync', testInterleaved, [1, 3, 2], true);
+test('Prints stdout + stderr interleaved', () => testInterleaved([1, 2, 3], false));
+test('Prints stdout + stderr not interleaved, sync', () => testInterleaved([1, 3, 2], true));
+
+/* eslint-enable node-test/no-conditional-assertion */

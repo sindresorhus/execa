@@ -116,7 +116,7 @@ It is called once per log line. The first argument is the default log line strin
 
 If a string is returned, it is printed on `stderr`. If `undefined` is returned, nothing is printed.
 
-If the function throws, the subprocess fails with that error as [`error.cause`](api.md#errorcause). If it threw while logging the output of [`stdout`](api.md#resultstdout), [`stderr`](api.md#resultstderr) or another file descriptor, that file descriptor's output is then not kept.
+If the function throws, the subprocess fails with that error as [`error.cause`](api.md#errorcause). If it threw while logging the output of [`stdout`](api.md#resultstdout), [`stderr`](api.md#resultstderr) or another file descriptor, that file descriptor's output is then not kept, except with [synchronous methods](execution.md#synchronous-execution).
 
 ### Filter logs
 

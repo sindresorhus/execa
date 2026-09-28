@@ -1,5 +1,6 @@
+import assert from 'node:assert/strict';
 import {ReadableStream, WritableStream} from 'node:stream/web';
-import test from 'ava';
+import test from 'node:test';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {
@@ -22,65 +23,65 @@ const writeToStream = async (stream, input = foobarString) => {
 	await writer.close();
 };
 
-test('.readableStream() success', async t => {
+test('.readableStream() success', async () => {
 	const subprocess = getReadableSubprocess();
 	const stream = subprocess.readableStream();
 
-	t.true(stream instanceof ReadableStream);
+	assert.ok(stream instanceof ReadableStream);
 
-	await assertStreamOutput(t, stream);
-	await assertSubprocessOutput(t, subprocess);
+	await assertStreamOutput(stream);
+	await assertSubprocessOutput(subprocess);
 });
 
-test('.readableStream() can use from', async t => {
+test('.readableStream() can use from', async () => {
 	const subprocess = execa('noop-fd.js', ['2', foobarString]);
 	const stream = subprocess.readableStream({from: 'stderr'});
 
-	await assertStreamOutput(t, stream);
+	await assertStreamOutput(stream);
 });
 
-test('.writableStream() success', async t => {
+test('.writableStream() success', async () => {
 	const subprocess = getWritableSubprocess();
 	const stream = subprocess.writableStream();
 
-	t.true(stream instanceof WritableStream);
+	assert.ok(stream instanceof WritableStream);
 
 	await writeToStream(stream);
-	await assertSubprocessOutput(t, subprocess, foobarString, 2);
+	await assertSubprocessOutput(subprocess, foobarString, 2);
 });
 
-test('.writableStream() can use to', async t => {
+test('.writableStream() can use to', async () => {
 	const subprocess = execa('stdin-fd.js', ['0']);
 	const stream = subprocess.writableStream({to: 'stdin'});
 
 	await writeToStream(stream);
-	await assertSubprocessOutput(t, subprocess);
+	await assertSubprocessOutput(subprocess);
 });
 
-test('.transformStream() success', async t => {
+test('.transformStream() success', async () => {
 	const subprocess = getReadWriteSubprocess();
 	const {readable, writable} = subprocess.transformStream();
 
-	t.true(readable instanceof ReadableStream);
-	t.true(writable instanceof WritableStream);
+	assert.ok(readable instanceof ReadableStream);
+	assert.ok(writable instanceof WritableStream);
 
 	await writeToStream(writable);
-	await assertStreamOutput(t, readable);
-	await assertSubprocessOutput(t, subprocess);
+	await assertStreamOutput(readable);
+	await assertSubprocessOutput(subprocess);
 });
 
-test('subprocess fail -> .readableStream() error', async t => {
+test('subprocess fail -> .readableStream() error', async () => {
 	const subprocess = getReadWriteSubprocess();
 	const stream = subprocess.readableStream();
 
 	const cause = new Error(foobarString);
 	subprocess.kill(cause);
 
-	await assertStreamReadError(t, stream, {cause});
-	await assertSubprocessError(t, subprocess, {cause});
+	await assertStreamReadError(stream, {cause});
+	await assertSubprocessError(subprocess, {cause});
 });
 
-test('subprocess fail -> .writableStream() error', async t => {
+test('subprocess fail -> .writableStream() error', async () => {
 	const subprocess = getReadWriteSubprocess();
 	const stream = subprocess.writableStream();
 	const writer = stream.getWriter();
@@ -88,17 +89,17 @@ test('subprocess fail -> .writableStream() error', async t => {
 	const cause = new Error(foobarString);
 	subprocess.kill(cause);
 
-	await assertPromiseError(t, writer.closed, {cause});
-	await assertSubprocessError(t, subprocess, {cause});
+	await assertPromiseError(writer.closed, {cause});
+	await assertSubprocessError(subprocess, {cause});
 });
 
-test('subprocess fail -> .transformStream() error', async t => {
+test('subprocess fail -> .transformStream() error', async () => {
 	const subprocess = getReadWriteSubprocess();
 	const {readable} = subprocess.transformStream();
 
 	const cause = new Error(foobarString);
 	subprocess.kill(cause);
 
-	await assertStreamReadError(t, readable, {cause});
-	await assertSubprocessError(t, subprocess, {cause});
+	await assertStreamReadError(readable, {cause});
+	await assertSubprocessError(subprocess, {cause});
 });

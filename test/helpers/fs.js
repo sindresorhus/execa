@@ -10,9 +10,5 @@ export const getWriteStream = fdNumber => {
 		return process.stdout;
 	}
 
-	if (fdNumber === 2) {
-		return process.stderr;
-	}
-
-	return createWriteStream(undefined, {fd: fdNumber});
+	return fdNumber === 2 ? process.stderr : createWriteStream(undefined, {fd: fdNumber});
 };

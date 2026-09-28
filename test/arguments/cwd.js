@@ -1,9 +1,11 @@
+import assert from 'node:assert/strict';
 import {mkdir, rmdir} from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import {pathToFileURL, fileURLToPath} from 'node:url';
+import test from 'node:test';
 import tempfile from 'tempfile';
-import test from 'ava';
+import {assertThrows} from '../helpers/assert.js';
 import {execa, execaSync} from '../../index.js';
 import {FIXTURES_DIRECTORY, setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {majorNodeVersion} from '../helpers/node-version.js';
@@ -12,48 +14,48 @@ setFixtureDirectory();
 
 const isWindows = process.platform === 'win32';
 
-const testOptionCwdString = async (t, execaMethod) => {
+const testOptionCwdString = async execaMethod => {
 	const cwd = '/';
 	const {stdout} = await execaMethod('node', ['-p', 'process.cwd()'], {cwd});
-	t.is(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
+	assert.equal(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
 };
 
-test('The "cwd" option can be a string', testOptionCwdString, execa);
-test('The "cwd" option can be a string - sync', testOptionCwdString, execaSync);
+test('The "cwd" option can be a string', () => testOptionCwdString(execa));
+test('The "cwd" option can be a string - sync', () => testOptionCwdString(execaSync));
 
-const testOptionCwdUrl = async (t, execaMethod) => {
+const testOptionCwdUrl = async execaMethod => {
 	const cwd = '/';
 	const cwdUrl = pathToFileURL(cwd);
 	const {stdout} = await execaMethod('node', ['-p', 'process.cwd()'], {cwd: cwdUrl});
-	t.is(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
+	assert.equal(path.toNamespacedPath(stdout), path.toNamespacedPath(cwd));
 };
 
-test('The "cwd" option can be a URL', testOptionCwdUrl, execa);
-test('The "cwd" option can be a URL - sync', testOptionCwdUrl, execaSync);
+test('The "cwd" option can be a URL', () => testOptionCwdUrl(execa));
+test('The "cwd" option can be a URL - sync', () => testOptionCwdUrl(execaSync));
 
-const testOptionCwdInvalid = (t, execaMethod) => {
-	t.throws(() => {
+const testOptionCwdInvalid = execaMethod => {
+	assertThrows(() => {
 		execaMethod('empty.js', {cwd: true});
 	}, {message: /The "cwd" option must be a string or a file URL: true/});
 };
 
-test('The "cwd" option cannot be an invalid type', testOptionCwdInvalid, execa);
-test('The "cwd" option cannot be an invalid type - sync', testOptionCwdInvalid, execaSync);
+test('The "cwd" option cannot be an invalid type', () => testOptionCwdInvalid(execa));
+test('The "cwd" option cannot be an invalid type - sync', () => testOptionCwdInvalid(execaSync));
 
-const testErrorCwdDefault = async (t, execaMethod) => {
+const testErrorCwdDefault = async execaMethod => {
 	const {cwd} = await execaMethod('empty.js');
-	t.is(cwd, process.cwd());
+	assert.equal(cwd, process.cwd());
 };
 
-test('The "cwd" option defaults to process.cwd()', testErrorCwdDefault, execa);
-test('The "cwd" option defaults to process.cwd() - sync', testErrorCwdDefault, execaSync);
+test('The "cwd" option defaults to process.cwd()', () => testErrorCwdDefault(execa));
+test('The "cwd" option defaults to process.cwd() - sync', () => testErrorCwdDefault(execaSync));
 
 // Windows does not allow removing a directory used as `cwd` of a running subprocess
 if (!isWindows) {
 	// Deletes the current directory, which makes `process.cwd()` throw
 	const chdirToMissingDirectory = async t => {
 		const currentCwd = process.cwd();
-		t.teardown(() => {
+		t.after(() => {
 			process.chdir(currentCwd);
 		});
 
@@ -66,13 +68,13 @@ if (!isWindows) {
 	const testCwdPreSpawn = async (t, execaMethod) => {
 		await chdirToMissingDirectory(t);
 
-		t.throws(() => {
+		assertThrows(() => {
 			execaMethod('empty.js');
 		}, {message: /The current directory does not exist/});
 	};
 
-	test.serial('The "cwd" option default fails if current cwd is missing', testCwdPreSpawn, execa);
-	test.serial('The "cwd" option default fails if current cwd is missing - sync', testCwdPreSpawn, execaSync);
+	test('The "cwd" option default fails if current cwd is missing', t => testCwdPreSpawn(t, execa));
+	test('The "cwd" option default fails if current cwd is missing - sync', t => testCwdPreSpawn(t, execaSync));
 
 	// The error message mentions the current directory, but computing it must not fail when it has been deleted.
 	// Otherwise, this would hide the subprocess' own error, and would throw even with the `reject: false` option.
@@ -80,24 +82,24 @@ if (!isWindows) {
 		await chdirToMissingDirectory(t);
 
 		const {failed, code, message} = await execaMethod('does_not_exist', {cwd: FIXTURES_DIRECTORY, reject: false});
-		t.true(failed);
-		t.is(code, 'ENOENT');
-		t.true(message.includes('does_not_exist'));
+		assert.equal(failed, true);
+		assert.equal(code, 'ENOENT');
+		assert.ok(message.includes('does_not_exist'));
 	};
 
-	test.serial('The subprocess error is kept if current cwd is missing', testCwdMissingError, execa);
-	test.serial('The subprocess error is kept if current cwd is missing - sync', testCwdMissingError, execaSync);
+	test('The subprocess error is kept if current cwd is missing', t => testCwdMissingError(t, execa));
+	test('The subprocess error is kept if current cwd is missing - sync', t => testCwdMissingError(t, execaSync));
 
 	// The `cwd` option is valid, so the error message must not mention it at all
 	const testCwdMissingValidOption = async (t, execaMethod) => {
 		await chdirToMissingDirectory(t);
 
 		const {message} = await execaMethod('does_not_exist', {cwd: FIXTURES_DIRECTORY, reject: false});
-		t.false(message.includes('The "cwd" option'));
+		assert.ok(!message.includes('The "cwd" option'));
 	};
 
-	test.serial('The "cwd" option is not reported as invalid if current cwd is missing', testCwdMissingValidOption, execa);
-	test.serial('The "cwd" option is not reported as invalid if current cwd is missing - sync', testCwdMissingValidOption, execaSync);
+	test('The "cwd" option is not reported as invalid if current cwd is missing', t => testCwdMissingValidOption(t, execa));
+	test('The "cwd" option is not reported as invalid if current cwd is missing - sync', t => testCwdMissingValidOption(t, execaSync));
 }
 
 const cwdNotExisting = {cwd: 'does_not_exist', expectedCode: 'ENOENT', expectedMessage: 'The "cwd" option is invalid'};
@@ -105,31 +107,31 @@ const cwdTooLong = {cwd: '.'.repeat(1e5), expectedCode: isWindows && majorNodeVe
 // @todo: use import.meta.dirname after dropping support for Node <20.11.0
 const cwdNotDirectory = {cwd: fileURLToPath(import.meta.url), expectedCode: isWindows ? 'ENOENT' : 'ENOTDIR', expectedMessage: 'The "cwd" option is not a directory'};
 
-const testCwdPostSpawn = async (t, {cwd, expectedCode, expectedMessage}, execaMethod) => {
+const testCwdPostSpawn = async ({cwd, expectedCode, expectedMessage}, execaMethod) => {
 	const {failed, code, message} = await execaMethod('empty.js', {cwd, reject: false});
-	t.true(failed);
-	t.is(code, expectedCode);
-	t.true(message.includes(expectedMessage));
-	t.true(message.includes(cwd));
+	assert.equal(failed, true);
+	assert.equal(code, expectedCode);
+	assert.ok(message.includes(expectedMessage));
+	assert.ok(message.includes(cwd));
 };
 
-test('The "cwd" option must be an existing file', testCwdPostSpawn, cwdNotExisting, execa);
-test('The "cwd" option must be an existing file - sync', testCwdPostSpawn, cwdNotExisting, execaSync);
-test('The "cwd" option must not be too long', testCwdPostSpawn, cwdTooLong, execa);
-test('The "cwd" option must not be too long - sync', testCwdPostSpawn, cwdTooLong, execaSync);
-test('The "cwd" option must be a directory', testCwdPostSpawn, cwdNotDirectory, execa);
-test('The "cwd" option must be a directory - sync', testCwdPostSpawn, cwdNotDirectory, execaSync);
+test('The "cwd" option must be an existing file', () => testCwdPostSpawn(cwdNotExisting, execa));
+test('The "cwd" option must be an existing file - sync', () => testCwdPostSpawn(cwdNotExisting, execaSync));
+test('The "cwd" option must not be too long', () => testCwdPostSpawn(cwdTooLong, execa));
+test('The "cwd" option must not be too long - sync', () => testCwdPostSpawn(cwdTooLong, execaSync));
+test('The "cwd" option must be a directory', () => testCwdPostSpawn(cwdNotDirectory, execa));
+test('The "cwd" option must be a directory - sync', () => testCwdPostSpawn(cwdNotDirectory, execaSync));
 
 const successProperties = {fixtureName: 'empty.js', expectedFailed: false};
 const errorProperties = {fixtureName: 'fail.js', expectedFailed: true};
 
-const testErrorCwd = async (t, execaMethod, {fixtureName, expectedFailed}) => {
+const testErrorCwd = async (execaMethod, {fixtureName, expectedFailed}) => {
 	const {failed, cwd} = await execaMethod(fixtureName, {cwd: path.relative('.', FIXTURES_DIRECTORY), reject: false});
-	t.is(failed, expectedFailed);
-	t.is(cwd, FIXTURES_DIRECTORY);
+	assert.equal(failed, expectedFailed);
+	assert.equal(cwd, FIXTURES_DIRECTORY);
 };
 
-test('result.cwd is defined', testErrorCwd, execa, successProperties);
-test('result.cwd is defined - sync', testErrorCwd, execaSync, successProperties);
-test('error.cwd is defined', testErrorCwd, execa, errorProperties);
-test('error.cwd is defined - sync', testErrorCwd, execaSync, errorProperties);
+test('result.cwd is defined', () => testErrorCwd(execa, successProperties));
+test('result.cwd is defined - sync', () => testErrorCwd(execaSync, successProperties));
+test('error.cwd is defined', () => testErrorCwd(execa, errorProperties));
+test('error.cwd is defined - sync', () => testErrorCwd(execaSync, errorProperties));

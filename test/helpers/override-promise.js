@@ -1,4 +1,4 @@
-// Can't use `test.before`, because `ava` needs `Promise`.
+// Can't use `test.before()`, because the test runner itself needs `Promise`.
 const nativePromise = Promise;
 // eslint-disable-next-line unicorn/no-global-object-property-assignment -- intentionally mocking the global `Promise`
 globalThis.Promise = class BrokenPromise {

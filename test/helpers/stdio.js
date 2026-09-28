@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import process, {platform} from 'node:process';
 import {noopReadable} from './stream.js';
 
@@ -22,9 +23,9 @@ export const prematureClose = {code: 'ERR_STREAM_PREMATURE_CLOSE'};
 
 const isWindows = platform === 'win32';
 
-export const assertEpipe = (t, stderr, fdNumber = 1) => {
+export const assertEpipe = (stderr, fdNumber = 1) => {
 	if (fdNumber === 1 && !isWindows) {
-		t.true(stderr.includes('EPIPE'));
+		assert.ok(stderr.includes('EPIPE'));
 	}
 };
 
@@ -34,9 +35,5 @@ export const parseStdioOption = stdioOption => {
 		return process[optionValue];
 	}
 
-	if (Array.isArray(optionValue) && typeof optionValue[0] === 'string' && optionValue[0] in process) {
-		return [process[optionValue[0]], ...optionValue.slice(1)];
-	}
-
-	return optionValue;
+	return Array.isArray(optionValue) && typeof optionValue[0] === 'string' && optionValue[0] in process ? [process[optionValue[0]], ...optionValue.slice(1)] : optionValue;
 };

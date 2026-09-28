@@ -1,12 +1,14 @@
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import process from 'node:process';
+import test from 'node:test';
 import {
 	cp,
 	mkdir,
 	unlink,
 	writeFile,
 } from 'node:fs/promises';
-import path from 'node:path';
-import process from 'node:process';
-import test from 'ava';
+import {assertThrows, assertRejects} from '../helpers/assert.js';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 
@@ -23,19 +25,19 @@ const isWindows = process.platform === 'win32';
 // test, so Windows escaping is genuinely validated on CI.
 
 // `echo.js` prints `process.argv.slice(2).join('\n')`
-const testRoundtrip = async (t, commandArguments) => {
+const testRoundtrip = async commandArguments => {
 	const expectedStdout = commandArguments.map(String).join('\n');
 
 	const {stdout} = await execa('echo.js', commandArguments);
-	t.is(stdout, expectedStdout);
+	assert.equal(stdout, expectedStdout);
 
 	const {stdout: stdoutSync} = execaSync('echo.js', commandArguments);
-	t.is(stdoutSync, expectedStdout);
+	assert.equal(stdoutSync, expectedStdout);
 };
 
-test('Empty arguments and arguments with spaces', testRoundtrip, ['foo', '', 'bar', 'André Cruz']);
-test('Non-string arguments are coerced', testRoundtrip, [1234]);
-test('Arguments with shell special characters', testRoundtrip, [
+test('Empty arguments and arguments with spaces', () => testRoundtrip(['foo', '', 'bar', 'André Cruz']));
+test('Non-string arguments are coerced', () => testRoundtrip([1234]));
+test('Arguments with shell special characters', () => testRoundtrip([
 	'foo',
 	'()',
 	'foo',
@@ -67,30 +69,30 @@ test('Arguments with shell special characters', testRoundtrip, [
 	'bar\\',
 	'"foo|bar>baz"',
 	'"(foo|bar>baz|foz)"',
-]);
+]));
 // Backslashes and double quotes need specific escaping on Windows, so their combinations are the trickiest.
-test('Arguments with backslashes', testRoundtrip, ['a\\b', 'a\\\\b', '\\', '\\\\', 'a\\', 'trailing\\']);
-test('Arguments with backslashes and double quotes', testRoundtrip, ['a\\"b', '\\"', 'a"\\', '\\\\"', '"\\\\"']);
+test('Arguments with backslashes', () => testRoundtrip(['a\\b', 'a\\\\b', '\\', '\\\\', 'a\\', 'trailing\\']));
+test('Arguments with backslashes and double quotes', () => testRoundtrip(['a\\"b', '\\"', 'a"\\', '\\\\"', '"\\\\"']));
 // Backslashes, double quotes and shell metacharacters combined in a single argument are the trickiest to escape on Windows.
-test('Arguments combining backslashes, quotes and metacharacters', testRoundtrip, ['a\\"&b', '\\"()\\', 'c\\\\"|d', '%x%\\', '">&<"']);
-test('Arguments with tabs and whitespace', testRoundtrip, ['a\tb', '\t', '   spaces   ', ' ']);
+test('Arguments combining backslashes, quotes and metacharacters', () => testRoundtrip(['a\\"&b', '\\"()\\', 'c\\\\"|d', '%x%\\', '">&<"']));
+test('Arguments with tabs and whitespace', () => testRoundtrip(['a\tb', '\t', '   spaces   ', ' ']));
 // Several consecutive empty and whitespace-only arguments must each be preserved as a distinct argument.
-test('Arguments that are empty or whitespace-only', testRoundtrip, ['', '', 'a', '', ' ', '\t', '']);
-test('Arguments that look like flags', testRoundtrip, ['-e', '--foo=bar', '--', '-']);
-test('Arguments with Unicode characters', testRoundtrip, ['café', '🎉', '日本語', 'naïve']);
+test('Arguments that are empty or whitespace-only', () => testRoundtrip(['', '', 'a', '', ' ', '\t', '']));
+test('Arguments that look like flags', () => testRoundtrip(['-e', '--foo=bar', '--', '-']));
+test('Arguments with Unicode characters', () => testRoundtrip(['café', '🎉', '日本語', 'naïve']));
 // eslint-disable-next-line no-template-curly-in-string
-test('Arguments with shell variable syntax', testRoundtrip, ['$HOME', '${x}', '~', 'a=b,c', '`whoami`']);
+test('Arguments with shell variable syntax', () => testRoundtrip(['$HOME', '${x}', '~', 'a=b,c', '`whoami`']));
 // Very long arguments must not be truncated nor corrupted by the escaping.
-test('Very long arguments', testRoundtrip, ['a'.repeat(10_000), `${'b'.repeat(1000)}\\"${'c'.repeat(1000)}`]);
+test('Very long arguments', () => testRoundtrip(['a'.repeat(10_000), `${'b'.repeat(1000)}\\"${'c'.repeat(1000)}`]));
 // A long run of consecutive backslashes right before a double quote (or the end of the
 // argument) must be doubled as a whole. This is both the input a length-dependent escaping
 // bug corrupts and the one a naive regex backtracks quadratically over, so a correct
 // roundtrip here guards correctness and the single-pass linear escaping at once.
-test('Arguments with long runs of backslashes before quotes', testRoundtrip, [
+test('Arguments with long runs of backslashes before quotes', () => testRoundtrip([
 	`${'\\'.repeat(1000)}"`,
 	'\\'.repeat(1000),
 	`a${'\\'.repeat(500)}"b${'\\'.repeat(500)}`,
-]);
+]));
 // Runs of backslashes of every length from 1 to 6, each right before a double quote, then
 // each at the very end of the argument. The bug this guards against doubled only the last
 // backslash of a run instead of the whole run, so it corrupted every length above 1.
@@ -99,57 +101,57 @@ const backslashRunArguments = [
 	...Array.from({length: 6}, (_, index) => `${'\\'.repeat(index + 1)}"x`),
 	...Array.from({length: 6}, (_, index) => `end${'\\'.repeat(index + 1)}`),
 ];
-test('Arguments with backslash runs of every length', testRoundtrip, backslashRunArguments);
+test('Arguments with backslash runs of every length', () => testRoundtrip(backslashRunArguments));
 // Consecutive double quotes must each be escaped independently, not collapsed nor paired.
-test('Arguments with consecutive double quotes', testRoundtrip, ['""', '"""', 'a""b', '""""']);
+test('Arguments with consecutive double quotes', () => testRoundtrip(['""', '"""', 'a""b', '""""']));
 // A line break can be passed as an argument to a directly executable file (unlike a `.cmd`
 // on Windows, see below). `echo-argv.js` prints its arguments as JSON, so this verifies the
 // line break stays within a single argument rather than splitting it in two.
-test('Line breaks are kept within a single argument for executables', async t => {
+test('Line breaks are kept within a single argument for executables', async () => {
 	const commandArguments = ['a\nb', 'a\r\nb', 'c'];
 	const {stdout} = await execa('echo-argv.js', commandArguments);
-	t.deepEqual(JSON.parse(stdout), commandArguments);
+	assert.deepEqual(JSON.parse(stdout), commandArguments);
 
 	const {stdout: stdoutSync} = execaSync('echo-argv.js', commandArguments);
-	t.deepEqual(JSON.parse(stdoutSync), commandArguments);
+	assert.deepEqual(JSON.parse(stdoutSync), commandArguments);
 });
 
 // A command can be resolved from different kinds of file paths. Forward slashes
 // work even on Windows, where they are normalized to backslashes.
-const testResolvesCommand = async (t, file, options) => {
+const testResolvesCommand = async (file, options) => {
 	const {stdout} = await execa(file, ['foo'], options);
-	t.is(stdout, 'foo');
+	assert.equal(stdout, 'foo');
 
 	const {stdout: stdoutSync} = execaSync(file, ['foo'], options);
-	t.is(stdoutSync, 'foo');
+	assert.equal(stdoutSync, 'foo');
 };
 
-test('Runs a command given as an absolute path', testResolvesCommand, path.join(FIXTURES_DIRECTORY, 'echo.js'));
-test('Runs a command given as a relative path with a custom cwd', testResolvesCommand, './echo.js', {cwd: FIXTURES_DIRECTORY});
-test('Runs a command given as a relative POSIX-style subpath', testResolvesCommand, 'test/fixtures/echo.js');
-test('Runs a command whose path contains a space', testResolvesCommand, 'command with space.js');
-test('Runs a command whose absolute path contains a space', testResolvesCommand, path.join(FIXTURES_DIRECTORY, 'command with space.js'));
+test('Runs a command given as an absolute path', () => testResolvesCommand(path.join(FIXTURES_DIRECTORY, 'echo.js')));
+test('Runs a command given as a relative path with a custom cwd', () => testResolvesCommand('./echo.js', {cwd: FIXTURES_DIRECTORY}));
+test('Runs a command given as a relative POSIX-style subpath', () => testResolvesCommand('test/fixtures/echo.js'));
+test('Runs a command whose path contains a space', () => testResolvesCommand('command with space.js'));
+test('Runs a command whose absolute path contains a space', () => testResolvesCommand(path.join(FIXTURES_DIRECTORY, 'command with space.js')));
 
 // A shebang script can be run without explicitly prepending its interpreter.
 // This is emulated on Windows, where shebangs are not natively supported.
 // The whole test suite implicitly relies on this (e.g. `echo.js`), so we assert it explicitly.
-test('Runs a shebang script without specifying its interpreter', async t => {
+test('Runs a shebang script without specifying its interpreter', async () => {
 	const {stdout} = await execa('echo.js', ['foo']);
-	t.is(stdout, 'foo');
+	assert.equal(stdout, 'foo');
 
 	const {stdout: stdoutSync} = execaSync('echo.js', ['foo']);
-	t.is(stdoutSync, 'foo');
+	assert.equal(stdoutSync, 'foo');
 });
 
 // A space between `#!` and the interpreter path (e.g. `#! /usr/bin/env node`) is a valid,
 // real-world shebang variation. The reimplemented shebang parser must trim it, otherwise
 // on Windows the interpreter would resolve as ` /usr/bin/env` and fail with ENOENT.
-test('Runs a shebang script with a space after the "#!"', async t => {
+test('Runs a shebang script with a space after the "#!"', async () => {
 	const {stdout} = await execa('echo-space-shebang.js', ['foo']);
-	t.is(stdout, 'foo');
+	assert.equal(stdout, 'foo');
 
 	const {stdout: stdoutSync} = execaSync('echo-space-shebang.js', ['foo']);
-	t.is(stdoutSync, 'foo');
+	assert.equal(stdoutSync, 'foo');
 });
 
 /*
@@ -162,31 +164,31 @@ if (isWindows) {
 	test('Runs a shebang script shorter than the shebang buffer', async t => {
 		const filePath = path.join(FIXTURES_DIRECTORY, 'shebang-only.js');
 		await writeFile(filePath, '#!/usr/bin/env node');
-		t.teardown(() => unlink(filePath));
+		t.after(() => unlink(filePath));
 
 		const {exitCode, stdout} = await execa('shebang-only.js');
-		t.is(exitCode, 0);
-		t.is(stdout, '');
+		assert.equal(exitCode, 0);
+		assert.equal(stdout, '');
 	});
 }
 
 // Neither the caller's arguments array nor its options object should be mutated,
 // whether or not a shell is used (each path clones the arguments internally).
-const testNoMutation = async (t, options) => {
+const testNoMutation = async options => {
 	const commandArguments = ['foo', 'bar'];
 	const optionsCopy = {...options};
 
 	await execa('echo.js', commandArguments, options);
-	t.deepEqual(commandArguments, ['foo', 'bar']);
-	t.deepEqual(options, optionsCopy);
+	assert.deepEqual(commandArguments, ['foo', 'bar']);
+	assert.deepEqual(options, optionsCopy);
 
 	execaSync('echo.js', commandArguments, options);
-	t.deepEqual(commandArguments, ['foo', 'bar']);
-	t.deepEqual(options, optionsCopy);
+	assert.deepEqual(commandArguments, ['foo', 'bar']);
+	assert.deepEqual(options, optionsCopy);
 };
 
-test('Does not mutate arguments nor options', testNoMutation, {});
-test('Does not mutate arguments nor options with a shell', testNoMutation, {shell: true});
+test('Does not mutate arguments nor options', () => testNoMutation({}));
+test('Does not mutate arguments nor options with a shell', () => testNoMutation({shell: true}));
 
 if (isWindows) {
 	const nodeOnlyOptions = {
@@ -198,9 +200,9 @@ if (isWindows) {
 	};
 
 	// A bare command name without an extension is resolved using `PATHEXT`.
-	test('Resolves command extension using PATHEXT (sync)', t => {
+	test('Resolves command extension using PATHEXT (sync)', () => {
 		const {stdout} = execaSync('hello');
-		t.is(stdout, 'Hello World');
+		assert.equal(stdout, 'Hello World');
 	});
 
 	test('Uses PATHEXT extension order for direct executables', async t => {
@@ -213,7 +215,7 @@ if (isWindows) {
 			cp(process.execPath, executablePath),
 			cp(process.execPath, comPath),
 		]);
-		t.teardown(async () => {
+		t.after(async () => {
 			await Promise.all([unlink(executablePath), unlink(comPath)]);
 		});
 		const options = {
@@ -228,16 +230,16 @@ if (isWindows) {
 		const nodeExpression = 'JSON.stringify({executablePath: process.execPath, argv0: process.argv0})';
 		const {stdout} = await execa(command, ['--print', nodeExpression], options);
 		const {executablePath: actualExecutablePath, argv0} = JSON.parse(stdout);
-		t.is(actualExecutablePath.toLowerCase(), executablePath.toLowerCase());
-		t.is(argv0, command);
+		assert.equal(actualExecutablePath.toLowerCase(), executablePath.toLowerCase());
+		assert.equal(argv0, command);
 
 		const {stdout: stdoutSync} = execaSync(command, ['--print', nodeExpression], options);
 		const {executablePath: actualExecutablePathSync, argv0: argv0Sync} = JSON.parse(stdoutSync);
-		t.is(actualExecutablePathSync.toLowerCase(), executablePath.toLowerCase());
-		t.is(argv0Sync, command);
+		assert.equal(actualExecutablePathSync.toLowerCase(), executablePath.toLowerCase());
+		assert.equal(argv0Sync, command);
 	});
 
-	test.serial('Respects NoDefaultCurrentDirectoryInExePath', async t => {
+	test('Respects NoDefaultCurrentDirectoryInExePath', async t => {
 		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
 		await mkdir(binaryDirectory, {recursive: true});
 		const command = 'node-current-directory';
@@ -251,7 +253,7 @@ if (isWindows) {
 		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
 		const originalValue = process.env[environmentName];
 		delete process.env[environmentName];
-		t.teardown(async () => {
+		t.after(async () => {
 			if (originalValue === undefined) {
 				delete process.env[environmentName];
 			} else {
@@ -270,20 +272,20 @@ if (isWindows) {
 			},
 		};
 		const {stdout: currentDirectoryStdout} = await execa(command, ['--print', 'process.execPath'], options);
-		t.is(currentDirectoryStdout.toLowerCase(), currentDirectoryExecutable.toLowerCase());
+		assert.equal(currentDirectoryStdout.toLowerCase(), currentDirectoryExecutable.toLowerCase());
 
 		const {stdout: currentDirectoryStdoutSync} = execaSync(command, ['--print', 'process.execPath'], options);
-		t.is(currentDirectoryStdoutSync.toLowerCase(), currentDirectoryExecutable.toLowerCase());
+		assert.equal(currentDirectoryStdoutSync.toLowerCase(), currentDirectoryExecutable.toLowerCase());
 
 		process.env[environmentName] = '1';
 		const {stdout} = await execa(command, ['--print', 'process.execPath'], options);
-		t.is(stdout.toLowerCase(), pathExecutable.toLowerCase());
+		assert.equal(stdout.toLowerCase(), pathExecutable.toLowerCase());
 
 		const {stdout: stdoutSync} = execaSync(command, ['--print', 'process.execPath'], options);
-		t.is(stdoutSync.toLowerCase(), pathExecutable.toLowerCase());
+		assert.equal(stdoutSync.toLowerCase(), pathExecutable.toLowerCase());
 	});
 
-	test.serial('Uses the resolved batch file when current-directory search is disabled', async t => {
+	test('Uses the resolved batch file when current-directory search is disabled', async t => {
 		const binaryDirectory = path.join(FIXTURES_DIRECTORY, 'node_modules', '.bin');
 		await mkdir(binaryDirectory, {recursive: true});
 		const command = 'batch-current-directory';
@@ -297,7 +299,7 @@ if (isWindows) {
 		const environmentName = 'NoDefaultCurrentDirectoryInExePath';
 		const originalValue = process.env[environmentName];
 		delete process.env[environmentName];
-		t.teardown(async () => {
+		t.after(async () => {
 			if (originalValue === undefined) {
 				delete process.env[environmentName];
 			} else {
@@ -317,18 +319,18 @@ if (isWindows) {
 			},
 		};
 		const {stdout} = await execa(command, options);
-		t.is(stdout, 'PATH');
+		assert.equal(stdout, 'PATH');
 
 		const {stdout: stdoutSync} = execaSync(command, options);
-		t.is(stdoutSync, 'PATH');
+		assert.equal(stdoutSync, 'PATH');
 
 		delete options.env[environmentName];
 		process.env[environmentName] = '';
 		const {stdout: parentEnvironmentStdout} = await execa(command, options);
-		t.is(parentEnvironmentStdout, 'PATH');
+		assert.equal(parentEnvironmentStdout, 'PATH');
 
 		const {stdout: parentEnvironmentStdoutSync} = execaSync(command, options);
-		t.is(parentEnvironmentStdoutSync, 'PATH');
+		assert.equal(parentEnvironmentStdoutSync, 'PATH');
 	});
 
 	test('Does not search PATH for drive-relative commands', async t => {
@@ -337,7 +339,7 @@ if (isWindows) {
 		const commandName = 'node-drive-relative';
 		const pathExecutable = path.join(binaryDirectory, `${commandName}.exe`);
 		await cp(process.execPath, pathExecutable);
-		t.teardown(async () => {
+		t.after(async () => {
 			await unlink(pathExecutable);
 		});
 		const drive = path.parse(FIXTURES_DIRECTORY).root.slice(0, 2);
@@ -350,15 +352,15 @@ if (isWindows) {
 				PathExt: '.EXE',
 			},
 		};
-		await t.throwsAsync(execa(command, [], options));
-		t.throws(() => execaSync(command, [], options));
+		await assertRejects(execa(command, [], options));
+		assertThrows(() => execaSync(command, [], options));
 	});
 
 	// A `.cmd` file needs `cmd.exe`, so its forward-slash path must be normalized to
 	// backslashes, otherwise it fails with ENOENT.
-	test('Runs a .cmd file given as a relative POSIX-style subpath', async t => {
+	test('Runs a .cmd file given as a relative POSIX-style subpath', async () => {
 		const {stdout} = await execa('fixtures/hello.cmd', {cwd: path.join(FIXTURES_DIRECTORY, '..')});
-		t.is(stdout, 'Hello World');
+		assert.equal(stdout, 'Hello World');
 	});
 
 	/*
@@ -373,32 +375,32 @@ if (isWindows) {
 		return shimPath;
 	};
 
-	test('Double-escapes metacharacters for node_modules/.bin cmd-shims', async t => {
+	test('Double-escapes metacharacters for node_modules/.bin cmd-shims', async () => {
 		const shimPath = await setupCmdShim();
 		const commandArgument = '"(foo|bar>baz|foz)"';
 		const {stdout} = await execa(shimPath, [commandArgument]);
-		t.is(stdout, commandArgument);
+		assert.equal(stdout, commandArgument);
 
 		const {stdout: stdoutSync} = execaSync(shimPath, [commandArgument]);
-		t.is(stdoutSync, commandArgument);
+		assert.equal(stdoutSync, commandArgument);
 	});
 
-	test('Double-escapes explicit batch files excluded from PATHEXT', async t => {
+	test('Double-escapes explicit batch files excluded from PATHEXT', async () => {
 		const commandArgument = '"& whoami &"';
 		const command = path.join(FIXTURES_DIRECTORY, 'echo-shim.cmd');
 		const {stdout} = await execa(command, [commandArgument], nodeOnlyOptions);
-		t.is(stdout, commandArgument);
+		assert.equal(stdout, commandArgument);
 
 		const {stdout: stdoutSync} = execaSync(command, [commandArgument], nodeOnlyOptions);
-		t.is(stdoutSync, commandArgument);
+		assert.equal(stdoutSync, commandArgument);
 	});
 
-	test('Runs an explicit shebang script excluded from PATHEXT', async t => {
+	test('Runs an explicit shebang script excluded from PATHEXT', async () => {
 		const command = path.join(FIXTURES_DIRECTORY, 'echo.js');
-		await testResolvesCommand(t, command, nodeOnlyOptions);
+		await testResolvesCommand(command, nodeOnlyOptions);
 	});
 
-	test.serial('Double-escapes metacharacters for preferLocal cmd-shims', async t => {
+	test('Double-escapes metacharacters for preferLocal cmd-shims', async () => {
 		await setupCmdShim();
 		const commandArgument = 'a&whoami';
 		const originalPathExt = process.env.PATHEXT;
@@ -415,10 +417,10 @@ if (isWindows) {
 
 		try {
 			const {stdout} = await execa('echo-cmd-shim', [commandArgument], options);
-			t.is(stdout, commandArgument);
+			assert.equal(stdout, commandArgument);
 
 			const {stdout: stdoutSync} = execaSync('echo-cmd-shim', [commandArgument], options);
-			t.is(stdoutSync, commandArgument);
+			assert.equal(stdoutSync, commandArgument);
 		} finally {
 			if (originalPathExt === undefined) {
 				delete process.env.PATHEXT;
@@ -435,111 +437,111 @@ if (isWindows) {
 // forwards its arguments to `echo.js`, so the subprocess prints back the exact
 // `process.argv` it received: each argument must arrive unchanged and inert.
 if (isWindows) {
-	const testEscaping = async (t, commandArgument) => {
+	const testEscaping = async commandArgument => {
 		const {stdout} = await execa('echo-shim.cmd', [commandArgument]);
-		t.is(stdout, commandArgument);
+		assert.equal(stdout, commandArgument);
 
 		const {stdout: stdoutSync} = execaSync('echo-shim.cmd', [commandArgument]);
-		t.is(stdoutSync, commandArgument);
+		assert.equal(stdoutSync, commandArgument);
 	};
 
 	// A `%VAR%` argument must be passed literally, not expanded by `cmd.exe`.
-	test('Does not expand environment variables in arguments', testEscaping, '%PATH%');
+	test('Does not expand environment variables in arguments', () => testEscaping('%PATH%'));
 	// Delayed expansion (`!VAR!`) must not be interpreted either.
-	test('Does not expand delayed environment variables in arguments', testEscaping, '!PATH!');
+	test('Does not expand delayed environment variables in arguments', () => testEscaping('!PATH!'));
 	// An `&` must not be interpreted as a command separator.
-	test('Does not allow command injection via `&` in arguments', testEscaping, 'a&b');
+	test('Does not allow command injection via `&` in arguments', () => testEscaping('a&b'));
 	// A `|` must not be interpreted as a pipe.
-	test('Does not allow command injection via `|` in arguments', testEscaping, 'a|whoami');
+	test('Does not allow command injection via `|` in arguments', () => testEscaping('a|whoami'));
 	// Redirections (`<`, `>`) must not be interpreted.
-	test('Does not allow command injection via redirections in arguments', testEscaping, 'a>b<c');
+	test('Does not allow command injection via redirections in arguments', () => testEscaping('a>b<c'));
 	// Parentheses must not be interpreted as command grouping.
-	test('Does not allow command injection via parentheses in arguments', testEscaping, '(whoami)');
+	test('Does not allow command injection via parentheses in arguments', () => testEscaping('(whoami)'));
 	// A quote followed by an injected command must stay inert.
-	test('Does not allow command injection via nested quotes in arguments', testEscaping, '"& whoami &"');
+	test('Does not allow command injection via nested quotes in arguments', () => testEscaping('"& whoami &"'));
 	// Double quotes must be preserved.
-	test('Preserves double quotes in arguments', testEscaping, 'a"b"c');
+	test('Preserves double quotes in arguments', () => testEscaping('a"b"c'));
 	// Carets are the escape character in `cmd.exe` and must be passed literally.
-	test('Preserves carets in arguments', testEscaping, 'a^b^^c');
+	test('Preserves carets in arguments', () => testEscaping('a^b^^c'));
 	// Backslashes, including trailing ones, must be preserved next to quotes.
-	test('Preserves backslashes and double quotes in arguments', testEscaping, 'a\\"b\\\\"c\\');
+	test('Preserves backslashes and double quotes in arguments', () => testEscaping('a\\"b\\\\"c\\'));
 
 	// Every kind of tricky argument must also roundtrip through `cmd.exe` unchanged, not
 	// just be inert. Unlike `echo.js` (which resolves to `node.exe` and bypasses `cmd.exe`),
 	// `echo-shim.cmd` forces the `cmd.exe` escaping path. This mirrors the roundtrip tests
 	// above, but validates the `cmd.exe`-specific escaping rather than Node's native escaping.
-	const testCmdRoundtrip = async (t, commandArguments) => {
+	const testCmdRoundtrip = async commandArguments => {
 		const expectedStdout = commandArguments.join('\n');
 
 		const {stdout} = await execa('echo-shim.cmd', commandArguments);
-		t.is(stdout, expectedStdout);
+		assert.equal(stdout, expectedStdout);
 
 		const {stdout: stdoutSync} = execaSync('echo-shim.cmd', commandArguments);
-		t.is(stdoutSync, expectedStdout);
+		assert.equal(stdoutSync, expectedStdout);
 	};
 
 	// eslint-disable-next-line no-template-curly-in-string
-	test('Roundtrips shell metacharacters through cmd.exe', testCmdRoundtrip, ['()', '[]', '%!', '^', '<', '>', '|', ';', ',', '=', '`', '*', '?', '$HOME', '${x}', '~']);
-	test('Roundtrips backslashes and double quotes through cmd.exe', testCmdRoundtrip, ['a\\b', 'a\\\\b', 'a\\', 'a\\"b', '\\"', 'a"\\', '\\\\"', '"\\\\"']);
+	test('Roundtrips shell metacharacters through cmd.exe', () => testCmdRoundtrip(['()', '[]', '%!', '^', '<', '>', '|', ';', ',', '=', '`', '*', '?', '$HOME', '${x}', '~']));
+	test('Roundtrips backslashes and double quotes through cmd.exe', () => testCmdRoundtrip(['a\\b', 'a\\\\b', 'a\\', 'a\\"b', '\\"', 'a"\\', '\\\\"', '"\\\\"']));
 	// Long backslash runs must also roundtrip through the `cmd.exe` escaping specifically,
 	// which is where the backslash-doubling actually runs. Kept modest to stay under the
 	// `cmd.exe` command-line length limit once the backslashes are doubled.
-	test('Roundtrips long backslash runs before quotes through cmd.exe', testCmdRoundtrip, [`${'\\'.repeat(200)}"`, '\\'.repeat(200), `a${'\\'.repeat(100)}"b`]);
+	test('Roundtrips long backslash runs before quotes through cmd.exe', () => testCmdRoundtrip([`${'\\'.repeat(200)}"`, '\\'.repeat(200), `a${'\\'.repeat(100)}"b`]));
 	// The per-length sweep must roundtrip through `cmd.exe` too, since the corrupted doubling
 	// is exactly what this escaping path performs.
-	test('Roundtrips backslash runs of every length through cmd.exe', testCmdRoundtrip, backslashRunArguments);
+	test('Roundtrips backslash runs of every length through cmd.exe', () => testCmdRoundtrip(backslashRunArguments));
 	// Consecutive double quotes must survive the `cmd.exe` escaping, each escaped on its own.
-	test('Roundtrips consecutive double quotes through cmd.exe', testCmdRoundtrip, ['""', '"""', 'a""b', '""""']);
-	test('Roundtrips arguments with spaces through cmd.exe', testCmdRoundtrip, ['a b', ' '.repeat(3), 'foo bar baz', 'André Cruz']);
+	test('Roundtrips consecutive double quotes through cmd.exe', () => testCmdRoundtrip(['""', '"""', 'a""b', '""""']));
+	test('Roundtrips arguments with spaces through cmd.exe', () => testCmdRoundtrip(['a b', ' '.repeat(3), 'foo bar baz', 'André Cruz']));
 
 	/*
 	`.bat` files re-expand their arguments through `cmd.exe` exactly like `.cmd` files, so they need the same double-escaping.
 	`echo-shim.bat` is the `.bat` twin of `echo-shim.cmd`.
 	*/
-	const testBatEscaping = async (t, commandArgument) => {
+	const testBatEscaping = async commandArgument => {
 		const {stdout} = await execa('echo-shim.bat', [commandArgument]);
-		t.is(stdout, commandArgument);
+		assert.equal(stdout, commandArgument);
 
 		const {stdout: stdoutSync} = execaSync('echo-shim.bat', [commandArgument]);
-		t.is(stdoutSync, commandArgument);
+		assert.equal(stdoutSync, commandArgument);
 	};
 
 	// The same nested-quote injection must stay inert when the batch file is a `.bat`.
-	test('Does not allow command injection via nested quotes in `.bat` arguments', testBatEscaping, '"& whoami &"');
+	test('Does not allow command injection via nested quotes in `.bat` arguments', () => testBatEscaping('"& whoami &"'));
 	// Metacharacters must survive the double `cmd.exe` expansion for `.bat` files too.
-	test('Roundtrips shell metacharacters through a `.bat` file', testBatEscaping, '(foo|bar>baz|foz)');
+	test('Roundtrips shell metacharacters through a `.bat` file', () => testBatEscaping('(foo|bar>baz|foz)'));
 	// A `.bat` file not in `node_modules/.bin/` must still be double-escaped, since the location is irrelevant: any batch file re-expands its arguments.
-	test('Does not expand environment variables in `.bat` arguments', testBatEscaping, '%PATH%');
+	test('Does not expand environment variables in `.bat` arguments', () => testBatEscaping('%PATH%'));
 	// Backslashes, double quotes and metacharacters combined are the trickiest to escape, and must survive the double `cmd.exe` expansion of a `.bat` file intact.
-	test('Preserves backslashes, quotes and metacharacters in `.bat` arguments', testBatEscaping, 'a\\"&b\\\\"|c\\');
+	test('Preserves backslashes, quotes and metacharacters in `.bat` arguments', () => testBatEscaping('a\\"&b\\\\"|c\\'));
 	// Several tricky arguments passed together must each be double-escaped independently and arrive in order, not merged nor reordered.
-	test('Roundtrips multiple tricky arguments through a `.bat` file', async t => {
+	test('Roundtrips multiple tricky arguments through a `.bat` file', async () => {
 		const commandArguments = ['a b', 'c&d', '"e"', 'f\\"g', '%h%'];
 		const expectedStdout = commandArguments.join('\n');
 
 		const {stdout} = await execa('echo-shim.bat', commandArguments);
-		t.is(stdout, expectedStdout);
+		assert.equal(stdout, expectedStdout);
 
 		const {stdout: stdoutSync} = execaSync('echo-shim.bat', commandArguments);
-		t.is(stdoutSync, expectedStdout);
+		assert.equal(stdoutSync, expectedStdout);
 	});
 
 	// `cmd.exe` interprets CR and LF as command separators and provides no way to escape
 	// them, so those are rejected to prevent command injection.
-	test('Rejects arguments containing a line break', t => {
-		t.throws(() => execa('echo-shim.cmd', ['a\r\nb']), {instanceOf: TypeError, message: /line break/});
-		t.throws(() => execaSync('echo-shim.cmd', ['a\r\nb']), {instanceOf: TypeError, message: /line break/});
+	test('Rejects arguments containing a line break', () => {
+		assertThrows(() => execa('echo-shim.cmd', ['a\r\nb']), {instanceOf: TypeError, message: /line break/});
+		assertThrows(() => execaSync('echo-shim.cmd', ['a\r\nb']), {instanceOf: TypeError, message: /line break/});
 	});
 
 	// The command itself is validated too, not just its arguments.
-	test('Rejects a command containing a line break', t => {
-		t.throws(() => execa('echo\r\nshim.cmd', []), {instanceOf: TypeError, message: /line break/});
-		t.throws(() => execaSync('echo\r\nshim.cmd', []), {instanceOf: TypeError, message: /line break/});
+	test('Rejects a command containing a line break', () => {
+		assertThrows(() => execa('echo\r\nshim.cmd', []), {instanceOf: TypeError, message: /line break/});
+		assertThrows(() => execaSync('echo\r\nshim.cmd', []), {instanceOf: TypeError, message: /line break/});
 	});
 
 	// A shell escapes the arguments itself, so the line break rejection does not apply.
-	test('Does not reject line breaks when using a shell', async t => {
-		await t.notThrowsAsync(execa('echo-shim.cmd', ['a\r\nb'], {shell: true, reject: false}));
-		t.notThrows(() => execaSync('echo-shim.cmd', ['a\r\nb'], {shell: true, reject: false}));
+	test('Does not reject line breaks when using a shell', async () => {
+		await assert.doesNotReject(execa('echo-shim.cmd', ['a\r\nb'], {shell: true, reject: false}));
+		assert.doesNotThrow(() => execaSync('echo-shim.cmd', ['a\r\nb'], {shell: true, reject: false}));
 	});
 }

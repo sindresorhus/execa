@@ -1,10 +1,12 @@
+import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import {syncBuiltinESMExports} from 'node:module';
 import path from 'node:path/win32';
 import process from 'node:process';
 import {setTimeout} from 'node:timers/promises';
-import test from 'ava';
+import test from 'node:test';
 import isRunning from 'is-running';
+import {assertThrows, assertRejects} from '../helpers/assert.js';
 import {execa, execaSync} from '../../index.js';
 import {getTaskkillFile} from '../../lib/terminate/kill-descendants.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -32,57 +34,57 @@ const spawnDescendant = async (killDescendants, options) => {
 	return {subprocess, descendantPid};
 };
 
-test('killDescendants terminates descendant processes', async t => {
+test('killDescendants terminates descendant processes', async () => {
 	const {subprocess, descendantPid} = await spawnDescendant(true);
-	t.true(isRunning(descendantPid));
+	assert.ok(isRunning(descendantPid));
 
 	subprocess.kill();
-	await t.throwsAsync(subprocess);
-	t.false(isRunning(subprocess.pid));
+	await assertRejects(subprocess);
+	assert.ok(!isRunning(subprocess.pid));
 
 	await Promise.race([
 		setTimeout(1e4, undefined, {ref: false}),
 		pollForSubprocessExit(descendantPid),
 	]);
-	t.false(isRunning(descendantPid));
+	assert.ok(!isRunning(descendantPid));
 });
 
-test('killDescendants also terminates descendant processes when the subprocess times out', async t => {
+test('killDescendants also terminates descendant processes when the subprocess times out', async () => {
 	const {subprocess, descendantPid} = await spawnDescendant(true, {timeout: 1000});
-	t.true(isRunning(descendantPid));
+	assert.ok(isRunning(descendantPid));
 
-	const {timedOut} = await t.throwsAsync(subprocess);
-	t.true(timedOut);
+	const {timedOut} = await assertRejects(subprocess);
+	assert.equal(timedOut, true);
 
 	await Promise.race([
 		setTimeout(1e4, undefined, {ref: false}),
 		pollForSubprocessExit(descendantPid),
 	]);
-	t.false(isRunning(descendantPid));
+	assert.ok(!isRunning(descendantPid));
 });
 
 // On Windows, terminating the direct subprocess already terminates its descendants, so this
 // only asserts the default Unix behavior of leaving descendants running.
 if (!isWindows) {
-	test('descendant processes are not terminated without killDescendants', async t => {
+	test('descendant processes are not terminated without killDescendants', async () => {
 		const {subprocess, descendantPid} = await spawnDescendant(false);
-		t.true(isRunning(descendantPid));
+		assert.ok(isRunning(descendantPid));
 
 		subprocess.kill();
-		await t.throwsAsync(subprocess);
-		t.false(isRunning(subprocess.pid));
+		await assertRejects(subprocess);
+		assert.ok(!isRunning(subprocess.pid));
 
-		t.true(isRunning(descendantPid));
+		assert.ok(isRunning(descendantPid));
 		process.kill(descendantPid, 'SIGKILL');
 	});
 
-	test('timeout does not terminate descendants without killDescendants', async t => {
+	test('timeout does not terminate descendants without killDescendants', async () => {
 		const {subprocess, descendantPid} = await spawnDescendant(false, {timeout: 1000});
-		t.true(isRunning(descendantPid));
+		assert.ok(isRunning(descendantPid));
 
-		const {timedOut} = await t.throwsAsync(subprocess);
-		t.true(timedOut);
-		t.true(isRunning(descendantPid));
+		const {timedOut} = await assertRejects(subprocess);
+		assert.equal(timedOut, true);
+		assert.ok(isRunning(descendantPid));
 		process.kill(descendantPid, 'SIGKILL');
 	});
 }
@@ -92,59 +94,55 @@ The `forceKillAfterDelay` escalation happens after the subprocess exited, since 
 A descendant which ignores `SIGTERM` is still running then, so the escalation must still reach it.
 Otherwise, since that descendant keeps the subprocess' `stdout` open, awaiting the subprocess would never settle.
 */
-test('killDescendants escalates to descendants which outlive the subprocess', async t => {
+test('killDescendants escalates to descendants which outlive the subprocess', async () => {
 	const subprocess = execa('ipc-send-pid-stubborn.js', {
 		ipc: true,
 		killDescendants: true,
 		forceKillAfterDelay: 1000,
 	});
 	const descendantPid = await subprocess.getOneMessage();
-	t.true(isRunning(descendantPid));
+	assert.ok(isRunning(descendantPid));
 
 	subprocess.kill();
 	const settled = await Promise.race([
-		t.throwsAsync(subprocess).then(() => 'settled'),
+		assertRejects(subprocess).then(() => 'settled'),
 		setTimeout(1e4, 'pending', {ref: false}),
 	]);
-	t.is(settled, 'settled');
-	t.false(isRunning(descendantPid));
+	assert.equal(settled, 'settled');
+	assert.ok(!isRunning(descendantPid));
 });
 
 if (!isWindows) {
-	// A PID can be re-assigned to an unrelated process once Execa is done with the subprocess, so its process group must not be signaled anymore
-	const testAbandonedProcessGroup = test.macro(async (t, getSubprocess) => {
-		const subprocess = getSubprocess();
-		await t.throwsAsync(subprocess);
+	// The process group ID stays reserved while a descendant is running, so the descendants which outlive the subprocess can still be terminated once Execa is done with it
+	test('killDescendants terminates background descendants once Execa is done with the subprocess', async () => {
+		const subprocess = execa({shell: true, killDescendants: true})`sleep 100 > /dev/null 2>&1 & echo $!`;
+		const {stdout} = await subprocess;
+		const descendantPid = Number(stdout);
 
-		const originalKill = process.kill;
-		t.teardown(() => {
-			process.kill = originalKill;
-		});
-
-		const signaledProcesses = [];
-		process.kill = (pid, signal) => {
-			signaledProcesses.push([pid, signal]);
-			return true;
-		};
-
-		t.false(subprocess.kill('SIGKILL'));
-		t.deepEqual(signaledProcesses, []);
+		try {
+			assert.ok(isRunning(descendantPid));
+			assert.ok(subprocess.kill());
+			await pollForSubprocessExit(descendantPid);
+		} finally {
+			if (isRunning(descendantPid)) {
+				process.kill(descendantPid, 'SIGKILL');
+			}
+		}
 	});
 
-	test.serial('killDescendants does not signal the process group once Execa is done with the subprocess', testAbandonedProcessGroup, () => execa('fail.js', {killDescendants: true}));
-
-	test.serial('killDescendants does not signal the process group once Execa is done with a terminated subprocess', testAbandonedProcessGroup, () => {
-		const subprocess = execa('forever.js', {killDescendants: true});
-		subprocess.kill('SIGTERM');
-		return subprocess;
+	// Once the whole process group exited, its PID is not signaled since `process.kill()` fails
+	test('killDescendants returns false once the whole process group exited', async () => {
+		const subprocess = execa('empty.js', {killDescendants: true});
+		await subprocess;
+		assert.equal(subprocess.kill(), false);
 	});
 
 	// While Execa is still waiting on the subprocess, its process group is still its own
-	test.serial('killDescendants signals the process group while Execa is not done with the subprocess', async t => {
+	test('killDescendants signals the process group while Execa is not done with the subprocess', async t => {
 		const subprocess = execa('forever.js', {killDescendants: true});
 
 		const originalKill = process.kill;
-		t.teardown(() => {
+		t.after(() => {
 			process.kill = originalKill;
 		});
 
@@ -154,56 +152,56 @@ if (!isWindows) {
 			return originalKill(pid, signal);
 		};
 
-		t.true(subprocess.kill('SIGTERM'));
-		t.deepEqual(signaledProcesses, [[-subprocess.pid, 'SIGTERM']]);
+		assert.ok(subprocess.kill('SIGTERM'));
+		assert.deepEqual(signaledProcesses, [[-subprocess.pid, 'SIGTERM']]);
 		process.kill = originalKill;
-		await t.throwsAsync(subprocess);
+		await assertRejects(subprocess);
 	});
 }
 
-test('Cannot use "killDescendants" option, sync', t => {
-	t.throws(() => {
+test('Cannot use "killDescendants" option, sync', () => {
+	assertThrows(() => {
 		execaSync('empty.js', {killDescendants: true});
 	}, {message: /The "killDescendants: true" option cannot be used/});
 });
 
-test.serial('taskkill is resolved from the Windows directory when available', t => {
+test('taskkill is resolved from the Windows directory when available', t => {
 	const {SystemRoot, windir} = process.env;
-	t.teardown(() => {
+	t.after(() => {
 		restoreEnvironment('SystemRoot', SystemRoot);
 		restoreEnvironment('windir', windir);
 	});
 
 	process.env.SystemRoot = 'C:\\Windows';
 	process.env.windir = 'D:\\Windows';
-	t.is(getTaskkillFile(), path.join('C:\\Windows', 'System32', 'taskkill.exe'));
+	assert.equal(getTaskkillFile(), path.join('C:\\Windows', 'System32', 'taskkill.exe'));
 
 	process.env.SystemRoot = 'C:/Windows';
-	t.is(getTaskkillFile(), path.join('C:/Windows', 'System32', 'taskkill.exe'));
+	assert.equal(getTaskkillFile(), path.join('C:/Windows', 'System32', 'taskkill.exe'));
 
 	process.env.SystemRoot = 'Windows';
-	t.is(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
+	assert.equal(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
 
 	process.env.SystemRoot = '\\Windows';
-	t.is(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
+	assert.equal(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
 
 	delete process.env.SystemRoot;
-	t.is(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
+	assert.equal(getTaskkillFile(), path.join('D:\\Windows', 'System32', 'taskkill.exe'));
 
 	process.env.windir = 'Windows';
-	t.is(getTaskkillFile(), undefined);
+	assert.equal(getTaskkillFile(), undefined);
 
 	process.env.windir = '\\Windows';
-	t.is(getTaskkillFile(), undefined);
+	assert.equal(getTaskkillFile(), undefined);
 
 	process.env.windir = '\\\\server\\share\\Windows';
-	t.is(getTaskkillFile(), undefined);
+	assert.equal(getTaskkillFile(), undefined);
 
 	process.env.windir = '';
-	t.is(getTaskkillFile(), undefined);
+	assert.equal(getTaskkillFile(), undefined);
 
 	delete process.env.windir;
-	t.is(getTaskkillFile(), undefined);
+	assert.equal(getTaskkillFile(), undefined);
 });
 
 /*
@@ -216,7 +214,7 @@ const fakeWindows = async (t, systemRoot, execFile = () => {}) => {
 	const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform');
 	const originalExecFile = childProcess.execFile;
 	const {SystemRoot, windir} = process.env;
-	t.teardown(() => {
+	t.after(() => {
 		Object.defineProperty(process, 'platform', platformDescriptor);
 		childProcess.execFile = originalExecFile;
 		syncBuiltinESMExports();
@@ -249,26 +247,20 @@ const createFakeSubprocess = ({exitCode = null, signalCode = null} = {}) => {
 	return subprocess;
 };
 
-const abortedController = () => {
-	const controller = new AbortController();
-	controller.abort();
-	return controller;
-};
-
-test.serial('taskkill fallback uses direct subprocess kill when Windows directory is unavailable', async t => {
+test('taskkill fallback uses direct subprocess kill when Windows directory is unavailable', async t => {
 	const getKillFunction = await fakeWindows(t, 'Windows');
 	const subprocess = createFakeSubprocess();
 
-	const kill = getKillFunction(subprocess, {killDescendants: true}, new AbortController());
-	t.true(kill('SIGTERM'));
-	t.is(subprocess.killedWith, 'SIGTERM');
+	const kill = getKillFunction(subprocess, {killDescendants: true});
+	assert.ok(kill('SIGTERM'));
+	assert.equal(subprocess.killedWith, 'SIGTERM');
 });
 
-test.serial('taskkill fallback uses direct subprocess kill when taskkill cannot be spawned', async t => {
+test('taskkill fallback uses direct subprocess kill when taskkill cannot be spawned', async t => {
 	const taskkillFailure = Promise.withResolvers();
 	const getKillFunction = await fakeWindows(t, 'C:\\MissingWindows', (file, arguments_, callback) => {
-		t.is(file, path.join('C:\\MissingWindows', 'System32', 'taskkill.exe'));
-		t.deepEqual(arguments_, ['/pid', '123', '/T', '/F']);
+		assert.equal(file, path.join('C:\\MissingWindows', 'System32', 'taskkill.exe'));
+		assert.deepEqual(arguments_, ['/pid', '123', '/T', '/F']);
 		queueMicrotask(() => {
 			callback(new Error('spawn failed'));
 			taskkillFailure.resolve();
@@ -276,43 +268,30 @@ test.serial('taskkill fallback uses direct subprocess kill when taskkill cannot 
 	});
 	const subprocess = createFakeSubprocess();
 
-	const kill = getKillFunction(subprocess, {killDescendants: true}, new AbortController());
-	t.true(kill('SIGTERM'));
-	t.is(subprocess.killedWith, undefined);
+	const kill = getKillFunction(subprocess, {killDescendants: true});
+	assert.ok(kill('SIGTERM'));
+	assert.equal(subprocess.killedWith, undefined);
 
 	await taskkillFailure.promise;
-	t.is(subprocess.killedWith, 'SIGTERM');
+	assert.equal(subprocess.killedWith, 'SIGTERM');
 });
 
-// Once Execa is done with the subprocess, its PID can be re-assigned by the OS, so its process tree must not be terminated anymore
-test.serial('taskkill is not spawned once Execa is done with the subprocess', async t => {
+// On Windows, the PID is not reserved anymore once the subprocess exited, even while Execa is still waiting on it
+test('taskkill is not spawned once the subprocess exited', async t => {
 	let isTaskkillSpawned = false;
 	const getKillFunction = await fakeWindows(t, 'C:\\Windows', () => {
 		isTaskkillSpawned = true;
 	});
 	const subprocess = createFakeSubprocess({exitCode: 0});
 
-	const kill = getKillFunction(subprocess, {killDescendants: true}, abortedController());
-	t.false(kill('SIGTERM'));
-	t.false(isTaskkillSpawned);
-	t.is(subprocess.killedWith, undefined);
-});
-
-// While Execa is still waiting on the subprocess, its process tree is still its own, even after it exited
-test.serial('taskkill is still spawned after the subprocess exited', async t => {
-	let taskkillArguments;
-	const getKillFunction = await fakeWindows(t, 'C:\\Windows', (file, arguments_) => {
-		taskkillArguments = arguments_;
-	});
-	const subprocess = createFakeSubprocess({exitCode: 0});
-
-	const kill = getKillFunction(subprocess, {killDescendants: true}, new AbortController());
-	t.true(kill('SIGTERM'));
-	t.deepEqual(taskkillArguments, ['/pid', '123', '/T', '/F']);
+	const kill = getKillFunction(subprocess, {killDescendants: true});
+	assert.equal(kill('SIGTERM'), false);
+	assert.equal(isTaskkillSpawned, false);
+	assert.equal(subprocess.killedWith, undefined);
 });
 
 // A subprocess which never spawned has no PID to signal
-test.serial('taskkill is not spawned when the subprocess has no PID', async t => {
+test('taskkill is not spawned when the subprocess has no PID', async t => {
 	let isTaskkillSpawned = false;
 	const getKillFunction = await fakeWindows(t, 'C:\\Windows', () => {
 		isTaskkillSpawned = true;
@@ -320,10 +299,10 @@ test.serial('taskkill is not spawned when the subprocess has no PID', async t =>
 	const subprocess = createFakeSubprocess();
 	subprocess.pid = undefined;
 
-	const kill = getKillFunction(subprocess, {killDescendants: true}, new AbortController());
-	t.false(kill('SIGTERM'));
-	t.false(isTaskkillSpawned);
-	t.is(subprocess.killedWith, undefined);
+	const kill = getKillFunction(subprocess, {killDescendants: true});
+	assert.equal(kill('SIGTERM'), false);
+	assert.equal(isTaskkillSpawned, false);
+	assert.equal(subprocess.killedWith, undefined);
 });
 
 const restoreEnvironment = (name, value) => {

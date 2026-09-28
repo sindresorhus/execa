@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import {Buffer} from 'node:buffer';
+import process from 'node:process';
 import {getWriteStream} from '../helpers/fs.js';
 
 const fdNumber = Number(process.argv[2]);

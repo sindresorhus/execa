@@ -8,10 +8,7 @@ const execaMethod = isSyncString === 'true' ? execaSync : execa;
 const options = {
 	input: foobarString,
 	[optionName]: JSON.parse(stdioOptionString),
+	...((optionName === 'stdin') && {stdout: 'inherit'}),
 };
-
-if (optionName === 'stdin') {
-	options.stdout = 'inherit';
-}
 
 await execaMethod('stdin.js', options);

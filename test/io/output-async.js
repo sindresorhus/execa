@@ -1,7 +1,8 @@
+import assert from 'node:assert/strict';
 import {once, defaultMaxListeners} from 'node:events';
 import process from 'node:process';
 import {setImmediate} from 'node:timers/promises';
-import test from 'ava';
+import test from 'node:test';
 import {execa} from '../../index.js';
 import {STANDARD_STREAMS} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
@@ -22,10 +23,10 @@ const getComplexStdio = isMultiple => ({
 
 const onStdinRemoveListener = () => once(process.stdin, 'removeListener');
 
-const testListenersCleanup = async (t, isMultiple) => {
+const testListenersCleanup = async isMultiple => {
 	const streamsPreviousListeners = getStandardStreamsListeners();
 	const subprocess = execa('empty.js', getComplexStdio(isMultiple));
-	t.notDeepEqual(getStandardStreamsListeners(), streamsPreviousListeners);
+	assert.notDeepEqual(getStandardStreamsListeners(), streamsPreviousListeners);
 	await Promise.all([subprocess, onStdinRemoveListener()]);
 	if (isMultiple) {
 		await onStdinRemoveListener();
@@ -33,20 +34,20 @@ const testListenersCleanup = async (t, isMultiple) => {
 
 	for (const [fdNumber, streamNewListeners] of Object.entries(getStandardStreamsListeners())) {
 		const defaultListeners = Object.fromEntries(Reflect.ownKeys(streamNewListeners).map(eventName => [eventName, []]));
-		t.deepEqual(streamNewListeners, {...defaultListeners, ...streamsPreviousListeners[fdNumber]});
+		assert.deepEqual(streamNewListeners, {...defaultListeners, ...streamsPreviousListeners[fdNumber]});
 	}
 };
 
-test.serial('process.std* listeners are cleaned up on success with a single input', testListenersCleanup, false);
-test.serial('process.std* listeners are cleaned up on success with multiple inputs', testListenersCleanup, true);
+test('process.std* listeners are cleaned up on success with a single input', () => testListenersCleanup(false));
+test('process.std* listeners are cleaned up on success with multiple inputs', () => testListenersCleanup(true));
 
-test.serial('Can spawn many subprocesses in parallel', async t => {
+test('Can spawn many subprocesses in parallel', async () => {
 	const results = await Promise.all(Array.from({length: PARALLEL_COUNT}, () => execa('noop.js', [foobarString])));
-	t.true(results.every(({stdout}) => stdout === foobarString));
+	assert.ok(results.every(({stdout}) => stdout === foobarString));
 });
 
-const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
-	const checkMaxListeners = assertMaxListeners(t);
+const testMaxListeners = async (isMultiple, maxListenersCount) => {
+	const checkMaxListeners = assertMaxListeners();
 
 	for (const standardStream of STANDARD_STREAMS) {
 		standardStream.setMaxListeners(maxListenersCount);
@@ -54,26 +55,26 @@ const testMaxListeners = async (t, isMultiple, maxListenersCount) => {
 
 	try {
 		const results = await Promise.all(Array.from({length: PARALLEL_COUNT}, () => execa('empty.js', getComplexStdio(isMultiple))));
-		t.true(results.every(({exitCode}) => exitCode === 0));
+		assert.ok(results.every(({exitCode}) => exitCode === 0));
 	} finally {
 		await setImmediate();
 		await setImmediate();
 		checkMaxListeners();
 
 		for (const standardStream of STANDARD_STREAMS) {
-			t.is(standardStream.getMaxListeners(), maxListenersCount);
+			assert.equal(standardStream.getMaxListeners(), maxListenersCount);
 			standardStream.setMaxListeners(defaultMaxListeners);
 		}
 	}
 };
 
-test.serial('No warning with maxListeners 1 and ["pipe", "inherit"]', testMaxListeners, false, 1);
-test.serial('No warning with maxListeners default and ["pipe", "inherit"]', testMaxListeners, false, defaultMaxListeners);
-test.serial('No warning with maxListeners 100 and ["pipe", "inherit"]', testMaxListeners, false, 100);
-test.serial('No warning with maxListeners Infinity and ["pipe", "inherit"]', testMaxListeners, false, Infinity);
-test.serial('No warning with maxListeners 0 and ["pipe", "inherit"]', testMaxListeners, false, 0);
-test.serial('No warning with maxListeners 1 and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, 1);
-test.serial('No warning with maxListeners default and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, defaultMaxListeners);
-test.serial('No warning with maxListeners 100 and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, 100);
-test.serial('No warning with maxListeners Infinity and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, Infinity);
-test.serial('No warning with maxListeners 0 and ["pipe", "inherit"], multiple inputs', testMaxListeners, true, 0);
+test('No warning with maxListeners 1 and ["pipe", "inherit"]', () => testMaxListeners(false, 1));
+test('No warning with maxListeners default and ["pipe", "inherit"]', () => testMaxListeners(false, defaultMaxListeners));
+test('No warning with maxListeners 100 and ["pipe", "inherit"]', () => testMaxListeners(false, 100));
+test('No warning with maxListeners Infinity and ["pipe", "inherit"]', () => testMaxListeners(false, Infinity));
+test('No warning with maxListeners 0 and ["pipe", "inherit"]', () => testMaxListeners(false, 0));
+test('No warning with maxListeners 1 and ["pipe", "inherit"], multiple inputs', () => testMaxListeners(true, 1));
+test('No warning with maxListeners default and ["pipe", "inherit"], multiple inputs', () => testMaxListeners(true, defaultMaxListeners));
+test('No warning with maxListeners 100 and ["pipe", "inherit"], multiple inputs', () => testMaxListeners(true, 100));
+test('No warning with maxListeners Infinity and ["pipe", "inherit"], multiple inputs', () => testMaxListeners(true, Infinity));
+test('No warning with maxListeners 0 and ["pipe", "inherit"], multiple inputs', () => testMaxListeners(true, 0));

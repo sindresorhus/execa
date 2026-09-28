@@ -85,7 +85,7 @@ export type CommonOptions<
 
 	/**
 	If `true`, the subprocess uses both the `env` option and the current process' environment variables ([`process.env`](https://nodejs.org/api/process.html#processenv)).
-	If `false`, only the `env` option is used, not `process.env`.
+	If `false`, only the `env` option is used, not `process.env`. However, when `env` has no `PATH`, the `preferLocal` and `node` options still add their directories to `process.env.PATH`.
 
 	@default true
 	*/
@@ -340,7 +340,7 @@ export type CommonOptions<
 
 	On Unix, this spawns the subprocess in its own [process group](https://en.wikipedia.org/wiki/Process_group). On Windows, this uses [`taskkill`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill).
 
-	This is best-effort: descendant processes that create their own process group or session are not terminated. Also, descendants are not terminated once Execa is done with the subprocess, or on Windows once the subprocess exited, since its PID might then belong to an unrelated process.
+	This is best-effort: descendant processes that create their own process group or session are not terminated. Also, on Windows, descendants are not terminated once the subprocess exited, since its PID might then belong to an unrelated process.
 
 	@default false
 	*/

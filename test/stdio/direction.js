@@ -194,7 +194,7 @@ test('stdout cannot use a readable Node.js stream after another value - sync', (
 test('stdout cannot use a readable web stream in an array', () => testFixedDirection({stdout: [new ReadableStream(), 'pipe']}, readableOutputMessage, execa));
 test('stdout cannot use a readable web stream in an array - sync', () => testFixedDirection({stdout: [new ReadableStream(), 'pipe']}, readableOutputMessage, execaSync));
 
-// A single native value is passed as is to `child_process.spawn()`, which handles it, so its direction is not checked
+// A single standard file descriptor or stream is passed as is to `child_process.spawn()`, which handles it, so its direction is not checked
 const testSingleNativeOtherDirection = async (options, execaMethod) => {
 	const {exitCode} = await execaMethod('empty.js', options);
 	assert.equal(exitCode, 0);

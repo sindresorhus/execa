@@ -122,7 +122,11 @@ if (!isWindows) {
 		try {
 			assert.ok(isRunning(descendantPid));
 			assert.ok(subprocess.kill());
-			await pollForSubprocessExit(descendantPid);
+			await Promise.race([
+				setTimeout(1e4, undefined, {ref: false}),
+				pollForSubprocessExit(descendantPid),
+			]);
+			assert.ok(!isRunning(descendantPid));
 		} finally {
 			if (isRunning(descendantPid)) {
 				process.kill(descendantPid, 'SIGKILL');

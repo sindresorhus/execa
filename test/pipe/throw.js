@@ -62,3 +62,13 @@ test('Destination subprocess passed by the user is not terminated when the "to" 
 	const {stdout} = await destination;
 	assert.equal(stdout, foobarString);
 });
+
+test('The pipe options cannot be null', async () => {
+	const source = execa('empty.js');
+	const destination = execa('stdin.js');
+	const pipePromise = source.pipe(destination, null);
+
+	await assertPipeError(pipePromise, 'not `null`');
+	destination.stdin.end();
+	await Promise.all([source, destination]);
+});

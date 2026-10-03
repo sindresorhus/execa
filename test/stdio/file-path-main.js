@@ -192,3 +192,20 @@ test('Can append to stdio[*]', () => testAppendFile(3, execa));
 test('Can append to stdout - sync', () => testAppendFile(1, execaSync));
 test('Can append to stderr - sync', () => testAppendFile(2, execaSync));
 test('Can append to stdio[*] - sync', () => testAppendFile(3, execaSync));
+
+// The file receives the subprocess' bytes as is, whatever the `encoding` option, which only applies to `result.stdout`
+const nonUtf8Bytes = new Uint8Array([0x61, 0x00, 0xE9, 0x00, 0xFF, 0x0A]);
+
+const testOutputFileEncoding = async (encoding, execaMethod) => {
+	const filePath = tempfile();
+	await execaMethod('stdin.js', {input: nonUtf8Bytes, stdout: {file: filePath}, encoding});
+	assert.deepEqual(new Uint8Array(await readFile(filePath)), nonUtf8Bytes);
+	await rm(filePath);
+};
+
+test('Output files are not modified by encoding "utf8"', () => testOutputFileEncoding('utf8', execa));
+test('Output files are not modified by encoding "utf16le"', () => testOutputFileEncoding('utf16le', execa));
+test('Output files are not modified by encoding "hex"', () => testOutputFileEncoding('hex', execa));
+test('Output files are not modified by encoding "utf8" - sync', () => testOutputFileEncoding('utf8', execaSync));
+test('Output files are not modified by encoding "utf16le" - sync', () => testOutputFileEncoding('utf16le', execaSync));
+test('Output files are not modified by encoding "hex" - sync', () => testOutputFileEncoding('hex', execaSync));

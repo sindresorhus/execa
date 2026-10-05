@@ -57,6 +57,16 @@ When not using any shell, Execa performs that quoting automatically. This ensure
 await execa`npm run ${'task with space'}`;
 ```
 
+`.cmd` and `.bat` files are run through `cmd.exe`, so their arguments are also escaped to prevent `cmd.exe` from interpreting them. This uses the same escaping as [Rust](https://github.com/rust-lang/rust/blob/main/library/std/src/sys/args/windows.rs), which is safe whether the batch file reads its arguments (`%1`, `"%~1"`) or forwards them (`%*`), like the shims in `node_modules/.bin` do.
+
+> [!WARNING]
+> Batch files can still misuse their arguments, which no escaping can prevent:
+> - `%~1` receives the escaped argument: each `"` is doubled, and so are trailing backslashes.
+> - Using `%~1` outside double quotes, or `%1` inside double quotes (like `if "%1" == ""`), lets `cmd.exe` interpret the argument's special characters, which allows command injection.
+> - Forwarding arguments with `call`, or enabling delayed expansion, makes `cmd.exe` expand `%` or `!` in them again.
+>
+> Also, arguments cannot contain line breaks, since `cmd.exe` cannot escape them. This applies to any file run through `cmd.exe`, i.e. any file other than `.exe` and `.com`.
+
 When using a [shell](shell.md), the user must manually perform shell-specific quoting, on both Unix and Windows. When the [`shell`](api.md#optionsshell) option is `true`, [`cmd.exe`](https://en.wikipedia.org/wiki/Cmd.exe) is used on Windows and `sh` on Unix. Unfortunately, both shells use different quoting rules. With `cmd.exe`, this mostly involves double quoting arguments and prepending double quotes with a backslash.
 
 ```js

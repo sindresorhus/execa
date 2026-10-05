@@ -8,7 +8,7 @@
 
 ## Array syntax
 
-When using the [array syntax](execution.md#array-syntax), arguments are automatically escaped. They can contain any character, including spaces, tabs and newlines. However, they cannot contain [null bytes](https://en.wikipedia.org/wiki/Null_character): [binary inputs](binary.md#binary-input) should be used instead.
+When using the [array syntax](execution.md#array-syntax), arguments are automatically escaped. They can contain any character, including spaces, tabs and newlines. However, they cannot contain [null bytes](https://en.wikipedia.org/wiki/Null_character): [binary inputs](binary.md#binary-input) should be used instead. On Windows, they also cannot contain newlines when the file is run through `cmd.exe`, such as `.cmd` and `.bat` files, [among other limitations](windows.md#escaping).
 
 ```js
 import {execa} from 'execa';

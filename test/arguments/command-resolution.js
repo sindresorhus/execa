@@ -364,7 +364,7 @@ if (isWindows) {
 	});
 
 	/*
-	Metacharacters are double-escaped for batch files, since `cmd.exe` interprets them once when the batch file is invoked and once when it re-expands the arguments with `%*`.
+	Metacharacters must survive `cmd.exe` interpreting them twice for batch files: once when the batch file is invoked and once when it re-expands the arguments with `%*`.
 	The `cmd`-shims npm generates in `node_modules/.bin/` are the canonical example.
 	*/
 	const setupCmdShim = async () => {
@@ -375,7 +375,7 @@ if (isWindows) {
 		return shimPath;
 	};
 
-	test('Double-escapes metacharacters for node_modules/.bin cmd-shims', async () => {
+	test('Escapes metacharacters for node_modules/.bin cmd-shims', async () => {
 		const shimPath = await setupCmdShim();
 		const commandArgument = '"(foo|bar>baz|foz)"';
 		const {stdout} = await execa(shimPath, [commandArgument]);
@@ -385,7 +385,7 @@ if (isWindows) {
 		assert.equal(stdoutSync, commandArgument);
 	});
 
-	test('Double-escapes explicit batch files excluded from PATHEXT', async () => {
+	test('Escapes metacharacters for explicit batch files excluded from PATHEXT', async () => {
 		const commandArgument = '"& whoami &"';
 		const command = path.join(FIXTURES_DIRECTORY, 'echo-shim.cmd');
 		const {stdout} = await execa(command, [commandArgument], nodeOnlyOptions);
@@ -400,7 +400,7 @@ if (isWindows) {
 		await testResolvesCommand(command, nodeOnlyOptions);
 	});
 
-	test('Double-escapes metacharacters for preferLocal cmd-shims', async () => {
+	test('Escapes metacharacters for preferLocal cmd-shims', async () => {
 		await setupCmdShim();
 		const commandArgument = 'a&whoami';
 		const originalPathExt = process.env.PATHEXT;
@@ -495,7 +495,7 @@ if (isWindows) {
 	test('Roundtrips arguments with spaces through cmd.exe', () => testCmdRoundtrip(['a b', ' '.repeat(3), 'foo bar baz', 'André Cruz']));
 
 	/*
-	`.bat` files re-expand their arguments through `cmd.exe` exactly like `.cmd` files, so they need the same double-escaping.
+	`.bat` files re-expand their arguments through `cmd.exe` exactly like `.cmd` files, so they need the same escaping.
 	`echo-shim.bat` is the `.bat` twin of `echo-shim.cmd`.
 	*/
 	const testBatEscaping = async commandArgument => {
@@ -510,11 +510,11 @@ if (isWindows) {
 	test('Does not allow command injection via nested quotes in `.bat` arguments', () => testBatEscaping('"& whoami &"'));
 	// Metacharacters must survive the double `cmd.exe` expansion for `.bat` files too.
 	test('Roundtrips shell metacharacters through a `.bat` file', () => testBatEscaping('(foo|bar>baz|foz)'));
-	// A `.bat` file not in `node_modules/.bin/` must still be double-escaped, since the location is irrelevant: any batch file re-expands its arguments.
+	// A `.bat` file not in `node_modules/.bin/` must still be escaped against the double expansion, since the location is irrelevant: any batch file can re-expand its arguments.
 	test('Does not expand environment variables in `.bat` arguments', () => testBatEscaping('%PATH%'));
 	// Backslashes, double quotes and metacharacters combined are the trickiest to escape, and must survive the double `cmd.exe` expansion of a `.bat` file intact.
 	test('Preserves backslashes, quotes and metacharacters in `.bat` arguments', () => testBatEscaping('a\\"&b\\\\"|c\\'));
-	// Several tricky arguments passed together must each be double-escaped independently and arrive in order, not merged nor reordered.
+	// Several tricky arguments passed together must each be escaped independently and arrive in order, not merged nor reordered.
 	test('Roundtrips multiple tricky arguments through a `.bat` file', async () => {
 		const commandArguments = ['a b', 'c&d', '"e"', 'f\\"g', '%h%'];
 		const expectedStdout = commandArguments.join('\n');
@@ -525,6 +525,24 @@ if (isWindows) {
 		const {stdout: stdoutSync} = execaSync('echo-shim.bat', commandArguments);
 		assert.equal(stdoutSync, expectedStdout);
 	});
+
+	/*
+	Unlike cmd-shims, some batch files read their own arguments with `%1` or `%~1` instead of forwarding them with `%*`, like Maven's `mvn.cmd`.
+	`read-arguments.cmd` prints its first argument, then its second one when the first one is `-f`.
+	`ECHO` ends lines with CRLF.
+	*/
+	const testReadArguments = async (commandArguments, expectedLines) => {
+		const {stdout} = await execa('read-arguments.cmd', commandArguments);
+		assert.deepEqual(stdout.split('\r\n'), expectedLines);
+
+		const {stdout: stdoutSync} = execaSync('read-arguments.cmd', commandArguments);
+		assert.deepEqual(stdoutSync.split('\r\n'), expectedLines);
+	};
+
+	test('Passes arguments to batch files reading them with `%~1`', () => testReadArguments(['-f', 'C:\\repo\\pom.xml'], ['first is -f', 'file is "C:\\repo\\pom.xml"']));
+	test('Passes metacharacters to batch files reading them with `%~1`', () => testReadArguments(['-f', 'C:\\my repo\\a&b|c%PATH%.xml'], ['first is -f', 'file is "C:\\my repo\\a&b|c%PATH%.xml"']));
+	// Like Rust, only arguments that need quoting are quoted, so `%1` matches what the user passed, like when run from a terminal
+	test('Only quotes arguments that need it for batch files reading them with `%1`', () => testReadArguments(['a b'], ['first is "a b"']));
 
 	// `cmd.exe` interprets CR and LF as command separators and provides no way to escape
 	// them, so those are rejected to prevent command injection.

@@ -15,6 +15,7 @@ import {
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUint8Array} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
+import {getOutputGenerator, convertTransformToFinal} from '../helpers/generator.js';
 import {
 	earlyErrorOptions,
 	getEarlyErrorSubprocess,
@@ -42,6 +43,24 @@ test('execaSync() throws error if ENOENT', () => {
 		execaSync('foo');
 	}, {message: ENOENT_REGEXP});
 });
+
+// The subprocess never started, so its output is empty, but it must have the same shape as with the asynchronous methods
+const testSpawnFailureOutput = async options => {
+	const {stdio, all} = await execa('nonexistent-command-for-execa', {...options, reject: false});
+	const {stdio: stdioSync, all: allSync} = execaSync('nonexistent-command-for-execa', {...options, reject: false});
+	assert.deepEqual(stdioSync, stdio);
+	assert.deepEqual(allSync, all);
+};
+
+test('execaSync() output is empty when the command does not exist', () => testSpawnFailureOutput({}));
+test('execaSync() output is empty when the command does not exist, with encoding: buffer', () => testSpawnFailureOutput({encoding: 'buffer'}));
+test('execaSync() output is empty when the command does not exist, with lines: true', () => testSpawnFailureOutput({lines: true}));
+test('execaSync() output is empty when the command does not exist, with all: true', () => testSpawnFailureOutput({all: true}));
+test('execaSync() output is empty when the command does not exist, with an additional file descriptor', () => testSpawnFailureOutput(fullStdio));
+test('execaSync() output is undefined when the command does not exist, with stdout: ignore', () => testSpawnFailureOutput({stdout: 'ignore'}));
+test('execaSync() output is undefined when the command does not exist, with buffer: false', () => testSpawnFailureOutput({buffer: false}));
+test('execaSync() output is empty when the cwd does not exist', () => testSpawnFailureOutput({cwd: '/nonexistent-directory-for-execa'}));
+test('execaSync() output runs the final of transforms when the command does not exist', () => testSpawnFailureOutput({stdout: convertTransformToFinal(getOutputGenerator(foobarString)(), true)}));
 
 const testEarlyErrorShape = async reject => {
 	const subprocess = getEarlyErrorSubprocess({reject});

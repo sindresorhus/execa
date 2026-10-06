@@ -91,11 +91,12 @@ test('empty error.stdio[0] even with input', async () => {
 	assert.equal(stdio[0], undefined);
 });
 
+// The subprocess never spawned, so its output is empty
 const validateSpawnErrorStdio = ({stdout, stderr, stdio, all}) => {
-	assert.equal(stdout, undefined);
-	assert.equal(stderr, undefined);
-	assert.equal(all, undefined);
-	assert.deepEqual(stdio, [undefined, undefined, undefined]);
+	assert.equal(stdout, '');
+	assert.equal(stderr, '');
+	assert.equal(all, '');
+	assert.deepEqual(stdio, [undefined, '', '']);
 };
 
 test('stdout/stderr/all/stdio on subprocess spawning errors', async () => {

@@ -3,6 +3,7 @@ import {arch} from 'node:os';
 import process from 'node:process';
 import {once} from 'node:events';
 import {finished} from 'node:stream/promises';
+import {setImmediate} from 'node:timers/promises';
 import test from 'node:test';
 import {assertThrows, assertRejects} from '../helpers/assert.js';
 import {
@@ -15,7 +16,7 @@ import {
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarUint8Array} from '../helpers/input.js';
 import {fullStdio} from '../helpers/stdio.js';
-import {getOutputGenerator, convertTransformToFinal} from '../helpers/generator.js';
+import {getOutputGenerator, convertTransformToFinal, noopGenerator} from '../helpers/generator.js';
 import {
 	earlyErrorOptions,
 	getEarlyErrorSubprocess,
@@ -62,6 +63,42 @@ test('execaSync() output is undefined when the command does not exist, with stdo
 test('execaSync() output is undefined when the command does not exist, with buffer: false', () => testSpawnFailureOutput({buffer: false}));
 test('execaSync() output is empty when the cwd does not exist', () => testSpawnFailureOutput({cwd: '/nonexistent-directory-for-execa'}));
 test('execaSync() output runs the final of transforms when the command does not exist', () => testSpawnFailureOutput({stdout: convertTransformToFinal(getOutputGenerator(foobarString)(), true)}));
+
+// When `child_process.spawn()` throws, the output must be the same as when the subprocess spawns and fails right away
+const testEarlyErrorOutput = async options => {
+	const {stdio, all} = await execa('nonexistent-command-for-execa', {...options, reject: false});
+	const earlyError = await getEarlyErrorSubprocess({...options, reject: false});
+	assert.deepEqual(earlyError.stdio, stdio);
+	assert.deepEqual(earlyError.all, all);
+	assert.deepEqual(earlyError.stdout, stdio[1]);
+	assert.deepEqual(earlyError.stderr, stdio[2]);
+	const earlyErrorSync = getEarlyErrorSubprocessSync({...options, reject: false});
+	assert.deepEqual(earlyErrorSync.stdio, stdio);
+	assert.deepEqual(earlyErrorSync.all, all);
+};
+
+test('Early errors output is empty', () => testEarlyErrorOutput({}));
+test('Early errors output is empty, with encoding: buffer', () => testEarlyErrorOutput({encoding: 'buffer'}));
+test('Early errors output is empty, with encoding: hex', () => testEarlyErrorOutput({encoding: 'hex'}));
+test('Early errors output is empty, with lines: true', () => testEarlyErrorOutput({lines: true}));
+test('Early errors output is empty, with lines: true and encoding: buffer', () => testEarlyErrorOutput({lines: true, encoding: 'buffer'}));
+test('Early errors output is empty, with all: true', () => testEarlyErrorOutput({all: true}));
+test('Early errors output is empty, with all: true and lines: true', () => testEarlyErrorOutput({all: true, lines: true}));
+test('Early errors output is empty, with all: true and encoding: buffer', () => testEarlyErrorOutput({all: true, encoding: 'buffer'}));
+test('Early errors output is empty, with an additional file descriptor', () => testEarlyErrorOutput(fullStdio));
+test('Early errors output is empty, with an object mode transform', () => testEarlyErrorOutput({stdout: noopGenerator(true)}));
+test('Early errors output is empty, with an object mode transform and all: true', () => testEarlyErrorOutput({stdout: noopGenerator(true), all: true}));
+test('Early errors output is undefined, with stdout: ignore', () => testEarlyErrorOutput({stdout: 'ignore'}));
+test('Early errors output is undefined, with stdout: inherit', () => testEarlyErrorOutput({stdout: 'inherit', all: true}));
+test('Early errors output is undefined, with buffer: false', () => testEarlyErrorOutput({buffer: false}));
+test('Early errors output is undefined, with buffer.stdout: false', () => testEarlyErrorOutput({buffer: {stdout: false}, all: true}));
+
+test('Early errors output is empty, with inputFile, sync', () => {
+	const {stdout, stderr, stdio} = execaSync('stdin.js', {inputFile: 'does_not_exist', reject: false});
+	assert.equal(stdout, '');
+	assert.equal(stderr, '');
+	assert.deepEqual(stdio, [undefined, '', '']);
+});
 
 const testEarlyErrorShape = async reject => {
 	const subprocess = getEarlyErrorSubprocess({reject});
@@ -285,6 +322,30 @@ test('child_process.spawn() early errors can use .stderr', () => testEarlyErrorS
 test('child_process.spawn() early errors can use .stdio[1]', () => testEarlyErrorStream(({stdio}) => stdio[1]));
 test('child_process.spawn() early errors can use .stdio[3]', () => testEarlyErrorStream(({stdio}) => stdio[3], fullStdio));
 test('child_process.spawn() early errors can use .all', () => testEarlyErrorStream(({all}) => all, {all: true}));
+
+// The subprocess never spawned, so the input is discarded, like when the subprocess exits before reading it
+const testEarlyErrorWrite = async (getStreamProperty, options) => {
+	const subprocess = getEarlyErrorSubprocess(options);
+	const stream = getStreamProperty(subprocess);
+	stream.write(foobarString);
+	stream.end(foobarString);
+	await assertRejects(subprocess, expectedEarlyError);
+	// Write errors are emitted asynchronously
+	await setImmediate();
+};
+
+test('child_process.spawn() early errors can write to .stdin', () => testEarlyErrorWrite(({stdin}) => stdin));
+test('child_process.spawn() early errors can write to .stdio[0]', () => testEarlyErrorWrite(({stdio}) => stdio[0]));
+test('child_process.spawn() early errors can write to .stdio[3]', () => testEarlyErrorWrite(({stdio}) => stdio[3], {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]}));
+
+test('child_process.spawn() early errors call the .stdin write callback', async () => {
+	const subprocess = getEarlyErrorSubprocess();
+	const {promise, resolve} = Promise.withResolvers();
+	subprocess.stdin.write(foobarString, resolve);
+	const error = await promise;
+	assert.equal(error.code, 'ERR_STREAM_WRITE_AFTER_END');
+	await assertRejects(subprocess, expectedEarlyError);
+});
 
 // Reading the `inputFile` happens after the file descriptors are set up, so a missing file is reported as an early error, like with asynchronous methods
 test('inputFile which does not exist is an early error', async () => {

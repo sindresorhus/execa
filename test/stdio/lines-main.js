@@ -108,3 +108,8 @@ test('"lines: true" stops on stream error event', async () => {
 	assert.equal(error.cause, cause);
 	assert.deepEqual(error.stdout, []);
 });
+
+test('"lines: true" keeps the trailing carriage return of an unterminated final line', () => testStreamLines(1, 'a\r\nb\r', ['a', 'b\r'], true, true, execa));
+test('"lines: true" keeps the trailing carriage return of an unterminated final line, sync', () => testStreamLines(1, 'a\r\nb\r', ['a', 'b\r'], true, true, execaSync));
+test('"lines: true" keeps newlines of an unterminated final line', () => testStreamLines(1, 'a\r\nb\r', ['a\r\n', 'b\r'], true, false, execa));
+test('"lines: true" keeps newlines of an unterminated final line, sync', () => testStreamLines(1, 'a\r\nb\r', ['a\r\n', 'b\r'], true, false, execaSync));

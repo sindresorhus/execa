@@ -63,6 +63,21 @@ test('error.message handles "lines: true", stripFinalNewline, sync', () => testL
 test('error.message handles "lines: true", buffer, sync', () => testLinesMessage('buffer', false, execaSync));
 test('error.message handles "lines: true", buffer, stripFinalNewline, sync', () => testLinesMessage('buffer', true, execaSync));
 
+// `lines: true` must not change `error.message`, including its empty lines
+const testLinesMessageEmptyLines = async (output, stripFinalNewline, execaMethod) => {
+	const options = {stripFinalNewline, reject: false};
+	const {message} = await execaMethod('noop-fail.js', ['1', output], options);
+	const {message: linesMessage} = await execaMethod('noop-fail.js', ['1', output], {...options, lines: true});
+	assert.equal(linesMessage, message);
+};
+
+test('error.message keeps empty lines with "lines: true"', () => testLinesMessageEmptyLines(`${foobarString}\n\n${foobarString}\n`, true, execa));
+test('error.message keeps empty lines with "lines: true", stripFinalNewline false', () => testLinesMessageEmptyLines(`${foobarString}\n\n${foobarString}\n`, false, execa));
+test('error.message keeps several empty lines with "lines: true"', () => testLinesMessageEmptyLines(`${foobarString}\n\n\n\n${foobarString}`, true, execa));
+test('error.message keeps leading empty lines with "lines: true"', () => testLinesMessageEmptyLines(`\n\n${foobarString}`, true, execa));
+test('error.message keeps empty lines with "lines: true", sync', () => testLinesMessageEmptyLines(`${foobarString}\n\n${foobarString}\n`, true, execaSync));
+test('error.message keeps empty lines with "lines: true", stripFinalNewline false, sync', () => testLinesMessageEmptyLines(`${foobarString}\n\n${foobarString}\n`, false, execaSync));
+
 const testPartialIgnoreMessage = async (fdNumber, stdioOption, output) => {
 	const {message} = await assertRejects(execa('echo-fail.js', getStdio(fdNumber, stdioOption, 4)));
 	assert.ok(message.endsWith(`echo-fail.js\n\n${output}\n\nfd3`));

@@ -44,8 +44,9 @@ const testVerboseResultEndSpawn = async (type, options, expectedOutput, isSync) 
 	assertLike(result, expectedOutput);
 	assert.equal(result.failed, true);
 	assert.equal(result.exitCode, undefined);
-	assert.equal(result.stdout, undefined);
-	assert.equal(result.stderr, undefined);
+	// The subprocess never spawned, so its output is empty
+	assert.equal(result.stdout, '');
+	assert.equal(result.stderr, '');
 	assert.equal(typeof result.durationMs, 'number');
 	assert.deepEqual(result.ipcOutput, []);
 };

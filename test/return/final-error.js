@@ -110,6 +110,55 @@ test('error.cause is set if error.isCanceled', async () => {
 	assert.equal(error.cause, cause);
 });
 
+// An `ExecaError` from a non-zero exit code has no `error.originalMessage`
+test('error.cause can be an ExecaError without originalMessage, with .kill(error)', async () => {
+	const previousError = await assertRejects(execa('fail.js'));
+	assert.equal(previousError.originalMessage, undefined);
+	const subprocess = execa('forever.js');
+	subprocess.kill(previousError);
+	const error = await assertRejects(subprocess);
+	assert.equal(error.cause, previousError);
+	assert.equal(error.isTerminated, true);
+	assert.equal(error.originalMessage, undefined);
+	assert.equal(error.shortMessage, 'Command was killed with SIGTERM (Termination): forever.js');
+});
+
+test('error.cause can be an ExecaError without originalMessage, with cancelSignal', async () => {
+	const previousError = await assertRejects(execa('fail.js'));
+	const controller = new AbortController();
+	const subprocess = execa('forever.js', {cancelSignal: controller.signal});
+	controller.abort(previousError);
+	const error = await assertRejects(subprocess);
+	assert.equal(error.cause, previousError);
+	assert.equal(error.isCanceled, true);
+	assert.equal(error.originalMessage, undefined);
+	assert.equal(error.shortMessage, 'Command was canceled: forever.js');
+});
+
+const testExecaErrorTransform = async execaMethod => {
+	const transform = function * (line) {
+		execaSync('fail.js');
+		yield line;
+	};
+
+	const error = await execaMethod('noop.js', [foobarString], {stdout: transform, reject: false});
+	assert.ok(error.cause instanceof ExecaSyncError);
+	assert.equal(error.originalMessage, undefined);
+	assert.ok(error.shortMessage.endsWith(`: noop.js ${foobarString}`));
+};
+
+test('error.cause can be an ExecaError without originalMessage, thrown by a transform', () => testExecaErrorTransform(execa));
+test('error.cause can be an ExecaError without originalMessage, thrown by a transform, sync', () => testExecaErrorTransform(execaSync));
+
+test('error.code is not set to the numeric code of the default cancelSignal reason', async () => {
+	const controller = new AbortController();
+	const subprocess = execa('forever.js', {cancelSignal: controller.signal});
+	controller.abort();
+	const error = await assertRejects(subprocess);
+	assert.equal(error.cause.name, 'AbortError');
+	assert.equal(error.code, undefined);
+});
+
 test('error.cause is not set if error.isTerminated with .kill(error)', async () => {
 	const subprocess = execa('forever.js');
 	const error = new Error('test');

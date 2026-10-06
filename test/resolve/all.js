@@ -1,9 +1,11 @@
+import {Buffer} from 'node:buffer';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {defaultHighWaterMark} from '../helpers/stream.js';
-import {foobarString} from '../helpers/input.js';
+import {foobarString, foobarObject} from '../helpers/input.js';
+import {outputObjectGenerator} from '../helpers/generator.js';
 
 setFixtureDirectory();
 
@@ -29,6 +31,31 @@ const testAllBoth = async (expectedOutput, encoding, lines, stripFinalNewline, i
 	assert.equal(exitCode, isFailure ? 1 : 0);
 	assert.deepEqual(all, expectedOutput);
 };
+
+// With encodings like base64, the bytes must be merged before being encoded, otherwise the padding of the first output would end up in the middle
+const testAllBinaryEncoding = (encoding, execaMethod) => testAllBoth(Buffer.from(doubleFoobarStringFull).toString(encoding), encoding, false, false, false, execaMethod);
+
+test('result.all is defined, encoding "base64"', () => testAllBinaryEncoding('base64', execa));
+test('result.all is defined, encoding "base64url"', () => testAllBinaryEncoding('base64url', execa));
+test('result.all is defined, encoding "hex"', () => testAllBinaryEncoding('hex', execa));
+test('result.all is defined, encoding "latin1"', () => testAllBinaryEncoding('latin1', execa));
+test('result.all is defined, encoding "base64", sync', () => testAllBinaryEncoding('base64', execaSync));
+test('result.all is defined, encoding "base64url", sync', () => testAllBinaryEncoding('base64url', execaSync));
+test('result.all is defined, encoding "hex", sync', () => testAllBinaryEncoding('hex', execaSync));
+test('result.all is defined, encoding "latin1", sync', () => testAllBinaryEncoding('latin1', execaSync));
+
+// An empty output is not interleaved with the objects of the other file descriptor
+const testAllObjectModeEmpty = async (fixtureName, commandArguments, options, expectedAll) => {
+	const {all} = await execa(fixtureName, commandArguments, {...options, all: true});
+	assert.deepEqual(all, expectedAll);
+	const {all: allSync} = execaSync(fixtureName, commandArguments, {...options, all: true});
+	assert.deepEqual(allSync, expectedAll);
+};
+
+test('result.all omits empty stderr with objectMode stdout', () => testAllObjectModeEmpty('noop.js', [foobarString], {stdout: outputObjectGenerator()}, [foobarObject]));
+test('result.all omits empty stdout with objectMode stderr', () => testAllObjectModeEmpty('noop-fd.js', ['2', foobarString], {stderr: outputObjectGenerator()}, [foobarObject]));
+test('result.all omits empty stderr with objectMode stdout, encoding "buffer"', () => testAllObjectModeEmpty('noop.js', [foobarString], {stdout: outputObjectGenerator(), encoding: 'buffer'}, [foobarObject]));
+test('result.all keeps non-empty stderr with objectMode stdout', () => testAllObjectModeEmpty('noop-both.js', [foobarString], {stdout: outputObjectGenerator()}, [foobarObject, `${foobarString}\n`]));
 
 const fdOne = {stderr: true};
 const fdBoth = {stdout: true, stderr: true};
@@ -241,3 +268,17 @@ test('result.all is undefined when no file descriptor is buffered', () => testAl
 test('result.all is undefined when no file descriptor is buffered, lines', () => testAllNoFd(true, execa));
 test('result.all is undefined when no file descriptor is buffered, sync', () => testAllNoFd(false, execaSync));
 test('result.all is undefined when no file descriptor is buffered, lines, sync', () => testAllNoFd(true, execaSync));
+
+const testUtf16LinesAll = async execaMethod => {
+	const script = 'process.stdout.write(Buffer.from(\'a\\r\\nb\\n\', \'utf16le\')); process.stderr.write(Buffer.from(\'c\\n\', \'utf16le\'))';
+	const {all} = await execaMethod('node', ['-e', script], {
+		all: true,
+		lines: true,
+		encoding: 'utf16le',
+		stripFinalNewline: false,
+	});
+	assert.deepEqual(all, ['a\r\n', 'b\n', 'c\n']);
+};
+
+test('result.all splits lines with utf16le encoding', () => testUtf16LinesAll(execa));
+test('result.all splits lines with utf16le encoding, sync', () => testUtf16LinesAll(execaSync));

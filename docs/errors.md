@@ -10,7 +10,7 @@
 
 When the subprocess fails, the promise returned by [`execa()`](api.md#execafile-arguments-options) is rejected with an [`ExecaError`](api.md#execaerror) instance. The `error` has the same shape as successful [results](api.md#result), with a few additional [error-specific fields](api.md#execaerror). [`error.failed`](api.md#resultfailed) is always `true`.
 
-When the subprocess fails to spawn, its output ([`error.stdout`](api.md#resultstdout), [`error.stderr`](api.md#resultstderr), [`error.all`](api.md#resultall) and [`error.stdio`](api.md#resultstdio)) is usually empty. With some errors, it is `undefined` instead.
+When the subprocess fails to spawn, its output ([`error.stdout`](api.md#resultstdout), [`error.stderr`](api.md#resultstderr), [`error.all`](api.md#resultall) and [`error.stdio`](api.md#resultstdio)) is empty, like when it succeeds without printing anything.
 
 ```js
 import {execa, ExecaError} from 'execa';

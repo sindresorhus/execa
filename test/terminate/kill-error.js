@@ -6,6 +6,7 @@ import isRunning from 'is-running';
 import {assertRejects} from '../helpers/assert.js';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {foobarString} from '../helpers/input.js';
 
 setFixtureDirectory();
 
@@ -41,6 +42,45 @@ test('.kill(signal, error) uses signal', async () => {
 	const error = await assertRejects(subprocess);
 	assert.equal(error.cause, cause);
 	assert.equal(error.signal, 'SIGINT');
+});
+
+// Their `Object.prototype.toString()` is not `[object Error]`
+class TaggedError extends Error {
+	get [Symbol.toStringTag]() {
+		return 'TaggedError';
+	}
+}
+
+const testKillErrorSubclass = async cause => {
+	const subprocess = execa('forever.js');
+	assert.ok(subprocess.kill(cause));
+	const error = await assertRejects(subprocess);
+	assert.equal(error.cause, cause);
+	assert.equal(error.signal, 'SIGTERM');
+	assert.equal(error.originalMessage, cause.message);
+	assert.ok(error.shortMessage.startsWith('Command was killed with SIGTERM'));
+	return error;
+};
+
+test('.kill(error) works with DOMException', async () => {
+	const error = await testKillErrorSubclass(AbortSignal.abort().reason);
+	// `DOMException` has a legacy numeric `code`, which is not an error code like `ENOENT`
+	assert.equal(error.code, undefined);
+});
+
+test('.kill(error) works with Error subclasses with a custom Symbol.toStringTag', () => testKillErrorSubclass(new TaggedError('test')));
+
+test('.kill(error) ignores numeric error codes', async () => {
+	const error = await testKillErrorSubclass(Object.assign(new Error('test'), {code: 42}));
+	assert.equal(error.code, undefined);
+	assert.ok(!error.shortMessage.includes('42'));
+});
+
+test('.kill(error) keeps string error codes', async () => {
+	const subprocess = execa('forever.js');
+	subprocess.kill(Object.assign(new Error('test'), {code: 'ECUSTOM'}));
+	const error = await assertRejects(subprocess);
+	assert.equal(error.code, 'ECUSTOM');
 });
 
 test('.kill(error) is a noop if subprocess already exited', async () => {
@@ -82,4 +122,10 @@ test('.kill(error) does not emit the "error" event', async () => {
 	subprocess.kill(cause);
 	const error = await Promise.race([assertRejects(subprocess), once(subprocess.nodeChildProcess, 'error')]);
 	assert.equal(error.cause, cause);
+});
+
+test('.kill(error) returns false once the subprocess has settled', async () => {
+	const subprocess = execa('noop.js', [foobarString]);
+	await subprocess;
+	assert.ok(!subprocess.kill(new Error('test')));
 });

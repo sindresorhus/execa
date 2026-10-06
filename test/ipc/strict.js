@@ -37,6 +37,40 @@ const testStrictSuccessParentEach = async buffer => {
 test('subprocess.sendMessage() "strict" succeeds if the subprocess uses exports.getEachMessage(), buffer false', () => testStrictSuccessParentEach(false));
 test('subprocess.sendMessage() "strict" succeeds if the subprocess uses exports.getEachMessage(), buffer true', () => testStrictSuccessParentEach(true));
 
+// The message must not be wrapped with the `strict` metadata
+test('subprocess.sendMessage() "strict" delivers the message if the subprocess disconnects before handling it', async () => {
+	const subprocess = execa('ipc-get-strict-disconnect.js', {ipc: true});
+	assert.equal(await subprocess.getOneMessage(), '.');
+	await assertRejects(subprocess.sendMessage(foobarString, {strict: true}), {message: /^subprocess\.sendMessage\(\) failed: /});
+	const {stdout} = await subprocess;
+	assert.equal(stdout, JSON.stringify(foobarString));
+});
+
+test('exports.sendMessage() "strict" delivers the message if the parent disconnects before handling it', async () => {
+	const subprocess = execa('ipc-send-strict.js', {ipc: true, reject: false});
+	subprocess.nodeChildProcess.once('message', () => {
+		subprocess.nodeChildProcess.disconnect();
+	});
+	const {ipcOutput} = await subprocess;
+	assert.deepEqual(ipcOutput, [foobarString]);
+});
+
+// The acknowledgment cannot be sent back, but the message is still received
+test('subprocess.sendMessage() "strict" delivers the message if the current process disconnects right after sending it', async () => {
+	const subprocess = execa('ipc-get-print-ready.js', {ipc: true});
+	assert.equal(await subprocess.getOneMessage(), '.');
+	const sendPromise = subprocess.sendMessage(foobarString, {strict: true});
+	subprocess.nodeChildProcess.disconnect();
+	await assertRejects(sendPromise);
+	const {stdout} = await subprocess;
+	assert.equal(stdout, foobarString);
+});
+
+test('exports.sendMessage() "strict" delivers the message if the subprocess disconnects right after sending it', async () => {
+	const {ipcOutput} = await execa('ipc-send-strict-disconnect.js', {ipc: true});
+	assert.deepEqual(ipcOutput, [foobarString]);
+});
+
 const testStrictMissingParent = async buffer => {
 	const subprocess = execa('ipc-echo-twice.js', {ipcInput: foobarString, buffer});
 	const promise = subprocess.getOneMessage();
@@ -296,4 +330,49 @@ test('Detects a "strict" deadlock on a later message of the same batch', async (
 	assert.equal(exitCode, 1);
 	assert.ok(stderr.includes('Error: sendMessage() failed: the parent process is sending a message too, instead of listening to incoming messages.'));
 	assert.deepEqual(ipcOutput, []);
+});
+
+// Messages which look like Execa's internal `strict` messages but are sent without the `strict` option are user messages.
+// They must not wait for an acknowledgment response, and must be delivered as is.
+test('sendMessage() does not wait for an acknowledgment response unless the "strict" option is true', async () => {
+	const subprocess = execa('forever.js', {ipc: true});
+	const message = {
+		type: 'execa:ipc:request',
+		id: 0,
+		message: foobarString,
+		hasListeners: false,
+	};
+
+	try {
+		await subprocess.sendMessage(message);
+	} finally {
+		subprocess.kill();
+	}
+
+	await assertRejects(subprocess);
+});
+
+test('Messages with the internal "strict" request type are kept as is', async () => {
+	const message = {
+		type: 'execa:ipc:request',
+	};
+	const {ipcOutput} = await execa('ipc-send-object.js', [JSON.stringify(message)], {ipc: true});
+	assert.deepEqual(ipcOutput, [message]);
+});
+
+test('Messages with the internal "strict" request type are kept as is, from the parent', async () => {
+	const message = {
+		type: 'execa:ipc:request',
+		message: foobarString,
+	};
+	const {ipcOutput} = await execa('ipc-echo.js', {ipcInput: message});
+	assert.deepEqual(ipcOutput, [message]);
+});
+
+test('Messages with the internal "strict" request type do not fail pending "strict" sends', async () => {
+	const subprocess = execa('ipc-send-object.js', [JSON.stringify({type: 'execa:ipc:request'})], {ipc: true, buffer: {ipc: false}});
+	const sendPromise = subprocess.sendMessage(foobarString, {strict: true});
+	const {message} = await assertRejects(sendPromise);
+	assert.equal(message, 'subprocess.sendMessage() failed: the subprocess exited without listening to incoming messages.');
+	await subprocess;
 });

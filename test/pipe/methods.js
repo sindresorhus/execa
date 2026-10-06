@@ -190,6 +190,7 @@ test('The .pipe() return value .getEachMessage() waits for pipe cancellation', a
 	const readerPromise = assertRejects(iterator.next(), {message: /Pipe canceled/});
 	abortController.abort();
 	await assertSettles(readerPromise);
+	assert.equal(destination.nodeChildProcess.connected, true);
 });
 
 test('The .pipe() return value .getEachMessage() cancels every pending reader', async t => {
@@ -240,6 +241,11 @@ const assertCanceledPipeMessageReader = async (t, getReader, shouldAbortBeforePi
 
 	await assertSettles(readerPromise);
 	await assertRejects(piped, {message: /Pipe canceled/});
+
+	// The destination keeps running after the pipe is canceled, so it must still be able to use IPC
+	assert.equal(destination.nodeChildProcess.connected, true);
+	await destination.sendMessage(foobarString);
+	await destination;
 };
 
 test('The .pipe() return value .getEachMessage() waits for pipe cancellation before IPC messages', async t => {

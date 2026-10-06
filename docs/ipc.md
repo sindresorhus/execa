@@ -184,6 +184,8 @@ import {execaNode} from 'execa';
 await execaNode({serialization: 'json'})`child.js`;
 ```
 
+Objects with a `type` property starting with `execa:ipc:` are reserved for Execa's internal messages, and should not be sent.
+
 ## Messages order
 
 The messages are always received in the same order they were sent. Even when sent all at once.

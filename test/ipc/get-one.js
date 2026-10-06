@@ -6,6 +6,7 @@ import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
 import {isAlwaysTrue} from '../helpers/ipc.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
+import {assertMaxListeners} from '../helpers/listeners.js';
 
 setFixtureDirectory();
 
@@ -16,6 +17,13 @@ test('subprocess.getOneMessage() can filter messages', async () => {
 
 	const {ipcOutput} = await subprocess;
 	assert.deepEqual(ipcOutput, foobarArray);
+});
+
+test('subprocess.getOneMessage() filter not matching any message rejects on exit', async () => {
+	const subprocess = execa('ipc-send.js', {ipc: true});
+	const error = await assertRejects(subprocess.getOneMessage({filter: () => false}));
+	assert.equal(error.message, 'subprocess.getOneMessage() could not complete: the subprocess exited or disconnected.');
+	await subprocess;
 });
 
 test('exports.getOneMessage() can filter messages', async () => {
@@ -62,6 +70,27 @@ test('Can retrieve initial IPC messages under heavy load', async () => {
 		assert.equal(await subprocess.getOneMessage(), `${index}`);
 		await subprocess;
 	}));
+});
+
+// The listeners are added to an internal emitter, so users cannot increase its maximum number of listeners
+const testConcurrentParent = async filter => {
+	const checkMaxListeners = assertMaxListeners();
+	const subprocess = execa('ipc-send.js', {ipc: true});
+	const messages = await Promise.all(Array.from({length: PARALLEL_COUNT}, () => subprocess.getOneMessage({filter})));
+	assert.deepEqual(messages, Array.from({length: PARALLEL_COUNT}, () => foobarString));
+	await subprocess;
+	checkMaxListeners();
+};
+
+test('subprocess.getOneMessage() can be called many times at the same time', () => testConcurrentParent(undefined));
+test('subprocess.getOneMessage() can be called many times at the same time, filter', () => testConcurrentParent(isAlwaysTrue));
+
+test('exports.getOneMessage() can be called many times at the same time', async () => {
+	const subprocess = execa('ipc-get-concurrent.js', [`${PARALLEL_COUNT}`], {ipc: true});
+	await subprocess.sendMessage(foobarString, {strict: true});
+	const {stdout, stderr} = await subprocess;
+	assert.equal(stdout, `${PARALLEL_COUNT}`);
+	assert.equal(stderr, '');
 });
 
 const testTwice = async (buffer, filter) => {

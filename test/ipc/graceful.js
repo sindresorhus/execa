@@ -139,6 +139,17 @@ test('getCancelSignal() aborts if already disconnected', async () => {
 	assert.ok(stdout.includes('Error: `cancelSignal` aborted: the parent process disconnected.'));
 });
 
+test('getCancelSignal() aborts if first called after disconnection', async () => {
+	const controller = new AbortController();
+	const subprocess = execa('graceful-print-disconnected.js', {cancelSignal: controller.signal, gracefulCancel: true});
+	assert.equal(await subprocess.getOneMessage(), '.');
+	subprocess.nodeChildProcess.disconnect();
+	const {isCanceled, ipcOutput, stdout} = await subprocess;
+	assert.equal(isCanceled, false);
+	assert.deepEqual(ipcOutput, ['.']);
+	assert.ok(stdout.includes('Error: `cancelSignal` aborted: the parent process disconnected.'));
+});
+
 test('getCancelSignal() fails if no IPC', async () => {
 	const {isCanceled, isGracefullyCanceled, isTerminated, exitCode, ipcOutput, stderr} = await assertRejects(execa('graceful-none.js'));
 	assert.equal(isCanceled, false);

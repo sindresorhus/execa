@@ -87,6 +87,20 @@ test('subprocess.sendMessage() cannot send functions, JSON', () => testInvalidPa
 test('subprocess.sendMessage() cannot send cycles, JSON', () => testInvalidPayload('json', cycleObject, CYCLE_MESSAGE));
 test('subprocess.sendMessage() cannot send cycles in toJSON(), JSON', () => testInvalidPayload('json', toJsonCycle, MAX_CALL_STACK_MESSAGE));
 
+// Those messages cannot be converted to a string either
+const nullPrototypeCycle = {__proto__: null};
+nullPrototypeCycle.self = nullPrototypeCycle;
+const throwingToString = {
+	callback() {},
+	toString() {
+		throw new Error('toString() failed');
+	},
+};
+
+test('subprocess.sendMessage() cannot send null-prototype objects with functions', () => testInvalidPayload('advanced', {__proto__: null, callback() {}}, CLONE_MESSAGE));
+test('subprocess.sendMessage() cannot send objects with functions and a throwing toString()', () => testInvalidPayload('advanced', throwingToString, CLONE_MESSAGE));
+test('subprocess.sendMessage() cannot send null-prototype cycles, JSON', () => testInvalidPayload('json', nullPrototypeCycle, CYCLE_MESSAGE));
+
 test('exports.sendMessage() validates payload', async () => {
 	const subprocess = execa('ipc-echo-item.js', {ipc: true});
 	await subprocess.sendMessage([undefined]);

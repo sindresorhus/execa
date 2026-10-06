@@ -41,6 +41,16 @@ test('Can use "serialization: json" option', async () => {
 	await subprocess;
 });
 
+const testNullPrototypeMessage = async serialization => {
+	const subprocess = execa('ipc-echo.js', {ipc: true, serialization});
+	await subprocess.sendMessage({__proto__: null, foo: foobarString});
+	assert.deepEqual({...await subprocess.getOneMessage()}, {foo: foobarString});
+	await subprocess;
+};
+
+test('Can send null-prototype objects', () => testNullPrototypeMessage('advanced'));
+test('Can send null-prototype objects, serialization: "json"', () => testNullPrototypeMessage('json'));
+
 test('Validates JSON payload with serialization: "json"', async () => {
 	const subprocess = execa('ipc-echo.js', {ipc: true, serialization: 'json'});
 	await assertRejects(subprocess.sendMessage([0n]), {message: /serialize a BigInt/});

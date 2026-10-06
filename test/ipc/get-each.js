@@ -7,9 +7,24 @@ import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString, foobarArray} from '../helpers/input.js';
 import {PARALLEL_COUNT} from '../helpers/parallel.js';
 import {iterateAllMessages} from '../helpers/ipc.js';
+import {assertMaxListeners} from '../helpers/listeners.js';
 /* eslint-disable node-test/no-conditional-assertion -- shared helper functions are called from conditional paths on purpose */
 
 setFixtureDirectory();
+
+test('subprocess.getEachMessage() can be called many times at the same time', async () => {
+	const checkMaxListeners = assertMaxListeners();
+	const subprocess = execa('ipc-send.js', {ipc: true});
+	const messages = await Promise.all(Array.from({length: PARALLEL_COUNT}, async () => {
+		const iterator = subprocess.getEachMessage();
+		const {value} = await iterator.next();
+		await iterator.return();
+		return value;
+	}));
+	assert.deepEqual(messages, Array.from({length: PARALLEL_COUNT}, () => foobarString));
+	await subprocess;
+	checkMaxListeners();
+});
 
 test('Can iterate over IPC messages', async () => {
 	let count = 0;

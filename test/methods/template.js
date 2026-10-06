@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
+import process from 'node:process';
 import test from 'node:test';
 import {assertThrows} from '../helpers/assert.js';
 import {$} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {majorNodeVersion} from '../helpers/node-version.js';
 
 setFixtureDirectory();
+
+const isWindows = process.platform === 'win32';
 
 // Workaround since some text editors or IDEs do not allow inputting \r directly
 const escapedCall = string => {
@@ -268,7 +272,11 @@ test('$ splits expressions - \\u{1F600}', () => testScriptStdout(() => $`echo.js
 test('$ concatenates tokens - \\u{1F600}', () => testScriptStdout(() => $`echo.js \u{1F600}a\u{1F600} b`, '\u{1F600}a\u{1F600}\nb'));
 test('$ concatenates expressions - \\u{1F600}', () => testScriptStdout(() => $`echo.js \u{1F600}${'a'}\u{1F600} b`, '\u{1F600}a\u{1F600}\nb'));
 test('$ handles multiple tokens - \\u{1F600}', () => testScriptStdout(() => $`echo.js \u{1F600}\u{1F600} b c`, '\u{1F600}\u{1F600}\nb\nc'));
-test('$ handles the highest code point - \\u{10FFFF}', () => testScriptStdout(() => $`echo.js \u{10FFFF} b`, '\u{10FFFF}\nb'));
+// Node.js 22 aborts when spawning with that code point on Windows, due to a libuv bug fixed in Node.js 24
+if (!isWindows || majorNodeVersion >= 24) {
+	test('$ handles the highest code point - \\u{10FFFF}', () => testScriptStdout(() => $`echo.js \u{10FFFF} b`, '\u{10FFFF}\nb'));
+}
+
 // The BMP boundary is the exact point where the character count changes
 test('$ handles the last BMP code point - \\u{FFFF}', () => testScriptStdout(() => $`echo.js \u{FFFF} b`, '\u{FFFF}\nb'));
 test('$ handles the first astral code point - \\u{10000}', () => testScriptStdout(() => $`echo.js \u{10000} b`, '\u{10000}\nb'));

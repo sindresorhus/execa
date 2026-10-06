@@ -103,9 +103,9 @@ test('ReadableStream with stdin is canceled on subprocess exit', async () => {
 // passed to multiple file descriptors should send its data to each of them.
 const testSharedReadableStream = async (fixtureArguments, stdio) => {
 	const readableStream = Readable.toWeb(Readable.from('foobar'));
-	const {stdout} = await execa('stdin-fd.js', fixtureArguments, {stdio: stdio.map(value => value === 'shared' ? readableStream : value)});
-	assert.equal(stdout, 'foobar');
+	const {stdout} = await execa('stdin-fds.js', fixtureArguments, {stdio: stdio.map(value => value === 'shared' ? readableStream : value)});
+	assert.equal(stdout, 'foobarfoobar');
 };
 
-test('stdin can share a ReadableStream with stdio[*]', () => testSharedReadableStream(['0'], ['shared', 'pipe', 'pipe', 'shared']));
-test('stdio[*] can share a ReadableStream with another stdio[*]', () => testSharedReadableStream(['3'], ['pipe', 'pipe', 'pipe', 'shared', 'shared']));
+test('stdin can share a ReadableStream with stdio[*]', () => testSharedReadableStream(['0', '3'], ['shared', 'pipe', 'pipe', 'shared']));
+test('stdio[*] can share a ReadableStream with another stdio[*]', () => testSharedReadableStream(['3', '4'], ['pipe', 'pipe', 'pipe', 'shared', 'shared']));

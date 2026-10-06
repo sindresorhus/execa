@@ -29,9 +29,10 @@ setFixtureDirectory();
 const isWindows = process.platform === 'win32';
 const ENOENT_REGEXP = isWindows ? /failed with exit code 1/ : /spawn.* ENOENT/;
 
-// A nonexistent command fails asynchronously, so it does not go through the early error path, but the subprocess still has no process to signal
-test('kill() does not signal the current process when the command does not exist', async () => {
-	const subprocess = execa('nonexistent-command-for-execa');
+// A nonexistent `cwd` fails asynchronously, so it does not go through the early error path, but the subprocess still has no process to signal.
+// A nonexistent command cannot be used, since it is run by `cmd.exe` on Windows.
+test('kill() does not signal the current process when the cwd does not exist', async () => {
+	const subprocess = execa('empty.js', {cwd: 'does_not_exist'});
 	assert.equal(subprocess.pid, undefined);
 	assert.equal(subprocess.kill(), false);
 	const {code} = await assertRejects(subprocess);

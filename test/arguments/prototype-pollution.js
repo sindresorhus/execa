@@ -18,6 +18,8 @@ import {foobarString} from '../helpers/input.js';
 setFixtureDirectory();
 process.env.FOO = 'foo';
 
+const isWindows = process.platform === 'win32';
+
 /*
 A polluted `Object.prototype` must not inject option values. Otherwise, any prototype pollution elsewhere in the process would let an attacker redirect the command, its input or its output.
 Options are therefore always kept on null-prototype objects.
@@ -187,11 +189,12 @@ test('Polluted environment variables are ignored, sync', t => testPollutedEnviro
 test('Polluted environment variables are ignored, extendEnv false', t => testPollutedEnvironment(t, execa, {extendEnv: false}));
 test('Polluted environment variables are ignored, preferLocal', t => testPollutedEnvironment(t, execa, {preferLocal: true}));
 
+// On Windows, libuv always passes the current process' `PATH` to the subprocess when its environment has none
 const testPollutedPath = async (t, execaMethod) => {
 	pollutePrototype(t, {[PATH_KEY]: POLLUTED_LOCAL_DIRECTORY});
 
 	const {stdout} = await execaMethod(process.execPath, printPath, {extendEnv: false});
-	assert.equal(stdout, 'undefined');
+	assert.equal(stdout, isWindows ? process.env[PATH_KEY] : 'undefined');
 };
 
 test('Polluted PATH is ignored', t => testPollutedPath(t, execa));
@@ -254,7 +257,7 @@ test('Polluted "failed" is ignored, sync', t => {
 test('Polluted "error" is ignored, sync early error', t => {
 	pollutePrototype(t, {error: foobarString});
 
-	const {code} = execaSync('non-existent-command', {reject: false});
+	const {code} = execaSync('empty.js', {cwd: 'does_not_exist', reject: false});
 	assert.equal(code, 'ENOENT');
 });
 

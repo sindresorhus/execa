@@ -348,7 +348,7 @@ test('maxBuffer.stdout is an upper bound for maxBuffer.stderr, sync', () => {
 
 test('maxBuffer.stderr is not reported on spawn errors, sync', () => {
 	const {code, isMaxBuffer} = assertThrows(() => {
-		execaSync('non-existent-command', {maxBuffer: {stderr: 1}});
+		execaSync('empty.js', {cwd: 'does_not_exist', maxBuffer: {stderr: 1}});
 	});
 	assert.equal(code, 'ENOENT');
 	assert.equal(isMaxBuffer, false);

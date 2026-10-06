@@ -22,13 +22,15 @@ test('Logs on stderr not stdout, verbose "none", sync', () => testNoStdout('none
 test('Logs on stderr not stdout, verbose "short", sync', () => testNoStdout('short', true));
 test('Logs on stderr not stdout, verbose "full", sync', () => testNoStdout('full', true));
 
-const testColor = async (expectedResult, forceColor) => {
-	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short'}, {env: {FORCE_COLOR: forceColor, NO_COLOR: undefined}});
+const testColor = async (expectedResult, forceColor, term) => {
+	const {stderr} = await nestedSubprocess('noop.js', [foobarString], {verbose: 'short'}, {env: {FORCE_COLOR: forceColor, NO_COLOR: undefined, TERM: term}});
 	assert.equal(stderr !== stripVTControlCharacters(stderr), expectedResult);
 };
 
 test('Prints with colors if supported', () => testColor(true, '1'));
 test('Prints without colors if not supported', () => testColor(false, '0'));
+// `stderr` is not a terminal, e.g. when redirected to a file, even though the terminal type supports colors
+test('Prints without colors if stderr is not a terminal', () => testColor(false, undefined, 'xterm-256color'));
 
 test('Prints lines in order when interleaved with subprocess stderr', async () => {
 	const results = await Promise.all(Array.from({length: PARALLEL_COUNT}, () =>

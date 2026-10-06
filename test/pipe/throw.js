@@ -40,6 +40,29 @@ test('Both arguments might be invalid', async () => {
 	assert.equal(stdout, undefined);
 });
 
+// When a previous `.pipe()` failed because of its arguments, the next `.pipe()` has no source.
+// It must reject with that error, without spawning its destination, which would otherwise keep waiting for its `stdin`.
+const testChainedInvalidPipe = async (getPipePromise, firstPipeArguments = [false], expectedMessage = 'an Execa subprocess') => {
+	const source = execa('noop.js', [foobarString]);
+	let isSpawned = false;
+	const verbose = (verboseLine, {type}) => {
+		if (type === 'command') {
+			isSpawned = true;
+		}
+	};
+
+	const pipePromise = getPipePromise(source.pipe(...firstPipeArguments), verbose);
+	await assertPipeError(pipePromise, expectedMessage);
+	assert.equal(isSpawned, false);
+	await source;
+};
+
+test('.pipe("file") after invalid arguments', () => testChainedInvalidPipe((pipePromise, verbose) => pipePromise.pipe('stdin.js', {verbose})));
+test('.pipe`command` after invalid arguments', () => testChainedInvalidPipe((pipePromise, verbose) => pipePromise.pipe({verbose})`stdin.js`));
+test('.pipe.pipe("file") after invalid arguments', () => testChainedInvalidPipe((pipePromise, verbose) => pipePromise.pipe('stdin.js', {verbose}).pipe('stdin.js', {verbose})));
+test('.pipe(false) after invalid arguments', () => testChainedInvalidPipe(pipePromise => pipePromise.pipe(false)));
+test('.pipe("file") after an invalid "to" option', () => testChainedInvalidPipe((pipePromise, verbose) => pipePromise.pipe('stdin.js', {verbose}), ['empty.js', {to: 'fd9'}], 'fd9'));
+
 // The destination subprocess is spawned before the `to` option is validated, so its error must be handled.
 // This runs in another process, since that is where the unhandled rejection crashes it.
 test('Destination subprocess error is not unhandled when the "to" option is invalid', async () => {

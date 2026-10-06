@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {once} from 'node:events';
+import {setTimeout} from 'node:timers/promises';
 import {readFile, rm} from 'node:fs/promises';
 import test from 'node:test';
 import tempfile from 'tempfile';
@@ -117,3 +118,47 @@ const testTransformErrorOtherFd = async execaMethod => {
 
 test('Transform errors on stdout do not skip the stderr file', () => testTransformErrorOtherFd(execa));
 test('Transform errors on stdout do not skip the stderr file, sync', () => testTransformErrorOtherFd(execaSync));
+
+// Many signal-aware Node.js APIs reject with an `AbortError`, which must not be mistaken for the stream being aborted
+const testAbortErrorTransform = async abortedLine => {
+	const controller = new AbortController();
+	const {failed, cause} = await execa('noop-fd.js', ['1', 'a\nb\nc'], {
+		async * stdout(line) {
+			if (line === abortedLine) {
+				controller.abort();
+			}
+
+			await setTimeout(0, undefined, {signal: controller.signal});
+			yield line;
+		},
+		reject: false,
+	});
+	assert.equal(failed, true);
+	assert.equal(cause.code, 'ABORT_ERR');
+};
+
+test('Output generators throwing an AbortError make the subprocess fail', () => testAbortErrorTransform('a'));
+test('Output generators throwing an AbortError after some output make the subprocess fail', () => testAbortErrorTransform('b'));
+
+const abortErrorGenerator = async function * (line) {
+	await setTimeout(0, undefined, {signal: AbortSignal.abort()});
+	yield line;
+};
+
+const testAbortErrorConversion = async consumeOutput => {
+	const subprocess = execa('noop-fd.js', ['1', foobarString], {stdout: abortErrorGenerator});
+	const error = await assertRejects(consumeOutput(subprocess));
+	assert.equal(error.cause.code, 'ABORT_ERR');
+	await assertRejects(subprocess);
+};
+
+test('Output generators throwing an AbortError make the subprocess fail, with .readable()', () => testAbortErrorConversion(subprocess => subprocess.readable().toArray()));
+test('Output generators throwing an AbortError make the subprocess fail, with .duplex()', () => testAbortErrorConversion(subprocess => subprocess.duplex().toArray()));
+test('Output generators throwing an AbortError make the subprocess fail, with .iterable()', () => testAbortErrorConversion(subprocess => Array.fromAsync(subprocess.iterable())));
+test('Output generators throwing an AbortError make the subprocess fail, with .readableStream()', () => testAbortErrorConversion(subprocess => Array.fromAsync(subprocess.readableStream())));
+
+test('Input generators throwing an AbortError make the subprocess fail', async () => {
+	const {failed, cause} = await execa('stdin.js', {stdin: abortErrorGenerator, input: foobarString, reject: false});
+	assert.equal(failed, true);
+	assert.equal(cause.code, 'ABORT_ERR');
+});

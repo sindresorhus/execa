@@ -83,6 +83,38 @@ const testBuffering = async methodName => {
 test('.readable() buffers until read', () => testBuffering('readable'));
 test('.duplex() buffers until read', () => testBuffering('duplex'));
 
+// Breaking out of `for await` or cancelling a web stream destroys the stream with an `AbortError`, which aborts it like `stream.destroy()`
+const testStopIteration = async stopIteration => {
+	const subprocess = execa('noop-delay.js', ['1', foobarString]);
+	await stopIteration(subprocess);
+	const {exitCode} = await subprocess;
+	assert.equal(exitCode, 0);
+};
+
+const stopIterator = async asyncIterable => {
+	const iterator = asyncIterable[Symbol.asyncIterator]();
+	await iterator.next();
+	await iterator.return();
+};
+
+const cancelReader = async readableStream => {
+	const reader = readableStream.getReader();
+	await reader.read();
+	await reader.cancel();
+};
+
+test('.readable() iteration can be stopped', () => testStopIteration(subprocess => stopIterator(subprocess.readable())));
+// This destroys `subprocess.stdout` with an `AbortError`, which cannot be told apart from an `AbortError` thrown by a transform. So this is not supported, and `subprocess.readable()` or `subprocess.iterable()` must be used instead.
+test('subprocess.stdout iteration cannot be stopped', async () => {
+	const subprocess = execa('noop-delay.js', ['1', foobarString]);
+	await stopIterator(subprocess.stdout);
+	const {code} = await assertRejects(subprocess);
+	assert.equal(code, 'ABORT_ERR');
+});
+test('.readableStream() can be cancelled', () => testStopIteration(subprocess => cancelReader(subprocess.readableStream())));
+test('.readableStream() iteration can be stopped', () => testStopIteration(subprocess => stopIterator(subprocess.readableStream())));
+test('.iterable() iteration can be stopped', () => testStopIteration(subprocess => stopIterator(subprocess.iterable())));
+
 test('.readable() abort -> subprocess fail', async () => {
 	const subprocess = execa('noop-repeat.js');
 	const stream = subprocess.readable();

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {once} from 'node:events';
+import {setTimeout} from 'node:timers/promises';
 import {PassThrough} from 'node:stream';
 import test from 'node:test';
 import {assertRejects, assertLike} from '../helpers/assert.js';
@@ -372,6 +373,34 @@ test('Returns pipedFrom on deep failure', async () => {
 	assert.deepEqual(sourceResult.pipedFrom, []);
 });
 
+// The second destination is piped from the first destination, not from the source which failed
+test('Returns pipedFrom on deep source failure', async () => {
+	const source = execa('noop-fail.js', ['1', foobarString]);
+	const destination = execa('stdin.js');
+	const secondDestination = execa('stdin.js');
+	const pipePromise = source.pipe(destination);
+	const secondPipePromise = pipePromise.pipe(secondDestination);
+
+	const destinationResult = await destination;
+	const secondDestinationResult = await secondDestination;
+	const sourceResult = await assertRejects(source);
+
+	assert.equal(await assertRejects(secondPipePromise), sourceResult);
+	assert.deepEqual(secondDestinationResult.pipedFrom, [destinationResult]);
+	assert.equal(await assertRejects(pipePromise), sourceResult);
+	assert.deepEqual(destinationResult.pipedFrom, [sourceResult]);
+	assert.deepEqual(sourceResult.pipedFrom, []);
+});
+
+test('Returns pipedFrom on deep success, with a template string', async () => {
+	const pipePromise = execa('noop.js', [foobarString]).pipe`stdin.js`.pipe`stdin.js`;
+	const {stdout, pipedFrom} = await pipePromise;
+	assert.equal(stdout, foobarString);
+	const [destinationResult] = pipedFrom;
+	assert.equal(destinationResult.command, 'stdin.js');
+	assert.equal(destinationResult.pipedFrom[0].command, `noop.js ${foobarString}`);
+});
+
 test('Returns pipedFrom from multiple sources', async () => {
 	const source = execa('noop.js', [foobarString]);
 	const secondSource = execa('noop.js', [foobarString]);
@@ -449,4 +478,61 @@ test('Can pipe to an additional file descriptor of a destination with the "stdio
 		stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}],
 	});
 	assert.equal(stdout, foobarString);
+});
+
+// `noop-repeat.js` writes every 10ms. `noop.js` exits right away, since it does not read its `stdin`.
+const testNoStarvation = async ({pipeOptions, sourceOptions, getExitingDestination = () => execa('noop.js')}) => {
+	const source = execa('noop-repeat.js', ['1', `${foobarString}\n`], sourceOptions);
+	const exitingDestination = getExitingDestination();
+	const receivingDestination = execa('stdin.js');
+	source.pipe(exitingDestination, pipeOptions).catch(() => {});
+	source.pipe(receivingDestination, pipeOptions).catch(() => {});
+
+	await exitingDestination;
+	await setTimeout(100);
+	source.kill();
+	// The source is not aborted with `EPIPE` when the first destination exits
+	const {isTerminated} = await assertRejects(source);
+	assert.ok(isTerminated);
+	const {stdout} = await receivingDestination;
+	assert.ok(stdout.split('\n').length > 2);
+};
+
+test('One destination exiting does not starve the other destinations', () => testNoStarvation({}));
+test('One destination exiting does not starve the other destinations, from "all"', () => testNoStarvation({sourceOptions: {all: true}, pipeOptions: {from: 'all'}}));
+// `stdin.js` exits when its `stdin` ends, while `noop-repeat.js` keeps running
+test('One destination ending its stdin does not starve the other destinations', () => testNoStarvation({
+	getExitingDestination() {
+		const destination = execa('stdin.js');
+		destination.stdin.end();
+		return destination;
+	},
+}));
+
+test('The source is aborted when all its destinations exit', async () => {
+	const source = execa('noop-repeat.js', ['1', `${foobarString}\n`]);
+	source.pipe(execa('noop.js')).catch(() => {});
+	source.pipe(execa('noop.js')).catch(() => {});
+	const {isTerminated, exitCode} = await assertRejects(source);
+	assert.ok(!isTerminated);
+	assert.equal(exitCode, 1);
+});
+
+test('The other sources of an exiting destination are aborted, unless they have other destinations', async () => {
+	const source = execa('noop-repeat.js', ['1', `${foobarString}\n`]);
+	const secondSource = execa('noop-repeat.js', ['1', `${foobarString}\n`]);
+	const exitingDestination = execa('noop.js');
+	const receivingDestination = execa('stdin.js');
+	source.pipe(exitingDestination).catch(() => {});
+	secondSource.pipe(exitingDestination).catch(() => {});
+	source.pipe(receivingDestination).catch(() => {});
+
+	const {exitCode} = await assertRejects(secondSource);
+	assert.equal(exitCode, 1);
+	await setTimeout(200);
+	source.kill();
+	const {isTerminated} = await assertRejects(source);
+	assert.ok(isTerminated);
+	const {stdout} = await receivingDestination;
+	assert.ok(stdout.split('\n').length > 2);
 });

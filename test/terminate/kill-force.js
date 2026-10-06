@@ -47,8 +47,11 @@ const testInvalidForceKill = async forceKillAfterDelay => {
 	}, {instanceOf: TypeError, message: /non-negative integer/});
 };
 
+test('`forceKillAfterDelay` should not be fractional', () => testInvalidForceKill(5000.5));
 test('`forceKillAfterDelay` should not be NaN', () => testInvalidForceKill(NaN));
 test('`forceKillAfterDelay` should not be negative', () => testInvalidForceKill(-1));
+// Larger delays make timers fire right away
+test('`forceKillAfterDelay` should not be larger than the maximum timer delay', () => testInvalidForceKill(2 ** 31));
 
 // `SIGTERM` cannot be caught on Windows, and it always aborts the subprocess (like `SIGKILL` on Unix).
 // Therefore, this feature and those tests must be different on Windows.
@@ -80,6 +83,7 @@ if (isWindows) {
 	};
 
 	test('`forceKillAfterDelay: false` should not kill after a timeout', () => testNoForceKill(false));
+	test('`forceKillAfterDelay` can be the maximum timer delay', () => testNoForceKill((2 ** 31) - 1));
 	test('`forceKillAfterDelay` should not kill after a timeout with other signals', () => testNoForceKill(true, 'SIGINT'));
 	test('`forceKillAfterDelay` should not kill after a timeout with wrong killSignal string', () => testNoForceKill(true, 'SIGTERM', {killSignal: 'SIGINT'}));
 	test('`forceKillAfterDelay` should not kill after a timeout with wrong killSignal number', () => testNoForceKill(true, constants.signals.SIGTERM, {killSignal: constants.signals.SIGINT}));

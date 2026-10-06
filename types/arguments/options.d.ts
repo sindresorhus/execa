@@ -253,7 +253,7 @@ export type CommonOptions<
 	readonly reject?: boolean;
 
 	/**
-	If `timeout` is greater than `0`, the subprocess will be terminated if it runs for longer than that amount of milliseconds.
+	If `timeout` is greater than `0`, the subprocess will be terminated if it runs for longer than that amount of milliseconds. The maximum value is `2147483647` (about 24.8 days).
 
 	On timeout, `error.timedOut` becomes `true`.
 
@@ -302,7 +302,7 @@ export type CommonOptions<
 	readonly gracefulCancel?: Unless<IsSync, boolean>;
 
 	/**
-	If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+	If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL). The maximum delay is `2147483647` milliseconds (about 24.8 days).
 
 	When this happens, `error.isForcefullyTerminated` becomes `true`.
 

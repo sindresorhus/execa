@@ -1103,7 +1103,7 @@ Setting this to `false` resolves the [result's promise](#return-value) with the 
 _Type:_ `number`\
 _Default:_ `0`
 
-If `timeout` is greater than `0`, the subprocess will be [terminated](#optionskillsignal) if it runs for longer than that amount of milliseconds.
+If `timeout` is greater than `0`, the subprocess will be [terminated](#optionskillsignal) if it runs for longer than that amount of milliseconds. The maximum value is `2147483647` (about 24.8 days).
 
 On timeout, [`error.timedOut`](#errortimedout) becomes `true`.
 
@@ -1137,7 +1137,7 @@ When aborted, [`error.isGracefullyCanceled`](#errorisgracefullycanceled) becomes
 _Type:_ `number | false`\
 _Default:_ `5000`
 
-If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL).
+If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL). The maximum delay is `2147483647` milliseconds (about 24.8 days).
 
 When this happens, [`error.isForcefullyTerminated`](#errorisforcefullyterminated) becomes `true`.
 

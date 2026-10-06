@@ -49,10 +49,23 @@ const testTimeoutValidation = (timeout, execaMethod) => {
 	}, {message: INVALID_TIMEOUT_REGEXP});
 };
 
+test('timeout must be an integer', () => testTimeoutValidation(100.5, execa));
+test('timeout must be an integer - sync', () => testTimeoutValidation(100.5, execaSync));
 test('timeout must not be negative', () => testTimeoutValidation(-1, execa));
-test('timeout must be an integer', () => testTimeoutValidation(false, execa));
+test('timeout must be a number', () => testTimeoutValidation(false, execa));
 test('timeout must not be negative - sync', () => testTimeoutValidation(-1, execaSync));
-test('timeout must be an integer - sync', () => testTimeoutValidation(false, execaSync));
+test('timeout must be a number - sync', () => testTimeoutValidation(false, execaSync));
+// Larger delays make timers fire right away
+test('timeout must not be larger than the maximum timer delay', () => testTimeoutValidation(2 ** 31, execa));
+test('timeout must not be larger than the maximum timer delay - sync', () => testTimeoutValidation(2 ** 31, execaSync));
+
+const testMaxTimeout = async execaMethod => {
+	const {timedOut} = await execaMethod('noop.js', {timeout: (2 ** 31) - 1});
+	assert.equal(timedOut, false);
+};
+
+test('timeout can be the maximum timer delay', () => testMaxTimeout(execa));
+test('timeout can be the maximum timer delay - sync', () => testMaxTimeout(execaSync));
 
 test('timedOut is false if timeout is undefined', async () => {
 	const {timedOut} = await execa('noop.js');

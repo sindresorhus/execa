@@ -5,6 +5,7 @@ import {assertThrows} from '../helpers/assert.js';
 import {$} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {majorNodeVersion} from '../helpers/node-version.js';
+import {foobarString} from '../helpers/input.js';
 
 setFixtureDirectory();
 
@@ -68,6 +69,21 @@ test('$ allows escaping spaces in commands with interpolation', () => testScript
 test('$ trims', () => testScriptStdout(() => $`  echo.js foo bar  `, 'foo\nbar'));
 test('$ allows array interpolation', () => testScriptStdout(() => $`echo.js ${['foo', 'bar']}`, 'foo\nbar'));
 test('$ allows empty array interpolation', () => testScriptStdout(() => $`echo.js foo ${[]} bar`, 'foo\nbar'));
+// An empty array must not remove the whitespace before it
+test('$ allows empty array interpolation followed by a token', () => testScriptStdout(() => $`echo.js foo ${[]}bar`, 'foo\nbar'));
+test('$ allows empty array interpolation followed by an expression', () => testScriptStdout(() => $`echo.js foo ${[]}${'bar'}`, 'foo\nbar'));
+test('$ allows multiple empty array interpolations followed by a token', () => testScriptStdout(() => $`echo.js foo ${[]}${[]}bar`, 'foo\nbar'));
+test('$ allows empty array interpolation after an expression and before a token', () => testScriptStdout(() => $`echo.js ${'foo'} ${[]}bar`, 'foo\nbar'));
+test('$ allows empty array interpolation without whitespaces', () => testScriptStdout(() => $`echo.js foo${[]}bar`, 'foobar'));
+test('$ allows empty array interpolation without whitespaces after it', () => testScriptStdout(() => $`echo.js foo${[]} bar`, 'foo\nbar'));
+test('$ allows empty array interpolation between expressions without whitespaces', () => testScriptStdout(() => $`echo.js ${'foo'}${[]}${'bar'}`, 'foobar'));
+test('$ allows empty array interpolation at the start of an argument', () => testScriptStdout(() => $`echo.js ${[]}foo bar`, 'foo\nbar'));
+test('$ allows empty array interpolation at the end', () => testScriptStdout(() => $`echo.js foo ${[]}`, 'foo'));
+test('$ allows empty array interpolation as the only argument', () => testScriptStdout(() => $`echo.js ${[]}`, ''));
+test('$ allows empty array interpolation between tabs', () => testScriptStdout(() => $`echo.js foo	${[]}	bar`, 'foo\nbar'));
+test('$ allows empty array interpolation followed by an empty string', () => testScriptStdout(() => $`echo.js foo ${[]}${''} bar`, 'foo\n\nbar'));
+test('$ allows empty array interpolation after escaped newlines', () => testScriptStdout(() => $`echo.js foo \
+${[]}bar`, 'foo\nbar'));
 test('$ allows space escaped values in array interpolation', () => testScriptStdout(() => $`echo.js ${['foo', 'bar baz']}`, 'foo\nbar baz'));
 test('$ can concatenate at the end of tokens followed by an array', () => testScriptStdout(() => $`echo.js foo${['bar', 'foo']}`, 'foobar\nfoo'));
 test('$ can concatenate at the start of tokens followed by an array', () => testScriptStdout(() => $`echo.js ${['foo', 'bar']}foo`, 'foo\nbarfoo'));
@@ -318,6 +334,21 @@ test('$.sync allows execa return value buffer interpolation', () => testReturnIn
 test('$.sync allows execa return value array interpolation', () => testReturnInterpolateSync(foo => $.sync`echo.js ${[foo, 'bar']}`, 'foo\nbar'));
 test('$.sync allows execa return value buffer array interpolation', () => testReturnInterpolateSync(foo => $.sync`echo.js ${[foo, 'bar']}`, 'foo\nbar', {encoding: 'buffer'}));
 
+// A failed result is an error instance, not a plain object
+const testErrorInterpolate = async (getError, getSubprocess) => {
+	const error = await getError();
+	assert.equal(error.failed, true);
+	const {stdout} = await getSubprocess(error);
+	assert.equal(stdout, `${foobarString}\nbar`);
+};
+
+test('$ allows execa error interpolation, reject: false', () => testErrorInterpolate(() => $({reject: false})`noop-fail.js 1 ${foobarString}`, error => $`echo.js ${error} bar`));
+test('$ allows execa error interpolation, rejected', () => testErrorInterpolate(() => $`noop-fail.js 1 ${foobarString}`.catch(error => error), error => $`echo.js ${error} bar`));
+test('$ allows execa error array interpolation', () => testErrorInterpolate(() => $({reject: false})`noop-fail.js 1 ${foobarString}`, error => $`echo.js ${[error, 'bar']}`));
+test('$ allows execa error buffer interpolation', () => testErrorInterpolate(() => $({reject: false, encoding: 'buffer'})`noop-fail.js 1 ${foobarString}`, error => $`echo.js ${error} bar`));
+test('$.sync allows execa error interpolation, reject: false', () => testErrorInterpolate(() => $({reject: false}).sync`noop-fail.js 1 ${foobarString}`, error => $.sync`echo.js ${error} bar`));
+test('$.sync allows execa error interpolation, thrown', () => testErrorInterpolate(() => assertThrows(() => $.sync`noop-fail.js 1 ${foobarString}`), error => $.sync`echo.js ${error} bar`));
+
 const testInvalidSequence = getSubprocess => {
 	assertThrows(getSubprocess, {message: /Invalid backslash sequence/});
 };
@@ -366,6 +397,8 @@ test('$ throws on invalid expression - [true]', () => testInvalidExpression([tru
 test('$ throws on invalid expression - [{}]', () => testInvalidExpression([{}]));
 test('$ throws on invalid expression - [{foo: "bar"}]', () => testInvalidExpression([{foo: 'bar'}]));
 test('$ throws on invalid expression - [{stdout: 1}]', () => testInvalidExpression([{stdout: 1}]));
+test('$ throws on invalid expression - new Error()', () => testInvalidExpression(new Error(foobarString)));
+test('$ throws on invalid expression - Object.assign(new Error(), {stdout})', () => testInvalidExpression(Object.assign(new Error(foobarString), {stdout: foobarString})));
 
 const testMissingOutput = invalidExpression => {
 	assertThrows(

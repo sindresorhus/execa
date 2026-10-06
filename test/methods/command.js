@@ -100,6 +100,59 @@ test('parseCommandString() allows escaping backslashes before spaces', () => tes
 test('parseCommandString() allows escaping multiple backslashes before spaces', () => testParseCommandOutput('echo.js foo\\\\\\\\ bar', 'foo\\\\\\ bar', parseAndRunCommand));
 test('parseCommandString() allows escaping backslashes not before spaces', () => testParseCommandOutput('echo.js foo\\bar baz', 'foo\\bar\nbaz', parseAndRunCommand));
 
+// An escaped space must not be merged with the space delimiter after it
+test('parseCommandString() allows escaping spaces before a space delimiter', () => {
+	assert.deepEqual(parseCommandString('echo foo\\  bar'), ['echo', 'foo ', 'bar']);
+});
+
+test('parseCommandString() allows escaping spaces before consecutive space delimiters', () => {
+	assert.deepEqual(parseCommandString('echo foo\\    bar'), ['echo', 'foo ', 'bar']);
+});
+
+test('parseCommandString() allows escaping consecutive spaces', () => {
+	assert.deepEqual(parseCommandString('echo foo\\ \\ bar'), ['echo', 'foo  bar']);
+});
+
+test('parseCommandString() allows escaped spaces as the only characters of an argument', () => {
+	assert.deepEqual(parseCommandString('echo \\  bar'), ['echo', ' ', 'bar']);
+});
+
+test('parseCommandString() allows escaping a trailing space', () => {
+	assert.deepEqual(parseCommandString('echo foo\\ '), ['echo', 'foo ']);
+});
+
+test('parseCommandString() allows escaping a trailing space followed by other spaces', () => {
+	assert.deepEqual(parseCommandString('echo foo\\   '), ['echo', 'foo ']);
+});
+
+test('parseCommandString() allows escaping a trailing space followed by other whitespaces', () => {
+	assert.deepEqual(parseCommandString('echo foo\\ \n'), ['echo', 'foo ']);
+});
+
+test('parseCommandString() does not escape trailing whitespaces other than spaces', () => {
+	assert.deepEqual(parseCommandString('echo foo\\\n'), ['echo', 'foo\\']);
+});
+
+test('parseCommandString() trims whitespaces other than spaces', () => {
+	assert.deepEqual(parseCommandString('\t echo foo \n'), ['echo', 'foo']);
+});
+
+test('parseCommandString() allows escaping a leading space', () => {
+	assert.deepEqual(parseCommandString('echo \\ foo'), ['echo', ' foo']);
+});
+
+test('parseCommandString() allows escaping a space in the first token', () => {
+	assert.deepEqual(parseCommandString('foo\\ bar baz'), ['foo bar', 'baz']);
+});
+
+test('parseCommandString() allows only an escaped space', () => {
+	assert.deepEqual(parseCommandString('\\ '), [' ']);
+});
+
+test('parseCommandString() keeps tabs inside tokens with escaped spaces', () => {
+	assert.deepEqual(parseCommandString('echo foo\tbar\\ baz'), ['echo', 'foo\tbar baz']);
+});
+
 test('parseCommandString() can get empty strings', () => {
 	assert.deepEqual(parseCommandString(''), []);
 });

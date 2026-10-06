@@ -15,7 +15,6 @@ expectType<Readable>(noBufferSubprocess.stdio[1]);
 expectType<Readable>(noBufferSubprocess.stderr);
 expectType<Readable>(noBufferSubprocess.stdio[2]);
 expectType<Readable>(noBufferSubprocess.all);
-expectError(noBufferSubprocess.stdio[3].destroy());
 
 const noBufferResult = await noBufferSubprocess;
 expectType<undefined>(noBufferResult.stdout);

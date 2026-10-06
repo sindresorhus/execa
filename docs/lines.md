@@ -36,7 +36,7 @@ Alternatively, [`subprocess.iterable()`](api.md#subprocessiterablereadableoption
 The iteration waits for the subprocess to end (even when using [`break`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/break) or [`return`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return)). It throws if the subprocess [fails](api.md#result). This means you do not need to `await` the subprocess' [promise](execution.md#result).
 
 ```js
-for await (const line of execa`npm run build`.iterable())) {
+for await (const line of execa`npm run build`.iterable()) {
 	/* ... */
 }
 ```

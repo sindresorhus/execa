@@ -72,21 +72,23 @@ type ExecaCustomSubprocess<OptionsType extends Options> =
 		/**
 		The subprocess [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) as a stream.
 
-		This is `null` if the `stdout` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+		This is `null` if the `stdout` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
 		*/
 		stdout: SubprocessStdioStream<'1', OptionsType>;
 
 		/**
 		The subprocess [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)) as a stream.
 
-		This is `null` if the `stderr` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
+		This is `null` if the `stderr` option is set to `'inherit'`, `'ignore'`, `Writable` or `integer`.
 		*/
 		stderr: SubprocessStdioStream<'2', OptionsType>;
 
 		/**
 		The subprocess `stdin`, `stdout`, `stderr` and other files descriptors as an array of streams.
 
-		Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`, or if the `buffer` option is `false`.
+		Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`.
+
+		With the `ipc` option, the last item is the subprocess' IPC channel, which is always `null`.
 		*/
 		stdio: SubprocessStdioArray<OptionsType>;
 

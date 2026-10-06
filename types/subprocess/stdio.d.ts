@@ -1,20 +1,24 @@
+import type {Readable, Writable} from 'node:stream';
 import type {StdioOptionNormalizedArray} from '../stdio/array.js';
+import type {HasIpc} from '../ipc.js';
 import type {Options} from '../arguments/options.js';
 import type {SubprocessStdioStream} from './stdout.js';
 
 // `subprocess.stdio`
 export type SubprocessStdioArray<OptionsType extends Options> = MapStdioStreams<StdioOptionNormalizedArray<OptionsType>, OptionsType>;
 
-// We cannot use mapped types because it must be compatible with Node.js `ChildProcess["stdio"]` which uses a tuple with exactly 5 items
+// File descriptors beyond `stderr` are only present when the `stdio` option is an array with more items.
+// The subprocess' IPC channel, if any, is set as the last file descriptor by Node.js itself.
+// Since any `Subprocess` can be passed where the default one is expected, the list is kept open-ended.
 type MapStdioStreams<
-	StdioOptionsArrayType,
+	StdioOptionsArrayType extends readonly unknown[],
 	OptionsType extends Options,
 > = [
-	SubprocessStdioStream<'0', OptionsType>,
-	SubprocessStdioStream<'1', OptionsType>,
-	SubprocessStdioStream<'2', OptionsType>,
-	'3' extends keyof StdioOptionsArrayType ? SubprocessStdioStream<'3', OptionsType> : never,
-	'4' extends keyof StdioOptionsArrayType ? SubprocessStdioStream<'4', OptionsType> : never,
+	...{
+		-readonly [FdNumber in keyof StdioOptionsArrayType]: SubprocessStdioStream<FdNumber extends string ? FdNumber : string, OptionsType>
+	},
+	...(HasIpc<OptionsType> extends true ? [null] : []),
+	...Array<Readable | Writable | null>,
 ];
 
 export {};

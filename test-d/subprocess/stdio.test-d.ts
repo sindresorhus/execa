@@ -15,7 +15,7 @@ expectType<Readable>(bufferSubprocess.stdio[1]);
 expectType<Readable>(bufferSubprocess.stderr);
 expectType<Readable>(bufferSubprocess.stdio[2]);
 expectType<Readable>(bufferSubprocess.all);
-expectError(bufferSubprocess.stdio[3].destroy());
+expectType<Writable>(bufferSubprocess.stdio[0]);
 
 const hexSubprocess = execa('unicorns', {encoding: 'hex', all: true});
 expectType<Writable>(hexSubprocess.stdin);
@@ -25,7 +25,7 @@ expectType<Readable>(hexSubprocess.stdio[1]);
 expectType<Readable>(hexSubprocess.stderr);
 expectType<Readable>(hexSubprocess.stdio[2]);
 expectType<Readable>(hexSubprocess.all);
-expectError(hexSubprocess.stdio[3].destroy());
+expectType<Writable>(hexSubprocess.stdio[0]);
 
 const multipleStdinSubprocess = execa('unicorns', {stdin: ['inherit', 'pipe']});
 expectType<Writable>(multipleStdinSubprocess.stdin);
@@ -38,7 +38,7 @@ expectType<Readable>(multipleStdoutSubprocess.stdio[1]);
 expectType<Readable>(multipleStdoutSubprocess.stderr);
 expectType<Readable>(multipleStdoutSubprocess.stdio[2]);
 expectType<Readable>(multipleStdoutSubprocess.all);
-expectError(multipleStdoutSubprocess.stdio[3].destroy());
+expectType<Writable>(multipleStdoutSubprocess.stdio[0]);
 
 const inputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]});
 expectType<Writable>(inputPipeSubprocess.stdio[3]);
@@ -74,3 +74,28 @@ expectType<Readable>(stdoutInputPipeSubprocess.stdio[1]);
 const stderrInputPipeSubprocess = execa('unicorns', {stderr: {value: 'pipe', input: true}});
 expectType<Readable>(stderrInputPipeSubprocess.stderr);
 expectType<Readable>(stderrInputPipeSubprocess.stdio[2]);
+
+const noIpcSubprocess = execa('unicorns');
+expectType<Writable>(noIpcSubprocess.stdio[0]);
+expectType<Readable>(noIpcSubprocess.stdio[1]);
+expectType<Readable>(noIpcSubprocess.stdio[2]);
+
+const ipcSubprocess = execa('unicorns', {ipc: true});
+expectType<Writable>(ipcSubprocess.stdio[0]);
+expectType<Readable>(ipcSubprocess.stdio[1]);
+expectType<Readable>(ipcSubprocess.stdio[2]);
+expectType<null>(ipcSubprocess.stdio[3]);
+
+const ipcInputSubprocess = execa('unicorns', {ipcInput: ''});
+expectType<null>(ipcInputSubprocess.stdio[3]);
+
+const fd3IpcSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
+expectType<Readable>(fd3IpcSubprocess.stdio[3]);
+expectType<null>(fd3IpcSubprocess.stdio[4]);
+
+const fd5IpcSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
+expectType<Readable>(fd5IpcSubprocess.stdio[5]);
+expectType<null>(fd5IpcSubprocess.stdio[6]);
+expectType<Readable | Writable | null>(fd5IpcSubprocess.stdio[7]);
+
+expectType<Readable | Writable | null>(noIpcSubprocess.stdio[3]);

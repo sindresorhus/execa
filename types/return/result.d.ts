@@ -1,7 +1,7 @@
 import type {SignalConstants} from 'node:os';
 import type {Unless} from '../utils.js';
 import type {CommonOptions, Options, SyncOptions} from '../arguments/options.js';
-import type {ErrorProperties} from './final-error.js';
+import type {ErrorProperties, ExecaError} from './final-error.js';
 import type {ResultAll} from './result-all.js';
 import type {ResultStdioArray} from './result-stdio.js';
 import type {ResultStdioNotAll} from './result-stdout.js';
@@ -45,6 +45,8 @@ export declare abstract class CommonResult<
 
 	Items are `undefined` when their corresponding `stdio` option is set to only `'inherit'`, `'ignore'`, `Writable` or `integer`, or if the `buffer` option is `false`.
 
+	With the `ipc` option, the last item is the subprocess' IPC channel, which is always `undefined`.
+
 	Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
 	stdio: ResultStdioArray<OptionsType>;
@@ -61,7 +63,7 @@ export declare abstract class CommonResult<
 
 	This array is initially empty and is populated each time the `subprocess.pipe()` method resolves.
 	*/
-	pipedFrom: Unless<IsSync, Result[], []>;
+	pipedFrom: Unless<IsSync, Array<Result | ExecaError>, []>;
 
 	/**
 	The file and arguments that were run.

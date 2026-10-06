@@ -296,7 +296,7 @@ await $$`npm run test`;
 // Execa
 import {$ as $_} from 'execa';
 
-const $ = $_({verbose: true});
+const $ = $_({verbose: 'short'});
 
 await $`npm run init`;
 await $`npm run build`;

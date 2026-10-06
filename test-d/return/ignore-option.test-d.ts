@@ -20,7 +20,6 @@ expectType<null>(ignoreAnySubprocess.stdio[1]);
 expectType<null>(ignoreAnySubprocess.stderr);
 expectType<null>(ignoreAnySubprocess.stdio[2]);
 expectType<undefined>(ignoreAnySubprocess.all);
-expectError(ignoreAnySubprocess.stdio[3].destroy());
 
 const ignoreAnyResult = await ignoreAnySubprocess;
 expectType<undefined>(ignoreAnyResult.stdout);
@@ -37,7 +36,6 @@ expectType<null>(ignoreAllSubprocess.stdio[1]);
 expectType<null>(ignoreAllSubprocess.stderr);
 expectType<null>(ignoreAllSubprocess.stdio[2]);
 expectType<undefined>(ignoreAllSubprocess.all);
-expectError(ignoreAllSubprocess.stdio[3].destroy());
 
 const ignoreAllResult = await ignoreAllSubprocess;
 expectType<undefined>(ignoreAllResult.stdout);
@@ -76,7 +74,6 @@ expectType<null>(ignoreStdoutSubprocess.stdio[1]);
 expectType<Readable>(ignoreStdoutSubprocess.stderr);
 expectType<Readable>(ignoreStdoutSubprocess.stdio[2]);
 expectType<Readable>(ignoreStdoutSubprocess.all);
-expectError(ignoreStdoutSubprocess.stdio[3].destroy());
 
 const ignoreStdoutResult = await ignoreStdoutSubprocess;
 expectType<undefined>(ignoreStdoutResult.stdout);
@@ -91,7 +88,6 @@ expectType<Readable>(ignoreStderrSubprocess.stdio[1]);
 expectType<null>(ignoreStderrSubprocess.stderr);
 expectType<null>(ignoreStderrSubprocess.stdio[2]);
 expectType<Readable>(ignoreStderrSubprocess.all);
-expectError(ignoreStderrSubprocess.stdio[3].destroy());
 
 const ignoreStderrResult = await ignoreStderrSubprocess;
 expectType<string>(ignoreStderrResult.stdout);

@@ -395,7 +395,7 @@ _Type:_ [`Readable | null`](https://nodejs.org/api/stream.html#class-streamreada
 
 The subprocess [`stdout`](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)) as a stream.
 
-This is `null` if the [`stdout`](#optionsstdout) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output), or if the [`buffer`](#optionsbuffer) option is `false`.
+This is `null` if the [`stdout`](#optionsstdout) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output).
 
 [More info.](streams.md#manual-streaming)
 
@@ -405,7 +405,7 @@ _Type:_ [`Readable | null`](https://nodejs.org/api/stream.html#class-streamreada
 
 The subprocess [`stderr`](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)) as a stream.
 
-This is `null` if the [`stderr`](#optionsstdout) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output), or if the [`buffer`](#optionsbuffer) option is `false`.
+This is `null` if the [`stderr`](#optionsstderr) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output).
 
 [More info.](streams.md#manual-streaming)
 
@@ -427,7 +427,9 @@ _Type:_ [`[Writable | null, Readable | null, Readable | null, ...Array<Writable 
 
 The subprocess [`stdin`](#subprocessstdin), [`stdout`](#subprocessstdout), [`stderr`](#subprocessstderr) and [other files descriptors](#optionsstdio) as an array of streams.
 
-Each array item is `null` if the corresponding [`stdin`](#optionsstdin), [`stdout`](#optionsstdout), [`stderr`](#optionsstderr) or [`stdio`](#optionsstdio) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Stream`](streams.md#output) or [`integer`](output.md#terminal-output), or if the [`buffer`](#optionsbuffer) option is `false`.
+Each array item is `null` if the corresponding [`stdin`](#optionsstdin), [`stdout`](#optionsstdout), [`stderr`](#optionsstderr) or [`stdio`](#optionsstdio) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Stream`](streams.md#output) or [`integer`](output.md#terminal-output).
+
+With the [`ipc`](#optionsipc) option, the last item is the subprocess' IPC channel, which is always `null`.
 
 [More info.](streams.md#manual-streaming)
 
@@ -589,6 +591,8 @@ _Type:_ `Array<string | Uint8Array | string[] | Uint8Array[] | unknown[] | undef
 The output of the subprocess on [`stdin`](#optionsstdin), [`stdout`](#optionsstdout), [`stderr`](#optionsstderr) and [other file descriptors](#optionsstdio).
 
 Items are `undefined` when their corresponding [`stdio`](#optionsstdio) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Writable`](streams.md#output) or [`integer`](output.md#terminal-output), or if the [`buffer`](#optionsbuffer) option is `false`.
+
+With the [`ipc`](#optionsipc) option, the last item is the subprocess' IPC channel, which is always `undefined`.
 
 Items are arrays when their corresponding `stdio` option is a [transform in object mode](transform.md#object-mode).
 
@@ -1027,7 +1031,7 @@ Largest amount of data allowed on [`stdout`](#resultstdout), [`stderr`](#results
 
 By default, this applies to both `stdout` and `stderr`, but [different values can also be passed](output.md#stdoutstderr-specific-options).
 
-With [synchronous methods](execution.md#synchronous-execution), this cannot be enforced per file descriptor while the subprocess runs, since `spawnSync()` only accepts a single value, which limits the total output of all file descriptors. The `maxBuffer.stdout` value is used for it. The other file descriptors' own values are enforced from the output, once the subprocess ended, and cannot be higher than `maxBuffer.stdout`.
+With [synchronous methods](execution.md#synchronous-execution), this cannot be enforced per file descriptor while the subprocess runs, since `spawnSync()` only accepts a single value, which limits the total output of all file descriptors. The `maxBuffer.stdout` value is used for it. The other file descriptors' own values are enforced from the output, once the subprocess ended, and cannot be higher than `maxBuffer.stdout`. Also, with synchronous methods, this is measured in bytes instead of [characters or lines](output.md#big-output), for the same reason.
 
 When reached, [`error.isMaxBuffer`](#errorismaxbuffer) becomes `true`.
 
@@ -1103,7 +1107,7 @@ Setting this to `false` resolves the [result's promise](#return-value) with the 
 _Type:_ `number`\
 _Default:_ `0`
 
-If `timeout` is greater than `0`, the subprocess will be [terminated](#optionskillsignal) if it runs for longer than that amount of milliseconds. The maximum value is `2147483647` (about 24.8 days).
+If `timeout` is greater than `0`, the subprocess will be [terminated](#optionskillsignal) if it runs for longer than that amount of milliseconds. It must be a non-negative integer, up to `2147483647` (about 24.8 days).
 
 On timeout, [`error.timedOut`](#errortimedout) becomes `true`.
 
@@ -1134,10 +1138,10 @@ When aborted, [`error.isGracefullyCanceled`](#errorisgracefullycanceled) becomes
 
 ### options.forceKillAfterDelay
 
-_Type:_ `number | false`\
+_Type:_ `number | boolean`\
 _Default:_ `5000`
 
-If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL). The maximum delay is `2147483647` milliseconds (about 24.8 days).
+If the subprocess is terminated but does not exit, forcefully exit it by sending [`SIGKILL`](https://en.wikipedia.org/wiki/Signal_(IPC)#SIGKILL). The delay must be a non-negative integer, up to `2147483647` milliseconds (about 24.8 days). When `true`, the default `5000` is used. When `false`, the subprocess is not forcefully exited.
 
 When this happens, [`error.isForcefullyTerminated`](#errorisforcefullyterminated) becomes `true`.
 
@@ -1264,7 +1268,7 @@ Depending on [`verboseObject.type`](#verboseobjecttype), this is:
 - `'output'`: one line from [`result.stdout`](#resultstdout) or [`result.stderr`](#resultstderr)
 - `'ipc'`: one IPC message from [`result.ipcOutput`](#resultipcoutput)
 - `'error'`: the [`error.shortMessage`](#errorshortmessage)
-- `'duration'`: the [`result.durationMs`](#resultdurationms)
+- `'duration'`: the [`result.durationMs`](#resultdurationms), formatted as `(done in 29ms)`
 
 #### verboseObject.escapedCommand
 
@@ -1306,7 +1310,7 @@ This is `undefined` if [`verboseObject.type`](#verboseobjecttype) is `'command'`
 
 _Type_: `boolean`
 
-Whether another subprocess is [piped](pipe.md) into this subprocess. This is `false` when [`result.pipedFrom`](#resultfailed) is empty.
+Whether this subprocess is the destination of another subprocess' [`pipe()`](#subprocesspipefile-arguments-options) method. This is `true` when it was spawned using the [template string](pipe.md#template-string-syntax) or [array](pipe.md#array-syntax) syntax, `false` otherwise.
 
 ## Transform options
 

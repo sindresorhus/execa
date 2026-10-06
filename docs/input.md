@@ -68,7 +68,7 @@ await execa({stdin: [['stdinInput']]})`npm run scaffold`;
 
 ```js
 const subprocess = execa({stdin: 'ignore'})`npm run scaffold`;
-console.log(subprocess.stdin); // undefined
+console.log(subprocess.stdin); // null
 await subprocess;
 ```
 

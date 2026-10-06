@@ -154,3 +154,21 @@ expectType<undefined>(undefinedFd3Result.stdio[3]);
 
 const undefinedArrayFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [undefined] as const]});
 expectType<undefined>(undefinedArrayFd3Result.stdio[3]);
+
+const ipcResult = await execa('unicorns', {ipc: true});
+expectType<[undefined, string, string, undefined]>(ipcResult.stdio);
+
+const ipcInputResult = await execa('unicorns', {ipcInput: ''});
+expectType<[undefined, string, string, undefined]>(ipcInputResult.stdio);
+
+const gracefulCancelResult = await execa('unicorns', {cancelSignal: AbortSignal.abort(), gracefulCancel: true});
+expectType<[undefined, string, string, undefined]>(gracefulCancelResult.stdio);
+
+const fd3IpcResult = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
+expectType<[undefined, string, string, string, undefined]>(fd3IpcResult.stdio);
+
+const noIpcResult = await execa('unicorns');
+expectType<[undefined, string, string]>(noIpcResult.stdio);
+
+const noIpcResultSync = execaSync('unicorns');
+expectType<[undefined, string, string]>(noIpcResultSync.stdio);

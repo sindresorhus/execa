@@ -28,7 +28,7 @@ type GenericVerboseObject = {
 	- `'output'`: one line from `result.stdout` or `result.stderr`
 	- `'ipc'`: one IPC message from `result.ipcOutput`
 	- `'error'`: the `error.shortMessage`
-	- `'duration'`: the `result.durationMs`
+	- `'duration'`: the `result.durationMs`, formatted as `(done in 29ms)`
 	*/
 	message: string;
 
@@ -52,7 +52,7 @@ type GenericVerboseObject = {
 	timestamp: Date;
 
 	/**
-	Whether another subprocess is piped into this subprocess. This is `false` when `result.pipedFrom` is empty.
+	Whether this subprocess is the destination of another subprocess' `pipe()` method. This is `true` when it was spawned using the template string or array syntax of `pipe()`, `false` otherwise.
 	*/
 	piped: boolean;
 };

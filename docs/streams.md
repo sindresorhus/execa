@@ -68,7 +68,7 @@ await execa({stdin: getReplInput()})`npm run scaffold`;
 
 ## Manual streaming
 
-[`subprocess.stdin`](api.md#subprocessstdin) is a Node.js [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable) stream and [`subprocess.stdout`](api.md#subprocessstdout)/[`subprocess.stderr`](api.md#subprocessstderr)/[`subprocess.all`](api.md#subprocessall) are Node.js [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) streams.
+[`subprocess.stdin`](api.md#subprocessstdin) is a Node.js [`Writable`](https://nodejs.org/api/stream.html#class-streamwritable) stream and [`subprocess.stdout`](api.md#subprocessstdout)/[`subprocess.stderr`](api.md#subprocessstderr)/[`subprocess.all`](api.md#subprocessall) are Node.js [`Readable`](https://nodejs.org/api/stream.html#class-streamreadable) streams.
 
 They can be used to stream input/output manually. This is intended for advanced situations. In most cases, the following simpler solutions can be used instead:
 - [`result.stdout`](output.md#stdout-and-stderr), [`result.stderr`](output.md#stdout-and-stderr) or [`result.stdio`](output.md#additional-file-descriptors).

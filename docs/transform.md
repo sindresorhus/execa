@@ -55,7 +55,7 @@ const transform = function * (line) {
 
 const {stdout} = await execa({stdout: {transform, objectMode: true}})`node jsonlines-output.js`;
 for (const data of stdout) {
-	console.log(stdout); // {...object}
+	console.log(data); // {...object}
 }
 ```
 

@@ -174,7 +174,7 @@ const ipcInput = await getOneMessage();
 
 ## Message type
 
-By default, messages are serialized using [`structuredClone()`](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm). This supports most types including objects, arrays, `Error`, `Date`, `RegExp`, `Map`, `Set`, `bigint`, `Uint8Array`, and circular references. This throws when passing functions, symbols or promises (including inside an object or array).
+By default, messages are serialized using [`structuredClone()`](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm). This supports most types including objects, arrays, `Error`, `Date`, `RegExp`, `Map`, `Set`, `Uint8Array`, and circular references. This throws when passing functions, symbols or promises (including inside an object or array).
 
 To limit messages to JSON instead, the [`serialization`](api.md#optionsserialization) option can be set to `'json'`.
 

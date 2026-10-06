@@ -35,7 +35,7 @@ expectType<keyof SignalConstants | undefined>(unicornsResult.signal);
 expectType<string | undefined>(unicornsResult.signalDescription);
 expectType<string>(unicornsResult.cwd);
 expectType<number>(unicornsResult.durationMs);
-expectType<Result[]>(unicornsResult.pipedFrom);
+expectType<Array<Result | ExecaError>>(unicornsResult.pipedFrom);
 
 const unicornsResultSync = execaSync('unicorns', {all: true});
 expectAssignable<SyncResult>(unicornsResultSync);
@@ -76,7 +76,7 @@ if (error instanceof ExecaError) {
 	expectType<string>(error.originalMessage);
 	expectType<string | undefined>(error.code);
 	expectType<unknown>(error.cause);
-	expectType<Result[]>(error.pipedFrom);
+	expectType<Array<Result | ExecaError>>(error.pipedFrom);
 }
 
 const errorSync = new Error('.');

@@ -179,6 +179,7 @@ This is measured:
 - If the [`lines`](lines.md#simple-splitting) option is `true`: in lines.
 - If a [transform in object mode](transform.md#object-mode) is used: in objects.
 - With [`error.ipcOutput`](ipc.md#retrieve-all-messages): in messages.
+- With [synchronous methods](execution.md#synchronous-execution): in bytes, since `spawnSync()`'s limit is enforced by Node.js itself before the output is decoded or split into lines.
 
 ```js
 try {

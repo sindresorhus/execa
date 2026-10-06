@@ -113,6 +113,13 @@ test('child_process.spawnSync() early errors are propagated with a correct shape
 });
 
 if (!isWindows) {
+	// Without any file descriptor left, `child_process.spawn()` fails with EMFILE.
+	// Node.js then emits the error on the next tick, without creating the subprocess' streams.
+	test('execa() rejects if spawning fails with EMFILE', async () => {
+		const {stdout} = await execa('sh', ['-c', 'ulimit -n 64 && exec emfile.js']);
+		assert.equal(stdout, 'ExecaError EMFILE');
+	});
+
 	test('execa() rejects if running non-executable', async () => {
 		await assertRejects(execa('non-executable.js'));
 	});

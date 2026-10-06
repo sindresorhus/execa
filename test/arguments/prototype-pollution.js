@@ -257,3 +257,11 @@ test('Polluted "error" is ignored, sync early error', t => {
 	const {code} = execaSync('non-existent-command', {reject: false});
 	assert.equal(code, 'ENOENT');
 });
+
+// Without `lines`, the output has no `finalResult` property, which must not be read from the prototype
+test('Polluted "finalResult" is ignored, sync', t => {
+	pollutePrototype(t, {finalResult: foobarString});
+
+	const {stdout} = execaSync('empty.js');
+	assert.equal(stdout, '');
+});

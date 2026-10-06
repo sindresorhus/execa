@@ -98,6 +98,21 @@ test('child_process.spawn() early errors are propagated', async () => {
 	await assertRejects(getEarlyErrorSubprocess(), expectedEarlyError);
 });
 
+// File targets are opened before spawning, then closed since the subprocess did not spawn.
+// Failing to open them must not be an uncaught exception, which would crash the current process.
+const testEarlyErrorFile = async optionName => {
+	const {stdout} = await execa('early-error-file.js', [optionName]);
+	assert.equal(stdout, expectedEarlyError.code);
+};
+
+test('child_process.spawn() early errors do not crash if an output file cannot be opened', () => testEarlyErrorFile('stdout'));
+test('child_process.spawn() early errors do not crash if an input file cannot be opened', () => testEarlyErrorFile('stdin'));
+
+test('Invalid stdio options do not crash if an output file cannot be opened', async () => {
+	const {stdout} = await execa('invalid-stdio-file.js');
+	assert.equal(stdout, 'The `stdout` option cannot be an iterable.');
+});
+
 test('child_process.spawn() early errors are returned', async () => {
 	const {failed} = await getEarlyErrorSubprocess({reject: false});
 	assert.equal(failed, true);

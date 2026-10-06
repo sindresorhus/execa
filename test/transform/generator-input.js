@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {Buffer} from 'node:buffer';
+import {writeFile, rm} from 'node:fs/promises';
 import test from 'node:test';
+import tempfile from 'tempfile';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
@@ -157,3 +159,46 @@ test('Can use webTransforms with subprocess.stdio[*] as input', () => testGenera
 test('Can use webTransforms with subprocess.stdio[*] as input, objectMode', () => testGeneratorStdioInputPipe(true, false, 'webTransform'));
 test('Can use webTransforms with subprocess.stdio[*] as input, noop transform', () => testGeneratorStdioInputPipe(false, true, 'webTransform'));
 test('Can use webTransforms with subprocess.stdio[*] as input, objectMode, noop transform', () => testGeneratorStdioInputPipe(true, true, 'webTransform'));
+
+// Like with the output, an empty input is not passed as a chunk to binary transforms, which do not split lines
+const testEmptyInput = async (options, execaMethod) => {
+	const chunks = [];
+	const {stdout} = await execaMethod('stdin.js', {
+		...options,
+		stdin: {
+			* transform(chunk) {
+				chunks.push(chunk);
+				yield chunk;
+			},
+			binary: true,
+		},
+	});
+	assert.equal(stdout, '');
+	assert.deepEqual(chunks, []);
+};
+
+test('Binary input generators are not called with an empty "input" string', () => testEmptyInput({input: ''}, execa));
+test('Binary input generators are not called with an empty "input" Uint8Array', () => testEmptyInput({input: new Uint8Array()}, execa));
+test('Binary input generators are not called with an empty "input" string, sync', () => testEmptyInput({input: ''}, execaSync));
+test('Binary input generators are not called with an empty "input" Uint8Array, sync', () => testEmptyInput({input: new Uint8Array()}, execaSync));
+
+const testEmptyInputFile = async execaMethod => {
+	const filePath = tempfile();
+	await writeFile(filePath, '');
+	try {
+		await testEmptyInput({inputFile: filePath}, execaMethod);
+	} finally {
+		await rm(filePath);
+	}
+};
+
+test('Binary input generators are not called with an empty "inputFile"', () => testEmptyInputFile(execa));
+test('Binary input generators are not called with an empty "inputFile", sync', () => testEmptyInputFile(execaSync));
+
+const testEmptyInheritedInput = async isSync => {
+	const {stdout} = await execa('nested-input-transform-chunks.js', [isSync ? 'sync' : 'async'], {input: ''});
+	assert.equal(stdout, '0');
+};
+
+test('Binary input generators are not called with an empty inherited stdin', () => testEmptyInheritedInput(false));
+test('Binary input generators are not called with an empty inherited stdin, sync', () => testEmptyInheritedInput(true));

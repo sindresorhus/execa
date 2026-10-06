@@ -3,7 +3,7 @@ import {once} from 'node:events';
 import {setImmediate} from 'node:timers/promises';
 import test from 'node:test';
 import {assertThrows, assertRejects} from '../helpers/assert.js';
-import {execa, execaSync} from '../../index.js';
+import {execa, execaSync, ExecaSyncError} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {getStdio} from '../helpers/stdio.js';
 import {
@@ -98,6 +98,18 @@ test('stdio[*] option can be an async iterable of objects', () => testObjectIter
 test('stdin option can be an array of objects - sync', () => testObjectIterable([foobarObject], 0, execaSync));
 test('stdin option can be an iterable of objects - sync', () => testObjectIterable(foobarObjectGenerator(), 0, execaSync));
 
+// Writing those objects to `subprocess.stdin` fails, which must not crash the current process
+const testIterableNoGenerators = async (stdioOption, fdNumber) => {
+	await assertRejects(execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, stdioOption)), {message: /must be used to serialize/});
+};
+
+test('stdin option cannot be an array of objects without generators', () => testIterableNoGenerators([[foobarObject]], 0));
+test('stdin option cannot be an array of numbers without generators', () => testIterableNoGenerators([[0]], 0));
+test('stdio[*] option cannot be an array of objects without generators', () => testIterableNoGenerators([[foobarObject]], 3));
+test('stdin option cannot be an iterable of objects without generators', () => testIterableNoGenerators(foobarObjectGenerator(), 0));
+test('stdin option cannot be an async iterable of objects without generators', () => testIterableNoGenerators(foobarAsyncObjectGenerator(), 0));
+test('stdin option cannot be an array of strings and objects without generators', () => testIterableNoGenerators([[foobarString, foobarObject]], 0));
+
 const testIterableNoGeneratorsSync = (stdioOption, fdNumber) => {
 	assertThrows(() => {
 		execaSync('empty.js', getStdio(fdNumber, stdioOption));
@@ -150,16 +162,30 @@ const testIterableError = async fdNumber => {
 test('stdin option handles errors in iterables', () => testIterableError(0));
 test('stdio[*] option handles errors in iterables', () => testIterableError(3));
 
-const testIterableErrorSync = fdNumber => {
+// Like with asynchronous methods, the iterable's error is reported as the subprocess error
+test('stdin option handles errors in iterables - sync', () => {
 	const cause = new Error(foobarString);
 	const error = assertThrows(() => {
-		execaSync('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, throwingGenerator(cause)().transform()));
+		execaSync('stdin-fd.js', ['0'], getStdio(0, throwingGenerator(cause)().transform()));
 	});
-	assert.equal(error, cause);
-};
+	assert.ok(error instanceof ExecaSyncError);
+	assert.equal(error.cause, cause);
+	assert.equal(error.stdout, '');
+});
 
-test('stdin option handles errors in iterables - sync', () => testIterableErrorSync(0));
-test('stdio[*] option handles errors in iterables - sync', () => testIterableErrorSync(3));
+test('stdin option handles errors in iterables, reject: false - sync', () => {
+	const cause = new Error(foobarString);
+	const {failed, cause: errorCause} = execaSync('stdin-fd.js', ['0'], {...getStdio(0, throwingGenerator(cause)().transform()), reject: false});
+	assert.equal(failed, true);
+	assert.equal(errorCause, cause);
+});
+
+test('stdio[*] option cannot be an iterable - sync', () => {
+	const error = assertThrows(() => {
+		execaSync('stdin-fd.js', ['3'], getStdio(3, [[foobarString]]));
+	}, {message: /Only the `stdin` option, not `stdio\[3\]`, can be an iterable with synchronous methods/});
+	assert.ok(error instanceof ExecaSyncError);
+});
 
 const testNoIterableOutput = (stdioOption, fdNumber, execaMethod) => {
 	assertThrows(() => {

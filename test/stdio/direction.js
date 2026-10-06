@@ -105,6 +105,41 @@ test('stdio[*] { value: "pipe", input: true } cannot be used in sync mode with b
 	}, {message: /can be an input pipe with synchronous methods/});
 });
 
+// Nothing could write to that file descriptor after spawning, so the subprocess would hang reading it
+const testInputTransformSync = stdioOption => {
+	assertThrows(() => {
+		execaSync('stdin-fd.js', ['3'], getStdio(3, stdioOption));
+	}, {message: /Only the `stdin` option, not `stdio\[3\]`, can be an input transform with synchronous methods/});
+};
+
+test('stdio[*] { value: generator, input: true } cannot be used in sync mode', () => testInputTransformSync({
+	* value(line) {
+		yield line;
+	},
+	input: true,
+}));
+test('stdio[*] { value: {transform}, input: true } cannot be used in sync mode', () => testInputTransformSync({
+	value: {
+		* transform(line) {
+			yield line;
+		},
+	},
+	input: true,
+}));
+
+test('stdin { value: generator, input: true } can be used in sync mode', () => {
+	const {stdout} = execaSync('stdin.js', {
+		stdin: {
+			* value(line) {
+				yield line.toUpperCase();
+			},
+			input: true,
+		},
+		input: foobarString,
+	});
+	assert.equal(stdout, foobarString.toUpperCase());
+});
+
 const testDirectionOutputPipe = async (stdioOption, execaMethod) => {
 	const {stdio} = await execaMethod('noop-fd.js', ['3', foobarString], getStdio(3, stdioOption));
 	assert.equal(stdio[3], foobarString);

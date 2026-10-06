@@ -4,7 +4,10 @@ import test from 'node:test';
 import {assertRejects, assertLike} from '../helpers/assert.js';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {prematureClose} from '../helpers/stdio.js';
+import {prematureClose, getStdio} from '../helpers/stdio.js';
+import {noopGenerator, noopAsyncGenerator} from '../helpers/generator.js';
+import {noopDuplex as noopDuplexTransform} from '../helpers/duplex.js';
+import {foobarString} from '../helpers/input.js';
 import {noopReadable, noopWritable, noopDuplex} from '../helpers/stream.js';
 import {
 	endOptionStream,
@@ -101,3 +104,24 @@ test('Throws abort error when stderr option aborts with no more writes, with a t
 test('Throws abort error when stderr option Duplex aborts with no more writes, with a transform', () => testStreamAbortFail(destroyOptionStream, noopDuplex(), 2, true));
 test('Throws abort error when output stdio[*] option aborts with no more writes, with a transform', () => testStreamAbortFail(destroyOptionStream, noopWritable(), 3, true));
 test('Throws abort error when output stdio[*] Duplex option aborts with no more writes, with a transform', () => testStreamAbortFail(destroyOptionStream, noopDuplex(), 3, true));
+
+// Like with `stdin: 'pipe'`, the subprocess does not need to read its input, nor `subprocess.stdin` to be ended
+const testUnusedInputTransform = async (fdNumber, transform) => {
+	const {exitCode} = await execa('empty.js', getStdio(fdNumber, {value: transform, input: true}));
+	assert.equal(exitCode, 0);
+};
+
+test('Passes when the subprocess does not read stdin, with a transform', () => testUnusedInputTransform(0, noopGenerator(false)));
+test('Passes when the subprocess does not read stdin, with an async transform', () => testUnusedInputTransform(0, noopAsyncGenerator(false)));
+test('Passes when the subprocess does not read stdin, with a Duplex', () => testUnusedInputTransform(0, noopDuplexTransform(false)));
+test('Passes when the subprocess does not read stdin, with a TransformStream', () => testUnusedInputTransform(0, {transform: new TransformStream()}));
+test('Passes when the subprocess does not read stdio[*], with a transform', () => testUnusedInputTransform(3, noopGenerator(false)));
+test('Passes when the subprocess does not read stdin, with stdin: "pipe"', () => testUnusedInputTransform(0, 'pipe'));
+test('Passes when the subprocess does not read stdio[*], with stdio[*]: "pipe"', () => testUnusedInputTransform(3, 'pipe'));
+
+test('Passes when the subprocess does not read the stdin transform it is written to', async () => {
+	const subprocess = execa('empty.js', {stdin: noopGenerator(false)});
+	subprocess.stdin.write(foobarString);
+	const {exitCode} = await subprocess;
+	assert.equal(exitCode, 0);
+});

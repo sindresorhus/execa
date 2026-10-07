@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {once} from 'node:events';
+import {setTimeout} from 'node:timers/promises';
 import test from 'node:test';
 import {assertRejects, assertLike} from '../helpers/assert.js';
 import {execa} from '../../index.js';
@@ -166,4 +167,33 @@ test('Can unpipe to prevent termination to propagate to destination', async () =
 
 	destination.stdin.end(foobarString);
 	assertLike(await destination, {stdout: foobarString});
+});
+
+test('The "unpipeSignal" option must be an AbortSignal', async () => {
+	const source = execa('noop.js', [foobarString]);
+	const {cause} = await assertRejects(source.pipe('stdin.js', {unpipeSignal: foobarString}));
+	assert.equal(cause.message, `The \`unpipeSignal\` option must be an AbortSignal: ${foobarString}.`);
+	await source;
+});
+
+// The unpiped destination ending later must not abort the source, which is still piped to the other destination
+test('Unpiping one destination does not affect the other destinations of the same source', async () => {
+	const source = execa('noop-repeat.js', ['1', `${foobarString}\n`]);
+	const unpipedDestination = execa('stdin.js');
+	const receivingDestination = execa('stdin.js');
+	const controller = new AbortController();
+	const pipePromise = source.pipe(unpipedDestination, {unpipeSignal: controller.signal});
+	source.pipe(receivingDestination).catch(() => {});
+
+	controller.abort();
+	await assertRejects(pipePromise);
+	unpipedDestination.stdin.end();
+	await unpipedDestination;
+	await setTimeout(100);
+	source.kill();
+
+	const {isTerminated} = await assertRejects(source);
+	assert.ok(isTerminated);
+	const {stdout} = await receivingDestination;
+	assert.ok(stdout.split('\n').length > 2);
 });

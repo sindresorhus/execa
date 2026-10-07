@@ -48,6 +48,11 @@ const testInvalidForceKill = async forceKillAfterDelay => {
 };
 
 test('`forceKillAfterDelay` should not be fractional', () => testInvalidForceKill(5000.5));
+test('`forceKillAfterDelay` should not be null', () => {
+	assertThrows(() => {
+		execa('empty.js', {forceKillAfterDelay: null});
+	}, {instanceOf: TypeError, message: /got `null` \(null\)/});
+});
 test('`forceKillAfterDelay` should not be NaN', () => testInvalidForceKill(NaN));
 test('`forceKillAfterDelay` should not be negative', () => testInvalidForceKill(-1));
 // Larger delays make timers fire right away

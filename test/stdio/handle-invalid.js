@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import {open, rm} from 'node:fs/promises';
 import test from 'node:test';
+import tempfile from 'tempfile';
 import {assertThrows} from '../helpers/assert.js';
 import {execa, execaSync} from '../../index.js';
 import {getStdio} from '../helpers/stdio.js';
@@ -100,3 +102,25 @@ test('Cannot pass a too large file descriptor to stderr', () => testInvalidFileD
 test('Cannot pass a negative file descriptor to stdio[*]', () => testInvalidFileDescriptor(3, 'stdio[3]', -1, execa));
 test('Cannot pass a fractional file descriptor to stdout', () => testInvalidFileDescriptor(1, 'stdout', 1.5, execaSync));
 test('Cannot pass a negative file descriptor to stdin', () => testInvalidFileDescriptor(0, 'stdin', -1, execaSync));
+
+const testUnknownNativeValue = (invalidStdio, fdNumber, execaMethod) => {
+	const {message} = assertThrows(() => {
+		execaMethod('empty.js', getStdio(fdNumber, ['pipe', invalidStdio]));
+	}, {instanceOf: TypeError});
+	assert.ok(message.includes(`option is invalid: ${String(invalidStdio)} (${typeof invalidStdio})`));
+};
+
+test('Cannot pass "true" and another value to stdout', () => testUnknownNativeValue(true, 1, execa));
+test('Cannot pass a plain object and another value to stdout', () => testUnknownNativeValue({}, 1, execa));
+test('Cannot pass "false" and another value to stdin', () => testUnknownNativeValue(false, 0, execa));
+test('Cannot pass "true" and another value to stdout - sync', () => testUnknownNativeValue(true, 1, execaSync));
+
+test('Cannot pass a file handle and another value to stdout', async () => {
+	const filePath = tempfile();
+	const fileHandle = await open(filePath, 'w');
+	assertThrows(() => {
+		execa('empty.js', getStdio(1, ['pipe', fileHandle]));
+	}, {instanceOf: TypeError, message: /`stdout` option cannot combine file handles with other values/});
+	await fileHandle.close();
+	await rm(filePath);
+});

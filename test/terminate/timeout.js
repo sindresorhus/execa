@@ -58,6 +58,11 @@ test('timeout must be a number - sync', () => testTimeoutValidation(false, execa
 // Larger delays make timers fire right away
 test('timeout must not be larger than the maximum timer delay', () => testTimeoutValidation(2 ** 31, execa));
 test('timeout must not be larger than the maximum timer delay - sync', () => testTimeoutValidation(2 ** 31, execaSync));
+test('timeout must not be null', () => {
+	assertThrows(() => {
+		execa('empty.js', {timeout: null});
+	}, {message: /got `null` \(null\)/});
+});
 
 const testMaxTimeout = async execaMethod => {
 	const {timedOut} = await execaMethod('noop.js', {timeout: (2 ** 31) - 1});

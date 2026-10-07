@@ -24,6 +24,15 @@ test('pass `stdout` to a file descriptor - sync', () => testFileDescriptorOption
 test('pass `stderr` to a file descriptor - sync', () => testFileDescriptorOption(2, execaSync));
 test('pass `stdio[*]` to a file descriptor - sync', () => testFileDescriptorOption(3, execaSync));
 
+test('pass `stdout` to a file descriptor in a single-item array', async () => {
+	const filePath = tempfile();
+	const fileDescriptor = await open(filePath, 'w');
+	await execa('noop-fd.js', ['1', 'foobar'], {stdout: [fileDescriptor]});
+	assert.equal(await readFile(filePath, 'utf8'), 'foobar');
+	await rm(filePath);
+	await fileDescriptor.close();
+});
+
 const testStdinWrite = async fdNumber => {
 	const subprocess = execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, 'pipe'));
 	subprocess.stdio[fdNumber].end('unicorns');

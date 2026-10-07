@@ -493,3 +493,11 @@ const testBigOutput = async methodName => {
 
 test('.readable() with big output', () => testBigOutput('readable'));
 test('.duplex() with big output', () => testBigOutput('duplex'));
+
+test('The "binary" readable option must use a boolean', () => {
+	assert.throws(() => execa('noop.js').readable({binary: 'true'}), {message: /`binary` option must use a boolean/});
+});
+
+test('The "preserveNewlines" readable option must use a boolean', () => {
+	assert.throws(() => execa('noop.js').readable({preserveNewlines: 'true'}), {message: /`preserveNewlines` option must use a boolean/});
+});

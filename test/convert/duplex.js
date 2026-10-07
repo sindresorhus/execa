@@ -209,3 +209,7 @@ test('.duplex() has the right highWaterMark', async () => {
 	stream.end();
 	await text(stream);
 });
+
+test('The "binary" duplex option must use a boolean', () => {
+	assert.throws(() => execa('noop.js').duplex({binary: 'true'}), {message: /`binary` option must use a boolean/});
+});

@@ -48,6 +48,7 @@ const stdioCases = [
 	[{stdout: 1, stderr: 2}, ['pipe', 1, 2]],
 
 	[{stdio: {foo: 'bar'}}, new TypeError('Expected `stdio` to be of type `string` or `Array`, got `object`')],
+	[{stdio: null}, new TypeError('Expected `stdio` to be of type `string` or `Array`, got `null`')],
 
 	[{stdin: 'inherit', stdio: 'pipe'}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`')],
 	[{stdin: 'inherit', stdio: ['pipe']}, new Error('It\'s not possible to provide `stdio` in combination with one of `stdin`, `stdout`, `stderr`')],

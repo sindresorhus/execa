@@ -386,6 +386,12 @@ const testInvalidExpression = invalidExpression => {
 };
 
 test('$ throws on invalid expression - undefined', () => testInvalidExpression(undefined));
+test('$ throws on invalid expression - null mentions null', () => {
+	assertThrows(
+		() => $`echo.js ${null}`,
+		{message: 'Unexpected "null" in template expression'},
+	);
+});
 test('$ throws on invalid expression - null', () => testInvalidExpression(null));
 test('$ throws on invalid expression - true', () => testInvalidExpression(true));
 test('$ throws on invalid expression - {}', () => testInvalidExpression({}));

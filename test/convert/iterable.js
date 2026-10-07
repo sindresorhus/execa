@@ -154,3 +154,11 @@ const testStdoutError = async (destroyStdout, isAbort, cause) => {
 test('Propagate stdout abort', () => testStdoutError(subprocessStdout => subprocessStdout.destroy(), true));
 test('Propagate stdout error', () => testStdoutError((subprocessStdout, cause) => subprocessStdout.destroy(cause), false, new Error(foobarString)));
 test('Propagate stdout "error" event', () => testStdoutError((subprocessStdout, cause) => subprocessStdout.emit('error', cause), true, new Error(foobarString)));
+
+test('The "binary" iterable option must use a boolean', () => {
+	assert.throws(() => execa('noop.js').iterable({binary: 'true'}), {message: /`binary` option must use a boolean/});
+});
+
+test('The "preserveNewlines" iterable option must use a boolean', () => {
+	assert.throws(() => execa('noop.js').iterable({preserveNewlines: 'true'}), {message: /`preserveNewlines` option must use a boolean/});
+});

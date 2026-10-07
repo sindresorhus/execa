@@ -153,3 +153,9 @@ test('exports.sendMessage() handles I/O errors', async () => {
 	assert.ok(message.includes(`Error: ${foobarString}`));
 	assert.deepEqual(ipcOutput, []);
 });
+
+test('The "strict" sendMessage() option must use a boolean', async () => {
+	const subprocess = execa('empty.js', {ipc: true});
+	assert.throws(() => subprocess.sendMessage(foobarString, {strict: 'true'}), {message: /`strict` option must use a boolean/});
+	await subprocess;
+});

@@ -203,6 +203,14 @@ test('The "nodeOptions" option can be used - execaNode()', () => testNodeOptions
 test('The "nodeOptions" option can be used - "node" option', () => testNodeOptions(runWithNodeOption));
 test('The "nodeOptions" option can be used - "node" option sync', () => testNodeOptions(runWithNodeOptionSync));
 
+test('The "nodeOptions" option must be an array of strings', () => {
+	assertThrows(() => execaNode('empty.js', {nodeOptions: '--version'}), {instanceOf: TypeError, message: /The "nodeOptions" option must be an array of strings/});
+});
+
+test('The "nodeOptions" option items must be strings', () => {
+	assertThrows(() => execaNode('empty.js', {nodeOptions: ['--version', 5]}), {instanceOf: TypeError, message: /The "nodeOptions" option must be an array of strings/});
+});
+
 const spawnNestedExecaNode = (realExecArgv, fakeExecArgv, execaMethod, nodeOptions) => execa(
 	'node',
 	[...realExecArgv, 'nested-node.js', fakeExecArgv, execaMethod, nodeOptions, 'noop.js', foobarString],

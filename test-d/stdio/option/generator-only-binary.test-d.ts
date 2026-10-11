@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -33,12 +33,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', binaryOnly]})
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [binaryOnly]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [binaryOnly]]}));
 
-expectNotAssignable<StdinOption>(binaryOnly);
-expectNotAssignable<StdinSyncOption>(binaryOnly);
-expectNotAssignable<StdinOption>([binaryOnly]);
-expectNotAssignable<StdinSyncOption>([binaryOnly]);
+expectTypeOf(binaryOnly).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(binaryOnly).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([binaryOnly]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([binaryOnly]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(binaryOnly);
-expectNotAssignable<StdoutStderrSyncOption>(binaryOnly);
-expectNotAssignable<StdoutStderrOption>([binaryOnly]);
-expectNotAssignable<StdoutStderrSyncOption>([binaryOnly]);
+expectTypeOf(binaryOnly).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(binaryOnly).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([binaryOnly]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([binaryOnly]).not.toBeAssignableTo<StdoutStderrSyncOption>();

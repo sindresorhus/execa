@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -31,12 +31,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 2]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [2]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [2]]});
 
-expectNotAssignable<StdinOption>(2);
-expectNotAssignable<StdinSyncOption>(2);
-expectNotAssignable<StdinOption>([2]);
-expectNotAssignable<StdinSyncOption>([2]);
+expectTypeOf<2>().not.toBeAssignableTo<StdinOption>();
+expectTypeOf<2>().not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf<[2]>().not.toBeAssignableTo<StdinOption>();
+expectTypeOf<[2]>().not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>(2);
-expectAssignable<StdoutStderrSyncOption>(2);
-expectAssignable<StdoutStderrOption>([2]);
-expectAssignable<StdoutStderrSyncOption>([2]);
+expectTypeOf<2>().toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf<2>().toBeAssignableTo<StdoutStderrSyncOption>();
+[2] satisfies StdoutStderrOption;
+[2] satisfies StdoutStderrSyncOption;

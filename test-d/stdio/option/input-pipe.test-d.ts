@@ -1,5 +1,5 @@
 import {Writable} from 'node:stream';
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -40,25 +40,25 @@ await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'inherit', inpu
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: new URL('file:///test'), input: true}]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: {file: './example'}, input: true}]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: transform, input: true}]});
-expectAssignable<StdinOption>({value: 'inherit', input: true});
-expectAssignable<StdinOption>({value: {file: './example'}, input: true});
+({value: 'inherit', input: true}) satisfies StdinOption;
+({value: {file: './example'}, input: true}) satisfies StdinOption;
 
 // A value with a fixed direction cannot be marked as input.
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: new Writable(), input: true}]}));
 
-expectAssignable<StdinOption>(inputPipe);
-expectAssignable<StdinOption>(booleanInputPipe);
-expectAssignable<StdinSyncOption>(inputPipe);
-expectAssignable<StdinSyncOption>(booleanInputPipe);
-expectAssignable<StdoutStderrOption>(inputPipe);
-expectAssignable<StdoutStderrOption>(booleanInputPipe);
-expectAssignable<StdoutStderrSyncOption>(inputPipe);
-expectAssignable<StdoutStderrSyncOption>(booleanInputPipe);
-expectAssignable<StdinOption>([inputPipe]);
-expectAssignable<StdinOption>([booleanInputPipe]);
-expectAssignable<StdinSyncOption>([inputPipe]);
-expectAssignable<StdinSyncOption>([booleanInputPipe]);
-expectAssignable<StdoutStderrOption>([inputPipe]);
-expectAssignable<StdoutStderrOption>([booleanInputPipe]);
-expectAssignable<StdoutStderrSyncOption>([inputPipe]);
-expectAssignable<StdoutStderrSyncOption>([booleanInputPipe]);
+expectTypeOf(inputPipe).toBeAssignableTo<StdinOption>();
+expectTypeOf(booleanInputPipe).toBeAssignableTo<StdinOption>();
+expectTypeOf(inputPipe).toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(booleanInputPipe).toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(inputPipe).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(booleanInputPipe).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(inputPipe).toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf(booleanInputPipe).toBeAssignableTo<StdoutStderrSyncOption>();
+[inputPipe] satisfies StdinOption;
+[booleanInputPipe] satisfies StdinOption;
+[inputPipe] satisfies StdinSyncOption;
+[booleanInputPipe] satisfies StdinSyncOption;
+[inputPipe] satisfies StdoutStderrOption;
+[booleanInputPipe] satisfies StdoutStderrOption;
+[inputPipe] satisfies StdoutStderrSyncOption;
+[booleanInputPipe] satisfies StdoutStderrSyncOption;

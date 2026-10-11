@@ -1,4 +1,4 @@
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -37,12 +37,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', stringGeneratorFull]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGeneratorFull]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGeneratorFull]]});
 
-expectAssignable<StdinOption>(stringGeneratorFull);
-expectAssignable<StdinSyncOption>(stringGeneratorFull);
-expectAssignable<StdinOption>([stringGeneratorFull]);
-expectAssignable<StdinSyncOption>([stringGeneratorFull]);
+expectTypeOf(stringGeneratorFull).toBeAssignableTo<StdinOption>();
+expectTypeOf(stringGeneratorFull).toBeAssignableTo<StdinSyncOption>();
+[stringGeneratorFull] satisfies StdinOption;
+[stringGeneratorFull] satisfies StdinSyncOption;
 
-expectAssignable<StdoutStderrOption>(stringGeneratorFull);
-expectAssignable<StdoutStderrSyncOption>(stringGeneratorFull);
-expectAssignable<StdoutStderrOption>([stringGeneratorFull]);
-expectAssignable<StdoutStderrSyncOption>([stringGeneratorFull]);
+expectTypeOf(stringGeneratorFull).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(stringGeneratorFull).toBeAssignableTo<StdoutStderrSyncOption>();
+[stringGeneratorFull] satisfies StdoutStderrOption;
+[stringGeneratorFull] satisfies StdoutStderrSyncOption;

@@ -1,7 +1,7 @@
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {getCancelSignal, execa} from '../../index.js';
 
-expectType<Promise<AbortSignal>>(getCancelSignal());
+expectTypeOf(getCancelSignal()).toBe<Promise<AbortSignal>>();
 
 expectError(await getCancelSignal(''));
 

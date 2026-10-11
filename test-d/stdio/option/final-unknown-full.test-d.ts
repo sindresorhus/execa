@@ -1,4 +1,4 @@
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -41,12 +41,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', unknownFinalFull]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [unknownFinalFull]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [unknownFinalFull]]});
 
-expectAssignable<StdinOption>(unknownFinalFull);
-expectAssignable<StdinSyncOption>(unknownFinalFull);
-expectAssignable<StdinOption>([unknownFinalFull]);
-expectAssignable<StdinSyncOption>([unknownFinalFull]);
+expectTypeOf(unknownFinalFull).toBeAssignableTo<StdinOption>();
+expectTypeOf(unknownFinalFull).toBeAssignableTo<StdinSyncOption>();
+[unknownFinalFull] satisfies StdinOption;
+[unknownFinalFull] satisfies StdinSyncOption;
 
-expectAssignable<StdoutStderrOption>(unknownFinalFull);
-expectAssignable<StdoutStderrSyncOption>(unknownFinalFull);
-expectAssignable<StdoutStderrOption>([unknownFinalFull]);
-expectAssignable<StdoutStderrSyncOption>([unknownFinalFull]);
+expectTypeOf(unknownFinalFull).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(unknownFinalFull).toBeAssignableTo<StdoutStderrSyncOption>();
+[unknownFinalFull] satisfies StdoutStderrOption;
+[unknownFinalFull] satisfies StdoutStderrSyncOption;

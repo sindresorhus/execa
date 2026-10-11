@@ -1,10 +1,10 @@
 import type {ReadableWritablePair} from 'node:stream/web';
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa} from '../../index.js';
 
 const subprocess = execa('unicorns');
 
-expectType<ReadableWritablePair>(subprocess.transformStream());
+expectTypeOf(subprocess.transformStream()).toBe<ReadableWritablePair>();
 
 subprocess.transformStream({from: 'stdout'});
 subprocess.transformStream({from: 'stderr'});

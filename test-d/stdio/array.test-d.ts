@@ -1,4 +1,4 @@
-import {expectError} from 'tsd';
+import {expectError} from 'nz';
 import {execa, execaSync} from '../../index.js';
 
 expectError(await execa('unicorns', {stdio: []}));

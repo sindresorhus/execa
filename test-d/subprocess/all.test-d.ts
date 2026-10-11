@@ -1,9 +1,9 @@
 import type {Readable} from 'node:stream';
-import {expectType} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {execa} from '../../index.js';
 
 const allSubprocess = execa('unicorns', {all: true});
-expectType<Readable>(allSubprocess.all);
+expectTypeOf(allSubprocess.all).toBe<Readable>();
 
 const noAllSubprocess = execa('unicorns');
-expectType<undefined>(noAllSubprocess.all);
+expectTypeOf(noAllSubprocess.all).toBe<undefined>();

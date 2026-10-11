@@ -1,4 +1,4 @@
-import {expectType, expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execaSync, type SyncResult} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
@@ -7,49 +7,49 @@ const stringArray = ['foo', 'bar'] as const;
 expectError(execaSync());
 expectError(execaSync(true));
 expectError(execaSync(['unicorns', 'arg']));
-expectType<SyncResult<{}>>(execaSync('unicorns'));
-expectType<SyncResult<{}>>(execaSync(fileUrl));
+expectTypeOf(execaSync('unicorns')).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync(fileUrl)).toBe<SyncResult<{}>>();
 
-expectType<SyncResult<{}>>(execaSync('unicorns', []));
-expectType<SyncResult<{}>>(execaSync('unicorns', ['foo']));
+expectTypeOf(execaSync('unicorns', [])).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync('unicorns', ['foo'])).toBe<SyncResult<{}>>();
 expectError(execaSync('unicorns', 'foo'));
 expectError(execaSync('unicorns', [true]));
 
-expectType<SyncResult<{}>>(execaSync('unicorns', {}));
-expectType<SyncResult<{}>>(execaSync('unicorns', [], {}));
+expectTypeOf(execaSync('unicorns', {})).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync('unicorns', [], {})).toBe<SyncResult<{}>>();
 expectError(execaSync('unicorns', [], []));
 expectError(execaSync('unicorns', {other: true}));
 
-expectType<SyncResult<{}>>(execaSync`unicorns`);
-expectType<SyncResult<{}>>(execaSync('unicorns'));
-expectType<SyncResult<{}>>(execaSync`unicorns`);
+expectTypeOf(execaSync`unicorns`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync('unicorns')).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns`).toBe<SyncResult<{}>>();
 
-expectAssignable<typeof execaSync>(execaSync({}));
-expectType<SyncResult<{}>>(execaSync({})('unicorns'));
-expectType<SyncResult<{}>>(execaSync({})`unicorns`);
+expectTypeOf(execaSync({})).toBeAssignableTo<typeof execaSync>();
+expectTypeOf(execaSync({})('unicorns')).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync({})`unicorns`).toBe<SyncResult<{}>>();
 
-expectAssignable<{stdout: string}>(execaSync('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(execaSync('unicorns', {encoding: 'buffer'}));
-expectAssignable<{stdout: string}>(execaSync('unicorns', ['foo']));
-expectAssignable<{stdout: Uint8Array}>(execaSync('unicorns', ['foo'], {encoding: 'buffer'}));
-expectAssignable<{stdout: string}>(execaSync({})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(execaSync({encoding: 'buffer'})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(execaSync({})({encoding: 'buffer'})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(execaSync({encoding: 'buffer'})({})('unicorns'));
-expectAssignable<{stdout: string}>(execaSync({})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(execaSync({encoding: 'buffer'})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(execaSync({})({encoding: 'buffer'})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(execaSync({encoding: 'buffer'})({})`unicorns`);
+expectTypeOf(execaSync('unicorns')).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(execaSync('unicorns', {encoding: 'buffer'})).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(execaSync('unicorns', ['foo'])).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(execaSync('unicorns', ['foo'], {encoding: 'buffer'})).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(execaSync({})('unicorns')).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(execaSync({encoding: 'buffer'})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(execaSync({})({encoding: 'buffer'})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(execaSync({encoding: 'buffer'})({})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(execaSync({})`unicorns`).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(execaSync({encoding: 'buffer'})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(execaSync({})({encoding: 'buffer'})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(execaSync({encoding: 'buffer'})({})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
 
-expectType<SyncResult<{}>>(execaSync`${'unicorns'}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${'foo'}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${'foo'} ${'bar'}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${1}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${stringArray}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${[1, 2]}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${false.toString()}`);
+expectTypeOf(execaSync`${'unicorns'}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${'foo'}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${'foo'} ${'bar'}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${1}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${stringArray}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${[1, 2]}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${false.toString()}`).toBe<SyncResult<{}>>();
 expectError(execaSync`unicorns ${false}`);
 
-expectType<SyncResult<{}>>(execaSync`unicorns ${execaSync`echo foo`}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${execaSync({reject: false})`echo foo`}`);
-expectType<SyncResult<{}>>(execaSync`unicorns ${[execaSync`echo foo`, 'bar']}`);
+expectTypeOf(execaSync`unicorns ${execaSync`echo foo`}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${execaSync({reject: false})`echo foo`}`).toBe<SyncResult<{}>>();
+expectTypeOf(execaSync`unicorns ${[execaSync`echo foo`, 'bar']}`).toBe<SyncResult<{}>>();

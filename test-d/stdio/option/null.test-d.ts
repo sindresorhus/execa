@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -31,12 +31,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', null]}));
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [null]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [null]]}));
 
-expectNotAssignable<StdinOption>(null);
-expectNotAssignable<StdinSyncOption>(null);
-expectNotAssignable<StdinOption>([null]);
-expectNotAssignable<StdinSyncOption>([null]);
+expectTypeOf<null>().not.toBeAssignableTo<StdinOption>();
+expectTypeOf<null>().not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf<[null]>().not.toBeAssignableTo<StdinOption>();
+expectTypeOf<[null]>().not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(null);
-expectNotAssignable<StdoutStderrSyncOption>(null);
-expectNotAssignable<StdoutStderrOption>([null]);
-expectNotAssignable<StdoutStderrSyncOption>([null]);
+expectTypeOf<null>().not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf<null>().not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf<[null]>().not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf<[null]>().not.toBeAssignableTo<StdoutStderrSyncOption>();

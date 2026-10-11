@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -33,12 +33,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', invalidFileOb
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidFileObject]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidFileObject]]}));
 
-expectNotAssignable<StdinOption>(invalidFileObject);
-expectNotAssignable<StdinSyncOption>(invalidFileObject);
-expectNotAssignable<StdinOption>([invalidFileObject]);
-expectNotAssignable<StdinSyncOption>([invalidFileObject]);
+expectTypeOf(invalidFileObject).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(invalidFileObject).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([invalidFileObject]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([invalidFileObject]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(invalidFileObject);
-expectNotAssignable<StdoutStderrSyncOption>(invalidFileObject);
-expectNotAssignable<StdoutStderrOption>([invalidFileObject]);
-expectNotAssignable<StdoutStderrSyncOption>([invalidFileObject]);
+expectTypeOf(invalidFileObject).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(invalidFileObject).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([invalidFileObject]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([invalidFileObject]).not.toBeAssignableTo<StdoutStderrSyncOption>();

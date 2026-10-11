@@ -1,10 +1,4 @@
-import {
-	expectType,
-	expectNotType,
-	expectAssignable,
-	expectNotAssignable,
-	expectError,
-} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -69,31 +63,31 @@ expectError(execaSync('unicorns', {verbose: (verboseLine: string, verboseObject:
 
 await execa('unicorns', {
 	verbose(verboseLine: string, verboseObject: VerboseObject) {
-		expectNotType<string>(verboseObject.type);
-		expectAssignable<string>(verboseObject.type);
-		expectNotAssignable<boolean>(verboseObject.type);
-		expectType<string>(verboseObject.message);
-		expectType<string>(verboseObject.escapedCommand);
-		expectType<string>(verboseObject.commandId);
-		expectType<Date>(verboseObject.timestamp);
-		expectType<Result | undefined>(verboseObject.result);
-		expectType<boolean>(verboseObject.piped);
-		expectType<Options>(verboseObject.options);
+		expectTypeOf(verboseObject.type).not.toBe<string>();
+		expectTypeOf(verboseObject.type).toBeAssignableTo<string>();
+		expectTypeOf(verboseObject.type).not.toBeAssignableTo<boolean>();
+		expectTypeOf(verboseObject.message).toBe<string>();
+		expectTypeOf(verboseObject.escapedCommand).toBe<string>();
+		expectTypeOf(verboseObject.commandId).toBe<string>();
+		expectTypeOf(verboseObject.timestamp).toBe<Date>();
+		expectTypeOf(verboseObject.result).toBe<Result | undefined>();
+		expectTypeOf(verboseObject.piped).toBe<boolean>();
+		expectTypeOf(verboseObject.options).toBe<Options>();
 		expectError(verboseObject.other);
 	},
 });
 execaSync('unicorns', {
 	verbose(verboseLine: string, verboseObject: SyncVerboseObject) {
-		expectNotType<string>(verboseObject.type);
-		expectAssignable<string>(verboseObject.type);
-		expectNotAssignable<boolean>(verboseObject.type);
-		expectType<string>(verboseObject.message);
-		expectType<string>(verboseObject.escapedCommand);
-		expectType<string>(verboseObject.commandId);
-		expectType<Date>(verboseObject.timestamp);
-		expectType<SyncResult | undefined>(verboseObject.result);
-		expectType<boolean>(verboseObject.piped);
-		expectType<SyncOptions>(verboseObject.options);
+		expectTypeOf(verboseObject.type).not.toBe<string>();
+		expectTypeOf(verboseObject.type).toBeAssignableTo<string>();
+		expectTypeOf(verboseObject.type).not.toBeAssignableTo<boolean>();
+		expectTypeOf(verboseObject.message).toBe<string>();
+		expectTypeOf(verboseObject.escapedCommand).toBe<string>();
+		expectTypeOf(verboseObject.commandId).toBe<string>();
+		expectTypeOf(verboseObject.timestamp).toBe<Date>();
+		expectTypeOf(verboseObject.result).toBe<SyncResult | undefined>();
+		expectTypeOf(verboseObject.piped).toBe<boolean>();
+		expectTypeOf(verboseObject.options).toBe<SyncOptions>();
 		expectError(verboseObject.other);
 	},
 });

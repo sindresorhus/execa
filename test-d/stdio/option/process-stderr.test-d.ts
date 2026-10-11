@@ -1,5 +1,5 @@
 import * as process from 'node:process';
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -32,12 +32,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', process.stderr]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [process.stderr]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [process.stderr]]}));
 
-expectNotAssignable<StdinOption>(process.stderr);
-expectNotAssignable<StdinSyncOption>(process.stderr);
-expectNotAssignable<StdinOption>([process.stderr]);
-expectNotAssignable<StdinSyncOption>([process.stderr]);
+expectTypeOf(process.stderr).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(process.stderr).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([process.stderr]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([process.stderr]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>(process.stderr);
-expectAssignable<StdoutStderrSyncOption>(process.stderr);
-expectAssignable<StdoutStderrOption>([process.stderr]);
-expectNotAssignable<StdoutStderrSyncOption>([process.stderr]);
+expectTypeOf(process.stderr).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(process.stderr).toBeAssignableTo<StdoutStderrSyncOption>();
+[process.stderr] satisfies StdoutStderrOption;
+expectTypeOf([process.stderr]).not.toBeAssignableTo<StdoutStderrSyncOption>();

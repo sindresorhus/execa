@@ -1,5 +1,5 @@
 import * as process from 'node:process';
-import {expectType} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -8,131 +8,131 @@ import {
 } from '../../index.js';
 
 const inheritStdoutResult = await execa('unicorns', {stdout: 'inherit', all: true});
-expectType<undefined>(inheritStdoutResult.stdout);
-expectType<string>(inheritStdoutResult.stderr);
-expectType<string>(inheritStdoutResult.all);
+expectTypeOf(inheritStdoutResult.stdout).toBe<undefined>();
+expectTypeOf(inheritStdoutResult.stderr).toBe<string>();
+expectTypeOf(inheritStdoutResult.all).toBe<string>();
 
 const inheritStderrResult = await execa('unicorns', {stderr: 'inherit', all: true});
-expectType<string>(inheritStderrResult.stdout);
-expectType<undefined>(inheritStderrResult.stderr);
-expectType<string>(inheritStderrResult.all);
+expectTypeOf(inheritStderrResult.stdout).toBe<string>();
+expectTypeOf(inheritStderrResult.stderr).toBe<undefined>();
+expectTypeOf(inheritStderrResult.all).toBe<string>();
 
 const inheritArrayStdoutResult = await execa('unicorns', {stdout: ['inherit'] as ['inherit'], all: true});
-expectType<undefined>(inheritArrayStdoutResult.stdout);
-expectType<string>(inheritArrayStdoutResult.stderr);
-expectType<string>(inheritArrayStdoutResult.all);
+expectTypeOf(inheritArrayStdoutResult.stdout).toBe<undefined>();
+expectTypeOf(inheritArrayStdoutResult.stderr).toBe<string>();
+expectTypeOf(inheritArrayStdoutResult.all).toBe<string>();
 
 const inheritArrayStderrResult = await execa('unicorns', {stderr: ['inherit'] as ['inherit'], all: true});
-expectType<string>(inheritArrayStderrResult.stdout);
-expectType<undefined>(inheritArrayStderrResult.stderr);
-expectType<string>(inheritArrayStderrResult.all);
+expectTypeOf(inheritArrayStderrResult.stdout).toBe<string>();
+expectTypeOf(inheritArrayStderrResult.stderr).toBe<undefined>();
+expectTypeOf(inheritArrayStderrResult.all).toBe<string>();
 
 const inheritStdoutResultSync = execaSync('unicorns', {stdout: 'inherit', all: true});
-expectType<undefined>(inheritStdoutResultSync.stdout);
-expectType<string>(inheritStdoutResultSync.stderr);
-expectType<string>(inheritStdoutResultSync.all);
+expectTypeOf(inheritStdoutResultSync.stdout).toBe<undefined>();
+expectTypeOf(inheritStdoutResultSync.stderr).toBe<string>();
+expectTypeOf(inheritStdoutResultSync.all).toBe<string>();
 
 const inheritStderrResultSync = execaSync('unicorns', {stderr: 'inherit', all: true});
-expectType<string>(inheritStderrResultSync.stdout);
-expectType<undefined>(inheritStderrResultSync.stderr);
-expectType<string>(inheritStderrResultSync.all);
+expectTypeOf(inheritStderrResultSync.stdout).toBe<string>();
+expectTypeOf(inheritStderrResultSync.stderr).toBe<undefined>();
+expectTypeOf(inheritStderrResultSync.all).toBe<string>();
 
 const inheritStdoutError = new Error('.') as ExecaError<{stdout: 'inherit'; all: true}>;
-expectType<undefined>(inheritStdoutError.stdout);
-expectType<string>(inheritStdoutError.stderr);
-expectType<string>(inheritStdoutError.all);
+expectTypeOf(inheritStdoutError.stdout).toBe<undefined>();
+expectTypeOf(inheritStdoutError.stderr).toBe<string>();
+expectTypeOf(inheritStdoutError.all).toBe<string>();
 
 const inheritStderrError = new Error('.') as ExecaError<{stderr: 'inherit'; all: true}>;
-expectType<string>(inheritStderrError.stdout);
-expectType<undefined>(inheritStderrError.stderr);
-expectType<string>(inheritStderrError.all);
+expectTypeOf(inheritStderrError.stdout).toBe<string>();
+expectTypeOf(inheritStderrError.stderr).toBe<undefined>();
+expectTypeOf(inheritStderrError.all).toBe<string>();
 
 const inheritStdoutErrorSync = new Error('.') as ExecaSyncError<{stdout: 'inherit'; all: true}>;
-expectType<undefined>(inheritStdoutErrorSync.stdout);
-expectType<string>(inheritStdoutErrorSync.stderr);
-expectType<string>(inheritStdoutErrorSync.all);
+expectTypeOf(inheritStdoutErrorSync.stdout).toBe<undefined>();
+expectTypeOf(inheritStdoutErrorSync.stderr).toBe<string>();
+expectTypeOf(inheritStdoutErrorSync.all).toBe<string>();
 
 const inheritStderrErrorSync = new Error('.') as ExecaSyncError<{stderr: 'inherit'; all: true}>;
-expectType<string>(inheritStderrErrorSync.stdout);
-expectType<undefined>(inheritStderrErrorSync.stderr);
-expectType<string>(inheritStderrErrorSync.all);
+expectTypeOf(inheritStderrErrorSync.stdout).toBe<string>();
+expectTypeOf(inheritStderrErrorSync.stderr).toBe<undefined>();
+expectTypeOf(inheritStderrErrorSync.all).toBe<string>();
 
 const streamStdoutResult = await execa('unicorns', {stdout: process.stdout, all: true});
-expectType<undefined>(streamStdoutResult.stdout);
-expectType<string>(streamStdoutResult.stderr);
-expectType<string>(streamStdoutResult.all);
+expectTypeOf(streamStdoutResult.stdout).toBe<undefined>();
+expectTypeOf(streamStdoutResult.stderr).toBe<string>();
+expectTypeOf(streamStdoutResult.all).toBe<string>();
 
 const streamArrayStdoutResult = await execa('unicorns', {stdout: [process.stdout] as [typeof process.stdout], all: true});
-expectType<undefined>(streamArrayStdoutResult.stdout);
-expectType<string>(streamArrayStdoutResult.stderr);
-expectType<string>(streamArrayStdoutResult.all);
+expectTypeOf(streamArrayStdoutResult.stdout).toBe<undefined>();
+expectTypeOf(streamArrayStdoutResult.stderr).toBe<string>();
+expectTypeOf(streamArrayStdoutResult.all).toBe<string>();
 
 const streamStderrResult = await execa('unicorns', {stderr: process.stdout, all: true});
-expectType<string>(streamStderrResult.stdout);
-expectType<undefined>(streamStderrResult.stderr);
-expectType<string>(streamStderrResult.all);
+expectTypeOf(streamStderrResult.stdout).toBe<string>();
+expectTypeOf(streamStderrResult.stderr).toBe<undefined>();
+expectTypeOf(streamStderrResult.all).toBe<string>();
 
 const streamArrayStderrResult = await execa('unicorns', {stderr: [process.stdout] as [typeof process.stdout], all: true});
-expectType<string>(streamArrayStderrResult.stdout);
-expectType<undefined>(streamArrayStderrResult.stderr);
-expectType<string>(streamArrayStderrResult.all);
+expectTypeOf(streamArrayStderrResult.stdout).toBe<string>();
+expectTypeOf(streamArrayStderrResult.stderr).toBe<undefined>();
+expectTypeOf(streamArrayStderrResult.all).toBe<string>();
 
 const streamStdoutError = new Error('.') as ExecaError<{stdout: typeof process.stdout; all: true}>;
-expectType<undefined>(streamStdoutError.stdout);
-expectType<string>(streamStdoutError.stderr);
-expectType<string>(streamStdoutError.all);
+expectTypeOf(streamStdoutError.stdout).toBe<undefined>();
+expectTypeOf(streamStdoutError.stderr).toBe<string>();
+expectTypeOf(streamStdoutError.all).toBe<string>();
 
 const streamStderrError = new Error('.') as ExecaError<{stderr: typeof process.stdout; all: true}>;
-expectType<string>(streamStderrError.stdout);
-expectType<undefined>(streamStderrError.stderr);
-expectType<string>(streamStderrError.all);
+expectTypeOf(streamStderrError.stdout).toBe<string>();
+expectTypeOf(streamStderrError.stderr).toBe<undefined>();
+expectTypeOf(streamStderrError.all).toBe<string>();
 
 const numberStdoutResult = await execa('unicorns', {stdout: 1, all: true});
-expectType<undefined>(numberStdoutResult.stdout);
-expectType<string>(numberStdoutResult.stderr);
-expectType<string>(numberStdoutResult.all);
+expectTypeOf(numberStdoutResult.stdout).toBe<undefined>();
+expectTypeOf(numberStdoutResult.stderr).toBe<string>();
+expectTypeOf(numberStdoutResult.all).toBe<string>();
 
 const numberStderrResult = await execa('unicorns', {stderr: 1, all: true});
-expectType<string>(numberStderrResult.stdout);
-expectType<undefined>(numberStderrResult.stderr);
-expectType<string>(numberStderrResult.all);
+expectTypeOf(numberStderrResult.stdout).toBe<string>();
+expectTypeOf(numberStderrResult.stderr).toBe<undefined>();
+expectTypeOf(numberStderrResult.all).toBe<string>();
 
 const numberArrayStdoutResult = await execa('unicorns', {stdout: [1] as [1], all: true});
-expectType<undefined>(numberArrayStdoutResult.stdout);
-expectType<string>(numberArrayStdoutResult.stderr);
-expectType<string>(numberArrayStdoutResult.all);
+expectTypeOf(numberArrayStdoutResult.stdout).toBe<undefined>();
+expectTypeOf(numberArrayStdoutResult.stderr).toBe<string>();
+expectTypeOf(numberArrayStdoutResult.all).toBe<string>();
 
 const numberArrayStderrResult = await execa('unicorns', {stderr: [1] as [1], all: true});
-expectType<string>(numberArrayStderrResult.stdout);
-expectType<undefined>(numberArrayStderrResult.stderr);
-expectType<string>(numberArrayStderrResult.all);
+expectTypeOf(numberArrayStderrResult.stdout).toBe<string>();
+expectTypeOf(numberArrayStderrResult.stderr).toBe<undefined>();
+expectTypeOf(numberArrayStderrResult.all).toBe<string>();
 
 const numberStdoutResultSync = execaSync('unicorns', {stdout: 1, all: true});
-expectType<undefined>(numberStdoutResultSync.stdout);
-expectType<string>(numberStdoutResultSync.stderr);
-expectType<string>(numberStdoutResultSync.all);
+expectTypeOf(numberStdoutResultSync.stdout).toBe<undefined>();
+expectTypeOf(numberStdoutResultSync.stderr).toBe<string>();
+expectTypeOf(numberStdoutResultSync.all).toBe<string>();
 
 const numberStderrResultSync = execaSync('unicorns', {stderr: 1, all: true});
-expectType<string>(numberStderrResultSync.stdout);
-expectType<undefined>(numberStderrResultSync.stderr);
-expectType<string>(numberStderrResultSync.all);
+expectTypeOf(numberStderrResultSync.stdout).toBe<string>();
+expectTypeOf(numberStderrResultSync.stderr).toBe<undefined>();
+expectTypeOf(numberStderrResultSync.all).toBe<string>();
 
 const numberStdoutError = new Error('.') as ExecaError<{stdout: 1; all: true}>;
-expectType<undefined>(numberStdoutError.stdout);
-expectType<string>(numberStdoutError.stderr);
-expectType<string>(numberStdoutError.all);
+expectTypeOf(numberStdoutError.stdout).toBe<undefined>();
+expectTypeOf(numberStdoutError.stderr).toBe<string>();
+expectTypeOf(numberStdoutError.all).toBe<string>();
 
 const numberStderrError = new Error('.') as ExecaError<{stderr: 1; all: true}>;
-expectType<string>(numberStderrError.stdout);
-expectType<undefined>(numberStderrError.stderr);
-expectType<string>(numberStderrError.all);
+expectTypeOf(numberStderrError.stdout).toBe<string>();
+expectTypeOf(numberStderrError.stderr).toBe<undefined>();
+expectTypeOf(numberStderrError.all).toBe<string>();
 
 const numberStdoutErrorSync = new Error('.') as ExecaSyncError<{stdout: 1; all: true}>;
-expectType<undefined>(numberStdoutErrorSync.stdout);
-expectType<string>(numberStdoutErrorSync.stderr);
-expectType<string>(numberStdoutErrorSync.all);
+expectTypeOf(numberStdoutErrorSync.stdout).toBe<undefined>();
+expectTypeOf(numberStdoutErrorSync.stderr).toBe<string>();
+expectTypeOf(numberStdoutErrorSync.all).toBe<string>();
 
 const numberStderrErrorSync = new Error('.') as ExecaSyncError<{stderr: 1; all: true}>;
-expectType<string>(numberStderrErrorSync.stdout);
-expectType<undefined>(numberStderrErrorSync.stderr);
-expectType<string>(numberStderrErrorSync.all);
+expectTypeOf(numberStderrErrorSync.stdout).toBe<string>();
+expectTypeOf(numberStderrErrorSync.stderr).toBe<undefined>();
+expectTypeOf(numberStderrErrorSync.all).toBe<string>();

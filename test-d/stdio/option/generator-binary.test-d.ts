@@ -1,4 +1,4 @@
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -38,12 +38,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', transformWithBinary]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithBinary]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithBinary]]});
 
-expectAssignable<StdinOption>(transformWithBinary);
-expectAssignable<StdinSyncOption>(transformWithBinary);
-expectAssignable<StdinOption>([transformWithBinary]);
-expectAssignable<StdinSyncOption>([transformWithBinary]);
+expectTypeOf(transformWithBinary).toBeAssignableTo<StdinOption>();
+expectTypeOf(transformWithBinary).toBeAssignableTo<StdinSyncOption>();
+[transformWithBinary] satisfies StdinOption;
+[transformWithBinary] satisfies StdinSyncOption;
 
-expectAssignable<StdoutStderrOption>(transformWithBinary);
-expectAssignable<StdoutStderrSyncOption>(transformWithBinary);
-expectAssignable<StdoutStderrOption>([transformWithBinary]);
-expectAssignable<StdoutStderrSyncOption>([transformWithBinary]);
+expectTypeOf(transformWithBinary).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(transformWithBinary).toBeAssignableTo<StdoutStderrSyncOption>();
+[transformWithBinary] satisfies StdoutStderrOption;
+[transformWithBinary] satisfies StdoutStderrSyncOption;

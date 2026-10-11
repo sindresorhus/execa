@@ -1,5 +1,5 @@
 import process, {type env} from 'node:process';
-import {expectType, expectAssignable} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {execa, type Options, type Result} from '../../index.js';
 
 type NodeEnv = 'production' | 'development' | 'test';
@@ -18,14 +18,14 @@ declare global {
 }
 
 // The global types are impacted
-expectType<NodeEnv>(process.env.NODE_ENV);
-expectType<NodeEnv>('' as (typeof env)['NODE_ENV']);
-expectType<NodeEnv>('' as NodeJS.ProcessEnv['NODE_ENV']);
-expectType<NodeEnv>('' as globalThis.NodeJS.ProcessEnv['NODE_ENV']);
+expectTypeOf(process.env.NODE_ENV).toBe<NodeEnv>();
+expectTypeOf('' as (typeof env)['NODE_ENV']).toBe<NodeEnv>();
+expectTypeOf('' as NodeJS.ProcessEnv['NODE_ENV']).toBe<NodeEnv>();
+expectTypeOf('' as globalThis.NodeJS.ProcessEnv['NODE_ENV']).toBe<NodeEnv>();
 
 // But Execa's types are not impacted
-expectType<string | undefined>('' as Exclude<Options['env'], undefined>['NODE_ENV']);
-expectAssignable<Result>(await execa({env: {test: 'example'}})`unicorns`);
-expectAssignable<Result>(await execa({env: {test: 'example'} as const})`unicorns`);
-expectAssignable<Result>(await execa({env: {test: undefined}})`unicorns`);
-expectAssignable<Result>(await execa({env: {test: undefined} as const})`unicorns`);
+expectTypeOf('' as Exclude<Options['env'], undefined>['NODE_ENV']).toBe<string | undefined>();
+expectTypeOf(await execa({env: {test: 'example'}})`unicorns`).toBeAssignableTo<Result>();
+expectTypeOf(await execa({env: {test: 'example'} as const})`unicorns`).toBeAssignableTo<Result>();
+expectTypeOf(await execa({env: {test: undefined}})`unicorns`).toBeAssignableTo<Result>();
+expectTypeOf(await execa({env: {test: undefined} as const})`unicorns`).toBeAssignableTo<Result>();

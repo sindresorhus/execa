@@ -1,4 +1,4 @@
-import {expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {
 	type StdinOption,
 	type StdinSyncOption,
@@ -15,10 +15,10 @@ const widenedBinary = {
 	binary: true,
 };
 
-expectAssignable<StdinOption>(widenedBinary);
-expectAssignable<StdinSyncOption>(widenedBinary);
-expectAssignable<StdoutStderrOption>(widenedBinary);
-expectAssignable<StdoutStderrSyncOption>(widenedBinary);
+expectTypeOf(widenedBinary).toBeAssignableTo<StdinOption>();
+expectTypeOf(widenedBinary).toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(widenedBinary).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(widenedBinary).toBeAssignableTo<StdoutStderrSyncOption>();
 
 const widenedObjectMode = {
 	* transform(line: unknown) {
@@ -27,10 +27,10 @@ const widenedObjectMode = {
 	objectMode: true,
 };
 
-expectAssignable<StdinOption>(widenedObjectMode);
-expectAssignable<StdinSyncOption>(widenedObjectMode);
-expectAssignable<StdoutStderrOption>(widenedObjectMode);
-expectAssignable<StdoutStderrSyncOption>(widenedObjectMode);
+expectTypeOf(widenedObjectMode).toBeAssignableTo<StdinOption>();
+expectTypeOf(widenedObjectMode).toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(widenedObjectMode).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(widenedObjectMode).toBeAssignableTo<StdoutStderrSyncOption>();
 
 const widenedBinaryString = {
 	* transform(line: string) {
@@ -39,7 +39,7 @@ const widenedBinaryString = {
 	binary: true,
 };
 
-expectNotAssignable<StdinOption>(widenedBinaryString);
-expectNotAssignable<StdinSyncOption>(widenedBinaryString);
-expectNotAssignable<StdoutStderrOption>(widenedBinaryString);
-expectNotAssignable<StdoutStderrSyncOption>(widenedBinaryString);
+expectTypeOf(widenedBinaryString).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(widenedBinaryString).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(widenedBinaryString).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(widenedBinaryString).not.toBeAssignableTo<StdoutStderrSyncOption>();

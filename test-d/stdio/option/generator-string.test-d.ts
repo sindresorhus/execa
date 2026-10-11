@@ -1,4 +1,4 @@
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -35,15 +35,15 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', stringGenerator]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGenerator]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringGenerator]]});
 
-expectAssignable<StdinOption>(stringGenerator);
-expectAssignable<StdinSyncOption>(stringGenerator);
-expectAssignable<StdinOption>([stringGenerator]);
-expectAssignable<StdinSyncOption>([stringGenerator]);
+expectTypeOf(stringGenerator).toBeAssignableTo<StdinOption>();
+expectTypeOf(stringGenerator).toBeAssignableTo<StdinSyncOption>();
+[stringGenerator] satisfies StdinOption;
+[stringGenerator] satisfies StdinSyncOption;
 
-expectAssignable<StdoutStderrOption>(stringGenerator);
-expectAssignable<StdoutStderrSyncOption>(stringGenerator);
-expectAssignable<StdoutStderrOption>([stringGenerator]);
-expectAssignable<StdoutStderrSyncOption>([stringGenerator]);
+expectTypeOf(stringGenerator).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(stringGenerator).toBeAssignableTo<StdoutStderrSyncOption>();
+[stringGenerator] satisfies StdoutStderrOption;
+[stringGenerator] satisfies StdoutStderrSyncOption;
 
 // The `chunk` argument is typed, but the return type stays `unknown`: a transform can yield both `string` and `Uint8Array`.
 const mixedYieldGenerator = function * (line: string) {
@@ -51,7 +51,7 @@ const mixedYieldGenerator = function * (line: string) {
 	yield new TextEncoder().encode(line);
 };
 
-expectAssignable<StdinOption>(mixedYieldGenerator);
-expectAssignable<StdinSyncOption>(mixedYieldGenerator);
-expectAssignable<StdoutStderrOption>(mixedYieldGenerator);
-expectAssignable<StdoutStderrSyncOption>(mixedYieldGenerator);
+expectTypeOf(mixedYieldGenerator).toBeAssignableTo<StdinOption>();
+expectTypeOf(mixedYieldGenerator).toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(mixedYieldGenerator).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(mixedYieldGenerator).toBeAssignableTo<StdoutStderrSyncOption>();

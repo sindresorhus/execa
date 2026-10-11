@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -79,20 +79,20 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', objectGeneratorFull]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [objectGeneratorFull]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [objectGeneratorFull]]});
 
-expectAssignable<StdinOption>(objectGeneratorFull);
-expectAssignable<StdinSyncOption>(objectGeneratorFull);
-expectAssignable<StdinOption>([objectGeneratorFull]);
-expectAssignable<StdinSyncOption>([objectGeneratorFull]);
-expectNotAssignable<StdinOption>(stringInputObjectGeneratorFull);
-expectNotAssignable<StdinSyncOption>(stringInputObjectGeneratorFull);
-expectNotAssignable<StdinOption>([stringInputObjectGeneratorFull]);
-expectNotAssignable<StdinSyncOption>([stringInputObjectGeneratorFull]);
+expectTypeOf(objectGeneratorFull).toBeAssignableTo<StdinOption>();
+expectTypeOf(objectGeneratorFull).toBeAssignableTo<StdinSyncOption>();
+[objectGeneratorFull] satisfies StdinOption;
+[objectGeneratorFull] satisfies StdinSyncOption;
+expectTypeOf(stringInputObjectGeneratorFull).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(stringInputObjectGeneratorFull).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([stringInputObjectGeneratorFull]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([stringInputObjectGeneratorFull]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>(objectGeneratorFull);
-expectAssignable<StdoutStderrSyncOption>(objectGeneratorFull);
-expectAssignable<StdoutStderrOption>([objectGeneratorFull]);
-expectAssignable<StdoutStderrSyncOption>([objectGeneratorFull]);
-expectAssignable<StdoutStderrOption>(stringInputObjectGeneratorFull);
-expectAssignable<StdoutStderrSyncOption>(stringInputObjectGeneratorFull);
-expectAssignable<StdoutStderrOption>([stringInputObjectGeneratorFull]);
-expectAssignable<StdoutStderrSyncOption>([stringInputObjectGeneratorFull]);
+expectTypeOf(objectGeneratorFull).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(objectGeneratorFull).toBeAssignableTo<StdoutStderrSyncOption>();
+[objectGeneratorFull] satisfies StdoutStderrOption;
+[objectGeneratorFull] satisfies StdoutStderrSyncOption;
+expectTypeOf(stringInputObjectGeneratorFull).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(stringInputObjectGeneratorFull).toBeAssignableTo<StdoutStderrSyncOption>();
+[stringInputObjectGeneratorFull] satisfies StdoutStderrOption;
+[stringInputObjectGeneratorFull] satisfies StdoutStderrSyncOption;

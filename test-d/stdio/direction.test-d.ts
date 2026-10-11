@@ -1,5 +1,5 @@
 import {Readable, Writable} from 'node:stream';
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -35,7 +35,7 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', new Readable()]}));
 expectError(await execa('unicorns', {stdio: [['pipe'], ['pipe'], [new Readable()]]}));
 expectError(execaSync('unicorns', {stdio: [['pipe'], ['pipe'], [new Readable()]]}));
 
-expectAssignable<StdinOption | StdoutStderrOption>([new Uint8Array(), new Uint8Array()]);
-expectAssignable<StdinSyncOption | StdoutStderrSyncOption>([new Uint8Array(), new Uint8Array()]);
-expectNotAssignable<StdinOption | StdoutStderrOption>([new Writable(), new Uint8Array()]);
-expectNotAssignable<StdinSyncOption | StdoutStderrSyncOption>([new Writable(), new Uint8Array()]);
+[new Uint8Array(), new Uint8Array()] satisfies StdinOption | StdoutStderrOption;
+[new Uint8Array(), new Uint8Array()] satisfies StdinSyncOption | StdoutStderrSyncOption;
+expectTypeOf([new Writable(), new Uint8Array()]).not.toBeAssignableTo<StdinOption | StdoutStderrOption>();
+expectTypeOf([new Writable(), new Uint8Array()]).not.toBeAssignableTo<StdinSyncOption | StdoutStderrSyncOption>();

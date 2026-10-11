@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -31,12 +31,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'overlapped']
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['overlapped']]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['overlapped']]}));
 
-expectAssignable<StdinOption>('overlapped');
-expectNotAssignable<StdinSyncOption>('overlapped');
-expectAssignable<StdinOption>(['overlapped']);
-expectNotAssignable<StdinSyncOption>(['overlapped']);
+expectTypeOf<'overlapped'>().toBeAssignableTo<StdinOption>();
+expectTypeOf<'overlapped'>().not.toBeAssignableTo<StdinSyncOption>();
+['overlapped'] satisfies StdinOption;
+expectTypeOf<['overlapped']>().not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>('overlapped');
-expectNotAssignable<StdoutStderrSyncOption>('overlapped');
-expectAssignable<StdoutStderrOption>(['overlapped']);
-expectNotAssignable<StdoutStderrSyncOption>(['overlapped']);
+expectTypeOf<'overlapped'>().toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf<'overlapped'>().not.toBeAssignableTo<StdoutStderrSyncOption>();
+['overlapped'] satisfies StdoutStderrOption;
+expectTypeOf<['overlapped']>().not.toBeAssignableTo<StdoutStderrSyncOption>();

@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -38,12 +38,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', booleanGenera
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [booleanGeneratorFull]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [booleanGeneratorFull]]}));
 
-expectNotAssignable<StdinOption>(booleanGeneratorFull);
-expectNotAssignable<StdinSyncOption>(booleanGeneratorFull);
-expectNotAssignable<StdinOption>([booleanGeneratorFull]);
-expectNotAssignable<StdinSyncOption>([booleanGeneratorFull]);
+expectTypeOf(booleanGeneratorFull).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(booleanGeneratorFull).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([booleanGeneratorFull]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([booleanGeneratorFull]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(booleanGeneratorFull);
-expectNotAssignable<StdoutStderrSyncOption>(booleanGeneratorFull);
-expectNotAssignable<StdoutStderrOption>([booleanGeneratorFull]);
-expectNotAssignable<StdoutStderrSyncOption>([booleanGeneratorFull]);
+expectTypeOf(booleanGeneratorFull).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(booleanGeneratorFull).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([booleanGeneratorFull]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([booleanGeneratorFull]).not.toBeAssignableTo<StdoutStderrSyncOption>();

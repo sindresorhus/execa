@@ -1,10 +1,10 @@
 import type {Writable} from 'node:stream';
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa} from '../../index.js';
 
 const subprocess = execa('unicorns');
 
-expectType<Writable>(subprocess.writable());
+expectTypeOf(subprocess.writable()).toBe<Writable>();
 
 subprocess.writable({to: 'stdin'});
 subprocess.writable({to: 'fd3'});

@@ -1,4 +1,4 @@
-import {expectError} from 'tsd';
+import {expectError} from 'nz';
 import {execa, execaSync} from '../../index.js';
 
 await execa('unicorns', {encoding: 'utf8'});

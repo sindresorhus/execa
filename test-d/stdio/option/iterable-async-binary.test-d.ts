@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -37,12 +37,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', asyncBinaryIt
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncBinaryIterable]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncBinaryIterable]]}));
 
-expectAssignable<StdinOption>(asyncBinaryIterable);
-expectNotAssignable<StdinSyncOption>(asyncBinaryIterable);
-expectAssignable<StdinOption>([asyncBinaryIterable]);
-expectNotAssignable<StdinSyncOption>([asyncBinaryIterable]);
+expectTypeOf(asyncBinaryIterable).toBeAssignableTo<StdinOption>();
+expectTypeOf(asyncBinaryIterable).not.toBeAssignableTo<StdinSyncOption>();
+[asyncBinaryIterable] satisfies StdinOption;
+expectTypeOf([asyncBinaryIterable]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(asyncBinaryIterable);
-expectNotAssignable<StdoutStderrSyncOption>(asyncBinaryIterable);
-expectNotAssignable<StdoutStderrOption>([asyncBinaryIterable]);
-expectNotAssignable<StdoutStderrSyncOption>([asyncBinaryIterable]);
+expectTypeOf(asyncBinaryIterable).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(asyncBinaryIterable).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([asyncBinaryIterable]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([asyncBinaryIterable]).not.toBeAssignableTo<StdoutStderrSyncOption>();

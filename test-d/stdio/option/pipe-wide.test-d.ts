@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -35,12 +35,12 @@ expectError(execaSync('unicorns', {stdio: pipes}));
 expectError(await execa('unicorns', {stdio: pipesOfPipes}));
 expectError(execaSync('unicorns', {stdio: pipesOfPipes}));
 
-expectNotAssignable<StdinOption>(pipe);
-expectNotAssignable<StdinSyncOption>(pipe);
-expectNotAssignable<StdinOption>(pipes);
-expectNotAssignable<StdinSyncOption>(pipes);
+expectTypeOf(pipe).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(pipe).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(pipes).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(pipes).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(pipe);
-expectNotAssignable<StdoutStderrSyncOption>(pipe);
-expectNotAssignable<StdoutStderrOption>(pipes);
-expectNotAssignable<StdoutStderrSyncOption>(pipes);
+expectTypeOf(pipe).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(pipe).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf(pipes).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(pipes).not.toBeAssignableTo<StdoutStderrSyncOption>();

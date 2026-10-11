@@ -1,5 +1,5 @@
 import {TransformStream} from 'node:stream/web';
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -37,12 +37,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', webTransformW
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [webTransformWithInvalidObjectMode]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [webTransformWithInvalidObjectMode]]}));
 
-expectNotAssignable<StdinOption>(webTransformWithInvalidObjectMode);
-expectNotAssignable<StdinSyncOption>(webTransformWithInvalidObjectMode);
-expectNotAssignable<StdinOption>([webTransformWithInvalidObjectMode]);
-expectNotAssignable<StdinSyncOption>([webTransformWithInvalidObjectMode]);
+expectTypeOf(webTransformWithInvalidObjectMode).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(webTransformWithInvalidObjectMode).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([webTransformWithInvalidObjectMode]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([webTransformWithInvalidObjectMode]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(webTransformWithInvalidObjectMode);
-expectNotAssignable<StdoutStderrSyncOption>(webTransformWithInvalidObjectMode);
-expectNotAssignable<StdoutStderrOption>([webTransformWithInvalidObjectMode]);
-expectNotAssignable<StdoutStderrSyncOption>([webTransformWithInvalidObjectMode]);
+expectTypeOf(webTransformWithInvalidObjectMode).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(webTransformWithInvalidObjectMode).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([webTransformWithInvalidObjectMode]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([webTransformWithInvalidObjectMode]).not.toBeAssignableTo<StdoutStderrSyncOption>();

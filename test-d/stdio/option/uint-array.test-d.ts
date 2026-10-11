@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -31,12 +31,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', new Uint8Arra
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [new Uint8Array()]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [new Uint8Array()]]}));
 
-expectAssignable<StdinOption>(new Uint8Array());
-expectAssignable<StdinSyncOption>(new Uint8Array());
-expectAssignable<StdinOption>([new Uint8Array()]);
-expectAssignable<StdinSyncOption>([new Uint8Array()]);
+expectTypeOf(new Uint8Array()).toBeAssignableTo<StdinOption>();
+expectTypeOf(new Uint8Array()).toBeAssignableTo<StdinSyncOption>();
+[new Uint8Array()] satisfies StdinOption;
+[new Uint8Array()] satisfies StdinSyncOption;
 
-expectNotAssignable<StdoutStderrOption>(new Uint8Array());
-expectNotAssignable<StdoutStderrSyncOption>(new Uint8Array());
-expectNotAssignable<StdoutStderrOption>([new Uint8Array()]);
-expectNotAssignable<StdoutStderrSyncOption>([new Uint8Array()]);
+expectTypeOf(new Uint8Array()).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(new Uint8Array()).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([new Uint8Array()]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([new Uint8Array()]).not.toBeAssignableTo<StdoutStderrSyncOption>();

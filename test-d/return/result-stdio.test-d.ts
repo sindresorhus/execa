@@ -1,5 +1,5 @@
 import {Readable, Writable} from 'node:stream';
-import {expectType} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -8,167 +8,167 @@ import {
 } from '../../index.js';
 
 const unicornsResult = await execa('unicorns', {all: true});
-expectType<undefined>(unicornsResult.stdio[0]);
-expectType<string>(unicornsResult.stdout);
-expectType<string>(unicornsResult.stdio[1]);
-expectType<string>(unicornsResult.stderr);
-expectType<string>(unicornsResult.stdio[2]);
-expectType<string>(unicornsResult.all);
-expectType<string | undefined>(unicornsResult.stdio[3 as number]);
+expectTypeOf(unicornsResult.stdio[0]).toBe<undefined>();
+expectTypeOf(unicornsResult.stdout).toBe<string>();
+expectTypeOf(unicornsResult.stdio[1]).toBe<string>();
+expectTypeOf(unicornsResult.stderr).toBe<string>();
+expectTypeOf(unicornsResult.stdio[2]).toBe<string>();
+expectTypeOf(unicornsResult.all).toBe<string>();
+expectTypeOf(unicornsResult.stdio[3 as number]).toBe<string | undefined>();
 
 const bufferResult = await execa('unicorns', {encoding: 'buffer', all: true});
-expectType<Uint8Array>(bufferResult.stdout);
-expectType<Uint8Array>(bufferResult.stdio[1]);
-expectType<Uint8Array>(bufferResult.stderr);
-expectType<Uint8Array>(bufferResult.stdio[2]);
-expectType<Uint8Array>(bufferResult.all);
+expectTypeOf(bufferResult.stdout).toBe<Uint8Array>();
+expectTypeOf(bufferResult.stdio[1]).toBe<Uint8Array>();
+expectTypeOf(bufferResult.stderr).toBe<Uint8Array>();
+expectTypeOf(bufferResult.stdio[2]).toBe<Uint8Array>();
+expectTypeOf(bufferResult.all).toBe<Uint8Array>();
 
 const hexResult = await execa('unicorns', {encoding: 'hex', all: true});
-expectType<string>(hexResult.stdout);
-expectType<string>(hexResult.stdio[1]);
-expectType<string>(hexResult.stderr);
-expectType<string>(hexResult.stdio[2]);
-expectType<string>(hexResult.all);
+expectTypeOf(hexResult.stdout).toBe<string>();
+expectTypeOf(hexResult.stdio[1]).toBe<string>();
+expectTypeOf(hexResult.stderr).toBe<string>();
+expectTypeOf(hexResult.stdio[2]).toBe<string>();
+expectTypeOf(hexResult.all).toBe<string>();
 
 const unicornsResultSync = execaSync('unicorns', {all: true});
-expectType<undefined>(unicornsResultSync.stdio[0]);
-expectType<string>(unicornsResultSync.stdout);
-expectType<string>(unicornsResultSync.stdio[1]);
-expectType<string>(unicornsResultSync.stderr);
-expectType<string>(unicornsResultSync.stdio[2]);
-expectType<string>(unicornsResultSync.all);
+expectTypeOf(unicornsResultSync.stdio[0]).toBe<undefined>();
+expectTypeOf(unicornsResultSync.stdout).toBe<string>();
+expectTypeOf(unicornsResultSync.stdio[1]).toBe<string>();
+expectTypeOf(unicornsResultSync.stderr).toBe<string>();
+expectTypeOf(unicornsResultSync.stdio[2]).toBe<string>();
+expectTypeOf(unicornsResultSync.all).toBe<string>();
 
 const bufferResultSync = execaSync('unicorns', {encoding: 'buffer', all: true});
-expectType<undefined>(bufferResultSync.stdio[0]);
-expectType<Uint8Array>(bufferResultSync.stdout);
-expectType<Uint8Array>(bufferResultSync.stdio[1]);
-expectType<Uint8Array>(bufferResultSync.stderr);
-expectType<Uint8Array>(bufferResultSync.stdio[2]);
-expectType<Uint8Array>(bufferResultSync.all);
+expectTypeOf(bufferResultSync.stdio[0]).toBe<undefined>();
+expectTypeOf(bufferResultSync.stdout).toBe<Uint8Array>();
+expectTypeOf(bufferResultSync.stdio[1]).toBe<Uint8Array>();
+expectTypeOf(bufferResultSync.stderr).toBe<Uint8Array>();
+expectTypeOf(bufferResultSync.stdio[2]).toBe<Uint8Array>();
+expectTypeOf(bufferResultSync.all).toBe<Uint8Array>();
 
 const execaStringError = new Error('.') as ExecaError<{all: true}>;
-expectType<undefined>(execaStringError.stdio[0]);
-expectType<string>(execaStringError.stdout);
-expectType<string>(execaStringError.stdio[1]);
-expectType<string>(execaStringError.stderr);
-expectType<string>(execaStringError.stdio[2]);
-expectType<string>(execaStringError.all);
+expectTypeOf(execaStringError.stdio[0]).toBe<undefined>();
+expectTypeOf(execaStringError.stdout).toBe<string>();
+expectTypeOf(execaStringError.stdio[1]).toBe<string>();
+expectTypeOf(execaStringError.stderr).toBe<string>();
+expectTypeOf(execaStringError.stdio[2]).toBe<string>();
+expectTypeOf(execaStringError.all).toBe<string>();
 
 const execaBufferError = new Error('.') as ExecaError<{encoding: 'buffer'; all: true}>;
-expectType<undefined>(execaBufferError.stdio[0]);
-expectType<Uint8Array>(execaBufferError.stdout);
-expectType<Uint8Array>(execaBufferError.stdio[1]);
-expectType<Uint8Array>(execaBufferError.stderr);
-expectType<Uint8Array>(execaBufferError.stdio[2]);
-expectType<Uint8Array>(execaBufferError.all);
+expectTypeOf(execaBufferError.stdio[0]).toBe<undefined>();
+expectTypeOf(execaBufferError.stdout).toBe<Uint8Array>();
+expectTypeOf(execaBufferError.stdio[1]).toBe<Uint8Array>();
+expectTypeOf(execaBufferError.stderr).toBe<Uint8Array>();
+expectTypeOf(execaBufferError.stdio[2]).toBe<Uint8Array>();
+expectTypeOf(execaBufferError.all).toBe<Uint8Array>();
 
 const execaStringErrorSync = new Error('.') as ExecaSyncError<{all: true}>;
-expectType<undefined>(execaStringErrorSync.stdio[0]);
-expectType<string>(execaStringErrorSync.stdout);
-expectType<string>(execaStringErrorSync.stdio[1]);
-expectType<string>(execaStringErrorSync.stderr);
-expectType<string>(execaStringErrorSync.stdio[2]);
-expectType<string>(execaStringErrorSync.all);
+expectTypeOf(execaStringErrorSync.stdio[0]).toBe<undefined>();
+expectTypeOf(execaStringErrorSync.stdout).toBe<string>();
+expectTypeOf(execaStringErrorSync.stdio[1]).toBe<string>();
+expectTypeOf(execaStringErrorSync.stderr).toBe<string>();
+expectTypeOf(execaStringErrorSync.stdio[2]).toBe<string>();
+expectTypeOf(execaStringErrorSync.all).toBe<string>();
 
 const execaBufferErrorSync = new Error('.') as ExecaSyncError<{encoding: 'buffer'; all: true}>;
-expectType<undefined>(execaBufferErrorSync.stdio[0]);
-expectType<Uint8Array>(execaBufferErrorSync.stdout);
-expectType<Uint8Array>(execaBufferErrorSync.stdio[1]);
-expectType<Uint8Array>(execaBufferErrorSync.stderr);
-expectType<Uint8Array>(execaBufferErrorSync.stdio[2]);
-expectType<Uint8Array>(execaBufferErrorSync.all);
+expectTypeOf(execaBufferErrorSync.stdio[0]).toBe<undefined>();
+expectTypeOf(execaBufferErrorSync.stdout).toBe<Uint8Array>();
+expectTypeOf(execaBufferErrorSync.stdio[1]).toBe<Uint8Array>();
+expectTypeOf(execaBufferErrorSync.stderr).toBe<Uint8Array>();
+expectTypeOf(execaBufferErrorSync.stdio[2]).toBe<Uint8Array>();
+expectTypeOf(execaBufferErrorSync.all).toBe<Uint8Array>();
 
 const multipleStdoutResult = await execa('unicorns', {stdout: ['inherit', 'pipe'] as ['inherit', 'pipe'], all: true});
-expectType<string>(multipleStdoutResult.stdout);
-expectType<string>(multipleStdoutResult.stdio[1]);
-expectType<string>(multipleStdoutResult.stderr);
-expectType<string>(multipleStdoutResult.stdio[2]);
-expectType<string>(multipleStdoutResult.all);
+expectTypeOf(multipleStdoutResult.stdout).toBe<string>();
+expectTypeOf(multipleStdoutResult.stdio[1]).toBe<string>();
+expectTypeOf(multipleStdoutResult.stderr).toBe<string>();
+expectTypeOf(multipleStdoutResult.stdio[2]).toBe<string>();
+expectTypeOf(multipleStdoutResult.all).toBe<string>();
 
 const undefinedStdoutResult = await execa('unicorns', {stdout: undefined, all: true});
-expectType<string>(undefinedStdoutResult.stdout);
-expectType<string>(undefinedStdoutResult.stderr);
-expectType<string>(undefinedStdoutResult.all);
+expectTypeOf(undefinedStdoutResult.stdout).toBe<string>();
+expectTypeOf(undefinedStdoutResult.stderr).toBe<string>();
+expectTypeOf(undefinedStdoutResult.all).toBe<string>();
 
 const undefinedArrayStdoutResult = await execa('unicorns', {stdout: [undefined] as const, all: true});
-expectType<string>(undefinedArrayStdoutResult.stdout);
-expectType<string>(undefinedArrayStdoutResult.stderr);
-expectType<string>(undefinedArrayStdoutResult.all);
+expectTypeOf(undefinedArrayStdoutResult.stdout).toBe<string>();
+expectTypeOf(undefinedArrayStdoutResult.stderr).toBe<string>();
+expectTypeOf(undefinedArrayStdoutResult.all).toBe<string>();
 
 const undefinedStderrResult = await execa('unicorns', {stderr: undefined, all: true});
-expectType<string>(undefinedStderrResult.stdout);
-expectType<string>(undefinedStderrResult.stderr);
-expectType<string>(undefinedStderrResult.all);
+expectTypeOf(undefinedStderrResult.stdout).toBe<string>();
+expectTypeOf(undefinedStderrResult.stderr).toBe<string>();
+expectTypeOf(undefinedStderrResult.all).toBe<string>();
 
 const undefinedArrayStderrResult = await execa('unicorns', {stderr: [undefined] as const, all: true});
-expectType<string>(undefinedArrayStderrResult.stdout);
-expectType<string>(undefinedArrayStderrResult.stderr);
-expectType<string>(undefinedArrayStderrResult.all);
+expectTypeOf(undefinedArrayStderrResult.stdout).toBe<string>();
+expectTypeOf(undefinedArrayStderrResult.stderr).toBe<string>();
+expectTypeOf(undefinedArrayStderrResult.all).toBe<string>();
 
 const fd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe']});
-expectType<string>(fd3Result.stdio[3]);
+expectTypeOf(fd3Result.stdio[3]).toBe<string>();
 
 const inputFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['pipe', new Readable()]]});
-expectType<undefined>(inputFd3Result.stdio[3]);
+expectTypeOf(inputFd3Result.stdio[3]).toBe<undefined>();
 
 const inputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]});
-expectType<undefined>(inputPipeFd3Result.stdio[3]);
+expectTypeOf(inputPipeFd3Result.stdio[3]).toBe<undefined>();
 
 const inputInheritFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'inherit', input: true}]});
-expectType<undefined>(inputInheritFd3Result.stdio[3]);
+expectTypeOf(inputInheritFd3Result.stdio[3]).toBe<undefined>();
 
 const inputFdFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 3, input: true}]});
-expectType<undefined>(inputFdFd3Result.stdio[3]);
+expectTypeOf(inputFdFd3Result.stdio[3]).toBe<undefined>();
 
 const outputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe'}]});
-expectType<string>(outputPipeFd3Result.stdio[3]);
+expectTypeOf(outputPipeFd3Result.stdio[3]).toBe<string>();
 
 const isInput = true as boolean;
 const booleanInputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: isInput}]});
-expectType<string | undefined>(booleanInputPipeFd3Result.stdio[3]);
+expectTypeOf(booleanInputPipeFd3Result.stdio[3]).toBe<string | undefined>();
 
 const optionalInputPipe: {readonly value: 'pipe'; readonly input?: boolean} = {value: 'pipe', input: isInput};
 const optionalInputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', optionalInputPipe]});
-expectType<string | undefined>(optionalInputPipeFd3Result.stdio[3]);
+expectTypeOf(optionalInputPipeFd3Result.stdio[3]).toBe<string | undefined>();
 
 const optionalTrueInputPipe: {readonly value: 'pipe'; readonly input?: true} = {value: 'pipe', input: true};
 const optionalTrueInputPipeFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', optionalTrueInputPipe]});
-expectType<string | undefined>(optionalTrueInputPipeFd3Result.stdio[3]);
+expectTypeOf(optionalTrueInputPipeFd3Result.stdio[3]).toBe<string | undefined>();
 
 const stdoutInputPipeResult = await execa('unicorns', {stdout: {value: 'pipe', input: true}});
-expectType<string>(stdoutInputPipeResult.stdout);
-expectType<string>(stdoutInputPipeResult.stdio[1]);
+expectTypeOf(stdoutInputPipeResult.stdout).toBe<string>();
+expectTypeOf(stdoutInputPipeResult.stdio[1]).toBe<string>();
 
 const stderrInputPipeResult = await execa('unicorns', {stderr: {value: 'pipe', input: true}});
-expectType<string>(stderrInputPipeResult.stderr);
-expectType<string>(stderrInputPipeResult.stdio[2]);
+expectTypeOf(stderrInputPipeResult.stderr).toBe<string>();
+expectTypeOf(stderrInputPipeResult.stdio[2]).toBe<string>();
 
 const outputFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['pipe', new Writable()]]});
-expectType<string>(outputFd3Result.stdio[3]);
+expectTypeOf(outputFd3Result.stdio[3]).toBe<string>();
 
 const bufferFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], encoding: 'buffer'});
-expectType<Uint8Array>(bufferFd3Result.stdio[3]);
+expectTypeOf(bufferFd3Result.stdio[3]).toBe<Uint8Array>();
 
 const undefinedFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', undefined]});
-expectType<undefined>(undefinedFd3Result.stdio[3]);
+expectTypeOf(undefinedFd3Result.stdio[3]).toBe<undefined>();
 
 const undefinedArrayFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [undefined] as const]});
-expectType<undefined>(undefinedArrayFd3Result.stdio[3]);
+expectTypeOf(undefinedArrayFd3Result.stdio[3]).toBe<undefined>();
 
 const ipcResult = await execa('unicorns', {ipc: true});
-expectType<[undefined, string, string, undefined]>(ipcResult.stdio);
+expectTypeOf(ipcResult.stdio).toBe<[undefined, string, string, undefined]>();
 
 const ipcInputResult = await execa('unicorns', {ipcInput: ''});
-expectType<[undefined, string, string, undefined]>(ipcInputResult.stdio);
+expectTypeOf(ipcInputResult.stdio).toBe<[undefined, string, string, undefined]>();
 
 const gracefulCancelResult = await execa('unicorns', {cancelSignal: AbortSignal.abort(), gracefulCancel: true});
-expectType<[undefined, string, string, undefined]>(gracefulCancelResult.stdio);
+expectTypeOf(gracefulCancelResult.stdio).toBe<[undefined, string, string, undefined]>();
 
 const fd3IpcResult = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
-expectType<[undefined, string, string, string, undefined]>(fd3IpcResult.stdio);
+expectTypeOf(fd3IpcResult.stdio).toBe<[undefined, string, string, string, undefined]>();
 
 const noIpcResult = await execa('unicorns');
-expectType<[undefined, string, string]>(noIpcResult.stdio);
+expectTypeOf(noIpcResult.stdio).toBe<[undefined, string, string]>();
 
 const noIpcResultSync = execaSync('unicorns');
-expectType<[undefined, string, string]>(noIpcResultSync.stdio);
+expectTypeOf(noIpcResultSync.stdio).toBe<[undefined, string, string]>();

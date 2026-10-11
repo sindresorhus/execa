@@ -1,5 +1,5 @@
 import {Writable} from 'node:stream';
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -32,12 +32,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', new Writable()]});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [new Writable()]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [new Writable()]]}));
 
-expectNotAssignable<StdinOption>(new Writable());
-expectNotAssignable<StdinSyncOption>(new Writable());
-expectNotAssignable<StdinOption>([new Writable()]);
-expectNotAssignable<StdinSyncOption>([new Writable()]);
+expectTypeOf(new Writable()).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(new Writable()).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([new Writable()]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([new Writable()]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>(new Writable());
-expectAssignable<StdoutStderrSyncOption>(new Writable());
-expectAssignable<StdoutStderrOption>([new Writable()]);
-expectNotAssignable<StdoutStderrSyncOption>([new Writable()]);
+expectTypeOf(new Writable()).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(new Writable()).toBeAssignableTo<StdoutStderrSyncOption>();
+[new Writable()] satisfies StdoutStderrOption;
+expectTypeOf([new Writable()]).not.toBeAssignableTo<StdoutStderrSyncOption>();

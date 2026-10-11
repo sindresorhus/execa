@@ -1,4 +1,4 @@
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa, execaSync} from '../../index.js';
 
 await execa('unicorns', {maxBuffer: {}});
@@ -155,15 +155,15 @@ expectError(execaSync('unicorns', {preferLocal: {fd3: 0}}));
 expectError(execaSync('unicorns', {preferLocal: {ipc: 0}}));
 expectError(execaSync('unicorns', {preferLocal: {stdout: '0'}}));
 
-expectType<string[]>(execaSync('unicorns', {lines: {stdout: true, fd1: false}}).stdout);
-expectType<string[]>(execaSync('unicorns', {lines: {stdout: true, all: false}}).stdout);
-expectType<string[]>(execaSync('unicorns', {lines: {fd1: true, all: false}}).stdout);
-expectType<string[]>(execaSync('unicorns', {lines: {stderr: true, fd2: false}}).stderr);
-expectType<string[]>(execaSync('unicorns', {lines: {stderr: true, all: false}}).stderr);
-expectType<string[]>(execaSync('unicorns', {lines: {fd2: true, all: false}}).stderr);
-expectType<string[]>(execaSync('unicorns', {lines: {fd1: false, stdout: true}}).stdout);
-expectType<string[]>(execaSync('unicorns', {lines: {all: false, stdout: true}}).stdout);
-expectType<string[]>(execaSync('unicorns', {lines: {all: false, fd1: true}}).stdout);
-expectType<string[]>(execaSync('unicorns', {lines: {fd2: false, stderr: true}}).stderr);
-expectType<string[]>(execaSync('unicorns', {lines: {all: false, stderr: true}}).stderr);
-expectType<string[]>(execaSync('unicorns', {lines: {all: false, fd2: true}}).stderr);
+expectTypeOf(execaSync('unicorns', {lines: {stdout: true, fd1: false}}).stdout).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {stdout: true, all: false}}).stdout).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {fd1: true, all: false}}).stdout).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {stderr: true, fd2: false}}).stderr).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {stderr: true, all: false}}).stderr).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {fd2: true, all: false}}).stderr).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {fd1: false, stdout: true}}).stdout).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {all: false, stdout: true}}).stdout).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {all: false, fd1: true}}).stdout).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {fd2: false, stderr: true}}).stderr).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {all: false, stderr: true}}).stderr).toBe<string[]>();
+expectTypeOf(execaSync('unicorns', {lines: {all: false, fd2: true}}).stderr).toBe<string[]>();

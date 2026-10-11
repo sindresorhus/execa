@@ -1,4 +1,4 @@
-import {expectType, expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {$, type Result, type ResultPromise} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
@@ -7,39 +7,39 @@ const stringArray = ['foo', 'bar'] as const;
 expectError($());
 expectError($(true));
 expectError($(['unicorns', 'arg']));
-expectAssignable<ResultPromise>($('unicorns'));
-expectAssignable<ResultPromise>($(fileUrl));
+expectTypeOf($('unicorns')).toBeAssignableTo<ResultPromise>();
+expectTypeOf($(fileUrl)).toBeAssignableTo<ResultPromise>();
 
-expectAssignable<ResultPromise>($('unicorns', []));
-expectAssignable<ResultPromise>($('unicorns', ['foo']));
+expectTypeOf($('unicorns', [])).toBeAssignableTo<ResultPromise>();
+expectTypeOf($('unicorns', ['foo'])).toBeAssignableTo<ResultPromise>();
 expectError($('unicorns', 'foo'));
 expectError($('unicorns', [true]));
 
-expectAssignable<ResultPromise>($('unicorns', {}));
-expectAssignable<ResultPromise>($('unicorns', [], {}));
+expectTypeOf($('unicorns', {})).toBeAssignableTo<ResultPromise>();
+expectTypeOf($('unicorns', [], {})).toBeAssignableTo<ResultPromise>();
 expectError($('unicorns', [], []));
 expectError($('unicorns', {other: true}));
 
-expectAssignable<ResultPromise>($`unicorns`);
-expectType<Result<{}>>(await $('unicorns'));
-expectType<Result<{}>>(await $`unicorns`);
+expectTypeOf($`unicorns`).toBeAssignableTo<ResultPromise>();
+expectTypeOf(await $('unicorns')).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns`).toBe<Result<{}>>();
 
-expectAssignable<typeof $>($({}));
-expectAssignable<ResultPromise>($({})('unicorns'));
-expectAssignable<ResultPromise>($({})`unicorns`);
+expectTypeOf($({})).toBeAssignableTo<typeof $>();
+expectTypeOf($({})('unicorns')).toBeAssignableTo<ResultPromise>();
+expectTypeOf($({})`unicorns`).toBeAssignableTo<ResultPromise>();
 
-expectAssignable<{stdout: string}>(await $('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await $('unicorns', {encoding: 'buffer'}));
-expectAssignable<{stdout: string}>(await $('unicorns', ['foo']));
-expectAssignable<{stdout: Uint8Array}>(await $('unicorns', ['foo'], {encoding: 'buffer'}));
-expectAssignable<{stdout: string}>(await $({})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await $({})({encoding: 'buffer'})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})({})('unicorns'));
-expectAssignable<{stdout: string}>(await $({})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(await $({})({encoding: 'buffer'})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(await $({encoding: 'buffer'})({})`unicorns`);
+expectTypeOf(await $('unicorns')).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await $('unicorns', {encoding: 'buffer'})).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await $('unicorns', ['foo'])).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await $('unicorns', ['foo'], {encoding: 'buffer'})).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await $({})('unicorns')).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await $({encoding: 'buffer'})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await $({})({encoding: 'buffer'})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await $({encoding: 'buffer'})({})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await $({})`unicorns`).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await $({encoding: 'buffer'})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await $({})({encoding: 'buffer'})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await $({encoding: 'buffer'})({})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
 
 const uint8ArrayGenerator = function * (chunk: Uint8Array) {
 	yield chunk;
@@ -48,17 +48,17 @@ const uint8ArrayGenerator = function * (chunk: Uint8Array) {
 expectError($({encoding: 'utf8', stdout: uint8ArrayGenerator}));
 $({encoding: 'buffer', stdout: uint8ArrayGenerator});
 
-expectType<Result<{}>>(await $`${'unicorns'}`);
-expectType<Result<{}>>(await $`unicorns ${'foo'}`);
-expectType<Result<{}>>(await $`unicorns ${'foo'} ${'bar'}`);
-expectType<Result<{}>>(await $`unicorns ${1}`);
-expectType<Result<{}>>(await $`unicorns ${stringArray}`);
-expectType<Result<{}>>(await $`unicorns ${[1, 2]}`);
-expectType<Result<{}>>(await $`unicorns ${false.toString()}`);
+expectTypeOf(await $`${'unicorns'}`).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns ${'foo'}`).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns ${'foo'} ${'bar'}`).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns ${1}`).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns ${stringArray}`).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns ${[1, 2]}`).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns ${false.toString()}`).toBe<Result<{}>>();
 expectError(await $`unicorns ${false}`);
 
-expectType<Result<{}>>(await $`unicorns ${await $`echo foo`}`);
-expectType<Result<{}>>(await $`unicorns ${await $({reject: false})`echo foo`}`);
+expectTypeOf(await $`unicorns ${await $`echo foo`}`).toBe<Result<{}>>();
+expectTypeOf(await $`unicorns ${await $({reject: false})`echo foo`}`).toBe<Result<{}>>();
 expectError(await $`unicorns ${$`echo foo`}`);
-expectType<Result<{}>>(await $`unicorns ${[await $`echo foo`, 'bar']}`);
+expectTypeOf(await $`unicorns ${[await $`echo foo`, 'bar']}`).toBe<Result<{}>>();
 expectError(await $`unicorns ${[$`echo foo`, 'bar']}`);

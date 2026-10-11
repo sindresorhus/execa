@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -41,12 +41,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', invalidReturn
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidReturnFinalFull]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidReturnFinalFull]]}));
 
-expectNotAssignable<StdinOption>(invalidReturnFinalFull);
-expectNotAssignable<StdinSyncOption>(invalidReturnFinalFull);
-expectNotAssignable<StdinOption>([invalidReturnFinalFull]);
-expectNotAssignable<StdinSyncOption>([invalidReturnFinalFull]);
+expectTypeOf(invalidReturnFinalFull).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(invalidReturnFinalFull).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([invalidReturnFinalFull]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([invalidReturnFinalFull]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(invalidReturnFinalFull);
-expectNotAssignable<StdoutStderrSyncOption>(invalidReturnFinalFull);
-expectNotAssignable<StdoutStderrOption>([invalidReturnFinalFull]);
-expectNotAssignable<StdoutStderrSyncOption>([invalidReturnFinalFull]);
+expectTypeOf(invalidReturnFinalFull).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(invalidReturnFinalFull).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([invalidReturnFinalFull]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([invalidReturnFinalFull]).not.toBeAssignableTo<StdoutStderrSyncOption>();

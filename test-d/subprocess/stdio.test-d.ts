@@ -1,101 +1,101 @@
 import type {Readable, Writable} from 'node:stream';
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {execa, type Subprocess} from '../../index.js';
 
-expectType<Writable | null>({} as Subprocess['stdin']);
-expectType<Readable | null>({} as Subprocess['stdout']);
-expectType<Readable | null>({} as Subprocess['stderr']);
-expectType<Readable | undefined>({} as Subprocess['all']);
+expectTypeOf<Subprocess['stdin']>().toBe<Writable | null>();
+expectTypeOf<Subprocess['stdout']>().toBe<Readable | null>();
+expectTypeOf<Subprocess['stderr']>().toBe<Readable | null>();
+expectTypeOf<Subprocess['all']>().toBe<Readable | undefined>();
 
 const bufferSubprocess = execa('unicorns', {encoding: 'buffer', all: true});
-expectType<Writable>(bufferSubprocess.stdin);
-expectType<Writable>(bufferSubprocess.stdio[0]);
-expectType<Readable>(bufferSubprocess.stdout);
-expectType<Readable>(bufferSubprocess.stdio[1]);
-expectType<Readable>(bufferSubprocess.stderr);
-expectType<Readable>(bufferSubprocess.stdio[2]);
-expectType<Readable>(bufferSubprocess.all);
-expectType<Writable>(bufferSubprocess.stdio[0]);
+expectTypeOf(bufferSubprocess.stdin).toBe<Writable>();
+expectTypeOf(bufferSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(bufferSubprocess.stdout).toBe<Readable>();
+expectTypeOf(bufferSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(bufferSubprocess.stderr).toBe<Readable>();
+expectTypeOf(bufferSubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(bufferSubprocess.all).toBe<Readable>();
+expectTypeOf(bufferSubprocess.stdio[0]).toBe<Writable>();
 
 const hexSubprocess = execa('unicorns', {encoding: 'hex', all: true});
-expectType<Writable>(hexSubprocess.stdin);
-expectType<Writable>(hexSubprocess.stdio[0]);
-expectType<Readable>(hexSubprocess.stdout);
-expectType<Readable>(hexSubprocess.stdio[1]);
-expectType<Readable>(hexSubprocess.stderr);
-expectType<Readable>(hexSubprocess.stdio[2]);
-expectType<Readable>(hexSubprocess.all);
-expectType<Writable>(hexSubprocess.stdio[0]);
+expectTypeOf(hexSubprocess.stdin).toBe<Writable>();
+expectTypeOf(hexSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(hexSubprocess.stdout).toBe<Readable>();
+expectTypeOf(hexSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(hexSubprocess.stderr).toBe<Readable>();
+expectTypeOf(hexSubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(hexSubprocess.all).toBe<Readable>();
+expectTypeOf(hexSubprocess.stdio[0]).toBe<Writable>();
 
 const multipleStdinSubprocess = execa('unicorns', {stdin: ['inherit', 'pipe']});
-expectType<Writable>(multipleStdinSubprocess.stdin);
+expectTypeOf(multipleStdinSubprocess.stdin).toBe<Writable>();
 
 const multipleStdoutSubprocess = execa('unicorns', {stdout: ['inherit', 'pipe'] as ['inherit', 'pipe'], all: true});
-expectType<Writable>(multipleStdoutSubprocess.stdin);
-expectType<Writable>(multipleStdoutSubprocess.stdio[0]);
-expectType<Readable>(multipleStdoutSubprocess.stdout);
-expectType<Readable>(multipleStdoutSubprocess.stdio[1]);
-expectType<Readable>(multipleStdoutSubprocess.stderr);
-expectType<Readable>(multipleStdoutSubprocess.stdio[2]);
-expectType<Readable>(multipleStdoutSubprocess.all);
-expectType<Writable>(multipleStdoutSubprocess.stdio[0]);
+expectTypeOf(multipleStdoutSubprocess.stdin).toBe<Writable>();
+expectTypeOf(multipleStdoutSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(multipleStdoutSubprocess.stdout).toBe<Readable>();
+expectTypeOf(multipleStdoutSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(multipleStdoutSubprocess.stderr).toBe<Readable>();
+expectTypeOf(multipleStdoutSubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(multipleStdoutSubprocess.all).toBe<Readable>();
+expectTypeOf(multipleStdoutSubprocess.stdio[0]).toBe<Writable>();
 
 const inputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: true}]});
-expectType<Writable>(inputPipeSubprocess.stdio[3]);
+expectTypeOf(inputPipeSubprocess.stdio[3]).toBe<Writable>();
 
 const outputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe'}]});
-expectType<Readable>(outputPipeSubprocess.stdio[3]);
+expectTypeOf(outputPipeSubprocess.stdio[3]).toBe<Readable>();
 
 const inputInheritSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'inherit', input: true}]});
-expectType<null>(inputInheritSubprocess.stdio[3]);
+expectTypeOf(inputInheritSubprocess.stdio[3]).toBe<null>();
 
 const inputFdSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 3, input: true}]});
-expectType<null>(inputFdSubprocess.stdio[3]);
+expectTypeOf(inputFdSubprocess.stdio[3]).toBe<null>();
 
 const inputFileSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: {file: './example'}, input: true}]});
-expectType<Writable>(inputFileSubprocess.stdio[3]);
+expectTypeOf(inputFileSubprocess.stdio[3]).toBe<Writable>();
 
 const isInput = true as boolean;
 const booleanInputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', {value: 'pipe', input: isInput}]});
-expectType<Readable | Writable>(booleanInputPipeSubprocess.stdio[3]);
+expectTypeOf(booleanInputPipeSubprocess.stdio[3]).toBe<Readable | Writable>();
 
 const optionalInputPipe: {readonly value: 'pipe'; readonly input?: boolean} = {value: 'pipe', input: isInput};
 const optionalInputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', optionalInputPipe]});
-expectType<Readable | Writable>(optionalInputPipeSubprocess.stdio[3]);
+expectTypeOf(optionalInputPipeSubprocess.stdio[3]).toBe<Readable | Writable>();
 
 const optionalTrueInputPipe: {readonly value: 'pipe'; readonly input?: true} = {value: 'pipe', input: true};
 const optionalTrueInputPipeSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', optionalTrueInputPipe]});
-expectType<Readable | Writable>(optionalTrueInputPipeSubprocess.stdio[3]);
+expectTypeOf(optionalTrueInputPipeSubprocess.stdio[3]).toBe<Readable | Writable>();
 
 const stdoutInputPipeSubprocess = execa('unicorns', {stdout: {value: 'pipe', input: true}});
-expectType<Readable>(stdoutInputPipeSubprocess.stdout);
-expectType<Readable>(stdoutInputPipeSubprocess.stdio[1]);
+expectTypeOf(stdoutInputPipeSubprocess.stdout).toBe<Readable>();
+expectTypeOf(stdoutInputPipeSubprocess.stdio[1]).toBe<Readable>();
 
 const stderrInputPipeSubprocess = execa('unicorns', {stderr: {value: 'pipe', input: true}});
-expectType<Readable>(stderrInputPipeSubprocess.stderr);
-expectType<Readable>(stderrInputPipeSubprocess.stdio[2]);
+expectTypeOf(stderrInputPipeSubprocess.stderr).toBe<Readable>();
+expectTypeOf(stderrInputPipeSubprocess.stdio[2]).toBe<Readable>();
 
 const noIpcSubprocess = execa('unicorns');
-expectType<Writable>(noIpcSubprocess.stdio[0]);
-expectType<Readable>(noIpcSubprocess.stdio[1]);
-expectType<Readable>(noIpcSubprocess.stdio[2]);
+expectTypeOf(noIpcSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(noIpcSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(noIpcSubprocess.stdio[2]).toBe<Readable>();
 
 const ipcSubprocess = execa('unicorns', {ipc: true});
-expectType<Writable>(ipcSubprocess.stdio[0]);
-expectType<Readable>(ipcSubprocess.stdio[1]);
-expectType<Readable>(ipcSubprocess.stdio[2]);
-expectType<null>(ipcSubprocess.stdio[3]);
+expectTypeOf(ipcSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(ipcSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(ipcSubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(ipcSubprocess.stdio[3]).toBe<null>();
 
 const ipcInputSubprocess = execa('unicorns', {ipcInput: ''});
-expectType<null>(ipcInputSubprocess.stdio[3]);
+expectTypeOf(ipcInputSubprocess.stdio[3]).toBe<null>();
 
 const fd3IpcSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
-expectType<Readable>(fd3IpcSubprocess.stdio[3]);
-expectType<null>(fd3IpcSubprocess.stdio[4]);
+expectTypeOf(fd3IpcSubprocess.stdio[3]).toBe<Readable>();
+expectTypeOf(fd3IpcSubprocess.stdio[4]).toBe<null>();
 
 const fd5IpcSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
-expectType<Readable>(fd5IpcSubprocess.stdio[5]);
-expectType<null>(fd5IpcSubprocess.stdio[6]);
-expectType<Readable | Writable | null>(fd5IpcSubprocess.stdio[7]);
+expectTypeOf(fd5IpcSubprocess.stdio[5]).toBe<Readable>();
+expectTypeOf(fd5IpcSubprocess.stdio[6]).toBe<null>();
+expectTypeOf(fd5IpcSubprocess.stdio[7]).toBe<Readable | Writable | null>();
 
-expectType<Readable | Writable | null>(noIpcSubprocess.stdio[3]);
+expectTypeOf(noIpcSubprocess.stdio[3]).toBe<Readable | Writable | null>();

@@ -1,10 +1,10 @@
 import type {Duplex} from 'node:stream';
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa} from '../../index.js';
 
 const subprocess = execa('unicorns');
 
-expectType<Duplex>(subprocess.duplex());
+expectTypeOf(subprocess.duplex()).toBe<Duplex>();
 
 subprocess.duplex({from: 'stdout'});
 subprocess.duplex({from: 'stderr'});

@@ -1,7 +1,7 @@
 import {createWriteStream} from 'node:fs';
 import type {Readable} from 'node:stream';
 import type {ReadableStream} from 'node:stream/web';
-import {expectType, expectNotType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -23,85 +23,85 @@ type BufferExecaReturnValue = typeof bufferResult;
 type EmptyExecaReturnValue = Result<{}>;
 type ShortcutExecaReturnValue = Result<typeof pipeOptions>;
 
-expectNotType<BufferExecaReturnValue>(await subprocess.pipe(subprocess));
-expectNotType<BufferExecaReturnValue>(await scriptSubprocess.pipe(subprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe(bufferSubprocess, pipeOptions));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe(bufferSubprocess, pipeOptions));
+expectTypeOf(await subprocess.pipe(subprocess)).not.toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess)).not.toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe`stdin`);
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe(pipeOptions)`stdin`);
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe(pipeOptions)`stdin`);
+expectTypeOf(await subprocess.pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe('stdin'));
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe('stdin', pipeOptions));
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe('stdin', pipeOptions));
+expectTypeOf(await subprocess.pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
 
-expectType<BufferExecaReturnValue>(await subprocess.pipe(subprocess).pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe(subprocess).pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe(subprocess, pipeOptions).pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe(subprocess, pipeOptions).pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe(subprocess).pipe(bufferSubprocess, pipeOptions));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe(subprocess).pipe(bufferSubprocess, pipeOptions));
+expectTypeOf(await subprocess.pipe(subprocess).pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess).pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(subprocess, pipeOptions).pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess, pipeOptions).pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(subprocess).pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess).pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe(subprocess).pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe(subprocess).pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await subprocess.pipe(subprocess, pipeOptions).pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe(subprocess, pipeOptions).pipe`stdin`);
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe(subprocess).pipe(pipeOptions)`stdin`);
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe(subprocess).pipe(pipeOptions)`stdin`);
+expectTypeOf(await subprocess.pipe(subprocess).pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess).pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(subprocess, pipeOptions).pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess, pipeOptions).pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(subprocess).pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess).pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe(subprocess).pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe(subprocess).pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await subprocess.pipe(subprocess, pipeOptions).pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe(subprocess, pipeOptions).pipe('stdin'));
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe(subprocess).pipe('stdin', pipeOptions));
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe(subprocess).pipe('stdin', pipeOptions));
+expectTypeOf(await subprocess.pipe(subprocess).pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess).pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(subprocess, pipeOptions).pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess, pipeOptions).pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(subprocess).pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(subprocess).pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
 
-expectType<BufferExecaReturnValue>(await subprocess.pipe`stdin`.pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe`stdin`.pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe(pipeOptions)`stdin`.pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe(pipeOptions)`stdin`.pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe`stdin`.pipe(bufferSubprocess, pipeOptions));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe`stdin`.pipe(bufferSubprocess, pipeOptions));
+expectTypeOf(await subprocess.pipe`stdin`.pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe`stdin`.pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(pipeOptions)`stdin`.pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(pipeOptions)`stdin`.pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe`stdin`.pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe`stdin`.pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe`stdin`.pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe`stdin`.pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await subprocess.pipe(pipeOptions)`stdin`.pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe(pipeOptions)`stdin`.pipe`stdin`);
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe`stdin`.pipe(pipeOptions)`stdin`);
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe`stdin`.pipe(pipeOptions)`stdin`);
+expectTypeOf(await subprocess.pipe`stdin`.pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe`stdin`.pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(pipeOptions)`stdin`.pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(pipeOptions)`stdin`.pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe`stdin`.pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe`stdin`.pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe`stdin`.pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe`stdin`.pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await subprocess.pipe(pipeOptions)`stdin`.pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe(pipeOptions)`stdin`.pipe('stdin'));
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe`stdin`.pipe('stdin', pipeOptions));
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe`stdin`.pipe('stdin', pipeOptions));
+expectTypeOf(await subprocess.pipe`stdin`.pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe`stdin`.pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe(pipeOptions)`stdin`.pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe(pipeOptions)`stdin`.pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe`stdin`.pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe`stdin`.pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
 
-expectType<BufferExecaReturnValue>(await subprocess.pipe('pipe').pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe('pipe').pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe('pipe', pipeOptions).pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe('pipe', pipeOptions).pipe(bufferSubprocess));
-expectType<BufferExecaReturnValue>(await subprocess.pipe('pipe').pipe(bufferSubprocess, pipeOptions));
-expectType<BufferExecaReturnValue>(await scriptSubprocess.pipe('pipe').pipe(bufferSubprocess, pipeOptions));
+expectTypeOf(await subprocess.pipe('pipe').pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe').pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe('pipe', pipeOptions).pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe', pipeOptions).pipe(bufferSubprocess)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await subprocess.pipe('pipe').pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe').pipe(bufferSubprocess, pipeOptions)).toBe<BufferExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe('pipe').pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe('pipe').pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await subprocess.pipe('pipe', pipeOptions).pipe`stdin`);
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe('pipe', pipeOptions).pipe`stdin`);
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe('pipe').pipe(pipeOptions)`stdin`);
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe('pipe').pipe(pipeOptions)`stdin`);
+expectTypeOf(await subprocess.pipe('pipe').pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe').pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe('pipe', pipeOptions).pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe', pipeOptions).pipe`stdin`).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe('pipe').pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe').pipe(pipeOptions)`stdin`).toBe<ShortcutExecaReturnValue>();
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe('pipe').pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe('pipe').pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await subprocess.pipe('pipe', pipeOptions).pipe('stdin'));
-expectType<EmptyExecaReturnValue>(await scriptSubprocess.pipe('pipe', pipeOptions).pipe('stdin'));
-expectType<ShortcutExecaReturnValue>(await subprocess.pipe('pipe').pipe('stdin', pipeOptions));
-expectType<ShortcutExecaReturnValue>(await scriptSubprocess.pipe('pipe').pipe('stdin', pipeOptions));
+expectTypeOf(await subprocess.pipe('pipe').pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe').pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe('pipe', pipeOptions).pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe', pipeOptions).pipe('stdin')).toBe<EmptyExecaReturnValue>();
+expectTypeOf(await subprocess.pipe('pipe').pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
+expectTypeOf(await scriptSubprocess.pipe('pipe').pipe('stdin', pipeOptions)).toBe<ShortcutExecaReturnValue>();
 
 await subprocess.pipe(bufferSubprocess, {});
 await scriptSubprocess.pipe(bufferSubprocess, {});
@@ -203,7 +203,7 @@ expectError(await scriptSubprocess.pipe({unpipeSignal: true})`stdin`);
 expectError(await subprocess.pipe('stdin', {unpipeSignal: true}));
 expectError(await scriptSubprocess.pipe('stdin', {unpipeSignal: true}));
 
-expectType<EmptyExecaReturnValue>(await subprocess.pipe('stdin'));
+expectTypeOf(await subprocess.pipe('stdin')).toBe<EmptyExecaReturnValue>();
 await subprocess.pipe('stdin');
 await subprocess.pipe(fileUrl);
 await subprocess.pipe('stdin', []);
@@ -234,52 +234,52 @@ expectError(await subprocess.pipe('stdin', {to: 'other'}));
 expectError(await subprocess.pipe('stdin', [], {to: 'other'}));
 
 const pipeResult = await subprocess.pipe`stdin`;
-expectType<string>(pipeResult.stdout);
+expectTypeOf(pipeResult.stdout).toBe<string>();
 const ignorePipeResult = await subprocess.pipe({stdout: 'ignore'})`stdin`;
-expectType<undefined>(ignorePipeResult.stdout);
+expectTypeOf(ignorePipeResult.stdout).toBe<undefined>();
 
 const scriptPipeResult = await scriptSubprocess.pipe`stdin`;
-expectType<string>(scriptPipeResult.stdout);
+expectTypeOf(scriptPipeResult.stdout).toBe<string>();
 const ignoreScriptPipeResult = await scriptSubprocess.pipe({stdout: 'ignore'})`stdin`;
-expectType<undefined>(ignoreScriptPipeResult.stdout);
+expectTypeOf(ignoreScriptPipeResult.stdout).toBe<undefined>();
 
 const shortcutPipeResult = await subprocess.pipe('stdin');
-expectType<string>(shortcutPipeResult.stdout);
+expectTypeOf(shortcutPipeResult.stdout).toBe<string>();
 const ignoreShortcutPipeResult = await subprocess.pipe('stdin', {stdout: 'ignore'});
-expectType<undefined>(ignoreShortcutPipeResult.stdout);
+expectTypeOf(ignoreShortcutPipeResult.stdout).toBe<undefined>();
 
 const scriptShortcutPipeResult = await scriptSubprocess.pipe('stdin');
-expectType<string>(scriptShortcutPipeResult.stdout);
+expectTypeOf(scriptShortcutPipeResult.stdout).toBe<string>();
 const ignoreShortcutScriptPipeResult = await scriptSubprocess.pipe('stdin', {stdout: 'ignore'});
-expectType<undefined>(ignoreShortcutScriptPipeResult.stdout);
+expectTypeOf(ignoreShortcutScriptPipeResult.stdout).toBe<undefined>();
 
 const unicornsResult = execaSync('unicorns');
 expectError(unicornsResult.pipe);
 
 // The `.pipe()` return value forwards the destination subprocess' iteration, stream conversion and IPC methods.
 for await (const pipeLine of subprocess.pipe`stdin`) {
-	expectType<string>(pipeLine);
+	expectTypeOf(pipeLine).toBe<string>();
 }
 
 for await (const pipeLine of subprocess.pipe`stdin`.iterable()) {
-	expectType<string>(pipeLine);
+	expectTypeOf(pipeLine).toBe<string>();
 }
 
 for await (const pipeLine of subprocess.pipe(bufferSubprocess)) {
-	expectType<Uint8Array>(pipeLine);
+	expectTypeOf(pipeLine).toBe<Uint8Array>();
 }
 
-expectType<Readable>(subprocess.pipe`stdin`.readable());
-expectType<ReadableStream>(subprocess.pipe`stdin`.readableStream());
+expectTypeOf(subprocess.pipe`stdin`.readable()).toBe<Readable>();
+expectTypeOf(subprocess.pipe`stdin`.readableStream()).toBe<ReadableStream>();
 
-expectType<Readable>(subprocess.pipe({all: true})`stdin`.all);
-expectType<undefined>(subprocess.pipe`stdin`.all);
+expectTypeOf(subprocess.pipe({all: true})`stdin`.all).toBe<Readable>();
+expectTypeOf(subprocess.pipe`stdin`.all).toBe<undefined>();
 
-expectType<undefined>(subprocess.pipe`stdin`.sendMessage);
+expectTypeOf(subprocess.pipe`stdin`.sendMessage).toBe<undefined>();
 const ipcPipeResult = subprocess.pipe({ipc: true})`stdin`;
-expectType<Promise<void>>(ipcPipeResult.sendMessage('message'));
-expectType<Promise<Message<'advanced'>>>(ipcPipeResult.getOneMessage());
-expectType<AsyncIterableIterator<Message<'advanced'>>>(ipcPipeResult.getEachMessage());
+expectTypeOf(ipcPipeResult.sendMessage('message')).toBe<Promise<void>>();
+expectTypeOf(ipcPipeResult.getOneMessage()).toBe<Promise<Message<'advanced'>>>();
+expectTypeOf(ipcPipeResult.getEachMessage()).toBe<AsyncIterableIterator<Message<'advanced'>>>();
 
 // `writable()`, `duplex()`, `writableStream()` and `transformStream()` write to the destination's `stdin`, which is already piped from the source, so they are not forwarded.
 expectError(subprocess.pipe`stdin`.writable());

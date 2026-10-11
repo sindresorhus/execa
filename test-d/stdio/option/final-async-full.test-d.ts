@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -40,12 +40,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', asyncFinalFul
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncFinalFull]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [asyncFinalFull]]}));
 
-expectAssignable<StdinOption>(asyncFinalFull);
-expectNotAssignable<StdinSyncOption>(asyncFinalFull);
-expectAssignable<StdinOption>([asyncFinalFull]);
-expectNotAssignable<StdinSyncOption>([asyncFinalFull]);
+expectTypeOf(asyncFinalFull).toBeAssignableTo<StdinOption>();
+expectTypeOf(asyncFinalFull).not.toBeAssignableTo<StdinSyncOption>();
+[asyncFinalFull] satisfies StdinOption;
+expectTypeOf([asyncFinalFull]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>(asyncFinalFull);
-expectNotAssignable<StdoutStderrSyncOption>(asyncFinalFull);
-expectAssignable<StdoutStderrOption>([asyncFinalFull]);
-expectNotAssignable<StdoutStderrSyncOption>([asyncFinalFull]);
+expectTypeOf(asyncFinalFull).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(asyncFinalFull).not.toBeAssignableTo<StdoutStderrSyncOption>();
+[asyncFinalFull] satisfies StdoutStderrOption;
+expectTypeOf([asyncFinalFull]).not.toBeAssignableTo<StdoutStderrSyncOption>();

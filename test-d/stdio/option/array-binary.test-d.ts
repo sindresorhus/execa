@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -24,8 +24,8 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [binaryArray]
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [[binaryArray]]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [[binaryArray]]]}));
 
-expectAssignable<StdinOption>([binaryArray]);
-expectAssignable<StdinSyncOption>([binaryArray]);
+[binaryArray] satisfies StdinOption;
+[binaryArray] satisfies StdinSyncOption;
 
-expectNotAssignable<StdoutStderrOption>([binaryArray]);
-expectNotAssignable<StdoutStderrSyncOption>([binaryArray]);
+expectTypeOf([binaryArray]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([binaryArray]).not.toBeAssignableTo<StdoutStderrSyncOption>();

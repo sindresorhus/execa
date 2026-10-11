@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -37,12 +37,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', stringIterabl
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringIterable]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [stringIterable]]}));
 
-expectAssignable<StdinOption>(stringIterable);
-expectAssignable<StdinSyncOption>(stringIterable);
-expectAssignable<StdinOption>([stringIterable]);
-expectAssignable<StdinSyncOption>([stringIterable]);
+expectTypeOf(stringIterable).toBeAssignableTo<StdinOption>();
+expectTypeOf(stringIterable).toBeAssignableTo<StdinSyncOption>();
+[stringIterable] satisfies StdinOption;
+[stringIterable] satisfies StdinSyncOption;
 
-expectNotAssignable<StdoutStderrOption>(stringIterable);
-expectNotAssignable<StdoutStderrSyncOption>(stringIterable);
-expectNotAssignable<StdoutStderrOption>([stringIterable]);
-expectNotAssignable<StdoutStderrSyncOption>([stringIterable]);
+expectTypeOf(stringIterable).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(stringIterable).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([stringIterable]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([stringIterable]).not.toBeAssignableTo<StdoutStderrSyncOption>();

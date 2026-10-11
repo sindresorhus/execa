@@ -1,5 +1,5 @@
 import * as process from 'node:process';
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -9,12 +9,12 @@ import {
 
 const fileUrl = new URL('file:///test');
 
-expectAssignable<Options>({preferLocal: false});
-expectAssignable<Options>({cleanup: false});
-expectNotAssignable<Options>({other: false});
-expectAssignable<SyncOptions>({preferLocal: false});
-expectNotAssignable<SyncOptions>({cleanup: false});
-expectNotAssignable<SyncOptions>({other: false});
+({preferLocal: false}) satisfies Options;
+({cleanup: false}) satisfies Options;
+expectTypeOf<{other: false}>().not.toBeAssignableTo<Options>();
+({preferLocal: false}) satisfies SyncOptions;
+expectTypeOf<{cleanup: false}>().not.toBeAssignableTo<SyncOptions>();
+expectTypeOf<{other: false}>().not.toBeAssignableTo<SyncOptions>();
 
 await execa('unicorns', {preferLocal: false});
 execaSync('unicorns', {preferLocal: false});

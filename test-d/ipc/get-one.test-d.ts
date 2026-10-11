@@ -1,4 +1,4 @@
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	getOneMessage,
 	execa,
@@ -7,10 +7,10 @@ import {
 } from '../../index.js';
 
 const subprocess = execa('test', {ipc: true});
-expectType<Promise<Message<'advanced'>>>(subprocess.getOneMessage());
+expectTypeOf(subprocess.getOneMessage()).toBe<Promise<Message<'advanced'>>>();
 const jsonSubprocess = execa('test', {ipc: true, serialization: 'json'});
-expectType<Promise<Message<'json'>>>(jsonSubprocess.getOneMessage());
-expectType<Promise<Message>>(getOneMessage());
+expectTypeOf(jsonSubprocess.getOneMessage()).toBe<Promise<Message<'json'>>>();
+expectTypeOf(getOneMessage()).toBe<Promise<Message>>();
 
 expectError(await subprocess.getOneMessage(''));
 expectError(await getOneMessage(''));
@@ -25,14 +25,14 @@ await execa('test', {ipc: true as boolean}).getOneMessage?.();
 await execa('test', {ipcInput: '' as '' | undefined}).getOneMessage?.();
 await execa('test', {gracefulCancel: true as boolean | undefined, cancelSignal: AbortSignal.abort()}).getOneMessage?.();
 
-expectType<undefined>(execa('test').getOneMessage);
-expectType<undefined>(execa('test', {}).getOneMessage);
-expectType<undefined>(execa('test', {ipc: false}).getOneMessage);
-expectType<undefined>(execa('test', {ipcInput: undefined}).getOneMessage);
-expectType<undefined>(execa('test', {gracefulCancel: undefined}).getOneMessage);
-expectType<undefined>(execa('test', {gracefulCancel: false}).getOneMessage);
-expectType<undefined>(execa('test', {ipc: false, ipcInput: ''}).getOneMessage);
-expectType<undefined>(execa('test', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()}).getOneMessage);
+expectTypeOf(execa('test').getOneMessage).toBe<undefined>();
+expectTypeOf(execa('test', {}).getOneMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipc: false}).getOneMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipcInput: undefined}).getOneMessage).toBe<undefined>();
+expectTypeOf(execa('test', {gracefulCancel: undefined}).getOneMessage).toBe<undefined>();
+expectTypeOf(execa('test', {gracefulCancel: false}).getOneMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipc: false, ipcInput: ''}).getOneMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()}).getOneMessage).toBe<undefined>();
 
 await subprocess.getOneMessage({filter: undefined} as const);
 await subprocess.getOneMessage({filter: (message: Message<'advanced'>) => true} as const);

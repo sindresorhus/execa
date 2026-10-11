@@ -1,4 +1,4 @@
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -31,12 +31,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'inherit']});
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['inherit']]}));
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['inherit']]});
 
-expectAssignable<StdinOption>('inherit');
-expectAssignable<StdinSyncOption>('inherit');
-expectAssignable<StdinOption>(['inherit']);
-expectAssignable<StdinSyncOption>(['inherit']);
+expectTypeOf<'inherit'>().toBeAssignableTo<StdinOption>();
+expectTypeOf<'inherit'>().toBeAssignableTo<StdinSyncOption>();
+['inherit'] satisfies StdinOption;
+['inherit'] satisfies StdinSyncOption;
 
-expectAssignable<StdoutStderrOption>('inherit');
-expectAssignable<StdoutStderrSyncOption>('inherit');
-expectAssignable<StdoutStderrOption>(['inherit']);
-expectAssignable<StdoutStderrSyncOption>(['inherit']);
+expectTypeOf<'inherit'>().toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf<'inherit'>().toBeAssignableTo<StdoutStderrSyncOption>();
+['inherit'] satisfies StdoutStderrOption;
+['inherit'] satisfies StdoutStderrSyncOption;

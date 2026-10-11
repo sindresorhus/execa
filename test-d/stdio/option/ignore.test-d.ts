@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -31,12 +31,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['ignore']]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', ['ignore']]}));
 
-expectAssignable<StdinOption>('ignore');
-expectAssignable<StdinSyncOption>('ignore');
-expectNotAssignable<StdinOption>(['ignore']);
-expectNotAssignable<StdinSyncOption>(['ignore']);
+expectTypeOf<'ignore'>().toBeAssignableTo<StdinOption>();
+expectTypeOf<'ignore'>().toBeAssignableTo<StdinSyncOption>();
+expectTypeOf<['ignore']>().not.toBeAssignableTo<StdinOption>();
+expectTypeOf<['ignore']>().not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>('ignore');
-expectAssignable<StdoutStderrSyncOption>('ignore');
-expectNotAssignable<StdoutStderrOption>(['ignore']);
-expectNotAssignable<StdoutStderrSyncOption>(['ignore']);
+expectTypeOf<'ignore'>().toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf<'ignore'>().toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf<['ignore']>().not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf<['ignore']>().not.toBeAssignableTo<StdoutStderrSyncOption>();

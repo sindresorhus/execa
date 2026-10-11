@@ -1,4 +1,4 @@
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -38,12 +38,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', transformWithPreserveNewl
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithPreserveNewlines]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithPreserveNewlines]]});
 
-expectAssignable<StdinOption>(transformWithPreserveNewlines);
-expectAssignable<StdinSyncOption>(transformWithPreserveNewlines);
-expectAssignable<StdinOption>([transformWithPreserveNewlines]);
-expectAssignable<StdinSyncOption>([transformWithPreserveNewlines]);
+expectTypeOf(transformWithPreserveNewlines).toBeAssignableTo<StdinOption>();
+expectTypeOf(transformWithPreserveNewlines).toBeAssignableTo<StdinSyncOption>();
+[transformWithPreserveNewlines] satisfies StdinOption;
+[transformWithPreserveNewlines] satisfies StdinSyncOption;
 
-expectAssignable<StdoutStderrOption>(transformWithPreserveNewlines);
-expectAssignable<StdoutStderrSyncOption>(transformWithPreserveNewlines);
-expectAssignable<StdoutStderrOption>([transformWithPreserveNewlines]);
-expectAssignable<StdoutStderrSyncOption>([transformWithPreserveNewlines]);
+expectTypeOf(transformWithPreserveNewlines).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(transformWithPreserveNewlines).toBeAssignableTo<StdoutStderrSyncOption>();
+[transformWithPreserveNewlines] satisfies StdoutStderrOption;
+[transformWithPreserveNewlines] satisfies StdoutStderrSyncOption;

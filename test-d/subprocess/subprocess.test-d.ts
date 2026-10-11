@@ -1,25 +1,25 @@
 import type {ChildProcess} from 'node:child_process';
-import {expectType, expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa, type Result, type Subprocess} from '../../index.js';
 
 const subprocess = execa('unicorns');
-expectAssignable<Subprocess>(subprocess);
-expectType<Result<{}>>(await subprocess);
+expectTypeOf(subprocess).toBeAssignableTo<Subprocess>();
+expectTypeOf(await subprocess).toBe<Result<{}>>();
 
-expectType<number | undefined>(subprocess.pid);
-expectType<ChildProcess>(subprocess.nodeChildProcess);
+expectTypeOf(subprocess.pid).toBe<number | undefined>();
+expectTypeOf(subprocess.nodeChildProcess).toBe<ChildProcess>();
 subprocess.nodeChildProcess.on('exit', () => undefined);
 subprocess.nodeChildProcess.once('exit', () => undefined);
 subprocess.nodeChildProcess.ref();
 subprocess.nodeChildProcess.unref();
 subprocess.nodeChildProcess.send('message');
 subprocess.nodeChildProcess.disconnect();
-expectType<boolean>(subprocess.nodeChildProcess.connected);
-expectType<number | null>(subprocess.nodeChildProcess.exitCode);
-expectType<NodeJS.Signals | null>(subprocess.nodeChildProcess.signalCode);
-expectType<boolean>(subprocess.nodeChildProcess.killed);
-expectType<string[]>(subprocess.nodeChildProcess.spawnargs);
-expectType<string>(subprocess.nodeChildProcess.spawnfile);
+expectTypeOf(subprocess.nodeChildProcess.connected).toBe<boolean>();
+expectTypeOf(subprocess.nodeChildProcess.exitCode).toBe<number | null>();
+expectTypeOf(subprocess.nodeChildProcess.signalCode).toBe<NodeJS.Signals | null>();
+expectTypeOf(subprocess.nodeChildProcess.killed).toBe<boolean>();
+expectTypeOf(subprocess.nodeChildProcess.spawnargs).toBe<string[]>();
+expectTypeOf(subprocess.nodeChildProcess.spawnfile).toBe<string>();
 expectError(subprocess.on('exit', () => undefined));
 expectError(subprocess.once('exit', () => undefined));
 expectError(subprocess.ref());
@@ -34,7 +34,7 @@ expectError(subprocess.killed);
 expectError(subprocess.spawnargs);
 expectError(subprocess.spawnfile);
 
-expectType<boolean>(subprocess.kill());
+expectTypeOf(subprocess.kill()).toBe<boolean>();
 subprocess.kill('SIGKILL');
 subprocess.kill(undefined);
 subprocess.kill(new Error('test'));
@@ -55,4 +55,4 @@ expectError(subprocess.kill('SIGKILL', {}));
 expectError(subprocess.kill(null, new Error('test')));
 
 const ipcSubprocess = execa('unicorns', {ipc: true});
-expectAssignable<Subprocess>(ipcSubprocess);
+expectTypeOf(ipcSubprocess).toBeAssignableTo<Subprocess>();

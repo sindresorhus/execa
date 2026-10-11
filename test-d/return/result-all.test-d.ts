@@ -1,4 +1,4 @@
-import {expectType} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -7,25 +7,25 @@ import {
 } from '../../index.js';
 
 const allResult = await execa('unicorns', {all: true});
-expectType<string>(allResult.all);
+expectTypeOf(allResult.all).toBe<string>();
 
 const noAllResult = await execa('unicorns');
-expectType<undefined>(noAllResult.all);
+expectTypeOf(noAllResult.all).toBe<undefined>();
 
 const allResultSync = execaSync('unicorns', {all: true});
-expectType<string>(allResultSync.all);
+expectTypeOf(allResultSync.all).toBe<string>();
 
 const noAllResultSync = execaSync('unicorns');
-expectType<undefined>(noAllResultSync.all);
+expectTypeOf(noAllResultSync.all).toBe<undefined>();
 
 const allError = new Error('.') as ExecaError<{all: true}>;
-expectType<string>(allError.all);
+expectTypeOf(allError.all).toBe<string>();
 
 const noAllError = new Error('.') as ExecaError<{}>;
-expectType<undefined>(noAllError.all);
+expectTypeOf(noAllError.all).toBe<undefined>();
 
 const allErrorSync = new Error('.') as ExecaError<{all: true}>;
-expectType<string>(allErrorSync.all);
+expectTypeOf(allErrorSync.all).toBe<string>();
 
 const noAllErrorSync = new Error('.') as ExecaSyncError<{}>;
-expectType<undefined>(noAllErrorSync.all);
+expectTypeOf(noAllErrorSync.all).toBe<undefined>();

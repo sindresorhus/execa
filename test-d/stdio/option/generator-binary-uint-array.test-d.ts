@@ -1,4 +1,4 @@
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -26,14 +26,14 @@ await execa('unicorns', {stderr: uint8ArrayBinary});
 execaSync('unicorns', {stderr: uint8ArrayBinary});
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', uint8ArrayBinary]});
 
-expectAssignable<StdinOption>(uint8ArrayBinary);
-expectAssignable<StdinSyncOption>(uint8ArrayBinary);
-expectAssignable<StdinOption>([uint8ArrayBinary]);
-expectAssignable<StdinSyncOption>([uint8ArrayBinary]);
-expectAssignable<StdoutStderrOption>(uint8ArrayBinary);
-expectAssignable<StdoutStderrSyncOption>(uint8ArrayBinary);
-expectAssignable<StdoutStderrOption>([uint8ArrayBinary]);
-expectAssignable<StdoutStderrSyncOption>([uint8ArrayBinary]);
+expectTypeOf(uint8ArrayBinary).toBeAssignableTo<StdinOption>();
+expectTypeOf(uint8ArrayBinary).toBeAssignableTo<StdinSyncOption>();
+[uint8ArrayBinary] satisfies StdinOption;
+[uint8ArrayBinary] satisfies StdinSyncOption;
+expectTypeOf(uint8ArrayBinary).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(uint8ArrayBinary).toBeAssignableTo<StdoutStderrSyncOption>();
+[uint8ArrayBinary] satisfies StdoutStderrOption;
+[uint8ArrayBinary] satisfies StdoutStderrSyncOption;
 
 // `objectMode: true` takes precedence over `binary: true` for stdin, so the `chunk` argument is `unknown`.
 const uint8ArrayBinaryObjectMode = {
@@ -62,12 +62,12 @@ execaSync('unicorns', {stderr: uint8ArrayBinaryObjectMode});
 await execa('unicorns', {stdin: stdinObjectModeBinary});
 execaSync('unicorns', {stdin: stdinObjectModeBinary});
 
-expectNotAssignable<StdinOption>(uint8ArrayBinaryObjectMode);
-expectNotAssignable<StdinSyncOption>(uint8ArrayBinaryObjectMode);
-expectAssignable<StdoutStderrOption>(uint8ArrayBinaryObjectMode);
-expectAssignable<StdoutStderrSyncOption>(uint8ArrayBinaryObjectMode);
-expectAssignable<StdinOption>(stdinObjectModeBinary);
-expectAssignable<StdinSyncOption>(stdinObjectModeBinary);
+expectTypeOf(uint8ArrayBinaryObjectMode).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(uint8ArrayBinaryObjectMode).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(uint8ArrayBinaryObjectMode).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(uint8ArrayBinaryObjectMode).toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf(stdinObjectModeBinary).toBeAssignableTo<StdinOption>();
+expectTypeOf(stdinObjectModeBinary).toBeAssignableTo<StdinSyncOption>();
 
 const stdoutAnnotatedBinaryObjectMode: StdoutStderrOption = {
 	* transform(chunk: Uint8Array) {
@@ -77,7 +77,7 @@ const stdoutAnnotatedBinaryObjectMode: StdoutStderrOption = {
 	objectMode: true,
 };
 
-expectAssignable<StdoutStderrOption>(stdoutAnnotatedBinaryObjectMode);
+expectTypeOf(stdoutAnnotatedBinaryObjectMode).toBeAssignableTo<StdoutStderrOption>();
 
 // A `string` argument is invalid when `binary: true`.
 const stringBinary = {
@@ -109,16 +109,16 @@ expectError(execaSync('unicorns', {stdout: stringBinaryObjectMode}));
 expectError(await execa('unicorns', {stderr: stringBinaryObjectMode}));
 expectError(execaSync('unicorns', {stderr: stringBinaryObjectMode}));
 
-expectNotAssignable<StdinOption>(stringBinary);
-expectNotAssignable<StdinSyncOption>(stringBinary);
-expectNotAssignable<StdinOption>([stringBinary]);
-expectNotAssignable<StdinSyncOption>([stringBinary]);
-expectNotAssignable<StdoutStderrOption>(stringBinary);
-expectNotAssignable<StdoutStderrSyncOption>(stringBinary);
-expectNotAssignable<StdoutStderrOption>([stringBinary]);
-expectNotAssignable<StdoutStderrSyncOption>([stringBinary]);
-expectNotAssignable<StdoutStderrOption>(stringBinaryObjectMode);
-expectNotAssignable<StdoutStderrSyncOption>(stringBinaryObjectMode);
+expectTypeOf(stringBinary).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(stringBinary).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([stringBinary]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([stringBinary]).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(stringBinary).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(stringBinary).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([stringBinary]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([stringBinary]).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf(stringBinaryObjectMode).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(stringBinaryObjectMode).not.toBeAssignableTo<StdoutStderrSyncOption>();
 
 // An `Uint8Array` argument is invalid without `binary: true`, since the `chunk` is then a `string`.
 const uint8ArrayLine = {
@@ -137,14 +137,14 @@ expectError(await execa('unicorns', {stderr: uint8ArrayLine}));
 expectError(execaSync('unicorns', {stderr: uint8ArrayLine}));
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', uint8ArrayLine]}));
 
-expectNotAssignable<StdinOption>(uint8ArrayLine);
-expectNotAssignable<StdinSyncOption>(uint8ArrayLine);
-expectNotAssignable<StdinOption>([uint8ArrayLine]);
-expectNotAssignable<StdinSyncOption>([uint8ArrayLine]);
-expectNotAssignable<StdoutStderrOption>(uint8ArrayLine);
-expectNotAssignable<StdoutStderrSyncOption>(uint8ArrayLine);
-expectNotAssignable<StdoutStderrOption>([uint8ArrayLine]);
-expectNotAssignable<StdoutStderrSyncOption>([uint8ArrayLine]);
+expectTypeOf(uint8ArrayLine).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(uint8ArrayLine).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([uint8ArrayLine]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([uint8ArrayLine]).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(uint8ArrayLine).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(uint8ArrayLine).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([uint8ArrayLine]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([uint8ArrayLine]).not.toBeAssignableTo<StdoutStderrSyncOption>();
 
 // Binary encodings also make output transforms receive binary chunks.
 await execa('unicorns', {encoding: 'buffer', stdin: uint8ArrayLine});
@@ -169,10 +169,10 @@ expectError(await execa('unicorns', {stderr: uint8ArrayGenerator}));
 expectError(execaSync('unicorns', {stderr: uint8ArrayGenerator}));
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', uint8ArrayGenerator]}));
 
-expectNotAssignable<StdinOption>(uint8ArrayGenerator);
-expectNotAssignable<StdinSyncOption>(uint8ArrayGenerator);
-expectNotAssignable<StdoutStderrOption>(uint8ArrayGenerator);
-expectNotAssignable<StdoutStderrSyncOption>(uint8ArrayGenerator);
+expectTypeOf(uint8ArrayGenerator).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(uint8ArrayGenerator).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf(uint8ArrayGenerator).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(uint8ArrayGenerator).not.toBeAssignableTo<StdoutStderrSyncOption>();
 
 await execa('unicorns', {encoding: 'buffer', stdin: uint8ArrayGenerator});
 execaSync('unicorns', {encoding: 'buffer', stdin: uint8ArrayGenerator});

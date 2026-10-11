@@ -1,4 +1,4 @@
-import {expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -38,12 +38,12 @@ execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', transformWithObjectMode]}
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithObjectMode]]});
 execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [transformWithObjectMode]]});
 
-expectAssignable<StdinOption>(transformWithObjectMode);
-expectAssignable<StdinSyncOption>(transformWithObjectMode);
-expectAssignable<StdinOption>([transformWithObjectMode]);
-expectAssignable<StdinSyncOption>([transformWithObjectMode]);
+expectTypeOf(transformWithObjectMode).toBeAssignableTo<StdinOption>();
+expectTypeOf(transformWithObjectMode).toBeAssignableTo<StdinSyncOption>();
+[transformWithObjectMode] satisfies StdinOption;
+[transformWithObjectMode] satisfies StdinSyncOption;
 
-expectAssignable<StdoutStderrOption>(transformWithObjectMode);
-expectAssignable<StdoutStderrSyncOption>(transformWithObjectMode);
-expectAssignable<StdoutStderrOption>([transformWithObjectMode]);
-expectAssignable<StdoutStderrSyncOption>([transformWithObjectMode]);
+expectTypeOf(transformWithObjectMode).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(transformWithObjectMode).toBeAssignableTo<StdoutStderrSyncOption>();
+[transformWithObjectMode] satisfies StdoutStderrOption;
+[transformWithObjectMode] satisfies StdoutStderrSyncOption;

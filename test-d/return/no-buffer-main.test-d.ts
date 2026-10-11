@@ -1,5 +1,5 @@
 import type {Readable, Writable} from 'node:stream';
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -8,37 +8,37 @@ import {
 } from '../../index.js';
 
 const noBufferSubprocess = execa('unicorns', {buffer: false, all: true});
-expectType<Writable>(noBufferSubprocess.stdin);
-expectType<Writable>(noBufferSubprocess.stdio[0]);
-expectType<Readable>(noBufferSubprocess.stdout);
-expectType<Readable>(noBufferSubprocess.stdio[1]);
-expectType<Readable>(noBufferSubprocess.stderr);
-expectType<Readable>(noBufferSubprocess.stdio[2]);
-expectType<Readable>(noBufferSubprocess.all);
+expectTypeOf(noBufferSubprocess.stdin).toBe<Writable>();
+expectTypeOf(noBufferSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(noBufferSubprocess.stdout).toBe<Readable>();
+expectTypeOf(noBufferSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(noBufferSubprocess.stderr).toBe<Readable>();
+expectTypeOf(noBufferSubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(noBufferSubprocess.all).toBe<Readable>();
 
 const noBufferResult = await noBufferSubprocess;
-expectType<undefined>(noBufferResult.stdout);
-expectType<undefined>(noBufferResult.stdio[1]);
-expectType<undefined>(noBufferResult.stderr);
-expectType<undefined>(noBufferResult.stdio[2]);
-expectType<undefined>(noBufferResult.all);
+expectTypeOf(noBufferResult.stdout).toBe<undefined>();
+expectTypeOf(noBufferResult.stdio[1]).toBe<undefined>();
+expectTypeOf(noBufferResult.stderr).toBe<undefined>();
+expectTypeOf(noBufferResult.stdio[2]).toBe<undefined>();
+expectTypeOf(noBufferResult.all).toBe<undefined>();
 
 const noBufferResultSync = execaSync('unicorns', {buffer: false, all: true});
-expectType<undefined>(noBufferResultSync.stdout);
-expectType<undefined>(noBufferResultSync.stderr);
-expectType<undefined>(noBufferResultSync.all);
+expectTypeOf(noBufferResultSync.stdout).toBe<undefined>();
+expectTypeOf(noBufferResultSync.stderr).toBe<undefined>();
+expectTypeOf(noBufferResultSync.all).toBe<undefined>();
 
 const noBuffer3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], buffer: false});
-expectType<undefined>(noBuffer3Result.stdio[3]);
+expectTypeOf(noBuffer3Result.stdio[3]).toBe<undefined>();
 
 const noBufferError = new Error('.') as ExecaError<{buffer: false; all: true}>;
-expectType<undefined>(noBufferError.stdout);
-expectType<undefined>(noBufferError.stdio[1]);
-expectType<undefined>(noBufferError.stderr);
-expectType<undefined>(noBufferError.stdio[2]);
-expectType<undefined>(noBufferError.all);
+expectTypeOf(noBufferError.stdout).toBe<undefined>();
+expectTypeOf(noBufferError.stdio[1]).toBe<undefined>();
+expectTypeOf(noBufferError.stderr).toBe<undefined>();
+expectTypeOf(noBufferError.stdio[2]).toBe<undefined>();
+expectTypeOf(noBufferError.all).toBe<undefined>();
 
 const noBufferErrorSync = new Error('.') as ExecaSyncError<{buffer: false; all: true}>;
-expectType<undefined>(noBufferErrorSync.stdout);
-expectType<undefined>(noBufferErrorSync.stderr);
-expectType<undefined>(noBufferErrorSync.all);
+expectTypeOf(noBufferErrorSync.stdout).toBe<undefined>();
+expectTypeOf(noBufferErrorSync.stderr).toBe<undefined>();
+expectTypeOf(noBufferErrorSync.all).toBe<undefined>();

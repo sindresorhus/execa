@@ -1,4 +1,4 @@
-import {expectAssignable, expectType} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -11,84 +11,84 @@ import {
 } from '../../index.js';
 
 const ipcResult = await execa('unicorns', {ipc: true});
-expectType<Array<Message<'advanced'>>>(ipcResult.ipcOutput);
+expectTypeOf(ipcResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const ipcFdResult = await execa('unicorns', {ipc: true, buffer: {stdout: false}});
-expectType<Array<Message<'advanced'>>>(ipcFdResult.ipcOutput);
+expectTypeOf(ipcFdResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const advancedResult = await execa('unicorns', {ipc: true, serialization: 'advanced'});
-expectType<Array<Message<'advanced'>>>(advancedResult.ipcOutput);
+expectTypeOf(advancedResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const jsonResult = await execa('unicorns', {ipc: true, serialization: 'json'});
-expectType<Array<Message<'json'>>>(jsonResult.ipcOutput);
+expectTypeOf(jsonResult.ipcOutput).toBe<Array<Message<'json'>>>();
 
 const inputResult = await execa('unicorns', {ipcInput: ''});
-expectType<Array<Message<'advanced'>>>(inputResult.ipcOutput);
+expectTypeOf(inputResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const genericInputResult = await execa('unicorns', {ipcInput: '' as Message});
-expectType<Array<Message<'advanced'>>>(genericInputResult.ipcOutput);
+expectTypeOf(genericInputResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const gracefulResult = await execa('unicorns', {gracefulCancel: true, cancelSignal: AbortSignal.abort()});
-expectType<Array<Message<'advanced'>>>(gracefulResult.ipcOutput);
+expectTypeOf(gracefulResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const genericResult = await execa('unicorns', {} as Options);
-expectType<Message[] | []>(genericResult.ipcOutput);
+expectTypeOf(genericResult.ipcOutput).toBe<Message[] | []>();
 
 const genericIpc = await execa('unicorns', {ipc: true as boolean});
-expectType<Array<Message<'advanced'>> | []>(genericIpc.ipcOutput);
+expectTypeOf(genericIpc.ipcOutput).toBe<Array<Message<'advanced'>> | []>();
 
 const maybeInputResult = await execa('unicorns', {ipcInput: '' as '' | undefined});
-expectType<Array<Message<'advanced'>> | []>(maybeInputResult.ipcOutput);
+expectTypeOf(maybeInputResult.ipcOutput).toBe<Array<Message<'advanced'>> | []>();
 
 const maybeGracefulResult = await execa('unicorns', {gracefulCancel: true as boolean | undefined, cancelSignal: AbortSignal.abort()});
-expectType<Array<Message<'advanced'>> | []>(maybeGracefulResult.ipcOutput);
+expectTypeOf(maybeGracefulResult.ipcOutput).toBe<Array<Message<'advanced'>> | []>();
 
 const falseIpcResult = await execa('unicorns', {ipc: false});
-expectType<[]>(falseIpcResult.ipcOutput);
+expectTypeOf(falseIpcResult.ipcOutput).toBe<[]>();
 
 const noIpcResult = await execa('unicorns');
-expectType<[]>(noIpcResult.ipcOutput);
+expectTypeOf(noIpcResult.ipcOutput).toBe<[]>();
 
 const emptyIpcResult = await execa('unicorns', {});
-expectType<[]>(emptyIpcResult.ipcOutput);
+expectTypeOf(emptyIpcResult.ipcOutput).toBe<[]>();
 
 const undefinedInputResult = await execa('unicorns', {ipcInput: undefined});
-expectType<[]>(undefinedInputResult.ipcOutput);
+expectTypeOf(undefinedInputResult.ipcOutput).toBe<[]>();
 
 const inputNoIpcResult = await execa('unicorns', {ipc: false, ipcInput: ''});
-expectType<[]>(inputNoIpcResult.ipcOutput);
+expectTypeOf(inputNoIpcResult.ipcOutput).toBe<[]>();
 
 const undefinedGracefulResult = await execa('unicorns', {gracefulCancel: undefined});
-expectType<[]>(undefinedGracefulResult.ipcOutput);
+expectTypeOf(undefinedGracefulResult.ipcOutput).toBe<[]>();
 
 const falseGracefulResult = await execa('unicorns', {gracefulCancel: false});
-expectType<[]>(falseGracefulResult.ipcOutput);
+expectTypeOf(falseGracefulResult.ipcOutput).toBe<[]>();
 
 const gracefulNoIpcResult = await execa('unicorns', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()});
-expectType<[]>(gracefulNoIpcResult.ipcOutput);
+expectTypeOf(gracefulNoIpcResult.ipcOutput).toBe<[]>();
 
 const noBufferResult = await execa('unicorns', {ipc: true, buffer: false});
-expectType<[]>(noBufferResult.ipcOutput);
+expectTypeOf(noBufferResult.ipcOutput).toBe<[]>();
 
 const noBufferFdResult = await execa('unicorns', {ipc: true, buffer: {ipc: false}});
-expectType<[]>(noBufferFdResult.ipcOutput);
+expectTypeOf(noBufferFdResult.ipcOutput).toBe<[]>();
 
 const syncResult = execaSync('unicorns');
-expectType<[]>(syncResult.ipcOutput);
+expectTypeOf(syncResult.ipcOutput).toBe<[]>();
 
-expectType<Message[] | []>({} as Result['ipcOutput']);
-expectAssignable<Message[]>({} as Result['ipcOutput']);
-expectType<[]>({} as unknown as SyncResult['ipcOutput']);
+expectTypeOf<Result['ipcOutput']>().toBe<Message[] | []>();
+expectTypeOf<Result['ipcOutput']>().toBeAssignableTo<Message[]>();
+expectTypeOf({} as unknown as SyncResult['ipcOutput']).toBe<[]>();
 
 const ipcError = new Error('.') as ExecaError<{ipc: true}>;
-expectType<Array<Message<'advanced'>>>(ipcError.ipcOutput);
+expectTypeOf(ipcError.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const ipcFalseError = new Error('.') as ExecaError<{ipc: false}>;
-expectType<[]>(ipcFalseError.ipcOutput);
+expectTypeOf(ipcFalseError.ipcOutput).toBe<[]>();
 
 const asyncError = new Error('.') as ExecaError;
-expectType<Message[] | []>(asyncError.ipcOutput);
-expectAssignable<Message[]>(asyncError.ipcOutput);
+expectTypeOf(asyncError.ipcOutput).toBe<Message[] | []>();
+expectTypeOf(asyncError.ipcOutput).toBeAssignableTo<Message[]>();
 
 const syncError = new Error('.') as ExecaSyncError;
-expectType<[]>(syncError.ipcOutput);
+expectTypeOf(syncError.ipcOutput).toBe<[]>();

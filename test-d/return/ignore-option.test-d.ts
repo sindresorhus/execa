@@ -1,5 +1,5 @@
 import {type Readable, type Writable} from 'node:stream';
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -13,137 +13,137 @@ const ignoreAnySubprocess = execa('unicorns', {
 	stderr: 'ignore',
 	all: true,
 });
-expectType<null>(ignoreAnySubprocess.stdin);
-expectType<null>(ignoreAnySubprocess.stdio[0]);
-expectType<null>(ignoreAnySubprocess.stdout);
-expectType<null>(ignoreAnySubprocess.stdio[1]);
-expectType<null>(ignoreAnySubprocess.stderr);
-expectType<null>(ignoreAnySubprocess.stdio[2]);
-expectType<undefined>(ignoreAnySubprocess.all);
+expectTypeOf(ignoreAnySubprocess.stdin).toBe<null>();
+expectTypeOf(ignoreAnySubprocess.stdio[0]).toBe<null>();
+expectTypeOf(ignoreAnySubprocess.stdout).toBe<null>();
+expectTypeOf(ignoreAnySubprocess.stdio[1]).toBe<null>();
+expectTypeOf(ignoreAnySubprocess.stderr).toBe<null>();
+expectTypeOf(ignoreAnySubprocess.stdio[2]).toBe<null>();
+expectTypeOf(ignoreAnySubprocess.all).toBe<undefined>();
 
 const ignoreAnyResult = await ignoreAnySubprocess;
-expectType<undefined>(ignoreAnyResult.stdout);
-expectType<undefined>(ignoreAnyResult.stdio[1]);
-expectType<undefined>(ignoreAnyResult.stderr);
-expectType<undefined>(ignoreAnyResult.stdio[2]);
-expectType<undefined>(ignoreAnyResult.all);
+expectTypeOf(ignoreAnyResult.stdout).toBe<undefined>();
+expectTypeOf(ignoreAnyResult.stdio[1]).toBe<undefined>();
+expectTypeOf(ignoreAnyResult.stderr).toBe<undefined>();
+expectTypeOf(ignoreAnyResult.stdio[2]).toBe<undefined>();
+expectTypeOf(ignoreAnyResult.all).toBe<undefined>();
 
 const ignoreAllSubprocess = execa('unicorns', {stdio: 'ignore', all: true});
-expectType<null>(ignoreAllSubprocess.stdin);
-expectType<null>(ignoreAllSubprocess.stdio[0]);
-expectType<null>(ignoreAllSubprocess.stdout);
-expectType<null>(ignoreAllSubprocess.stdio[1]);
-expectType<null>(ignoreAllSubprocess.stderr);
-expectType<null>(ignoreAllSubprocess.stdio[2]);
-expectType<undefined>(ignoreAllSubprocess.all);
+expectTypeOf(ignoreAllSubprocess.stdin).toBe<null>();
+expectTypeOf(ignoreAllSubprocess.stdio[0]).toBe<null>();
+expectTypeOf(ignoreAllSubprocess.stdout).toBe<null>();
+expectTypeOf(ignoreAllSubprocess.stdio[1]).toBe<null>();
+expectTypeOf(ignoreAllSubprocess.stderr).toBe<null>();
+expectTypeOf(ignoreAllSubprocess.stdio[2]).toBe<null>();
+expectTypeOf(ignoreAllSubprocess.all).toBe<undefined>();
 
 const ignoreAllResult = await ignoreAllSubprocess;
-expectType<undefined>(ignoreAllResult.stdout);
-expectType<undefined>(ignoreAllResult.stdio[1]);
-expectType<undefined>(ignoreAllResult.stderr);
-expectType<undefined>(ignoreAllResult.stdio[2]);
-expectType<undefined>(ignoreAllResult.all);
+expectTypeOf(ignoreAllResult.stdout).toBe<undefined>();
+expectTypeOf(ignoreAllResult.stdio[1]).toBe<undefined>();
+expectTypeOf(ignoreAllResult.stderr).toBe<undefined>();
+expectTypeOf(ignoreAllResult.stdio[2]).toBe<undefined>();
+expectTypeOf(ignoreAllResult.all).toBe<undefined>();
 
 const ignoreStdioArraySubprocess = execa('unicorns', {stdio: ['ignore', 'ignore', 'pipe', 'pipe'], all: true});
-expectType<null>(ignoreStdioArraySubprocess.stdin);
-expectType<null>(ignoreStdioArraySubprocess.stdio[0]);
-expectType<null>(ignoreStdioArraySubprocess.stdout);
-expectType<null>(ignoreStdioArraySubprocess.stdio[1]);
-expectType<Readable>(ignoreStdioArraySubprocess.stderr);
-expectType<Readable>(ignoreStdioArraySubprocess.stdio[2]);
-expectType<Readable>(ignoreStdioArraySubprocess.all);
-expectType<Readable>(ignoreStdioArraySubprocess.stdio[3]);
+expectTypeOf(ignoreStdioArraySubprocess.stdin).toBe<null>();
+expectTypeOf(ignoreStdioArraySubprocess.stdio[0]).toBe<null>();
+expectTypeOf(ignoreStdioArraySubprocess.stdout).toBe<null>();
+expectTypeOf(ignoreStdioArraySubprocess.stdio[1]).toBe<null>();
+expectTypeOf(ignoreStdioArraySubprocess.stderr).toBe<Readable>();
+expectTypeOf(ignoreStdioArraySubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(ignoreStdioArraySubprocess.all).toBe<Readable>();
+expectTypeOf(ignoreStdioArraySubprocess.stdio[3]).toBe<Readable>();
 const ignoreStdioArrayResult = await ignoreStdioArraySubprocess;
-expectType<undefined>(ignoreStdioArrayResult.stdout);
-expectType<undefined>(ignoreStdioArrayResult.stdio[1]);
-expectType<string>(ignoreStdioArrayResult.stderr);
-expectType<string>(ignoreStdioArrayResult.stdio[2]);
-expectType<string>(ignoreStdioArrayResult.all);
+expectTypeOf(ignoreStdioArrayResult.stdout).toBe<undefined>();
+expectTypeOf(ignoreStdioArrayResult.stdio[1]).toBe<undefined>();
+expectTypeOf(ignoreStdioArrayResult.stderr).toBe<string>();
+expectTypeOf(ignoreStdioArrayResult.stdio[2]).toBe<string>();
+expectTypeOf(ignoreStdioArrayResult.all).toBe<string>();
 
 const ignoreStdioArrayReadSubprocess = execa('unicorns', {stdio: ['ignore', 'ignore', 'pipe', new Uint8Array()], all: true});
-expectType<Writable>(ignoreStdioArrayReadSubprocess.stdio[3]);
+expectTypeOf(ignoreStdioArrayReadSubprocess.stdio[3]).toBe<Writable>();
 
 const ignoreStdinSubprocess = execa('unicorns', {stdin: 'ignore'});
-expectType<null>(ignoreStdinSubprocess.stdin);
+expectTypeOf(ignoreStdinSubprocess.stdin).toBe<null>();
 
 const ignoreStdoutSubprocess = execa('unicorns', {stdout: 'ignore', all: true});
-expectType<Writable>(ignoreStdoutSubprocess.stdin);
-expectType<Writable>(ignoreStdoutSubprocess.stdio[0]);
-expectType<null>(ignoreStdoutSubprocess.stdout);
-expectType<null>(ignoreStdoutSubprocess.stdio[1]);
-expectType<Readable>(ignoreStdoutSubprocess.stderr);
-expectType<Readable>(ignoreStdoutSubprocess.stdio[2]);
-expectType<Readable>(ignoreStdoutSubprocess.all);
+expectTypeOf(ignoreStdoutSubprocess.stdin).toBe<Writable>();
+expectTypeOf(ignoreStdoutSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(ignoreStdoutSubprocess.stdout).toBe<null>();
+expectTypeOf(ignoreStdoutSubprocess.stdio[1]).toBe<null>();
+expectTypeOf(ignoreStdoutSubprocess.stderr).toBe<Readable>();
+expectTypeOf(ignoreStdoutSubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(ignoreStdoutSubprocess.all).toBe<Readable>();
 
 const ignoreStdoutResult = await ignoreStdoutSubprocess;
-expectType<undefined>(ignoreStdoutResult.stdout);
-expectType<string>(ignoreStdoutResult.stderr);
-expectType<string>(ignoreStdoutResult.all);
+expectTypeOf(ignoreStdoutResult.stdout).toBe<undefined>();
+expectTypeOf(ignoreStdoutResult.stderr).toBe<string>();
+expectTypeOf(ignoreStdoutResult.all).toBe<string>();
 
 const ignoreStderrSubprocess = execa('unicorns', {stderr: 'ignore', all: true});
-expectType<Writable>(ignoreStderrSubprocess.stdin);
-expectType<Writable>(ignoreStderrSubprocess.stdio[0]);
-expectType<Readable>(ignoreStderrSubprocess.stdout);
-expectType<Readable>(ignoreStderrSubprocess.stdio[1]);
-expectType<null>(ignoreStderrSubprocess.stderr);
-expectType<null>(ignoreStderrSubprocess.stdio[2]);
-expectType<Readable>(ignoreStderrSubprocess.all);
+expectTypeOf(ignoreStderrSubprocess.stdin).toBe<Writable>();
+expectTypeOf(ignoreStderrSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(ignoreStderrSubprocess.stdout).toBe<Readable>();
+expectTypeOf(ignoreStderrSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(ignoreStderrSubprocess.stderr).toBe<null>();
+expectTypeOf(ignoreStderrSubprocess.stdio[2]).toBe<null>();
+expectTypeOf(ignoreStderrSubprocess.all).toBe<Readable>();
 
 const ignoreStderrResult = await ignoreStderrSubprocess;
-expectType<string>(ignoreStderrResult.stdout);
-expectType<undefined>(ignoreStderrResult.stderr);
-expectType<string>(ignoreStderrResult.all);
+expectTypeOf(ignoreStderrResult.stdout).toBe<string>();
+expectTypeOf(ignoreStderrResult.stderr).toBe<undefined>();
+expectTypeOf(ignoreStderrResult.all).toBe<string>();
 
 const ignoreStdioSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore'], all: true});
-expectType<Writable>(ignoreStdioSubprocess.stdin);
-expectType<Writable>(ignoreStdioSubprocess.stdio[0]);
-expectType<Readable>(ignoreStdioSubprocess.stdout);
-expectType<Readable>(ignoreStdioSubprocess.stdio[1]);
-expectType<Readable>(ignoreStdioSubprocess.stderr);
-expectType<Readable>(ignoreStdioSubprocess.stdio[2]);
-expectType<Readable>(ignoreStdioSubprocess.all);
-expectType<null>(ignoreStdioSubprocess.stdio[3]);
+expectTypeOf(ignoreStdioSubprocess.stdin).toBe<Writable>();
+expectTypeOf(ignoreStdioSubprocess.stdio[0]).toBe<Writable>();
+expectTypeOf(ignoreStdioSubprocess.stdout).toBe<Readable>();
+expectTypeOf(ignoreStdioSubprocess.stdio[1]).toBe<Readable>();
+expectTypeOf(ignoreStdioSubprocess.stderr).toBe<Readable>();
+expectTypeOf(ignoreStdioSubprocess.stdio[2]).toBe<Readable>();
+expectTypeOf(ignoreStdioSubprocess.all).toBe<Readable>();
+expectTypeOf(ignoreStdioSubprocess.stdio[3]).toBe<null>();
 
 const ignoreStdioResult = await ignoreStdioSubprocess;
-expectType<string>(ignoreStdioResult.stdout);
-expectType<string>(ignoreStdioResult.stderr);
-expectType<string>(ignoreStdioResult.all);
+expectTypeOf(ignoreStdioResult.stdout).toBe<string>();
+expectTypeOf(ignoreStdioResult.stderr).toBe<string>();
+expectTypeOf(ignoreStdioResult.all).toBe<string>();
 
 const ignoreStdoutResultSync = execaSync('unicorns', {stdout: 'ignore', all: true});
-expectType<undefined>(ignoreStdoutResultSync.stdout);
-expectType<undefined>(ignoreStdoutResultSync.stdio[1]);
-expectType<string>(ignoreStdoutResultSync.stderr);
-expectType<string>(ignoreStdoutResultSync.stdio[2]);
-expectType<string>(ignoreStdoutResultSync.all);
+expectTypeOf(ignoreStdoutResultSync.stdout).toBe<undefined>();
+expectTypeOf(ignoreStdoutResultSync.stdio[1]).toBe<undefined>();
+expectTypeOf(ignoreStdoutResultSync.stderr).toBe<string>();
+expectTypeOf(ignoreStdoutResultSync.stdio[2]).toBe<string>();
+expectTypeOf(ignoreStdoutResultSync.all).toBe<string>();
 
 const ignoreStderrResultSync = execaSync('unicorns', {stderr: 'ignore', all: true});
-expectType<string>(ignoreStderrResultSync.stdout);
-expectType<undefined>(ignoreStderrResultSync.stderr);
-expectType<string>(ignoreStderrResultSync.all);
+expectTypeOf(ignoreStderrResultSync.stdout).toBe<string>();
+expectTypeOf(ignoreStderrResultSync.stderr).toBe<undefined>();
+expectTypeOf(ignoreStderrResultSync.all).toBe<string>();
 
 const ignoreFd3Result = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'ignore']});
-expectType<undefined>(ignoreFd3Result.stdio[3]);
+expectTypeOf(ignoreFd3Result.stdio[3]).toBe<undefined>();
 
 const ignoreStdoutError = new Error('.') as ExecaError<{stdout: 'ignore'; all: true}>;
-expectType<undefined>(ignoreStdoutError.stdout);
-expectType<undefined>(ignoreStdoutError.stdio[1]);
-expectType<string>(ignoreStdoutError.stderr);
-expectType<string>(ignoreStdoutError.stdio[2]);
-expectType<string>(ignoreStdoutError.all);
+expectTypeOf(ignoreStdoutError.stdout).toBe<undefined>();
+expectTypeOf(ignoreStdoutError.stdio[1]).toBe<undefined>();
+expectTypeOf(ignoreStdoutError.stderr).toBe<string>();
+expectTypeOf(ignoreStdoutError.stdio[2]).toBe<string>();
+expectTypeOf(ignoreStdoutError.all).toBe<string>();
 
 const ignoreStderrError = new Error('.') as ExecaError<{stderr: 'ignore'; all: true}>;
-expectType<string>(ignoreStderrError.stdout);
-expectType<undefined>(ignoreStderrError.stderr);
-expectType<string>(ignoreStderrError.all);
+expectTypeOf(ignoreStderrError.stdout).toBe<string>();
+expectTypeOf(ignoreStderrError.stderr).toBe<undefined>();
+expectTypeOf(ignoreStderrError.all).toBe<string>();
 
 const ignoreStdoutErrorSync = new Error('.') as ExecaSyncError<{stdout: 'ignore'; all: true}>;
-expectType<undefined>(ignoreStdoutErrorSync.stdout);
-expectType<undefined>(ignoreStdoutErrorSync.stdio[1]);
-expectType<string>(ignoreStdoutErrorSync.stderr);
-expectType<string>(ignoreStdoutErrorSync.stdio[2]);
-expectType<string>(ignoreStdoutErrorSync.all);
+expectTypeOf(ignoreStdoutErrorSync.stdout).toBe<undefined>();
+expectTypeOf(ignoreStdoutErrorSync.stdio[1]).toBe<undefined>();
+expectTypeOf(ignoreStdoutErrorSync.stderr).toBe<string>();
+expectTypeOf(ignoreStdoutErrorSync.stdio[2]).toBe<string>();
+expectTypeOf(ignoreStdoutErrorSync.all).toBe<string>();
 
 const ignoreStderrErrorSync = new Error('.') as ExecaSyncError<{stderr: 'ignore'; all: true}>;
-expectType<string>(ignoreStderrErrorSync.stdout);
-expectType<undefined>(ignoreStderrErrorSync.stderr);
-expectType<string>(ignoreStderrErrorSync.all);
+expectTypeOf(ignoreStderrErrorSync.stdout).toBe<string>();
+expectTypeOf(ignoreStderrErrorSync.stderr).toBe<undefined>();
+expectTypeOf(ignoreStderrErrorSync.all).toBe<string>();

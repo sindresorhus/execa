@@ -1,10 +1,10 @@
 import type {Readable} from 'node:stream';
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa} from '../../index.js';
 
 const subprocess = execa('unicorns');
 
-expectType<Readable>(subprocess.readable());
+expectTypeOf(subprocess.readable()).toBe<Readable>();
 
 subprocess.readable({from: 'stdout'});
 subprocess.readable({from: 'stderr'});

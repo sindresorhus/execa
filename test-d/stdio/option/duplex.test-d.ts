@@ -1,5 +1,5 @@
 import {Duplex} from 'node:stream';
-import {expectError, expectAssignable, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -34,12 +34,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', duplex]}));
 await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplex]]});
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplex]]}));
 
-expectAssignable<StdinOption>(duplex);
-expectNotAssignable<StdinSyncOption>(duplex);
-expectAssignable<StdinOption>([duplex]);
-expectNotAssignable<StdinSyncOption>([duplex]);
+expectTypeOf(duplex).toBeAssignableTo<StdinOption>();
+expectTypeOf(duplex).not.toBeAssignableTo<StdinSyncOption>();
+[duplex] satisfies StdinOption;
+expectTypeOf([duplex]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectAssignable<StdoutStderrOption>(duplex);
-expectNotAssignable<StdoutStderrSyncOption>(duplex);
-expectAssignable<StdoutStderrOption>([duplex]);
-expectNotAssignable<StdoutStderrSyncOption>([duplex]);
+expectTypeOf(duplex).toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(duplex).not.toBeAssignableTo<StdoutStderrSyncOption>();
+[duplex] satisfies StdoutStderrOption;
+expectTypeOf([duplex]).not.toBeAssignableTo<StdoutStderrSyncOption>();

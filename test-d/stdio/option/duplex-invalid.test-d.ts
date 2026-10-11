@@ -1,5 +1,5 @@
 import {Duplex} from 'node:stream';
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -37,12 +37,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', duplexWithInv
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplexWithInvalidObjectMode]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [duplexWithInvalidObjectMode]]}));
 
-expectNotAssignable<StdinOption>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdinSyncOption>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdinOption>([duplexWithInvalidObjectMode]);
-expectNotAssignable<StdinSyncOption>([duplexWithInvalidObjectMode]);
+expectTypeOf(duplexWithInvalidObjectMode).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(duplexWithInvalidObjectMode).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([duplexWithInvalidObjectMode]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([duplexWithInvalidObjectMode]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdoutStderrSyncOption>(duplexWithInvalidObjectMode);
-expectNotAssignable<StdoutStderrOption>([duplexWithInvalidObjectMode]);
-expectNotAssignable<StdoutStderrSyncOption>([duplexWithInvalidObjectMode]);
+expectTypeOf(duplexWithInvalidObjectMode).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(duplexWithInvalidObjectMode).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([duplexWithInvalidObjectMode]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([duplexWithInvalidObjectMode]).not.toBeAssignableTo<StdoutStderrSyncOption>();

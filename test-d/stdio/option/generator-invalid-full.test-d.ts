@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -38,12 +38,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', invalidReturn
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidReturnGeneratorFull]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [invalidReturnGeneratorFull]]}));
 
-expectNotAssignable<StdinOption>(invalidReturnGeneratorFull);
-expectNotAssignable<StdinSyncOption>(invalidReturnGeneratorFull);
-expectNotAssignable<StdinOption>([invalidReturnGeneratorFull]);
-expectNotAssignable<StdinSyncOption>([invalidReturnGeneratorFull]);
+expectTypeOf(invalidReturnGeneratorFull).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(invalidReturnGeneratorFull).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([invalidReturnGeneratorFull]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([invalidReturnGeneratorFull]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(invalidReturnGeneratorFull);
-expectNotAssignable<StdoutStderrSyncOption>(invalidReturnGeneratorFull);
-expectNotAssignable<StdoutStderrOption>([invalidReturnGeneratorFull]);
-expectNotAssignable<StdoutStderrSyncOption>([invalidReturnGeneratorFull]);
+expectTypeOf(invalidReturnGeneratorFull).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(invalidReturnGeneratorFull).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([invalidReturnGeneratorFull]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([invalidReturnGeneratorFull]).not.toBeAssignableTo<StdoutStderrSyncOption>();

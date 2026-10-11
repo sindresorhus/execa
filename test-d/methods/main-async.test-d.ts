@@ -1,4 +1,4 @@
-import {expectType, expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa, type Result, type ResultPromise} from '../../index.js';
 
 const fileUrl = new URL('file:///test');
@@ -7,51 +7,51 @@ const stringArray = ['foo', 'bar'] as const;
 expectError(execa());
 expectError(execa(true));
 expectError(execa(['unicorns', 'arg']));
-expectAssignable<ResultPromise>(execa('unicorns'));
-expectAssignable<ResultPromise>(execa(fileUrl));
+expectTypeOf(execa('unicorns')).toBeAssignableTo<ResultPromise>();
+expectTypeOf(execa(fileUrl)).toBeAssignableTo<ResultPromise>();
 
-expectAssignable<ResultPromise>(execa('unicorns', []));
-expectAssignable<ResultPromise>(execa('unicorns', ['foo']));
+expectTypeOf(execa('unicorns', [])).toBeAssignableTo<ResultPromise>();
+expectTypeOf(execa('unicorns', ['foo'])).toBeAssignableTo<ResultPromise>();
 expectError(execa('unicorns', 'foo'));
 expectError(execa('unicorns', [true]));
 
-expectAssignable<ResultPromise>(execa('unicorns', {}));
-expectAssignable<ResultPromise>(execa('unicorns', [], {}));
+expectTypeOf(execa('unicorns', {})).toBeAssignableTo<ResultPromise>();
+expectTypeOf(execa('unicorns', [], {})).toBeAssignableTo<ResultPromise>();
 expectError(execa('unicorns', [], []));
 expectError(execa('unicorns', {other: true}));
 
-expectAssignable<ResultPromise>(execa`unicorns`);
-expectType<Result<{}>>(await execa('unicorns'));
-expectType<Result<{}>>(await execa`unicorns`);
+expectTypeOf(execa`unicorns`).toBeAssignableTo<ResultPromise>();
+expectTypeOf(await execa('unicorns')).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns`).toBe<Result<{}>>();
 
-expectAssignable<typeof execa>(execa({}));
-expectAssignable<ResultPromise>(execa({})('unicorns'));
-expectAssignable<ResultPromise>(execa({})`unicorns`);
+expectTypeOf(execa({})).toBeAssignableTo<typeof execa>();
+expectTypeOf(execa({})('unicorns')).toBeAssignableTo<ResultPromise>();
+expectTypeOf(execa({})`unicorns`).toBeAssignableTo<ResultPromise>();
 
-expectAssignable<{stdout: string}>(await execa('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await execa('unicorns', {encoding: 'buffer'}));
-expectAssignable<{stdout: string}>(await execa('unicorns', ['foo']));
-expectAssignable<{stdout: Uint8Array}>(await execa('unicorns', ['foo'], {encoding: 'buffer'}));
-expectAssignable<{stdout: string}>(await execa({})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await execa({encoding: 'buffer'})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await execa({})({encoding: 'buffer'})('unicorns'));
-expectAssignable<{stdout: Uint8Array}>(await execa({encoding: 'buffer'})({})('unicorns'));
-expectAssignable<{stdout: string}>(await execa({})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(await execa({encoding: 'buffer'})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(await execa({})({encoding: 'buffer'})`unicorns`);
-expectAssignable<{stdout: Uint8Array}>(await execa({encoding: 'buffer'})({})`unicorns`);
+expectTypeOf(await execa('unicorns')).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await execa('unicorns', {encoding: 'buffer'})).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await execa('unicorns', ['foo'])).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await execa('unicorns', ['foo'], {encoding: 'buffer'})).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await execa({})('unicorns')).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await execa({encoding: 'buffer'})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await execa({})({encoding: 'buffer'})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await execa({encoding: 'buffer'})({})('unicorns')).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await execa({})`unicorns`).toBeAssignableTo<{stdout: string}>();
+expectTypeOf(await execa({encoding: 'buffer'})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await execa({})({encoding: 'buffer'})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
+expectTypeOf(await execa({encoding: 'buffer'})({})`unicorns`).toBeAssignableTo<{stdout: Uint8Array}>();
 
-expectType<Result<{}>>(await execa`${'unicorns'}`);
-expectType<Result<{}>>(await execa`unicorns ${'foo'}`);
-expectType<Result<{}>>(await execa`unicorns ${'foo'} ${'bar'}`);
-expectType<Result<{}>>(await execa`unicorns ${1}`);
-expectType<Result<{}>>(await execa`unicorns ${stringArray}`);
-expectType<Result<{}>>(await execa`unicorns ${[1, 2]}`);
-expectType<Result<{}>>(await execa`unicorns ${false.toString()}`);
+expectTypeOf(await execa`${'unicorns'}`).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns ${'foo'}`).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns ${'foo'} ${'bar'}`).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns ${1}`).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns ${stringArray}`).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns ${[1, 2]}`).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns ${false.toString()}`).toBe<Result<{}>>();
 expectError(await execa`unicorns ${false}`);
 
-expectType<Result<{}>>(await execa`unicorns ${await execa`echo foo`}`);
-expectType<Result<{}>>(await execa`unicorns ${await execa({reject: false})`echo foo`}`);
+expectTypeOf(await execa`unicorns ${await execa`echo foo`}`).toBe<Result<{}>>();
+expectTypeOf(await execa`unicorns ${await execa({reject: false})`echo foo`}`).toBe<Result<{}>>();
 expectError(await execa`unicorns ${execa`echo foo`}`);
-expectType<Result<{}>>(await execa`unicorns ${[await execa`echo foo`, 'bar']}`);
+expectTypeOf(await execa`unicorns ${[await execa`echo foo`, 'bar']}`).toBe<Result<{}>>();
 expectError(await execa`unicorns ${[execa`echo foo`, 'bar']}`);

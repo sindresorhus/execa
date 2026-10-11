@@ -1,4 +1,4 @@
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	sendMessage,
 	execa,
@@ -7,8 +7,8 @@ import {
 } from '../../index.js';
 
 const subprocess = execa('test', {ipc: true});
-expectType<void>(await subprocess.sendMessage(''));
-expectType<Promise<void>>(sendMessage(''));
+expectTypeOf(await subprocess.sendMessage('')).toBe<void>();
+expectTypeOf(sendMessage('')).toBe<Promise<void>>();
 
 expectError(await subprocess.sendMessage());
 expectError(await sendMessage());
@@ -27,14 +27,14 @@ await execa('test', {ipc: true as boolean}).sendMessage?.('');
 await execa('test', {ipcInput: '' as '' | undefined}).sendMessage?.('');
 await execa('test', {gracefulCancel: true as boolean | undefined, cancelSignal: AbortSignal.abort()}).sendMessage?.('');
 
-expectType<undefined>(execa('test').sendMessage);
-expectType<undefined>(execa('test', {}).sendMessage);
-expectType<undefined>(execa('test', {ipc: false}).sendMessage);
-expectType<undefined>(execa('test', {ipcInput: undefined}).sendMessage);
-expectType<undefined>(execa('test', {gracefulCancel: undefined}).sendMessage);
-expectType<undefined>(execa('test', {gracefulCancel: false}).sendMessage);
-expectType<undefined>(execa('test', {ipc: false, ipcInput: ''}).sendMessage);
-expectType<undefined>(execa('test', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()}).sendMessage);
+expectTypeOf(execa('test').sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipc: false}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipcInput: undefined}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {gracefulCancel: undefined}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {gracefulCancel: false}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipc: false, ipcInput: ''}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()}).sendMessage).toBe<undefined>();
 
 await subprocess.sendMessage('', {} as const);
 await sendMessage('', {} as const);

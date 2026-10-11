@@ -1,4 +1,4 @@
-import {expectType, expectError, expectAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	type Result,
 	type SyncResult,
@@ -7,7 +7,7 @@ import {
 } from '../../index.js';
 
 const rejectsResult = await execa('unicorns');
-expectAssignable<Result>(rejectsResult);
+expectTypeOf(rejectsResult).toBeAssignableTo<Result>();
 expectError(rejectsResult.stack?.toString());
 expectError(rejectsResult.message?.toString());
 expectError(rejectsResult.shortMessage?.toString());
@@ -16,16 +16,16 @@ expectError(rejectsResult.code?.toString());
 expectError(rejectsResult.cause?.valueOf());
 
 const noRejectsResult = await execa('unicorns', {reject: false});
-expectAssignable<Result>(noRejectsResult);
-expectType<string | undefined>(noRejectsResult.stack);
-expectType<string | undefined>(noRejectsResult.message);
-expectType<string | undefined>(noRejectsResult.shortMessage);
-expectType<string | undefined>(noRejectsResult.originalMessage);
-expectType<string | undefined>(noRejectsResult.code);
-expectType<unknown>(noRejectsResult.cause);
+expectTypeOf(noRejectsResult).toBeAssignableTo<Result>();
+expectTypeOf(noRejectsResult.stack).toBe<string | undefined>();
+expectTypeOf(noRejectsResult.message).toBe<string | undefined>();
+expectTypeOf(noRejectsResult.shortMessage).toBe<string | undefined>();
+expectTypeOf(noRejectsResult.originalMessage).toBe<string | undefined>();
+expectTypeOf(noRejectsResult.code).toBe<string | undefined>();
+expectTypeOf(noRejectsResult.cause).toBe<unknown>();
 
 const rejectsSyncResult = execaSync('unicorns');
-expectAssignable<SyncResult>(rejectsSyncResult);
+expectTypeOf(rejectsSyncResult).toBeAssignableTo<SyncResult>();
 expectError(rejectsSyncResult.stack?.toString());
 expectError(rejectsSyncResult.message?.toString());
 expectError(rejectsSyncResult.shortMessage?.toString());
@@ -34,8 +34,8 @@ expectError(rejectsSyncResult.code?.toString());
 expectError(rejectsSyncResult.cause?.valueOf());
 
 const noRejectsSyncResult = execaSync('unicorns', {reject: false});
-expectAssignable<SyncResult>(noRejectsSyncResult);
-expectType<string | undefined>(noRejectsSyncResult.stack);
-expectType<string | undefined>(noRejectsSyncResult.message);
-expectType<string | undefined>(noRejectsSyncResult.shortMessage);
-expectType<string | undefined>(noRejectsSyncResult.originalMessage);
+expectTypeOf(noRejectsSyncResult).toBeAssignableTo<SyncResult>();
+expectTypeOf(noRejectsSyncResult.stack).toBe<string | undefined>();
+expectTypeOf(noRejectsSyncResult.message).toBe<string | undefined>();
+expectTypeOf(noRejectsSyncResult.shortMessage).toBe<string | undefined>();
+expectTypeOf(noRejectsSyncResult.originalMessage).toBe<string | undefined>();

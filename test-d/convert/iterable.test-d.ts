@@ -1,4 +1,4 @@
-import {expectType, expectError} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {execa} from '../../index.js';
 
 const subprocess = execa('unicorns');
@@ -7,62 +7,62 @@ const hexSubprocess = execa('unicorns', {encoding: 'hex', all: true});
 
 const asyncIteration = async () => {
 	for await (const line of subprocess) {
-		expectType<string>(line);
+		expectTypeOf(line).toBe<string>();
 	}
 
 	for await (const line of subprocess.iterable()) {
-		expectType<string>(line);
+		expectTypeOf(line).toBe<string>();
 	}
 
 	for await (const line of subprocess.iterable({binary: false})) {
-		expectType<string>(line);
+		expectTypeOf(line).toBe<string>();
 	}
 
 	for await (const line of subprocess.iterable({binary: true})) {
-		expectType<Uint8Array>(line);
+		expectTypeOf(line).toBe<Uint8Array>();
 	}
 
 	for await (const line of subprocess.iterable({} as {binary: boolean})) {
-		expectType<string | Uint8Array>(line);
+		expectTypeOf(line).toBe<string | Uint8Array>();
 	}
 
 	for await (const line of bufferSubprocess) {
-		expectType<Uint8Array>(line);
+		expectTypeOf(line).toBe<Uint8Array>();
 	}
 
 	for await (const line of bufferSubprocess.iterable()) {
-		expectType<Uint8Array>(line);
+		expectTypeOf(line).toBe<Uint8Array>();
 	}
 
 	for await (const line of bufferSubprocess.iterable({binary: false})) {
-		expectType<Uint8Array>(line);
+		expectTypeOf(line).toBe<Uint8Array>();
 	}
 
 	for await (const line of bufferSubprocess.iterable({binary: true})) {
-		expectType<Uint8Array>(line);
+		expectTypeOf(line).toBe<Uint8Array>();
 	}
 
 	for await (const line of bufferSubprocess.iterable({} as {binary: boolean})) {
-		expectType<Uint8Array>(line);
+		expectTypeOf(line).toBe<Uint8Array>();
 	}
 };
 
 await asyncIteration();
 
-expectType<AsyncIterableIterator<string>>(subprocess.iterable());
-expectType<AsyncIterableIterator<string>>(subprocess.iterable({binary: false}));
-expectType<AsyncIterableIterator<Uint8Array>>(subprocess.iterable({binary: true}));
-expectType<AsyncIterableIterator<string | Uint8Array>>(subprocess.iterable({} as {binary: boolean}));
+expectTypeOf(subprocess.iterable()).toBe<AsyncIterableIterator<string>>();
+expectTypeOf(subprocess.iterable({binary: false})).toBe<AsyncIterableIterator<string>>();
+expectTypeOf(subprocess.iterable({binary: true})).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(subprocess.iterable({} as {binary: boolean})).toBe<AsyncIterableIterator<string | Uint8Array>>();
 
-expectType<AsyncIterableIterator<Uint8Array>>(bufferSubprocess.iterable());
-expectType<AsyncIterableIterator<Uint8Array>>(bufferSubprocess.iterable({binary: false}));
-expectType<AsyncIterableIterator<Uint8Array>>(bufferSubprocess.iterable({binary: true}));
-expectType<AsyncIterableIterator<Uint8Array>>(bufferSubprocess.iterable({} as {binary: boolean}));
+expectTypeOf(bufferSubprocess.iterable()).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(bufferSubprocess.iterable({binary: false})).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(bufferSubprocess.iterable({binary: true})).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(bufferSubprocess.iterable({} as {binary: boolean})).toBe<AsyncIterableIterator<Uint8Array>>();
 
-expectType<AsyncIterableIterator<Uint8Array>>(hexSubprocess.iterable());
-expectType<AsyncIterableIterator<Uint8Array>>(hexSubprocess.iterable({binary: false}));
-expectType<AsyncIterableIterator<Uint8Array>>(hexSubprocess.iterable({binary: true}));
-expectType<AsyncIterableIterator<Uint8Array>>(hexSubprocess.iterable({} as {binary: boolean}));
+expectTypeOf(hexSubprocess.iterable()).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(hexSubprocess.iterable({binary: false})).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(hexSubprocess.iterable({binary: true})).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(hexSubprocess.iterable({} as {binary: boolean})).toBe<AsyncIterableIterator<Uint8Array>>();
 
 subprocess.iterable({});
 subprocess.iterable({from: 'stdout'});

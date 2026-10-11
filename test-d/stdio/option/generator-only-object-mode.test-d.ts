@@ -1,4 +1,4 @@
-import {expectError, expectNotAssignable} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	execa,
 	execaSync,
@@ -33,12 +33,12 @@ expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', objectModeOnl
 expectError(await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [objectModeOnly]]}));
 expectError(execaSync('unicorns', {stdio: ['pipe', 'pipe', 'pipe', [objectModeOnly]]}));
 
-expectNotAssignable<StdinOption>(objectModeOnly);
-expectNotAssignable<StdinSyncOption>(objectModeOnly);
-expectNotAssignable<StdinOption>([objectModeOnly]);
-expectNotAssignable<StdinSyncOption>([objectModeOnly]);
+expectTypeOf(objectModeOnly).not.toBeAssignableTo<StdinOption>();
+expectTypeOf(objectModeOnly).not.toBeAssignableTo<StdinSyncOption>();
+expectTypeOf([objectModeOnly]).not.toBeAssignableTo<StdinOption>();
+expectTypeOf([objectModeOnly]).not.toBeAssignableTo<StdinSyncOption>();
 
-expectNotAssignable<StdoutStderrOption>(objectModeOnly);
-expectNotAssignable<StdoutStderrSyncOption>(objectModeOnly);
-expectNotAssignable<StdoutStderrOption>([objectModeOnly]);
-expectNotAssignable<StdoutStderrSyncOption>([objectModeOnly]);
+expectTypeOf(objectModeOnly).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf(objectModeOnly).not.toBeAssignableTo<StdoutStderrSyncOption>();
+expectTypeOf([objectModeOnly]).not.toBeAssignableTo<StdoutStderrOption>();
+expectTypeOf([objectModeOnly]).not.toBeAssignableTo<StdoutStderrSyncOption>();

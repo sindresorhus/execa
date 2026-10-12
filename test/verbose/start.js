@@ -147,6 +147,11 @@ test('Quotes spaces from command', async () => {
 	assert.equal(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${QUOTE}foo bar${QUOTE}`);
 });
 
+test('Does not quote command with "shell"', async () => {
+	const {stderr} = await nestedSubprocess('echo', ['foo', '|', 'sort'], {verbose: 'short', shell: true});
+	assert.equal(getCommandLine(stderr), `${testTimestamp} [0] $ echo foo | sort`);
+});
+
 test('Quotes special punctuation from command', async () => {
 	const {stderr} = await nestedSubprocess('noop.js', ['%'], {verbose: 'short'});
 	assert.equal(getCommandLine(stderr), `${testTimestamp} [0] $ noop.js ${QUOTE}%${QUOTE}`);

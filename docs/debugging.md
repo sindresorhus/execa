@@ -10,7 +10,7 @@
 
 [`error.command`](api.md#resultcommand) contains the file and [arguments](input.md#command-arguments) that were run. It is intended for logging or debugging.
 
-[`error.escapedCommand`](api.md#resultescapedcommand) is the same, except control characters are escaped. This makes it safe to either print or copy and paste in a terminal, for debugging purposes.
+[`error.escapedCommand`](api.md#resultescapedcommand) is the same, except control characters are escaped. This makes it safe to either print or copy and paste in a terminal, for debugging purposes. With the [`shell`](api.md#optionsshell) option, the command is not quoted, since the shell interprets it.
 
 Since the escaping is fairly basic, neither `error.command` nor `error.escapedCommand` should be executed directly, including using [`execa()`](api.md#execafile-arguments-options) or [`parseCommandString()`](api.md#parsecommandstringcommand).
 

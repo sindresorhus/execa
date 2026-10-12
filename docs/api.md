@@ -632,6 +632,8 @@ _Type:_ `string`
 
 Same as [`command`](#resultcommand) but escaped.
 
+With the [`shell`](#optionsshell) option, the command is not quoted, since the shell interprets it.
+
 [More info.](debugging.md#command)
 
 ### result.cwd

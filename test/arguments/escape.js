@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import {platform} from 'node:process';
 import test from 'node:test';
 import {assertThrows, assertRejects, assertLike} from '../helpers/assert.js';
-import {execa, execaSync} from '../../index.js';
-import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
+import {execa, execaSync, execaNode} from '../../index.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 
 setFixtureDirectory();
 
@@ -135,3 +135,24 @@ if (!isWindows) {
 		test(`result.escapedCommand can be pasted in a shell: ${JSON.stringify(commandArguments)}`, () => testShellRoundTrip(commandArguments));
 	}
 }
+
+// With `shell`, the shell interprets the command, so `result.escapedCommand` must not quote it.
+const testShellEscapedCommand = async (execaMethod, commandArguments, expected) => {
+	const {escapedCommand} = await execaMethod('echo', commandArguments, {shell: true});
+	assert.equal(escapedCommand, expected);
+};
+
+test('result.escapedCommand does not quote with "shell"', () => testShellEscapedCommand(execa, ['foo', '|', 'sort'], 'echo foo | sort'));
+test('result.escapedCommand does not quote with "shell", sync', () => testShellEscapedCommand(execaSync, ['foo', '|', 'sort'], 'echo foo | sort'));
+test('result.escapedCommand escapes control characters with "shell"', () => testShellEscapedCommand(execa, ['\'foo\tbar\''], 'echo \'foo\\tbar\''));
+
+// The `node` option ignores `shell`
+test('result.escapedCommand quotes with "shell" and "node"', async () => {
+	const {escapedCommand} = await execaNode('noop.js', ['foo bar'], {shell: true, cwd: FIXTURES_DIRECTORY});
+	assert.equal(escapedCommand, isWindows ? 'noop.js "foo bar"' : 'noop.js \'foo bar\'');
+});
+
+test('result.escapedCommand does not quote with "shell" and template strings', async () => {
+	const {escapedCommand} = await execa({shell: true})`echo 'foo' | sort`;
+	assert.equal(escapedCommand, 'echo \'foo\' | sort');
+});

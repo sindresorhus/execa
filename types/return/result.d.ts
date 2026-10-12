@@ -72,6 +72,8 @@ export declare abstract class CommonResult<
 
 	/**
 	Same as `command` but escaped.
+
+	With the `shell` option, the command is not quoted, since the shell interprets it.
 	*/
 	escapedCommand: string;
 

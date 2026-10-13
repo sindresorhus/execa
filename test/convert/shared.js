@@ -111,8 +111,9 @@ test('.writable() write fails when the subprocess fails to spawn', async () => {
 });
 
 // The subprocess error is more useful than the `EPIPE` error it causes on `stdin`
+// A nonexistent command cannot be used, since it is run by `cmd.exe` on Windows.
 const testSpawnFailureWrite = async methodName => {
-	const subprocess = execa('nonexistent-command-for-execa');
+	const subprocess = execa('empty.js', {cwd: 'does_not_exist'});
 	const stream = subprocess[methodName]();
 	stream.end(foobarString);
 	const error = await assertRejects(finishedStream(stream));

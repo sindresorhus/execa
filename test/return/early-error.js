@@ -64,9 +64,9 @@ test('execaSync() output is undefined when the command does not exist, with buff
 test('execaSync() output is empty when the cwd does not exist', () => testSpawnFailureOutput({cwd: '/nonexistent-directory-for-execa'}));
 test('execaSync() output runs the final of transforms when the command does not exist', () => testSpawnFailureOutput({stdout: convertTransformToFinal(getOutputGenerator(foobarString)(), true)}));
 
-// When `child_process.spawn()` throws, the output must be the same as when the subprocess spawns and fails right away
+// When `child_process.spawn()` throws, the output must be the same as when the subprocess fails to spawn
 const testEarlyErrorOutput = async options => {
-	const {stdio, all} = await execa('nonexistent-command-for-execa', {...options, reject: false});
+	const {stdio, all} = await execa('empty.js', {...options, cwd: 'does_not_exist', reject: false});
 	const earlyError = await getEarlyErrorSubprocess({...options, reject: false});
 	assert.deepEqual(earlyError.stdio, stdio);
 	assert.deepEqual(earlyError.all, all);

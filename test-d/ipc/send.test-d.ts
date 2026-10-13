@@ -2,6 +2,7 @@ import {expectTypeOf, expectError} from 'nz';
 import {
 	sendMessage,
 	execa,
+	execaNode,
 	type Message,
 	type Options,
 } from '../../index.js';
@@ -22,6 +23,9 @@ expectError(await sendMessage(Symbol('test')));
 await execa('test', {ipcInput: ''}).sendMessage('');
 await execa('test', {ipcInput: '' as Message}).sendMessage('');
 await execa('test', {gracefulCancel: true, cancelSignal: AbortSignal.abort()}).sendMessage('');
+await execa('test', {node: true}).sendMessage('');
+await execaNode('test').sendMessage('');
+await execaNode({})`test`.sendMessage('');
 await execa('test', {} as Options).sendMessage?.('');
 await execa('test', {ipc: true as boolean}).sendMessage?.('');
 await execa('test', {ipcInput: '' as '' | undefined}).sendMessage?.('');
@@ -35,6 +39,9 @@ expectTypeOf(execa('test', {gracefulCancel: undefined}).sendMessage).toBe<undefi
 expectTypeOf(execa('test', {gracefulCancel: false}).sendMessage).toBe<undefined>();
 expectTypeOf(execa('test', {ipc: false, ipcInput: ''}).sendMessage).toBe<undefined>();
 expectTypeOf(execa('test', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {node: false}).sendMessage).toBe<undefined>();
+expectTypeOf(execa('test', {ipc: false, node: true}).sendMessage).toBe<undefined>();
+expectTypeOf(execaNode('test', {ipc: false}).sendMessage).toBe<undefined>();
 
 await subprocess.sendMessage('', {} as const);
 await sendMessage('', {} as const);

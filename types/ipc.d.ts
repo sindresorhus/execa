@@ -134,25 +134,29 @@ export type IpcMethods<
 		getEachMessage: undefined;
 	};
 
-// Whether IPC is enabled, based on the `ipc`, `ipcInput` and `gracefulCancel` options
+// Whether IPC is enabled, based on the `ipc`, `node`, `ipcInput` and `gracefulCancel` options
 export type HasIpc<OptionsType extends Options> = HasIpcOption<
 	OptionsType['ipc'],
+	'node' extends keyof OptionsType ? OptionsType['node'] : undefined,
 	'ipcInput' extends keyof OptionsType ? OptionsType['ipcInput'] : undefined,
 	'gracefulCancel' extends keyof OptionsType ? OptionsType['gracefulCancel'] : undefined
 >;
 
 type HasIpcOption<
 	IpcOption extends Options['ipc'],
+	NodeOption extends Options['node'],
 	IpcInputOption extends Options['ipcInput'],
 	GracefulCancelOption extends Options['gracefulCancel'],
 > = IpcOption extends true
 	? true
 	: IpcOption extends false
 		? false
-		: IpcInputOption extends undefined
-			? GracefulCancelOption extends true
-				? true
-				: false
-			: true;
+		: NodeOption extends true
+			? true
+			: IpcInputOption extends undefined
+				? GracefulCancelOption extends true
+					? true
+					: false
+				: true;
 
 export {};

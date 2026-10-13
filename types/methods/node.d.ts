@@ -49,16 +49,19 @@ type ExecaNodeBind<OptionsType extends Options> =
 // `execaNode`command`` template syntax
 type ExecaNodeTemplate<OptionsType extends Options> =
 	(...templateString: TemplateString)
-	=> ResultPromise<OptionsType>;
+	=> ResultPromise<NodeOptions<OptionsType>>;
 
 // `execaNode('script', ['argument'], {})` array syntax
 type ExecaNodeArrayLong<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(scriptPath: string | URL, arguments?: readonly string[], options?: NewOptionsType)
-	=> ResultPromise<OptionsType & NewOptionsType>;
+	=> ResultPromise<NodeOptions<OptionsType & NewOptionsType>>;
 
 // `execaNode('script', {})` array syntax
 type ExecaNodeArrayShort<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(scriptPath: string | URL, options?: NewOptionsType)
-	=> ResultPromise<OptionsType & NewOptionsType>;
+	=> ResultPromise<NodeOptions<OptionsType & NewOptionsType>>;
+
+// `execaNode()` always uses the `node` option, which also enables the `ipc` option by default
+type NodeOptions<OptionsType extends Options> = OptionsType & {readonly node: true};
 
 export {};

@@ -2,6 +2,7 @@ import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
+	execaNode,
 	type Result,
 	type SyncResult,
 	type ExecaError,
@@ -30,6 +31,15 @@ expectTypeOf(genericInputResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
 
 const gracefulResult = await execa('unicorns', {gracefulCancel: true, cancelSignal: AbortSignal.abort()});
 expectTypeOf(gracefulResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
+
+const nodeResult = await execa('unicorns', {node: true});
+expectTypeOf(nodeResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
+
+const execaNodeResult = await execaNode('unicorns');
+expectTypeOf(execaNodeResult.ipcOutput).toBe<Array<Message<'advanced'>>>();
+
+const execaNodeJsonResult = await execaNode({serialization: 'json'})`unicorns`;
+expectTypeOf(execaNodeJsonResult.ipcOutput).toBe<Array<Message<'json'>>>();
 
 const genericResult = await execa('unicorns', {} as Options);
 expectTypeOf(genericResult.ipcOutput).toBe<Message[] | []>();
@@ -66,6 +76,12 @@ expectTypeOf(falseGracefulResult.ipcOutput).toBe<[]>();
 
 const gracefulNoIpcResult = await execa('unicorns', {ipc: false, gracefulCancel: true, cancelSignal: AbortSignal.abort()});
 expectTypeOf(gracefulNoIpcResult.ipcOutput).toBe<[]>();
+
+const falseNodeResult = await execa('unicorns', {node: false});
+expectTypeOf(falseNodeResult.ipcOutput).toBe<[]>();
+
+const execaNodeNoIpcResult = await execaNode('unicorns', {ipc: false});
+expectTypeOf(execaNodeNoIpcResult.ipcOutput).toBe<[]>();
 
 const noBufferResult = await execa('unicorns', {ipc: true, buffer: false});
 expectTypeOf(noBufferResult.ipcOutput).toBe<[]>();

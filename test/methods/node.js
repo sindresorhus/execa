@@ -313,6 +313,9 @@ const testIpc = async (execaMethod, options) => {
 
 test('execaNode() adds an ipc channel', () => testIpc(execaNode, {}));
 test('The "node" option adds an ipc channel', () => testIpc(runWithNodeOption, {}));
+// Like other options, `undefined` uses the default value
+test('execaNode() adds an ipc channel, with "ipc: undefined"', () => testIpc(execaNode, {ipc: undefined}));
+test('The "node" option adds an ipc channel, with "ipc: undefined"', () => testIpc(runWithNodeOption, {ipc: undefined}));
 test('The "ipc" option adds an ipc channel', () => testIpc(runWithIpc, {}));
 test('The "ipc" option works with "stdio: \'pipe\'"', () => testIpc(runWithIpc, {stdio: 'pipe'}));
 test('The "ipc" option works with "stdio: [\'pipe\', \'pipe\', \'pipe\']"', () => testIpc(runWithIpc, {stdio: ['pipe', 'pipe', 'pipe']}));

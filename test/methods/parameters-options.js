@@ -127,6 +127,7 @@ test('The "all" option must use a boolean', () => testInvalidBooleanOption(execa
 test('The "reject" option must use a boolean', () => testInvalidBooleanOption(execa, 'reject', 'no'));
 test('The "cleanup" option must use a boolean', () => testInvalidBooleanOption(execa, 'cleanup', 'false'));
 test('The "ipc" option must use a boolean', () => testInvalidBooleanOption(execa, 'ipc', 'yes'));
+test('The "ipc" option must use a boolean - execaNode()', () => testInvalidBooleanOption(execaNode, 'ipc', null));
 test('The "extendEnv" option must use a boolean', () => testInvalidBooleanOption(execa, 'extendEnv', 'false'));
 test('The "preferLocal" option must use a boolean', () => testInvalidBooleanOption(execa, 'preferLocal', 1));
 test('The "node" option must use a boolean', () => testInvalidBooleanOption(execa, 'node', 'yes'));

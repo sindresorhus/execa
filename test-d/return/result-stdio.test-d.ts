@@ -3,6 +3,7 @@ import {expectTypeOf} from 'nz';
 import {
 	execa,
 	execaSync,
+	execaNode,
 	type ExecaError,
 	type ExecaSyncError,
 } from '../../index.js';
@@ -164,6 +165,15 @@ expectTypeOf(ipcInputResult.stdio).toBe<[undefined, string, string, undefined]>(
 const gracefulCancelResult = await execa('unicorns', {cancelSignal: AbortSignal.abort(), gracefulCancel: true});
 expectTypeOf(gracefulCancelResult.stdio).toBe<[undefined, string, string, undefined]>();
 
+const nodeResult = await execa('unicorns', {node: true});
+expectTypeOf(nodeResult.stdio).toBe<[undefined, string, string, undefined]>();
+
+const execaNodeResult = await execaNode('unicorns');
+expectTypeOf(execaNodeResult.stdio).toBe<[undefined, string, string, undefined]>();
+
+const execaNodeNoIpcResult = await execaNode('unicorns', {ipc: false});
+expectTypeOf(execaNodeNoIpcResult.stdio).toBe<[undefined, string, string]>();
+
 const fd3IpcResult = await execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
 expectTypeOf(fd3IpcResult.stdio).toBe<[undefined, string, string, string, undefined]>();
 
@@ -172,3 +182,6 @@ expectTypeOf(noIpcResult.stdio).toBe<[undefined, string, string]>();
 
 const noIpcResultSync = execaSync('unicorns');
 expectTypeOf(noIpcResultSync.stdio).toBe<[undefined, string, string]>();
+
+const nodeResultSync = execaSync('unicorns', {node: true});
+expectTypeOf(nodeResultSync.stdio).toBe<[undefined, string, string]>();

@@ -1,6 +1,6 @@
 import type {Readable, Writable} from 'node:stream';
 import {expectTypeOf} from 'nz';
-import {execa, type Subprocess} from '../../index.js';
+import {execa, execaNode, type Subprocess} from '../../index.js';
 
 expectTypeOf<Subprocess['stdin']>().toBe<Writable | null>();
 expectTypeOf<Subprocess['stdout']>().toBe<Readable | null>();
@@ -88,6 +88,9 @@ expectTypeOf(ipcSubprocess.stdio[3]).toBe<null>();
 
 const ipcInputSubprocess = execa('unicorns', {ipcInput: ''});
 expectTypeOf(ipcInputSubprocess.stdio[3]).toBe<null>();
+
+const execaNodeSubprocess = execaNode('unicorns');
+expectTypeOf(execaNodeSubprocess.stdio[3]).toBe<null>();
 
 const fd3IpcSubprocess = execa('unicorns', {stdio: ['pipe', 'pipe', 'pipe', 'pipe'], ipc: true});
 expectTypeOf(fd3IpcSubprocess.stdio[3]).toBe<Readable>();

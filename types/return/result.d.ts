@@ -49,7 +49,7 @@ export declare abstract class CommonResult<
 
 	Items are arrays when their corresponding `stdio` option is a transform in object mode.
 	*/
-	stdio: ResultStdioArray<OptionsType>;
+	stdio: ResultStdioArray<IsSync, OptionsType>;
 
 	/**
 	All the messages sent by the subprocess to the current process.

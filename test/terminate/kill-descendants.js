@@ -16,7 +16,8 @@ setFixtureDirectory();
 const isWindows = process.platform === 'win32';
 
 const pollForSubprocessExit = async pid => {
-	while (isRunning(pid)) {
+	const deadline = Date.now() + 1e4;
+	while (isRunning(pid) && Date.now() < deadline) {
 		// eslint-disable-next-line no-await-in-loop
 		await setTimeout(100);
 	}
@@ -42,10 +43,7 @@ test('killDescendants terminates descendant processes', async () => {
 	await assertRejects(subprocess);
 	assert.ok(!isRunning(subprocess.pid));
 
-	await Promise.race([
-		setTimeout(1e4, undefined, {ref: false}),
-		pollForSubprocessExit(descendantPid),
-	]);
+	await pollForSubprocessExit(descendantPid);
 	assert.ok(!isRunning(descendantPid));
 });
 
@@ -56,10 +54,7 @@ test('killDescendants also terminates descendant processes when the subprocess t
 	const {timedOut} = await assertRejects(subprocess);
 	assert.equal(timedOut, true);
 
-	await Promise.race([
-		setTimeout(1e4, undefined, {ref: false}),
-		pollForSubprocessExit(descendantPid),
-	]);
+	await pollForSubprocessExit(descendantPid);
 	assert.ok(!isRunning(descendantPid));
 });
 
@@ -109,6 +104,8 @@ test('killDescendants escalates to descendants which outlive the subprocess', as
 		setTimeout(1e4, 'pending', {ref: false}),
 	]);
 	assert.equal(settled, 'settled');
+	// Pipe EOF can arrive before the OS releases the descendant's PID.
+	await pollForSubprocessExit(descendantPid);
 	assert.ok(!isRunning(descendantPid));
 });
 
@@ -122,10 +119,7 @@ if (!isWindows) {
 		try {
 			assert.ok(isRunning(descendantPid));
 			assert.ok(subprocess.kill());
-			await Promise.race([
-				setTimeout(1e4, undefined, {ref: false}),
-				pollForSubprocessExit(descendantPid),
-			]);
+			await pollForSubprocessExit(descendantPid);
 			assert.ok(!isRunning(descendantPid));
 		} finally {
 			if (isRunning(descendantPid)) {

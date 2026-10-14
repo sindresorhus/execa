@@ -19,36 +19,20 @@ type FdSpecificObjectOption<
 	GenericOption extends GenericOptionObject<unknown>,
 	FdNumber extends string,
 > = keyof GenericOption extends GenericFromOption
-	? FdNumberToFromOption<FdNumber, keyof GenericOption> extends never
-		? undefined
-		: GenericOption[FdNumberToFromOption<FdNumber, keyof GenericOption>]
+	? FdNumber extends '1'
+		? FdOptionValue<GenericOption, 'stdout', FdOptionValue<GenericOption, 'fd1', FdOptionValue<GenericOption, 'all'>>>
+		: FdNumber extends '2'
+			? FdOptionValue<GenericOption, 'stderr', FdOptionValue<GenericOption, 'fd2', FdOptionValue<GenericOption, 'all'>>>
+			: FdOptionValue<GenericOption, FdNumber extends 'ipc' ? 'ipc' : `fd${FdNumber}`>
 	: GenericOption;
 
-type FdNumberToFromOption<
-	FdNumber extends string,
-	GenericOptionKeys extends GenericFromOption,
-> = FdNumber extends 'ipc'
-	? 'ipc' extends GenericOptionKeys
-		? 'ipc'
-		: never
-	: FdNumber extends '1'
-		? 'stdout' extends GenericOptionKeys
-			? 'stdout'
-			: 'fd1' extends GenericOptionKeys
-				? 'fd1'
-				: 'all' extends GenericOptionKeys
-					? 'all'
-					: never
-		: FdNumber extends '2'
-			? 'stderr' extends GenericOptionKeys
-				? 'stderr'
-				: 'fd2' extends GenericOptionKeys
-					? 'fd2'
-					: 'all' extends GenericOptionKeys
-						? 'all'
-						: never
-			: `fd${FdNumber}` extends GenericOptionKeys
-				? `fd${FdNumber}`
-				: never;
+// Optional descriptor keys can be absent, so lower-priority keys can still apply.
+type FdOptionValue<
+	GenericOption extends GenericOptionObject<unknown>,
+	Key extends string,
+	Fallback = undefined,
+> = Key extends keyof GenericOption
+	? GenericOption[Key] | ({} extends Pick<GenericOption, Key> ? Fallback : never)
+	: Fallback;
 
 export {};

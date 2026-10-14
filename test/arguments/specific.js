@@ -36,3 +36,23 @@ test('buffer: {all, fd1}, sync', () => testPriorityOrder({all: false, fd1: true}
 test('buffer: {fd2, stderr}, sync', () => testPriorityOrder({fd2: false, stderr: true}, true, true, execaSync));
 test('buffer: {all, stderr}, sync', () => testPriorityOrder({all: false, stderr: true}, false, true, execaSync));
 test('buffer: {all, fd2}, sync', () => testPriorityOrder({all: false, fd2: true}, false, true, execaSync));
+
+const testFdKeyPresence = async (fdName, propertyName, execaMethod) => {
+	const absentLines = await execaMethod('noop-both.js', {lines: {all: true}});
+	assert.deepEqual(absentLines[propertyName], [foobarString]);
+	const presentLines = await execaMethod('noop-both.js', {lines: {all: true, [fdName]: false}});
+	assert.equal(presentLines[propertyName], foobarString);
+	const undefinedLines = await execaMethod('noop-both.js', {lines: {all: true, [fdName]: undefined}});
+	assert.equal(undefinedLines[propertyName], foobarString);
+	const absentBuffer = await execaMethod('noop-both.js', {buffer: {all: false}});
+	assert.equal(absentBuffer[propertyName], undefined);
+};
+
+test('fd-specific options preserve priority when stdout is absent or present', () => testFdKeyPresence('stdout', 'stdout', execa));
+test('fd-specific options preserve priority when stderr is absent or present', () => testFdKeyPresence('stderr', 'stderr', execa));
+test('fd-specific options preserve priority when fd1 is absent or present', () => testFdKeyPresence('fd1', 'stdout', execa));
+test('fd-specific options preserve priority when fd2 is absent or present', () => testFdKeyPresence('fd2', 'stderr', execa));
+test('fd-specific options preserve priority when stdout is absent or present, sync', () => testFdKeyPresence('stdout', 'stdout', execaSync));
+test('fd-specific options preserve priority when stderr is absent or present, sync', () => testFdKeyPresence('stderr', 'stderr', execaSync));
+test('fd-specific options preserve priority when fd1 is absent or present, sync', () => testFdKeyPresence('fd1', 'stdout', execaSync));
+test('fd-specific options preserve priority when fd2 is absent or present, sync', () => testFdKeyPresence('fd2', 'stderr', execaSync));

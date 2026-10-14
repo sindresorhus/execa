@@ -8,7 +8,7 @@ import type {SyncResult} from '../return/result.js';
 import type {ResultPromise} from '../subprocess/subprocess.js';
 import type {SubprocessStdioStream} from '../subprocess/stdout.js';
 import type {SubprocessStdioArray} from '../subprocess/stdio.js';
-import type {FdStdioOption, WithInputSources} from '../stdio/option.js';
+import type {WithInputSources} from '../stdio/option.js';
 import type {TemplateString} from './template.js';
 import type {MergeOptions} from './bind.js';
 
@@ -108,7 +108,8 @@ type ScriptStdin<
 	StdinOption,
 > = StdinOption extends undefined ? ScriptDefaultStdin<OptionsType> : StdinOption;
 
-type ScriptDefaultStdin<OptionsType extends Options> = WithInputSources<OptionsType, 'input' | 'inputFile' | 'stdio', 'inherit', FdStdioOption<'0', Omit<OptionsType, 'stdin'>>>;
+// With an input source, the `stdin` option is left `undefined`, so its usual default applies.
+type ScriptDefaultStdin<OptionsType extends Options> = WithInputSources<OptionsType, 'input' | 'inputFile' | 'stdio', 'inherit', undefined>;
 
 // We must intersect the overloaded methods with & instead of using a simple object as a workaround for a TypeScript bug
 // See https://github.com/microsoft/TypeScript/issues/58765

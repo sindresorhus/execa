@@ -12,7 +12,7 @@ import type {
 	SubprocessAsyncIterable,
 	IsObjectIterable,
 } from '../convert.js';
-import type {IpcMethods, HasIpc} from '../ipc.js';
+import type {SubprocessIpcMethods} from '../ipc.js';
 import type {SubprocessStdioStream} from './stdout.js';
 import type {SubprocessStdioArray} from './stdio.js';
 import type {SubprocessAll} from './all.js';
@@ -52,7 +52,7 @@ export type SubprocessResultMethods<OptionsType extends Options = Options> = {
 };
 
 type ExecaCustomSubprocess<OptionsType extends Options> =
-	& IpcMethods<HasIpc<OptionsType>, OptionsType['serialization']>
+	& SubprocessIpcMethods<OptionsType>
 	& PipableSubprocess
 	& SubprocessResultMethods<OptionsType>
 	& {

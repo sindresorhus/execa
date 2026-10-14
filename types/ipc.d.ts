@@ -142,6 +142,11 @@ export type HasIpc<OptionsType extends Options> = HasIpcOption<
 	'gracefulCancel' extends keyof OptionsType ? OptionsType['gracefulCancel'] : undefined
 >;
 
+// IPC methods of a subprocess. With an options union, each member enables IPC and sets its `serialization` separately.
+export type SubprocessIpcMethods<OptionsType extends Options> = OptionsType extends unknown
+	? IpcMethods<HasIpc<OptionsType>, OptionsType['serialization']>
+	: never;
+
 type HasIpcOption<
 	IpcOption extends Options['ipc'],
 	NodeOption extends Options['node'],

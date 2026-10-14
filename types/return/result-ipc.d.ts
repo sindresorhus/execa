@@ -10,11 +10,14 @@ export type ResultIpcOutput<
 	OptionsType extends CommonOptions,
 > = IsSync extends true
 	? []
-	: ResultIpcAsync<
-		FdSpecificOption<OptionsType['buffer'], 'ipc'>,
-		HasIpc<StricterOptions<OptionsType, Options>>,
-		OptionsType['serialization']
-	>;
+	// With an options union, each member enables IPC and sets its `buffer` and `serialization` options separately
+	: OptionsType extends unknown
+		? ResultIpcAsync<
+			FdSpecificOption<OptionsType['buffer'], 'ipc'>,
+			HasIpc<StricterOptions<OptionsType, Options>>,
+			OptionsType['serialization']
+		>
+		: never;
 
 type ResultIpcAsync<
 	BufferOption extends boolean | undefined,

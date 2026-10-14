@@ -28,8 +28,11 @@ type ResultIpcStdio<
 	OptionsType extends CommonOptions,
 > = IsSync extends true
 	? []
-	: HasIpc<StricterOptions<OptionsType, Options>> extends true
-		? [undefined]
-		: [];
+	// With an options union, each member enables IPC separately
+	: OptionsType extends unknown
+		? HasIpc<StricterOptions<OptionsType, Options>> extends true
+			? [undefined]
+			: []
+		: never;
 
 export {};

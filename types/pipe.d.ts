@@ -2,7 +2,7 @@ import type {Options} from './arguments/options.js';
 import type {Result} from './return/result.js';
 import type {FromOption, ToOption} from './arguments/fd-options.js';
 import type {ResultPromise, SubprocessResultMethods} from './subprocess/subprocess.js';
-import type {IpcMethods, HasIpc} from './ipc.js';
+import type {SubprocessIpcMethods} from './ipc.js';
 import type {TemplateExpression} from './methods/template.js';
 
 // `subprocess.pipe()` options
@@ -28,7 +28,7 @@ type PipeOptions = {
 // Methods forwarded from the destination subprocess to the return value of `subprocess.pipe()`, so its output can be iterated, converted to a stream, or used for IPC.
 type PipeResultMethods<OptionsType extends Options> =
 	& SubprocessResultMethods<OptionsType>
-	& IpcMethods<HasIpc<OptionsType>, OptionsType['serialization']>;
+	& SubprocessIpcMethods<OptionsType>;
 
 // Same as `PipeResultMethods`, but when the destination is another `execa()` call, so its own option types are kept.
 // The base `Options` is only used to compute the property names, which do not depend on the specific options.

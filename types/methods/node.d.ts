@@ -1,6 +1,7 @@
 import type {Options} from '../arguments/options.js';
 import type {ResultPromise} from '../subprocess/subprocess.js';
 import type {TemplateString} from './template.js';
+import type {MergeOptions} from './bind.js';
 
 /**
 Same as `execa()` but using the `node: true` option.
@@ -44,7 +45,7 @@ export type ExecaNodeMethod<OptionsType extends Options = Options> =
 // `execaNode(options)` binding
 type ExecaNodeBind<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(options: NewOptionsType)
-	=> ExecaNodeMethod<OptionsType & NewOptionsType>;
+	=> ExecaNodeMethod<MergeOptions<OptionsType, NewOptionsType, Options>>;
 
 // `execaNode`command`` template syntax
 type ExecaNodeTemplate<OptionsType extends Options> =
@@ -54,14 +55,16 @@ type ExecaNodeTemplate<OptionsType extends Options> =
 // `execaNode('script', ['argument'], {})` array syntax
 type ExecaNodeArrayLong<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(scriptPath: string | URL, arguments?: readonly string[], options?: NewOptionsType)
-	=> ResultPromise<NodeOptions<OptionsType & NewOptionsType>>;
+	=> ResultPromise<NodeOptions<MergeOptions<OptionsType, NewOptionsType, Options>>>;
 
 // `execaNode('script', {})` array syntax
 type ExecaNodeArrayShort<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(scriptPath: string | URL, options?: NewOptionsType)
-	=> ResultPromise<NodeOptions<OptionsType & NewOptionsType>>;
+	=> ResultPromise<NodeOptions<MergeOptions<OptionsType, NewOptionsType, Options>>>;
 
 // `execaNode()` always uses the `node` option, which also enables the `ipc` option by default
-type NodeOptions<OptionsType extends Options> = OptionsType & {readonly node: true};
+type NodeOptions<OptionsType extends Options> = OptionsType extends Options
+	? OptionsType & {readonly node: true}
+	: never;
 
 export {};

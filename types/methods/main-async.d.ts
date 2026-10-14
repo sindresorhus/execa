@@ -1,6 +1,7 @@
 import type {Options} from '../arguments/options.js';
 import type {ResultPromise} from '../subprocess/subprocess.js';
 import type {TemplateString} from './template.js';
+import type {MergeOptions} from './bind.js';
 
 /**
 Executes a command using `file ...arguments`.
@@ -361,7 +362,7 @@ export type ExecaMethod<OptionsType extends Options = Options> =
 // `execa(options)` binding
 type ExecaBind<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(options: NewOptionsType)
-	=> ExecaMethod<OptionsType & NewOptionsType>;
+	=> ExecaMethod<MergeOptions<OptionsType, NewOptionsType, Options>>;
 
 // `execa`command`` template syntax
 type ExecaTemplate<OptionsType extends Options> =
@@ -371,11 +372,11 @@ type ExecaTemplate<OptionsType extends Options> =
 // `execa('file', ['argument'], {})` array syntax
 type ExecaArrayLong<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(file: string | URL, arguments?: readonly string[], options?: NewOptionsType)
-	=> ResultPromise<OptionsType & NewOptionsType>;
+	=> ResultPromise<MergeOptions<OptionsType, NewOptionsType, Options>>;
 
 // `execa('file', {})` array syntax
 type ExecaArrayShort<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(file: string | URL, options?: NewOptionsType)
-	=> ResultPromise<OptionsType & NewOptionsType>;
+	=> ResultPromise<MergeOptions<OptionsType, NewOptionsType, Options>>;
 
 export {};

@@ -1,6 +1,7 @@
 import type {SyncOptions} from '../arguments/options.js';
 import type {SyncResult} from '../return/result.js';
 import type {TemplateString} from './template.js';
+import type {MergeOptions} from './bind.js';
 
 /**
 Same as `execa()` but synchronous.
@@ -41,7 +42,7 @@ export type ExecaSyncMethod<OptionsType extends SyncOptions = SyncOptions> =
 // `execaSync(options)` binding
 type ExecaSyncBind<OptionsType extends SyncOptions> =
 	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType)
-	=> ExecaSyncMethod<OptionsType & NewOptionsType>;
+	=> ExecaSyncMethod<MergeOptions<OptionsType, NewOptionsType, SyncOptions>>;
 
 // `execaSync`command`` template syntax
 type ExecaSyncTemplate<OptionsType extends SyncOptions> =
@@ -51,11 +52,11 @@ type ExecaSyncTemplate<OptionsType extends SyncOptions> =
 // `execaSync('file', ['argument'], {})` array syntax
 type ExecaSyncArrayLong<OptionsType extends SyncOptions> =
 	<NewOptionsType extends SyncOptions = {}>(file: string | URL, arguments?: readonly string[], options?: NewOptionsType)
-	=> SyncResult<OptionsType & NewOptionsType>;
+	=> SyncResult<MergeOptions<OptionsType, NewOptionsType, SyncOptions>>;
 
 // `execaSync('file', {})` array syntax
 type ExecaSyncArrayShort<OptionsType extends SyncOptions> =
 	<NewOptionsType extends SyncOptions = {}>(file: string | URL, options?: NewOptionsType)
-	=> SyncResult<OptionsType & NewOptionsType>;
+	=> SyncResult<MergeOptions<OptionsType, NewOptionsType, SyncOptions>>;
 
 export {};

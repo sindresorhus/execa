@@ -6,7 +6,11 @@ import type {
 } from '../arguments/options.js';
 import type {SyncResult} from '../return/result.js';
 import type {ResultPromise} from '../subprocess/subprocess.js';
+import type {SubprocessStdioStream} from '../subprocess/stdout.js';
+import type {SubprocessStdioArray} from '../subprocess/stdio.js';
+import type {FdStdioOption} from '../stdio/option.js';
 import type {TemplateString} from './template.js';
+import type {MergeOptions} from './bind.js';
 
 /**
 Same as `execa()` but using script-friendly default options.
@@ -66,22 +70,52 @@ export type ExecaScriptMethod<OptionsType extends CommonOptions = CommonOptions>
 // `$(options)` binding
 type ExecaScriptBind<OptionsType extends CommonOptions> =
 	<NewOptionsType extends Options = {}>(options: NewOptionsType)
-	=> ExecaScriptMethod<OptionsType & NewOptionsType>;
+	=> ExecaScriptMethod<MergeOptions<OptionsType, NewOptionsType>>;
 
 // `$`command`` template syntax
 type ExecaScriptTemplate<OptionsType extends CommonOptions> =
 	(...templateString: TemplateString)
-	=> ResultPromise<StricterOptions<OptionsType, Options>>;
+	=> ScriptResultPromise<StricterOptions<OptionsType, Options>>;
 
 // `$('file', ['arg'], {})` array syntax
 type ExecaScriptArrayLong<OptionsType extends CommonOptions> =
 	<NewOptionsType extends Options = {}>(file: string | URL, arguments?: readonly string[], options?: NewOptionsType)
-	=> ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
+	=> ScriptSubprocess<MergeOptions<OptionsType, NewOptionsType>>;
 
 // `$('file', {})` array syntax
 type ExecaScriptArrayShort<OptionsType extends CommonOptions> =
 	<NewOptionsType extends Options = {}>(file: string | URL, options?: NewOptionsType)
-	=> ResultPromise<StricterOptions<OptionsType & NewOptionsType, Options>>;
+	=> ScriptSubprocess<MergeOptions<OptionsType, NewOptionsType>>;
+
+// Inferring the options from the return value's expected type, e.g. `const subprocess: ResultPromise = $('file')`, is too complex for TypeScript, so the return value is excluded from that inference.
+// This is like the built-in `NoInfer`, which is not available with the minimum supported TypeScript version.
+type ScriptSubprocess<OptionsType extends CommonOptions> = [ScriptResultPromise<StricterOptions<OptionsType, Options>>][OptionsType extends unknown ? 0 : never];
+
+type ScriptResultPromise<
+	OptionsType extends Options,
+	SubprocessType = ResultPromise<OptionsType>,
+> = SubprocessType extends unknown
+	? Omit<SubprocessType, 'stdin' | 'stdio'> & {stdin: SubprocessStdioStream<'0', StricterOptions<ScriptOptions<OptionsType>, Options>>; stdio: SubprocessStdioArray<StricterOptions<ScriptOptions<OptionsType>, Options>>}
+	: never;
+
+// `$` defaults to inherited stdin unless input, inputFile or stdio is provided.
+type ScriptOptions<OptionsType extends Options> = OptionsType extends Options
+	? Omit<OptionsType, 'stdin'> & {stdin: ScriptStdin<OptionsType, 'stdin' extends keyof OptionsType ? OptionsType['stdin'] : undefined>}
+	: never;
+
+type ScriptStdin<
+	OptionsType extends Options,
+	StdinOption,
+> = StdinOption extends undefined ? ScriptDefaultStdin<OptionsType> : StdinOption;
+
+type ScriptDefaultStdin<
+	OptionsType extends Options,
+	InputOptions = Pick<OptionsType, Extract<keyof OptionsType, 'input' | 'inputFile' | 'stdio'>>,
+> = InputOptions[keyof InputOptions] extends undefined
+	? 'inherit'
+	: {[Key in keyof InputOptions]: undefined} extends InputOptions
+		? 'inherit' | FdStdioOption<'0', Omit<OptionsType, 'stdin'>>
+		: FdStdioOption<'0', Omit<OptionsType, 'stdin'>>;
 
 // We must intersect the overloaded methods with & instead of using a simple object as a workaround for a TypeScript bug
 // See https://github.com/microsoft/TypeScript/issues/58765
@@ -97,7 +131,7 @@ export type ExecaScriptSyncMethod<OptionsType extends CommonOptions = CommonOpti
 // `$.sync(options)` binding
 type ExecaScriptSyncBind<OptionsType extends CommonOptions> =
 	<NewOptionsType extends SyncOptions = {}>(options: NewOptionsType)
-	=> ExecaScriptSyncMethod<OptionsType & NewOptionsType>;
+	=> ExecaScriptSyncMethod<MergeOptions<OptionsType, NewOptionsType>>;
 
 // $.sync`command` template syntax
 type ExecaScriptSyncTemplate<OptionsType extends CommonOptions> =
@@ -107,11 +141,11 @@ type ExecaScriptSyncTemplate<OptionsType extends CommonOptions> =
 // `$.sync('file', ['arg'], {})` array syntax
 type ExecaScriptSyncArrayLong<OptionsType extends CommonOptions> =
 	<NewOptionsType extends SyncOptions = {}>(file: string | URL, arguments?: readonly string[], options?: NewOptionsType)
-	=> SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
+	=> SyncResult<StricterOptions<MergeOptions<OptionsType, NewOptionsType>, SyncOptions>>;
 
 // `$.sync('file', {})` array syntax
 type ExecaScriptSyncArrayShort<OptionsType extends CommonOptions> =
 	<NewOptionsType extends SyncOptions = {}>(file: string | URL, options?: NewOptionsType)
-	=> SyncResult<StricterOptions<OptionsType & NewOptionsType, SyncOptions>>;
+	=> SyncResult<StricterOptions<MergeOptions<OptionsType, NewOptionsType>, SyncOptions>>;
 
 export {};

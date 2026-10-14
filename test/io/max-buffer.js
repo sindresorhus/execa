@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {Buffer} from 'node:buffer';
+import {platform} from 'node:process';
 import {readFile, rm} from 'node:fs/promises';
 import test from 'node:test';
 import getStream from 'get-stream';
@@ -16,6 +17,97 @@ setFixtureDirectory();
 
 const maxBufferMessage = {message: /maxBuffer exceeded/};
 const maxBufferCodeSync = {code: 'ENOBUFS'};
+
+// Bound the regression even when exceeding maxBuffer does not terminate the subprocess.
+const assertMaxBufferRejects = async subprocess => {
+	const cleanup = setTimeout(() => {
+		subprocess.kill('SIGKILL');
+	}, 5000);
+	try {
+		const error = await assertRejects(subprocess);
+		assert.equal(error.isMaxBuffer, true);
+		return error;
+	} finally {
+		clearTimeout(cleanup);
+	}
+};
+
+const assertMaxBufferTermination = async (subprocess, expectedSignal = 'SIGTERM') => {
+	const error = await assertMaxBufferRejects(subprocess);
+	assert.equal(error.isTerminated, true);
+	assert.equal(error.signal, expectedSignal);
+	assert.equal(error.exitCode, undefined);
+	assert.equal(error.timedOut, false);
+	return error;
+};
+
+const testAliveMaxBuffer = async (fdNumber, options = {}) => {
+	const error = await assertMaxBufferTermination(execa('max-buffer-forever.js', [`${fdNumber}`, '100'], {...fullStdio, maxBuffer: 5, ...options}), options.killSignal);
+	assert.equal(error.stdio[fdNumber], '.....');
+};
+
+test('maxBuffer terminates a subprocess that stays alive without more output', () => testAliveMaxBuffer(1));
+test('maxBuffer terminates a subprocess that stays alive without more stderr', () => testAliveMaxBuffer(2));
+test('maxBuffer terminates a subprocess that stays alive without more stdio[3]', () => testAliveMaxBuffer(3));
+test('maxBuffer termination uses killSignal', () => testAliveMaxBuffer(1, {killSignal: 'SIGINT'}));
+
+// Windows terminates immediately instead of delivering catchable signals.
+if (platform !== 'win32') {
+	test('maxBuffer termination forcefully kills a subprocess ignoring killSignal', async () => {
+		const error = await assertMaxBufferTermination(execa('max-buffer-forever.js', ['1', '100', 'SIGINT'], {
+			maxBuffer: 5,
+			killSignal: 'SIGINT',
+			forceKillAfterDelay: 50,
+		}), 'SIGKILL');
+		assert.equal(error.isForcefullyTerminated, true);
+		assert.equal(error.stdout, '.....');
+	});
+
+	test('maxBuffer termination reports the exit code of a subprocess handling killSignal', async () => {
+		const error = await assertMaxBufferRejects(execa('max-buffer-forever.js', ['1', '100', 'SIGTERM', '5'], {maxBuffer: 5}));
+		assert.equal(error.isTerminated, false);
+		assert.equal(error.signal, undefined);
+		assert.equal(error.exitCode, 5);
+		assert.equal(error.stdout, '.....');
+	});
+}
+
+test('maxBuffer termination applies to lines', async () => {
+	const error = await assertMaxBufferTermination(execa('max-buffer-forever.js', ['1', '100'], {
+		maxBuffer: 1,
+		lines: true,
+		stdout: {
+			* transform() {
+				yield 'first\nsecond\n';
+			},
+			binary: true,
+		},
+	}));
+	assert.deepEqual(error.stdout, ['first']);
+	assertErrorMessage(error.shortMessage, {length: 1, unit: 'lines'});
+});
+
+test('maxBuffer termination applies to object mode', async () => {
+	const error = await assertMaxBufferTermination(execa('max-buffer-forever.js', ['1', '100'], {
+		maxBuffer: 1,
+		stdout: {
+			* transform() {
+				yield {index: 1};
+				yield {index: 2};
+			},
+			binary: true,
+			objectMode: true,
+		},
+	}));
+	assert.deepEqual(error.stdout, [{index: 1}]);
+	assertErrorMessage(error.shortMessage, {length: 1, unit: 'objects'});
+});
+
+test('maxBuffer termination applies to IPC messages', async () => {
+	const error = await assertMaxBufferTermination(execa('ipc-send-forever.js', {ipc: true, maxBuffer: {ipc: 0}}));
+	assert.deepEqual(error.ipcOutput, []);
+	assert.ok(error.shortMessage.includes('IPC output was larger than 0 messages'));
+});
 
 const runMaxBuffer = async (execaMethod, fdNumber, options) => {
 	const error = execaMethod === execa
@@ -47,20 +139,31 @@ test('maxBuffer does not affect stderr if too high, sync', () => testMaxBufferSu
 test('maxBuffer does not affect stdio[*] if too high, sync', () => testMaxBufferSuccess(execaSync, 3, false));
 test('maxBuffer does not affect all if too high, sync', () => testMaxBufferSuccess(execaSync, 1, true));
 
-const testGracefulExit = async (fixtureName, expectedExitCode) => {
-	const {isMaxBuffer, shortMessage, exitCode, signal, stdout} = await assertRejects(
+// The subprocess might exit on its own before it is terminated, in which case its real exit is reported
+const assertMaxBufferExit = ({exitCode, signal, isTerminated}, expectedExitCode) => {
+	if (signal === undefined) {
+		assert.equal(isTerminated, false);
+		assert.equal(exitCode, expectedExitCode);
+	} else {
+		assert.equal(isTerminated, true);
+		assert.equal(signal, 'SIGTERM');
+		assert.equal(exitCode, undefined);
+	}
+};
+
+const testMaxBufferExit = async (fixtureName, expectedExitCode) => {
+	const error = await assertRejects(
 		execa(fixtureName, ['1', '.'.repeat(maxBuffer + 1)], {maxBuffer}),
 		maxBufferMessage,
 	);
-	assert.equal(isMaxBuffer, true);
-	assertErrorMessage(shortMessage);
-	assert.equal(exitCode, expectedExitCode);
-	assert.equal(signal, undefined);
-	assert.equal(stdout, getExpectedOutput());
+	assert.equal(error.isMaxBuffer, true);
+	assertMaxBufferExit(error, expectedExitCode);
+	assertErrorMessage(error.shortMessage);
+	assert.equal(error.stdout, getExpectedOutput());
 };
 
-test('maxBuffer terminates stream gracefully, more writes', () => testGracefulExit('noop-repeat.js', 1));
-test('maxBuffer terminates stream gracefully, no more writes', () => testGracefulExit('noop-fd.js', 0));
+test('maxBuffer terminates subprocess, more writes', () => testMaxBufferExit('noop-repeat.js', 1));
+test('maxBuffer terminates subprocess, no more writes', () => testMaxBufferExit('noop-fd.js', 0));
 
 const testGracefulExitSync = fixtureName => {
 	const {isMaxBuffer, shortMessage, exitCode, signal, stdout} = assertThrows(() => {
@@ -173,6 +276,8 @@ test('maxBuffer.stderr is used when lower than maxBuffer.stdout, sync', () => {
 	assertErrorMessage(error.shortMessage, {execaMethod: execaSync, fdNumber: 2, length});
 	assert.equal(error.stdout, getExpectedOutput(maxBuffer + 1));
 	assert.equal(error.stderr, getExpectedOutput(length));
+	// Unlike asynchronous methods, the subprocess is not terminated, since it already exited
+	assert.equal(error.isTerminated, false);
 	assert.equal(error.signal, undefined);
 	assert.equal(error.exitCode, 0);
 });
@@ -184,8 +289,7 @@ test('maxBuffer.stderr is used when lower than maxBuffer.stdout', async () => {
 	assertErrorMessage(error.shortMessage, {fdNumber: 2, length});
 	assert.equal(error.stdout, getExpectedOutput(maxBuffer + 1));
 	assert.equal(error.stderr, getExpectedOutput(length));
-	assert.equal(error.signal, undefined);
-	assert.equal(error.exitCode, 0);
+	assertMaxBufferExit(error, 0);
 });
 
 test('maxBuffer is not hit when under each file descriptor\'s value, sync', () => {

@@ -194,7 +194,7 @@ export type CommonOptions<
 
 	With synchronous methods, this cannot be enforced per file descriptor while the subprocess runs, since `spawnSync()` only accepts a single value, which limits the total output of all file descriptors. The `maxBuffer.stdout` value is used for it. The other file descriptors' own values are enforced from the output, once the subprocess ended, and cannot be higher than `maxBuffer.stdout`. Also, with synchronous methods, this is measured in bytes instead of characters or lines, for the same reason.
 
-	When reached, `error.isMaxBuffer` becomes `true`.
+	When reached, `error.isMaxBuffer` becomes `true` and the subprocess is terminated with the `killSignal` option.
 
 	@default 100_000_000
 	*/

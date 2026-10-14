@@ -171,7 +171,7 @@ await execa({stdin: 'ignore', stdout: 'ignore', stderr: 'ignore'})`npm run build
 
 To prevent high memory consumption, a maximum output size can be set using the [`maxBuffer`](api.md#optionsmaxbuffer) option. It defaults to 100MB.
 
-When this threshold is hit, the subprocess fails and [`error.isMaxBuffer`](api.md#errorismaxbuffer) becomes `true`. The truncated output is still available using [`error.stdout`](api.md#resultstdout), [`error.stderr`](api.md#resultstderr) and [`error.ipcOutput`](api.md#resultipcoutput).
+When this threshold is hit, [`error.isMaxBuffer`](api.md#errorismaxbuffer) becomes `true` and the subprocess is terminated with the [`killSignal`](api.md#optionskillsignal) option. The truncated output is still available using [`error.stdout`](api.md#resultstdout), [`error.stderr`](api.md#resultstderr) and [`error.ipcOutput`](api.md#resultipcoutput).
 
 This is measured:
 - By default: in [characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).

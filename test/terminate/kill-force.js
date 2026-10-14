@@ -146,7 +146,6 @@ if (isWindows) {
 		const subprocess = execa('noop-forever.js', ['.'], {...noKillableSimpleOptions, maxBuffer: 1});
 		const [chunk] = await once(subprocess.stdout, 'data');
 		assert.equal(chunk.toString(), '.\n');
-		subprocess.kill();
 		const {isTerminated, signal, isForcefullyTerminated, shortMessage} = await assertRejects(subprocess);
 		assert.equal(isTerminated, true);
 		assert.equal(signal, 'SIGKILL');

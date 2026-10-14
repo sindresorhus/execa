@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import {Buffer} from 'node:buffer';
 import test from 'node:test';
 import {execa, execaSync} from '../../index.js';
+import {assertRejects} from '../helpers/assert.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
-import {foobarObject} from '../helpers/input.js';
+import {foobarObject, foobarString} from '../helpers/input.js';
 import {
 	outputObjectGenerator,
 	uppercaseGenerator,
@@ -13,6 +14,83 @@ import {
 setFixtureDirectory();
 
 const textEncoder = new TextEncoder();
+
+test('result.all preserves object-mode bytes when stderr is not buffered', async () => {
+	const chunk = new Uint8Array([97, 98]);
+	const {stdout, all} = await execa('noop-both.js', ['x'], {
+		all: true,
+		buffer: {stderr: false},
+		stdout: {
+			objectMode: true,
+			* transform() {
+				yield chunk;
+			},
+		},
+	});
+	assert.deepEqual(stdout, [chunk]);
+	assert.deepEqual(all, [chunk]);
+	assert.equal(all[0], chunk);
+});
+
+const testSingleBufferedObjectMode = async (bufferedDescriptor, failure) => {
+	const chunks = [new Uint8Array([97, 98]), Buffer.from('cd'), 'first\nsecond\n', ['nested'], {value: 1}];
+	const unbufferedDescriptor = bufferedDescriptor === 'stdout' ? 'stderr' : 'stdout';
+	const subprocess = execa(failure ? 'all-fail.js' : 'noop-both.js', {
+		all: true,
+		lines: true,
+		buffer: {[unbufferedDescriptor]: false},
+		[bufferedDescriptor]: {
+			objectMode: true,
+			* transform() {},
+			* final() {
+				yield * chunks;
+			},
+		},
+	});
+	const result = failure ? await assertRejects(subprocess, {exitCode: 1}) : await subprocess;
+	assert.equal(result.failed, failure);
+	assert.equal(result[unbufferedDescriptor], undefined);
+	assert.deepEqual(result[bufferedDescriptor], chunks);
+	assert.deepEqual(result.all, chunks);
+	for (const [index, chunk] of chunks.entries()) {
+		assert.equal(result.all[index], chunk);
+	}
+};
+
+const testSingleBufferedTextMode = async (bufferedDescriptor, encoding, failure) => {
+	const unbufferedDescriptor = bufferedDescriptor === 'stdout' ? 'stderr' : 'stdout';
+	const subprocess = execa(failure ? 'all-fail.js' : 'noop-both.js', {
+		all: true,
+		encoding,
+		stripFinalNewline: false,
+		buffer: {[unbufferedDescriptor]: false},
+		[unbufferedDescriptor]: outputObjectGenerator(),
+	});
+	const result = failure ? await assertRejects(subprocess, {exitCode: 1}) : await subprocess;
+	const failureOutput = bufferedDescriptor === 'stdout' ? 'std\nout' : 'std\nerr';
+	const output = `${failure ? failureOutput : foobarString}\n`;
+	const expected = encoding === 'buffer' ? textEncoder.encode(output) : Buffer.from(output).toString(encoding);
+	assert.equal(result[unbufferedDescriptor], undefined);
+	assert.deepEqual(result[bufferedDescriptor], expected);
+	assert.deepEqual(result.all, expected);
+};
+
+// Object-mode chunks are passed through unchanged, so they are not affected by the `encoding` option
+for (const bufferedDescriptor of ['stdout', 'stderr']) {
+	for (const failure of [false, true]) {
+		const resultType = failure ? 'error' : 'result';
+		test(`${resultType}.all preserves object-mode chunks when only ${bufferedDescriptor} is buffered`, () => testSingleBufferedObjectMode(bufferedDescriptor, failure));
+	}
+}
+
+for (const bufferedDescriptor of ['stdout', 'stderr']) {
+	for (const encoding of ['utf8', 'buffer', 'hex']) {
+		for (const failure of [false, true]) {
+			const resultType = failure ? 'error' : 'result';
+			test(`${resultType}.all decodes text when only ${bufferedDescriptor} is buffered and the other descriptor is in object mode, encoding "${encoding}"`, () => testSingleBufferedTextMode(bufferedDescriptor, encoding, failure));
+		}
+	}
+}
 
 const getAllStdioOption = (stdioOption, encoding, objectMode) => {
 	if (stdioOption) {

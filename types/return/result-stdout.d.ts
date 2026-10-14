@@ -11,17 +11,20 @@ export type ResultStdioNotAll<
 > = ResultStdio<FdNumber, FdNumber, FdNumber, OptionsType>;
 
 // `result.stdout|stderr|stdio|all`
+// Distribute option objects before reading properties to preserve each branch's output mode.
 export type ResultStdio<
 	MainFdNumber extends string,
 	ObjectFdNumber extends string,
 	LinesFdNumber extends string,
 	OptionsType extends CommonOptions,
-> = ResultStdioProperty<
-	ObjectFdNumber,
-	LinesFdNumber,
-	IgnoresResultOutput<MainFdNumber, OptionsType>,
-	OptionsType
->;
+> = OptionsType extends unknown
+	? ResultStdioProperty<
+		ObjectFdNumber,
+		LinesFdNumber,
+		IgnoresResultOutput<MainFdNumber, OptionsType>,
+		OptionsType
+	>
+	: never;
 
 type ResultStdioProperty<
 	ObjectFdNumber extends string,

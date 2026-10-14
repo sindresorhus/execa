@@ -8,7 +8,8 @@ import type {CommonOptions} from '../arguments/options.js';
 export type IgnoresResultOutput<
 	FdNumber extends string,
 	OptionsType extends CommonOptions,
-> = FdSpecificOption<OptionsType['buffer'], FdNumber> extends false
+	BufferOption extends boolean | undefined = FdSpecificOption<OptionsType['buffer'], FdNumber>,
+> = BufferOption extends false
 	? true
 	: IgnoresResultOutputDirection<IsInputFd<FdNumber, OptionsType>, FdNumber, OptionsType>;
 

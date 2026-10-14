@@ -4,7 +4,7 @@ import {assertRejects} from '../helpers/assert.js';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
-import {fullStdio, assertEpipe} from '../helpers/stdio.js';
+import {fullStdio, assertEpipe, getStdio} from '../helpers/stdio.js';
 import {
 	arrayFromAsync,
 	assertWritableAborted,
@@ -69,6 +69,33 @@ test('Can iterate using Symbol.asyncIterator', async () => {
 	const lines = await arrayFromAsync(execa('noop-fd.js', ['1', simpleFull]));
 	assert.deepEqual(lines, noNewlinesChunks);
 });
+
+const testObjectChunks = async (fdNumber, from, binary) => {
+	const chunks = [{value: 'object'}, [1, [2]], new Uint8Array([97, 98]), 'first\nsecond\n', false, 0];
+	const subprocess = execa('noop-fd.js', [`${fdNumber}`, 'x'], {
+		...getStdio(fdNumber, {
+			objectMode: true,
+			binary: true,
+			* transform() {
+				yield * chunks;
+			},
+		}),
+		all: true,
+	});
+	const iterable = from === undefined ? subprocess : subprocess.iterable({from, binary});
+	const output = await arrayFromAsync(iterable);
+	assert.deepEqual(output, chunks);
+	for (const [index, chunk] of chunks.entries()) {
+		assert.equal(output[index], chunk);
+	}
+};
+
+test('Default iteration preserves arbitrary object-mode chunks', () => testObjectChunks(1));
+test('Text iteration preserves arbitrary object-mode chunks', () => testObjectChunks(1, 'stdout', false));
+test('Binary iteration preserves arbitrary object-mode chunks', () => testObjectChunks(1, 'stdout', true));
+test('Iteration preserves arbitrary stderr object-mode chunks', () => testObjectChunks(2, 'stderr', false));
+test('Iteration preserves arbitrary fd3 object-mode chunks', () => testObjectChunks(3, 'fd3', true));
+test('Iteration preserves arbitrary merged object-mode chunks', () => testObjectChunks(1, 'all', false));
 
 const assertMultipleCalls = async (iterable, iterableTwo) => {
 	assert.notEqual(iterable, iterableTwo);

@@ -10,6 +10,7 @@ import type {
 	WritableOptions,
 	DuplexOptions,
 	SubprocessAsyncIterable,
+	IsObjectIterable,
 } from '../convert.js';
 import type {IpcMethods, HasIpc} from '../ipc.js';
 import type {SubprocessStdioStream} from './stdout.js';
@@ -32,12 +33,12 @@ export type SubprocessResultMethods<OptionsType extends Options = Options> = {
 	/**
 	Subprocesses are [async iterables](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator). They iterate over each output line.
 	*/
-	[Symbol.asyncIterator](): SubprocessAsyncIterable<undefined, OptionsType['encoding']>;
+	[Symbol.asyncIterator](): SubprocessAsyncIterable<undefined, OptionsType['encoding'], IsObjectIterable<undefined, OptionsType>>;
 
 	/**
 	Same as `subprocess[Symbol.asyncIterator]` except options can be provided.
 	*/
-	iterable<IterableOptions extends ReadableOptions = {}>(readableOptions?: IterableOptions): SubprocessAsyncIterable<IterableOptions['binary'], OptionsType['encoding']>;
+	iterable<IterableOptions extends ReadableOptions = {}>(readableOptions?: IterableOptions): SubprocessAsyncIterable<IterableOptions['binary'], OptionsType['encoding'], IsObjectIterable<IterableOptions['from'], OptionsType>>;
 
 	/**
 	Converts the subprocess to a readable stream.

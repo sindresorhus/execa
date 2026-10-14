@@ -468,6 +468,8 @@ If `true`, iterates over arbitrary chunks of data. Each line is an [`Uint8Array`
 
 This is always `true` when the [`encoding`](#optionsencoding) option is binary.
 
+With a [transform in object mode](transform.md#object-mode), each chunk is the object itself, whatever the value of this option.
+
 More info for [iterables](binary.md#iterable) and [streams](binary.md#streams).
 
 #### readableOptions.preserveNewlines

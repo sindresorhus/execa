@@ -1,6 +1,7 @@
 import type {BinaryEncodingOption} from './arguments/encoding-option.js';
 import type {Options} from './arguments/options.js';
 import type {FromOption, ToOption} from './arguments/fd-options.js';
+import type {IsObjectFd} from './transform/object-mode.js';
 
 // `subprocess.readable|duplex|iterable()` options
 export type ReadableOptions = {
@@ -19,6 +20,8 @@ export type ReadableOptions = {
 	If `true`, iterates over arbitrary chunks of data. Each line is an [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) (with `subprocess.iterable()`) or a [`Buffer`](https://nodejs.org/api/buffer.html#class-buffer) (with `subprocess.readable()`/`subprocess.duplex()`).
 
 	This is always `true` when the `encoding` option is binary.
+
+	With a transform in object mode, each chunk is the object itself, whatever the value of this option.
 
 	@default `false` with `subprocess.iterable()`, `true` otherwise
 	*/
@@ -49,12 +52,27 @@ export type DuplexOptions = ReadableOptions & WritableOptions;
 export type SubprocessAsyncIterable<
 	BinaryOption extends boolean | undefined,
 	EncodingOption extends Options['encoding'],
+	ObjectMode extends boolean,
 > = AsyncIterableIterator<
-	EncodingOption extends BinaryEncodingOption
-		? Uint8Array
-		: BinaryOption extends true
+	// Object-mode chunks are passed through unchanged, even with binary options.
+	true extends ObjectMode
+		? unknown
+		: EncodingOption extends BinaryEncodingOption
 			? Uint8Array
-			: string
+			: BinaryOption extends true
+				? Uint8Array
+				: string
 >;
+
+// `all` can yield objects from either stdout or stderr.
+export type IsObjectIterable<
+	From extends ReadableOptions['from'],
+	OptionsType extends Options,
+> = OptionsType extends Options
+	? From extends 'all' ? IsObjectFd<'1' | '2', OptionsType>
+		: From extends 'stderr' ? IsObjectFd<'2', OptionsType>
+			: From extends `fd${infer FdNumber}` ? IsObjectFd<`${number}` extends FdNumber ? string : FdNumber, OptionsType>
+				: IsObjectFd<'1', OptionsType>
+	: never;
 
 export {};

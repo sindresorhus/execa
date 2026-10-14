@@ -12,11 +12,14 @@ export type IsObjectFd<
 
 type IsObjectStdioOption<StdioOptionType> = IsObjectStdioSingleOption<StdioSingleOptionItems<StdioOptionType>>;
 
-type IsObjectStdioSingleOption<StdioSingleOptionType> = StdioSingleOptionType extends TransformCommon
-	? BooleanObjectMode<StdioSingleOptionType['objectMode']>
-	: StdioSingleOptionType extends DuplexTransform
-		? StdioSingleOptionType['transform']['readableObjectMode']
-		: false;
+// Direction wrappers do not change the transform's object mode.
+type IsObjectStdioSingleOption<StdioSingleOptionType> = StdioSingleOptionType extends {readonly value: infer Value}
+	? IsObjectStdioSingleOption<Value>
+	: StdioSingleOptionType extends TransformCommon
+		? BooleanObjectMode<StdioSingleOptionType['objectMode']>
+		: StdioSingleOptionType extends DuplexTransform
+			? StdioSingleOptionType['transform']['readableObjectMode']
+			: false;
 
 type BooleanObjectMode<ObjectModeOption extends boolean | undefined> = ObjectModeOption extends true ? true : false;
 

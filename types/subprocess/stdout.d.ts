@@ -4,10 +4,13 @@ import type {IgnoresSubprocessOutput} from '../return/ignore.js';
 import type {Options} from '../arguments/options.js';
 
 // `subprocess.stdin|stdout|stderr|stdio`
+// Resolve each option branch separately to preserve its stream presence and direction.
 export type SubprocessStdioStream<
 	FdNumber extends string,
 	OptionsType extends Options,
-> = SubprocessStream<FdNumber, IgnoresSubprocessOutput<FdNumber, OptionsType>, OptionsType>;
+> = OptionsType extends unknown
+	? SubprocessStream<FdNumber, IgnoresSubprocessOutput<FdNumber, OptionsType>, OptionsType>
+	: never;
 
 type SubprocessStream<
 	FdNumber extends string,

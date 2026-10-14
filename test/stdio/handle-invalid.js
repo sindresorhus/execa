@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {open, rm} from 'node:fs/promises';
+import {open, readFile, rm} from 'node:fs/promises';
+import {Writable} from 'node:stream';
 import test from 'node:test';
 import tempfile from 'tempfile';
 import {assertThrows} from '../helpers/assert.js';
@@ -102,6 +103,104 @@ test('Cannot pass a too large file descriptor to stderr', () => testInvalidFileD
 test('Cannot pass a negative file descriptor to stdio[*]', () => testInvalidFileDescriptor(3, 'stdio[3]', -1, execa));
 test('Cannot pass a fractional file descriptor to stdout', () => testInvalidFileDescriptor(1, 'stdout', 1.5, execaSync));
 test('Cannot pass a negative file descriptor to stdin', () => testInvalidFileDescriptor(0, 'stdin', -1, execaSync));
+
+// Invalid descriptor objects must be tested in a child: Node.js otherwise aborts the test process.
+test('Cannot pass a fractional file descriptor object to stdout', async () => {
+	const {stdout} = await execa('nested-invalid-file-handle.js', ['async', '1.5']);
+	assert.equal(stdout, '');
+});
+
+const testInvalidFileHandle = async (fileDescriptor, method, fdNumber = 1, isWrapped = false) => {
+	const {stdout} = await execa('nested-invalid-file-handle.js', [method, `${fileDescriptor}`, `${fdNumber}`, `${isWrapped}`]);
+	assert.equal(stdout, '');
+};
+
+test('Cannot pass a fractional file descriptor object to stdout, sync', () => testInvalidFileHandle(1.5, 'sync'));
+
+test('Cannot pass a fractional stream file descriptor to stdout', async () => {
+	const {stdout} = await execa('nested-invalid-file-handle.js', ['async', '1.5', '1', 'false', 'stream']);
+	assert.equal(stdout, '');
+});
+
+for (const method of ['async', 'sync']) {
+	for (const fileDescriptor of [NaN, 2 ** 31]) {
+		test(`Cannot pass an invalid stream file descriptor (${fileDescriptor}) to stdout, ${method}`, async () => {
+			const {stdout} = await execa('nested-invalid-file-handle.js', [method, `${fileDescriptor}`, '1', 'false', 'stream']);
+			assert.equal(stdout, '');
+		});
+	}
+}
+
+for (const method of ['async', 'sync']) {
+	for (const fileDescriptor of [NaN, Infinity, -Infinity, -1, 2 ** 31, 2 ** 32, Number.MAX_SAFE_INTEGER]) {
+		test(`Cannot pass an invalid file descriptor object (${fileDescriptor}) to stdout, ${method}`, () => testInvalidFileHandle(fileDescriptor, method));
+	}
+
+	for (const fdNumber of [0, 2, 3]) {
+		test(`Cannot pass a fractional file descriptor object to stdio[${fdNumber}], ${method}`, () => testInvalidFileHandle(1.5, method, fdNumber));
+	}
+
+	test(`Cannot pass a wrapped invalid file descriptor object to stdout, ${method}`, () => testInvalidFileHandle(1.5, method, 1, true));
+
+	test(`Cannot pass a closed FileHandle to stdout, ${method}`, async () => {
+		const filePath = tempfile();
+		try {
+			const fileHandle = await open(filePath, 'w');
+			await fileHandle.close();
+			const execaMethod = method === 'sync' ? execaSync : execa;
+			assertThrows(() => {
+				execaMethod('empty.js', {stdout: fileHandle});
+			}, {instanceOf: TypeError, message: 'The `stdout` option must be a non-negative 32-bit integer: got -1.'});
+		} finally {
+			await rm(filePath);
+		}
+	});
+}
+
+const testValidFileHandleOutput = async (execaMethod, fdNumber, isWrapped) => {
+	const filePath = tempfile();
+	const fileHandle = await open(filePath, 'w');
+	try {
+		const descriptor = {fd: fileHandle.fd};
+		const value = isWrapped ? {value: descriptor} : descriptor;
+		await execaMethod('noop-fd.js', [`${fdNumber}`, 'file output'], getStdio(fdNumber, value));
+		assert.equal(await readFile(filePath, 'utf8'), 'file output');
+	} finally {
+		await fileHandle.close();
+		await rm(filePath);
+	}
+};
+
+test('Can still pass a native descriptor object to stdout', () => testValidFileHandleOutput(execa, 1, false));
+test('Can still pass a native descriptor object to stdout, sync', () => testValidFileHandleOutput(execaSync, 1, false));
+test('Can still pass a wrapped native descriptor object to stderr', () => testValidFileHandleOutput(execa, 2, true));
+test('Can still pass a wrapped native descriptor object to stderr, sync', () => testValidFileHandleOutput(execaSync, 2, true));
+
+const testValidStreamFileDescriptor = async (execaMethod, isStdioArray) => {
+	const filePath = tempfile();
+	const fileHandle = await open(filePath, 'w');
+	const chunks = [];
+	const stream = new Writable({
+		write(chunk, encoding, callback) {
+			chunks.push(chunk.toString());
+			callback();
+		},
+	});
+	stream.fd = fileHandle.fd;
+	try {
+		await execaMethod('noop-fd.js', ['1', 'file output'], {stdout: isStdioArray ? ['pipe', stream] : stream});
+		assert.equal(await readFile(filePath, 'utf8'), isStdioArray ? '' : 'file output');
+		assert.equal(chunks.join(''), isStdioArray ? 'file output' : '');
+	} finally {
+		stream.destroy();
+		await fileHandle.close();
+		await rm(filePath);
+	}
+};
+
+test('Can still pass a stream with a valid file descriptor to stdout', () => testValidStreamFileDescriptor(execa, false));
+test('Can still pass a stream with a valid file descriptor to stdout, sync', () => testValidStreamFileDescriptor(execaSync, false));
+test('Can still pipe to a stream with a file descriptor in a stdio array', () => testValidStreamFileDescriptor(execa, true));
 
 const testUnknownNativeValue = (invalidStdio, fdNumber, execaMethod) => {
 	const {message} = assertThrows(() => {

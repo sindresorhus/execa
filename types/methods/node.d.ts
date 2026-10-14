@@ -62,9 +62,15 @@ type ExecaNodeArrayShort<OptionsType extends Options> =
 	<NewOptionsType extends Options = {}>(scriptPath: string | URL, options?: NewOptionsType)
 	=> ResultPromise<NodeOptions<MergeOptions<OptionsType, NewOptionsType, Options>>>;
 
-// `execaNode()` always uses the `node` option, which also enables the `ipc` option by default
+// `execaNode()` always uses the `node` option, which also enables the `ipc` option by default.
+// `node: false` throws at runtime.
+// Any other `node` value is replaced instead of intersected, since `{node: undefined} & {node: true}` would be `never`. The result is flattened, so it is a plain object type.
 type NodeOptions<OptionsType extends Options> = OptionsType extends Options
-	? OptionsType & {readonly node: true}
+	? OptionsType extends {readonly node: false}
+		? never
+		: ({[Key in keyof OptionsType]: Key extends 'node' ? true : OptionsType[Key]} & {readonly node: true}) extends infer ForcedOptions
+			? {[Key in keyof ForcedOptions]: ForcedOptions[Key]}
+			: never
 	: never;
 
 export {};

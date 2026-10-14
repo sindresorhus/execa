@@ -235,14 +235,15 @@ test('The "nodeOptions" option removes --inspect-brk with a port when defined by
 // When the current process runs `node --eval` or `node --print`, `process.execArgv` contains that code, which must not be run by the subprocess instead of its file.
 // The environment variable prevents a fork bomb, if that code is run.
 const indexUrl = pathToFileURL(path.resolve(FIXTURES_DIRECTORY, '../../index.js')).href;
-const evalCode = `if (process.env.EXECA_TEST_EVAL) {
+const getEvalCode = (execaMethod = 'execaNode') => `if (process.env.EXECA_TEST_EVAL) {
 	console.log('eval code was run by the subprocess');
 } else {
 	import(${JSON.stringify(indexUrl)}).then(async execaModule => {
-		const {stdout} = await execaModule.execaNode('noop.js', [${JSON.stringify(foobarString)}], {env: {EXECA_TEST_EVAL: '1'}});
+		const {stdout} = await execaModule.${execaMethod}('noop.js', [${JSON.stringify(foobarString)}], {node: true, env: {EXECA_TEST_EVAL: '1'}});
 		console.log(stdout);
 	});
 }`;
+const evalCode = getEvalCode();
 
 const testEvalRemoval = async nodeArguments => {
 	const {stdout} = await execa('node', nodeArguments, {cwd: FIXTURES_DIRECTORY});
@@ -259,6 +260,11 @@ test('The "nodeOptions" option removes --print when defined by current process',
 test('The "nodeOptions" option removes -pe when defined by current process', () => testEvalRemoval(['-pe', evalCode]));
 test('The "nodeOptions" option removes -p -e when defined by current process', () => testEvalRemoval(['-p', '-e', evalCode]));
 test('The "nodeOptions" option removes --print --eval when defined by current process', () => testEvalRemoval(['--print', '--eval', evalCode]));
+test('The "nodeOptions" option removes --print= when defined by current process', () => testEvalRemoval(['--print=true', '--eval', evalCode]));
+test('The "nodeOptions" option removes --print= when defined by current process - "node" option', () => testEvalRemoval(['--print=true', '--eval', getEvalCode('execa')]));
+test('The "nodeOptions" option removes --print= when defined by current process - "node" option sync', () => testEvalRemoval(['--print=true', '--eval', getEvalCode('execaSync')]));
+test('The "nodeOptions" option removes --print= with an empty value when defined by current process', () => testEvalRemoval(['--print=', '--eval', evalCode]));
+test('The "nodeOptions" option removes --print=false when defined by current process', () => testEvalRemoval(['--print=false', '--eval', evalCode]));
 test('The "nodeOptions" option removes -e -p when defined by current process', () => testEvalRemoval(['-e', evalCode, '-p']));
 test('The "nodeOptions" option removes --input-type= when defined by current process', () => testEvalRemoval(['--input-type=commonjs', '-e', evalCode]));
 test('The "nodeOptions" option removes --input-type when defined by current process', () => testEvalRemoval(['--input-type', 'commonjs', '-e', evalCode]));
@@ -281,6 +287,24 @@ test('The "nodeOptions" option is not filtered when passed explicitly', async ()
 	const {stdout} = await execaNode('-p', ['process.execArgv.join(" ")'], {nodeOptions: ['--input-type=commonjs', '--inspect-port=9339']});
 	assert.equal(stdout, '--input-type=commonjs --inspect-port=9339 -p process.execArgv.join(" ")');
 });
+
+test('The "nodeOptions" option keeps unrelated flags when --print= is defined by current process', async () => {
+	const keptFlags = ['--no-warnings', '-r', './empty.js'];
+	const {stdout} = await execa('node', [...keptFlags, '--print=true', '--eval', `void import(${JSON.stringify(indexUrl)}).then(async execaModule => {
+		const {stdout} = await execaModule.execaNode('-p', ['JSON.stringify(process.execArgv)']);
+		console.log(stdout);
+	});`], {cwd: FIXTURES_DIRECTORY});
+	assert.ok(stdout.split('\n').includes(JSON.stringify([...keptFlags, '-p', 'JSON.stringify(process.execArgv)'])));
+});
+
+const testExplicitPrintOptions = async execaMethod => {
+	const {stdout} = await execaMethod('--eval', ['40 + 2'], {nodeOptions: ['--print=true']});
+	assert.equal(stdout, '42');
+};
+
+test('The "nodeOptions" option keeps an explicitly passed --print= - execaNode()', () => testExplicitPrintOptions(execaNode));
+test('The "nodeOptions" option keeps an explicitly passed --print= - "node" option', () => testExplicitPrintOptions(runWithNodeOption));
+test('The "nodeOptions" option keeps an explicitly passed --print= - "node" option sync', () => testExplicitPrintOptions(runWithNodeOptionSync));
 
 const testInspectDifferentPort = async execaMethod => {
 	const {stdout, stdio} = await spawnNestedExecaNode(['--inspect=9225'], '', execaMethod, '--inspect=9224');

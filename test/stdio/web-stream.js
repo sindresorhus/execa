@@ -18,6 +18,207 @@ const testReadableStream = async fdNumber => {
 test('stdin can be a ReadableStream', () => testReadableStream(0));
 test('stdio[*] can be a ReadableStream', () => testReadableStream(3));
 
+test('stdin can read objects from a ReadableStream with an object mode transform', async () => {
+	const input = {message: 'foobar'};
+	const readableStream = new ReadableStream({
+		start(controller) {
+			controller.enqueue(input);
+			controller.close();
+		},
+	});
+	const {stdout} = await execa('stdin.js', {
+		stdin: [readableStream, {
+			objectMode: true,
+			* transform(value) {
+				yield JSON.stringify(value);
+			},
+		}],
+	});
+	assert.equal(stdout, JSON.stringify(input));
+});
+
+test('stdout can write objects to a WritableStream with an object mode transform', async () => {
+	const output = {message: 'foobar'};
+	const received = [];
+	const writableStream = new WritableStream({
+		write(chunk) {
+			received.push(chunk);
+		},
+	});
+	const {stdout} = await execa('noop.js', {
+		stdout: [writableStream, {
+			objectMode: true,
+			* transform() {
+				yield output;
+			},
+		}],
+	});
+	assert.deepEqual(stdout, [output]);
+	assert.deepEqual(received, [output]);
+	assert.equal(received[0], output);
+});
+
+const objectChunks = [{value: 1}, [1, [2]], false, 0, '', 'first\nsecond', new Uint8Array([97, 98])];
+
+const testObjectReadableStream = async (fdNumber, hasOtherSource) => {
+	const readableStream = new ReadableStream({
+		start(controller) {
+			for (const chunk of objectChunks) {
+				controller.enqueue(chunk);
+			}
+
+			controller.close();
+		},
+	});
+	const otherChunks = hasOtherSource ? [{other: true}] : [];
+	const received = [];
+	let finalCount = 0;
+	const {stdout} = await execa('stdin-fd.js', [`${fdNumber}`], getStdio(fdNumber, [readableStream, otherChunks, {
+		objectMode: true,
+		* transform(chunk) {
+			received.push(chunk);
+			yield JSON.stringify(chunk);
+		},
+		* final() {
+			finalCount += 1;
+			yield 'finished';
+		},
+	}]));
+	const expectedChunks = [...objectChunks, ...otherChunks];
+	assert.deepEqual(stdout.split('\n').sort(), [...expectedChunks.map(chunk => JSON.stringify(chunk)), 'finished'].sort());
+	assert.equal(finalCount, 1);
+	for (const chunk of expectedChunks) {
+		assert.ok(received.includes(chunk));
+	}
+};
+
+test('stdin preserves arbitrary object chunks from a ReadableStream', () => testObjectReadableStream(0, false));
+test('stdio[*] preserves arbitrary object chunks from a ReadableStream', () => testObjectReadableStream(3, false));
+test('Object-mode ReadableStream input can be combined with another source', () => testObjectReadableStream(0, true));
+
+const testObjectWritableStream = async fdNumber => {
+	const received = [];
+	let isClosed = false;
+	const writableStream = new WritableStream({
+		write(chunk) {
+			received.push(chunk);
+		},
+		async close() {
+			await setImmediate();
+			isClosed = true;
+		},
+	});
+	const {stdio} = await execa('noop-fd.js', [`${fdNumber}`, 'x'], getStdio(fdNumber, [writableStream, {
+		objectMode: true,
+		* transform() {
+			yield * objectChunks;
+		},
+	}]));
+	assert.deepEqual(stdio[fdNumber], objectChunks);
+	assert.deepEqual(received, objectChunks);
+	assert.equal(isClosed, true);
+	for (const [index, chunk] of objectChunks.entries()) {
+		assert.equal(received[index], chunk);
+	}
+};
+
+test('stderr writes arbitrary object chunks to a WritableStream', () => testObjectWritableStream(2));
+test('stdio[*] writes arbitrary object chunks to a WritableStream', () => testObjectWritableStream(3));
+
+const testSharedObjectWritableStream = async objectDescriptor => {
+	const output = {event: 'error'};
+	const received = [];
+	const writableStream = new WritableStream({
+		write(chunk) {
+			received.push(chunk);
+		},
+	});
+	const byteDescriptor = objectDescriptor === 'stdout' ? 'stderr' : 'stdout';
+	const result = await execa('noop-both.js', ['byte output'], {
+		stdout: writableStream,
+		stderr: writableStream,
+		[objectDescriptor]: [writableStream, {
+			objectMode: true,
+			* transform() {
+				yield output;
+			},
+		}],
+	});
+	assert.deepEqual(result[objectDescriptor], [output]);
+	assert.equal(result[byteDescriptor], 'byte output');
+	assert.equal(received.filter(chunk => chunk === output).length, 1);
+	assert.equal(received.filter(chunk => chunk !== output).map(chunk => chunk.toString()).join(''), 'byte output\n');
+};
+
+test('A shared WritableStream can receive byte stdout and object-mode stderr', () => testSharedObjectWritableStream('stderr'));
+test('A shared WritableStream can receive object-mode stdout and byte stderr', () => testSharedObjectWritableStream('stdout'));
+
+test('A shared WritableStream receives byte stdout and stderr without dropping either', async () => {
+	const received = [];
+	const writableStream = new WritableStream({
+		write(chunk) {
+			assert.ok(chunk instanceof Uint8Array);
+			received.push(chunk.toString());
+		},
+	});
+	await execa('noop-both.js', ['stdout', 'stderr'], {stdout: writableStream, stderr: writableStream});
+	assert.deepEqual(received.join('').trim().split('\n').sort(), ['stderr', 'stdout']);
+});
+
+test('Object-mode WritableStream errors preserve the original cause', async () => {
+	const cause = new Error('Object write failed');
+	const writableStream = new WritableStream({
+		write() {
+			throw cause;
+		},
+	});
+	const error = await assertRejects(execa('noop.js', {
+		stdout: [writableStream, {
+			objectMode: true,
+			* transform() {
+				yield objectChunks[0];
+			},
+		}],
+	}));
+	assert.equal(error.cause, cause);
+});
+
+test('Byte-mode web streams preserve binary data without text decoding', async () => {
+	const input = new Uint8Array([0, 255, 128, 10]);
+	const readableStream = new ReadableStream({
+		type: 'bytes',
+		start(controller) {
+			controller.enqueue(new Uint8Array(input));
+			controller.close();
+		},
+	});
+	const received = [];
+	const writableStream = new WritableStream({
+		write(chunk) {
+			received.push(...chunk);
+		},
+	});
+	const {stdout} = await execa('stdin.js', {
+		stdin: readableStream,
+		stdout: writableStream,
+		encoding: 'buffer',
+		stripFinalNewline: false,
+	});
+	assert.deepEqual(stdout, input);
+	assert.deepEqual(received, [...input]);
+});
+
+test('A web ReadableStream requires a transform to serialize object input', async () => {
+	const readableStream = new ReadableStream({
+		start(controller) {
+			controller.enqueue({value: 1});
+			controller.close();
+		},
+	});
+	const error = await assertRejects(execa('stdin.js', {stdin: readableStream}));
+	assert.equal(error.cause.code, 'ERR_INVALID_ARG_TYPE');
+});
+
 const testWritableStream = async fdNumber => {
 	const result = [];
 	const writableStream = new WritableStream({

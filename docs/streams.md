@@ -54,6 +54,8 @@ const response = await fetch('https://example.com');
 await execa({stdin: response.body})`npm run build`;
 ```
 
+A `WritableStream` receives each chunk as is: a `Uint8Array`, an object with a [transform in object mode](transform.md#object-mode), or a string with a [`Duplex`](transform.md#duplextransform-streams) that emits strings.
+
 ## Iterables as input
 
 ```js

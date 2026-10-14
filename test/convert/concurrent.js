@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {setTimeout} from 'node:timers/promises';
+import {setTimeout as scheduleTimeout} from 'node:timers';
 import test from 'node:test';
+import {assertRejects} from '../helpers/assert.js';
 import {execa} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
 import {foobarString} from '../helpers/input.js';
@@ -16,6 +18,65 @@ import {
 } from '../helpers/convert.js';
 
 setFixtureDirectory();
+
+const testInvalidDuplexCleanup = async (options, {method = 'readable', ...subprocessOptions} = {}) => {
+	const subprocess = execa('noop-repeat.js', ['1', foobarString], {...subprocessOptions, buffer: false});
+	const subprocessError = assertRejects(subprocess);
+	let wasCleanupNeeded = false;
+	const cleanup = scheduleTimeout(() => {
+		wasCleanupNeeded = true;
+		subprocess.kill();
+	}, 5000);
+	try {
+		assert.throws(() => {
+			subprocess.duplex(options);
+		}, TypeError);
+		const iterator = subprocess[method]()[Symbol.asyncIterator]();
+		const {done} = await iterator.next();
+		assert.equal(done, false);
+		await iterator.return();
+		const error = await subprocessError;
+		assert.equal(wasCleanupNeeded, false);
+		assert.equal(error.exitCode, 1);
+		assert.equal(error.signal, undefined);
+	} finally {
+		clearTimeout(cleanup);
+		subprocess.kill();
+	}
+};
+
+test('Invalid duplex options do not block later readable cleanup', () => testInvalidDuplexCleanup({to: 'fd9'}));
+test('Invalid duplex writable direction does not block later readable cleanup', () => testInvalidDuplexCleanup({to: 'fd1'}));
+test('Invalid duplex writable name does not block later readable cleanup', () => testInvalidDuplexCleanup({to: 'stdout'}));
+test('Invalid duplex readable descriptor does not block later readable cleanup', () => testInvalidDuplexCleanup({from: 'fd9'}));
+test('Invalid duplex readable direction does not block later readable cleanup', () => testInvalidDuplexCleanup({from: 'fd0'}));
+test('Invalid duplex readable and writable descriptors do not block later readable cleanup', () => testInvalidDuplexCleanup({from: 'fd9', to: 'fd9'}));
+test('Invalid duplex writable descriptor with explicit from does not block later readable cleanup', () => testInvalidDuplexCleanup({from: 'fd1', to: 'fd9'}));
+test('Invalid duplex options do not block later duplex cleanup', () => testInvalidDuplexCleanup({to: 'fd9'}, {method: 'duplex'}));
+test('Invalid duplex ignored stdin does not block later readable cleanup', () => testInvalidDuplexCleanup({}, {stdin: 'ignore'}));
+test('Invalid duplex ignored stderr does not block later readable cleanup', () => testInvalidDuplexCleanup({from: 'stderr'}, {stderr: 'ignore'}));
+test('Invalid duplex missing all does not block later readable cleanup', () => testInvalidDuplexCleanup({from: 'all'}));
+
+const testInvalidDuplexRecovery = async method => {
+	const subprocess = getReadWriteSubprocess({timeout: 5000});
+	for (const options of [{to: 'fd9'}, {from: 'fd9'}, {from: 'fd9', to: 'fd9'}]) {
+		assert.throws(() => {
+			subprocess.duplex(options);
+		}, {message: /file descriptor does not exist/});
+	}
+
+	const writable = subprocess[method]();
+	const readable = method === 'duplex' ? writable : subprocess.readable();
+	writable.end(foobarString);
+	await Promise.all([
+		finishedStream(writable),
+		assertStreamOutput(readable),
+	]);
+	await assertSubprocessOutput(subprocess);
+};
+
+test('Invalid duplex options allow creating a later writable and readable', () => testInvalidDuplexRecovery('writable'));
+test('Invalid duplex options allow creating a later duplex', () => testInvalidDuplexRecovery('duplex'));
 
 const endStream = async stream => {
 	stream.end(foobarString);

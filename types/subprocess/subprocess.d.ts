@@ -66,7 +66,9 @@ type ExecaCustomSubprocess<OptionsType extends Options> =
 		/**
 		The subprocess [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) as a stream.
 
-		This is `null` if the `stdin` option is set to `'inherit'`, `'ignore'`, `Readable` or `integer`.
+		This is `null` if neither `input` nor `inputFile` is provided and the `stdin` option is set to `'inherit'`, `'ignore'`, `Readable` or `integer`.
+
+		When `input` or `inputFile` is provided, `stdin` uses a pipe, so this is a `Writable`. The `stdin` option cannot be `'ignore'` then.
 		*/
 		stdin: SubprocessStdioStream<'0', OptionsType>;
 
@@ -87,7 +89,9 @@ type ExecaCustomSubprocess<OptionsType extends Options> =
 		/**
 		The subprocess `stdin`, `stdout`, `stderr` and other files descriptors as an array of streams.
 
-		Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`.
+		Each array item is `null` if the corresponding `stdin`, `stdout`, `stderr` or `stdio` option is set to `'inherit'`, `'ignore'`, `Stream` or `integer`. For `stdin`, this only applies when neither `input` nor `inputFile` is provided.
+
+		When `input` or `inputFile` is provided, `stdin` uses a pipe, so the first item is a `Writable`. The `stdin` option cannot be `'ignore'` then.
 
 		With the `ipc` option, the last item is the subprocess' IPC channel, which is always `null`.
 		*/

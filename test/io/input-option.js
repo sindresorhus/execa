@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import {Buffer} from 'node:buffer';
-import {Writable} from 'node:stream';
+import {unlink, writeFile} from 'node:fs/promises';
+import {Readable, Writable} from 'node:stream';
 import test from 'node:test';
+import tempfile from 'tempfile';
 import {assertThrows} from '../helpers/assert.js';
 import {execa, execaSync} from '../../index.js';
 import {setFixtureDirectory} from '../helpers/fixtures-directory.js';
@@ -36,6 +38,53 @@ test('input option can be a Uint8Array - sync', () => testInput(foobarUint8Array
 test('input option can be a Buffer - sync', () => testInput(foobarBuffer, runExecaSync));
 test('input option can be used with $', () => testInput('foobar', runScript));
 test('input option can be used with $.sync', () => testInput('foobar', runScriptSync));
+
+const testNativeInputPipe = async (input, expectedLines) => {
+	const subprocess = execa('stdin.js', {stdin: Readable.from(['first\n']), input});
+	assert.ok(subprocess.stdin instanceof Writable);
+	assert.equal(subprocess.stdio[0], subprocess.stdin);
+	const {stdout} = await subprocess;
+	assert.deepEqual(stdout.split('\n').sort(), expectedLines);
+};
+
+test('Native readable stdin with input exposes a pipe and merges both sources', () => testNativeInputPipe('second\n', ['first', 'second']));
+test('Native readable stdin with empty input still exposes a pipe', () => testNativeInputPipe('', ['first']));
+test('Native readable stdin with empty binary input still exposes a pipe', () => testNativeInputPipe(new Uint8Array(), ['first']));
+
+test('Native readable stdin with inputFile exposes a pipe and merges both sources', async t => {
+	const filePath = tempfile();
+	await writeFile(filePath, 'second\n');
+	t.after(() => unlink(filePath));
+	const subprocess = execa('stdin.js', {stdin: Readable.from(['first\n']), inputFile: filePath});
+	assert.ok(subprocess.stdin instanceof Writable);
+	assert.equal(subprocess.stdio[0], subprocess.stdin);
+	const {stdout} = await subprocess;
+	assert.deepEqual(stdout.split('\n').sort(), ['first', 'second']);
+});
+
+test('Reusing a readable for stdin and input exposes a pipe without duplicating its data', async () => {
+	const source = Readable.from(['first\n']);
+	const subprocess = execa('stdin.js', {stdin: source, input: source});
+	assert.ok(subprocess.stdin instanceof Writable);
+	const {stdout} = await subprocess;
+	assert.equal(stdout, 'first');
+});
+
+test('Input sources keep object-mode stdin transforms when exposing a pipe', async () => {
+	const subprocess = execa('stdin.js', {
+		stdin: [Readable.from([{source: 'stdin'}]), {
+			objectMode: true,
+			* transform(chunk) {
+				yield `${JSON.stringify(chunk)}\n`;
+			},
+		}],
+		input: Readable.from([{source: 'input'}]),
+	});
+	assert.ok(subprocess.stdin instanceof Writable);
+	assert.equal(subprocess.stdin.writableObjectMode, true);
+	const {stdout} = await subprocess;
+	assert.deepEqual(stdout.split('\n').map(line => JSON.parse(line).source).sort(), ['input', 'stdin']);
+});
 
 const testInputIgnoresInheritedStdin = async (optionName, stdioOption, isSync) => {
 	const {stdout} = await execa('nested-input-inherit.js', [optionName, JSON.stringify(stdioOption), `${isSync}`], {input: foobarString});

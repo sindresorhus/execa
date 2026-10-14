@@ -385,7 +385,9 @@ _Type:_ [`Writable | null`](https://nodejs.org/api/stream.html#class-streamwrita
 
 The subprocess [`stdin`](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) as a stream.
 
-This is `null` if the [`stdin`](#optionsstdin) option is set to [`'inherit'`](input.md#terminal-input), [`'ignore'`](input.md#ignore-input), [`Readable`](streams.md#input) or [`integer`](input.md#terminal-input).
+This is `null` if neither `input` nor `inputFile` is provided and the [`stdin`](#optionsstdin) option is set to [`'inherit'`](input.md#terminal-input), [`'ignore'`](input.md#ignore-input), [`Readable`](streams.md#input) or [`integer`](input.md#terminal-input).
+
+When `input` or `inputFile` is provided, `stdin` uses a pipe, so this is a `Writable`. The `stdin` option cannot be `'ignore'` then.
 
 [More info.](streams.md#manual-streaming)
 
@@ -427,7 +429,9 @@ _Type:_ [`[Writable | null, Readable | null, Readable | null, ...Array<Writable 
 
 The subprocess [`stdin`](#subprocessstdin), [`stdout`](#subprocessstdout), [`stderr`](#subprocessstderr) and [other files descriptors](#optionsstdio) as an array of streams.
 
-Each array item is `null` if the corresponding [`stdin`](#optionsstdin), [`stdout`](#optionsstdout), [`stderr`](#optionsstderr) or [`stdio`](#optionsstdio) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Stream`](streams.md#output) or [`integer`](output.md#terminal-output).
+Each array item is `null` if the corresponding [`stdin`](#optionsstdin), [`stdout`](#optionsstdout), [`stderr`](#optionsstderr) or [`stdio`](#optionsstdio) option is set to [`'inherit'`](output.md#terminal-output), [`'ignore'`](output.md#ignore-output), [`Stream`](streams.md#output) or [`integer`](output.md#terminal-output). For `stdin`, this only applies when neither `input` nor `inputFile` is provided.
+
+When `input` or `inputFile` is provided, `stdin` uses a pipe, so the first item is a `Writable`. The `stdin` option cannot be `'ignore'` then.
 
 With the [`ipc`](#optionsipc) option, the last item is the subprocess' IPC channel, which is always `null`.
 

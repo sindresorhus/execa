@@ -32,7 +32,7 @@ expectTypeOf(scriptSubprocess.stdio[0]).toBe<Writable>();
 
 const fileSubprocess = execa('unicorns', {stdin: Readable.from(['first']), inputFile: 'input.txt'});
 expectTypeOf(fileSubprocess.stdin).toBe<Writable>();
-const fileUrlSubprocess = $({stdin: Readable.from(['first']), inputFile: new URL('file:///input.txt')})`unicorns`;
+const fileUrlSubprocess = $({stdin: Readable.from(['first']), inputFile: new URL('file:///test')})`unicorns`;
 expectTypeOf(fileUrlSubprocess.stdin).toBe<Writable>();
 expectTypeOf(fileUrlSubprocess.stdio[0]).toBe<Writable>();
 

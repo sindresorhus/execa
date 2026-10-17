@@ -13,7 +13,7 @@ expectTypeOf(scriptInputSubprocess.stdio[0]).toBe<Writable>();
 const inputFileSubprocess = execa('unicorns', {stdin: 'inherit', inputFile: 'input.txt'});
 expectTypeOf(inputFileSubprocess.stdin).toBe<Writable>();
 expectTypeOf(inputFileSubprocess.stdio[0]).toBe<Writable>();
-const scriptInputFileSubprocess = $({stdin: 'inherit', inputFile: new URL('file:///input.txt')})`unicorns`;
+const scriptInputFileSubprocess = $({stdin: 'inherit', inputFile: new URL('file:///test')})`unicorns`;
 expectTypeOf(scriptInputFileSubprocess.stdin).toBe<Writable>();
 expectTypeOf(scriptInputFileSubprocess.stdio[0]).toBe<Writable>();
 

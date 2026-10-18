@@ -5,6 +5,7 @@ import test from 'node:test';
 import {
 	cp,
 	mkdir,
+	rm,
 	unlink,
 	writeFile,
 } from 'node:fs/promises';
@@ -15,6 +16,9 @@ import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-direc
 setFixtureDirectory();
 
 const isWindows = process.platform === 'win32';
+
+// On Windows, an executable can stay locked for a short time after its process exits, so deleting it can fail with `EBUSY` or `EPERM`
+const removeExecutable = filePath => rm(filePath, {maxRetries: 10});
 
 // These tests cover the command resolution and argument escaping performed by
 // `lib/arguments/command-file.js`, which allows running scripts, `.cmd`/`.bat` files
@@ -216,7 +220,7 @@ if (isWindows) {
 			cp(process.execPath, comPath),
 		]);
 		t.after(async () => {
-			await Promise.all([unlink(executablePath), unlink(comPath)]);
+			await Promise.all([removeExecutable(executablePath), removeExecutable(comPath)]);
 		});
 		const options = {
 			preferLocal: true,
@@ -260,7 +264,7 @@ if (isWindows) {
 				process.env[environmentName] = originalValue;
 			}
 
-			await Promise.all([unlink(currentDirectoryExecutable), unlink(pathExecutable)]);
+			await Promise.all([removeExecutable(currentDirectoryExecutable), removeExecutable(pathExecutable)]);
 		});
 
 		const options = {
@@ -340,7 +344,7 @@ if (isWindows) {
 		const pathExecutable = path.join(binaryDirectory, `${commandName}.exe`);
 		await cp(process.execPath, pathExecutable);
 		t.after(async () => {
-			await unlink(pathExecutable);
+			await removeExecutable(pathExecutable);
 		});
 		const drive = path.parse(FIXTURES_DIRECTORY).root.slice(0, 2);
 		const command = `${drive}${commandName}`;

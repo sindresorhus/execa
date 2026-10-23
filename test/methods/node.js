@@ -6,11 +6,12 @@ import test from 'node:test';
 import getNode from 'get-node';
 import {assertThrows, assertRejects} from '../helpers/assert.js';
 import {execa, execaSync, execaNode} from '../../index.js';
-import {FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
+import {setFixtureDirectory, FIXTURES_DIRECTORY} from '../helpers/fixtures-directory.js';
 import {identity, fullStdio} from '../helpers/stdio.js';
 import {foobarString} from '../helpers/input.js';
 import {getDenoNodePath} from '../helpers/file-path.js';
 
+setFixtureDirectory();
 process.chdir(FIXTURES_DIRECTORY);
 
 const runWithNodeOption = (file, commandArguments, options) => Array.isArray(commandArguments)

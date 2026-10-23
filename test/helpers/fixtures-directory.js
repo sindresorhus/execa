@@ -23,5 +23,7 @@ export const FIXTURES_DIRECTORY = path.resolve(fileURLToPath(FIXTURES_DIRECTORY_
 // `node`. This is only meant to make writing tests simpler.
 export const setFixtureDirectory = () => {
 	process.env[PATH_KEY] = FIXTURES_DIRECTORY + path.delimiter + process.env[PATH_KEY];
+	// Keep fixture output plain even when the test runner inherits forced colors.
+	process.env.FORCE_COLOR = '0';
 };
 

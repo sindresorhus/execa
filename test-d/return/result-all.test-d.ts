@@ -135,6 +135,11 @@ expectTypeOf(dynamicGlobalObjectBufferResult.all).toBe<unknown[] | undefined>();
 const dynamicGlobalObjectBufferResultSync = execaSync('unicorns', {...unbufferedStderrObjectOptions, buffer: false as boolean});
 expectTypeOf(dynamicGlobalObjectBufferResultSync.all).toBe<unknown[] | undefined>();
 
+declare const optionalBufferError: ExecaError<{all: true; buffer?: false; stdout: typeof unbufferedObjectOptions.stdout}>;
+expectTypeOf(optionalBufferError.all).toBe<unknown[] | undefined>();
+const undefinedStdoutBufferResult = await execa('unicorns', {...unbufferedObjectOptions, buffer: {stdout: undefined, stderr: false}});
+expectTypeOf(undefinedStdoutBufferResult.all).toBe<unknown[]>();
+
 const dynamicOnlyStdoutBufferResult = await execa('unicorns', {...dynamicBufferOptions, buffer: {stdout: false as boolean, stderr: false}});
 expectTypeOf(dynamicOnlyStdoutBufferResult.all).toBe<unknown[] | undefined>();
 const dynamicOnlyStderrBufferResultSync = execaSync('unicorns', {...dynamicStderrBufferOptions, buffer: {stdout: false, stderr: false as boolean}});

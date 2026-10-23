@@ -20,22 +20,28 @@ type ResultAllProperty<
 	: undefined;
 
 // Distribute buffer flags before selecting descriptors so their presence and output modes stay correlated.
+// Undefined flags use the default `true`.
 type ResultAllBuffered<
 	OptionsType extends CommonOptions,
 	BufferStdout extends boolean | undefined,
 	BufferStderr extends boolean | undefined,
 > = BufferStdout extends unknown
 	? BufferStderr extends unknown
-		? ResultAllOutput<Omit<OptionsType, 'buffer'> & {buffer: {stdout: BufferStdout; stderr: BufferStderr}}>
+		? ResultAllOutput<Omit<OptionsType, 'buffer'> & {
+			buffer: {
+				stdout: BufferStdout extends false ? false : true;
+				stderr: BufferStderr extends false ? false : true;
+			};
+		}>
 		: never
 	: never;
 
-type ResultAllOutput<OptionsType extends CommonOptions> = ResultStdio<
+type ResultAllOutput<OptionsType> = OptionsType extends CommonOptions ? ResultStdio<
 	AllMainFd<OptionsType>,
 	AllObjectFd<OptionsType>,
 	AllLinesFd<OptionsType>,
 	OptionsType
->;
+> : never;
 
 type AllMainFd<OptionsType extends CommonOptions> =
 	IgnoresResultOutput<'1', OptionsType> extends true ? '2' : '1';

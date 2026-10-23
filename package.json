@@ -19,7 +19,7 @@
 		"test": "npm run lint && npm run unit && npm run type",
 		"lint": "xo",
 		"unit": "c8 --merge-async node --test --test-concurrency=1 --test-timeout=240000 \"test/!(fixtures|helpers)/*.js\"",
-		"type": "nz && tsc"
+		"type": "nz && tsc --exactOptionalPropertyTypes"
 	},
 	"files": [
 		"index.js",

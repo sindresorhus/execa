@@ -370,8 +370,13 @@ if (isLinux) {
 		assert.equal(await assertRejects(pipePromise), await assertRejects(source));
 		assertLike(await destination, {stdout: 'y'});
 		const sourceError = await assertRejects(source);
-		assert.equal(sourceError.exitCode, 1);
-		assert.match(sourceError.stderr, /^yes: standard output: (?:Broken pipe|Connection reset by peer)$/);
+		// GNU `yes` handles `EPIPE` and exits with code 1, while uutils `yes` (default on Ubuntu 26.04+) is terminated by `SIGPIPE`
+		if (sourceError.signal === undefined) {
+			assert.equal(sourceError.exitCode, 1);
+			assert.match(sourceError.stderr, /^yes: standard output: (?:Broken pipe|Connection reset by peer)$/);
+		} else {
+			assert.equal(sourceError.signal, 'SIGPIPE');
+		}
 
 		assert.equal(source.stdout.readableEnded, false);
 		assert.equal(source.stdout.errored, null);

@@ -37,7 +37,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu' && matrix.node-version == 26 }}
       - run: npm run type
       - run: npm run unit
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: '${{ matrix.os }}, node-${{ matrix.node-version }}'

@@ -310,11 +310,11 @@ The grace period is set by the [`forceKillAfterDelay`](api.md#optionsforcekillaf
 The [`error.isForcefullyTerminated`](api.md#errorisforcefullyterminated) boolean property can be used to check whether a subprocess was forcefully terminated by the `forceKillAfterDelay` option.
 
 This works when the subprocess is terminated by either:
-- Calling [`subprocess.kill()`](api.md#subprocesskillsignal-error) with no arguments.
+- Calling [`subprocess.kill()`](api.md#subprocesskillsignal-error) with no signal, or with the same signal as the [`killSignal`](api.md#optionskillsignal) option.
 - The [`cancelSignal`](#canceling), [`timeout`](#timeout), [`maxBuffer`](output.md#big-output) or [`cleanup`](#current-process-exit) option.
 
 This does not work when the subprocess is terminated by either:
-- Calling [`subprocess.kill()`](api.md#subprocesskillsignal-error) with a specific signal.
+- Calling [`subprocess.kill()`](api.md#subprocesskillsignal-error) with a signal different from the [`killSignal`](api.md#optionskillsignal) option.
 - Calling [`process.kill(subprocess.pid)`](api.md#subprocesspid).
 - Sending a termination signal [from another process](#inter-process-termination).
 
